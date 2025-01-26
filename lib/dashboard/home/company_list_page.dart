@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:requirment_gathering_app/data/company_ui.dart';
+import 'package:requirment_gathering_app/coordinator/coordinator.dart';
+import 'package:requirment_gathering_app/data/company.dart';
 import 'package:requirment_gathering_app/dashboard/home/company_cubit.dart';
 import 'package:requirment_gathering_app/dashboard/home/add_company_state.dart';
 import 'package:requirment_gathering_app/service_locator/service_locator.dart';
+import 'package:requirment_gathering_app/utils/AppColor.dart';
+import 'package:requirment_gathering_app/utils/AppLabels.dart';
 
 class CompanyListPage extends StatelessWidget {
   const CompanyListPage({Key? key}) : super(key: key);
@@ -18,34 +21,33 @@ class CompanyListPage extends StatelessWidget {
 
           return Scaffold(
             appBar: AppBar(
-              title: const Text("Company List"),
+              title: const Text(AppLabels.companyListTitle),
               actions: [
                 IconButton(
                   icon: const Icon(Icons.arrow_upward),
                   onPressed: () {
                     cubit.sortCompaniesByDate(ascending: true);
                   },
-                  tooltip: "Sort Ascending",
+                  tooltip: AppLabels.sortAscendingTooltip,
                 ),
                 IconButton(
                   icon: const Icon(Icons.arrow_downward),
                   onPressed: () {
                     cubit.sortCompaniesByDate(ascending: false);
                   },
-                  tooltip: "Sort Descending",
+                  tooltip: AppLabels.sortDescendingTooltip,
                 ),
               ],
             ),
             body: Column(
               children: [
-                // Search Bar
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: TextField(
                     onChanged: cubit.searchCompanies,
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.search),
-                      hintText: "Search companies...",
+                      hintText: AppLabels.searchHint,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30.0),
                       ),
@@ -62,7 +64,7 @@ class CompanyListPage extends StatelessWidget {
                       : state.companies.isEmpty
                       ? const Center(
                     child: Text(
-                      "No companies found.",
+                      AppLabels.noCompaniesFound,
                       style: TextStyle(fontSize: 18),
                     ),
                   )
@@ -82,7 +84,7 @@ class CompanyListPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCompanyListTile(BuildContext context, CompanyCubit cubit, CompanyUi company) {
+  Widget _buildCompanyListTile(BuildContext context, CompanyCubit cubit, Company company) {
     return Card(
       margin: const EdgeInsets.all(8.0),
       elevation: 4.0,
@@ -91,43 +93,70 @@ class CompanyListPage extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              "Company Name: ${company.companyName}",
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildDetailedBox(AppLabels.companyNameLabel, company.companyName),
+                  _buildDetailedBox(AppLabels.addressLabel, company.address ?? AppLabels.noAddress),
+                  _buildDetailedBox(AppLabels.emailLabel, company.email ?? AppLabels.noEmail),
+                  _buildDetailedBox(AppLabels.contactNumberLabel, company.contactNumber ?? AppLabels.noContactNumber),
+                ],
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              "Address: ${company.address ?? 'No Address'}",
-              style: const TextStyle(fontSize: 14),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Email: ${company.email ?? 'No Email'}",
-              style: const TextStyle(fontSize: 14),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Contact Number: ${company.contactNumber ?? 'No Contact Number'}",
-              style: const TextStyle(fontSize: 14),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Column(
               children: [
-                ElevatedButton(
-                  onPressed: () {
-                    _showDeleteConfirmation(context, cubit, company);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.red,
+                // View Button
+                Container(
+                  margin: const EdgeInsets.only(bottom: 8.0),
+                  decoration: BoxDecoration(
+                    color: AppColors.viewButtonColor,
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text("Delete"),
+                  child: IconButton(
+                    icon: const Icon(Icons.remove_red_eye, color: Colors.white),
+                    onPressed: () {
+                      sl<Coordinator>().navigateToCompanyDetailsPage(company);
+                    },
+                    tooltip: AppLabels.viewCompanyTooltip,
+                  ),
+                ),
+
+                // Edit Button
+                Container(
+                  margin: const EdgeInsets.only(bottom: 8.0),
+                  decoration: BoxDecoration(
+                    color: AppColors.editButtonColor,
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.edit, color: Colors.white),
+                    onPressed: () {
+                      sl<Coordinator>().navigateToEditCompanyPage(company);
+                    },
+                    tooltip: AppLabels.editCompanyTooltip,
+                  ),
+                ),
+
+                // Delete Button
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.deleteButtonColor,
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.white),
+                    onPressed: () {
+                      _showDeleteConfirmation(context, cubit, company);
+                    },
+                    tooltip: AppLabels.deleteCompanyTooltip,
+                  ),
                 ),
               ],
             ),
@@ -137,26 +166,80 @@ class CompanyListPage extends StatelessWidget {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, CompanyCubit cubit, CompanyUi company) {
+  Widget _buildDetailedBox(String label, String value) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey, width: 1.0),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.left,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTopAlignedDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.left,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  void _showDeleteConfirmation(BuildContext context, CompanyCubit cubit, Company company) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Confirm Delete"),
-          content: Text("Are you sure you want to delete the company '${company.companyName}'?"),
+          title: const Text(AppLabels.deleteConfirmationTitle),
+          content: Text("${AppLabels.deleteConfirmationMessage} '${company.companyName}'?"),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
+                Navigator.of(context).pop();
               },
-              child: const Text("Cancel"),
+              child: const Text(AppLabels.cancelButtonText),
             ),
             TextButton(
               onPressed: () {
-                cubit.deleteCompany(company.id); // Call delete method
-                Navigator.of(context).pop(); // Close dialog
+                cubit.deleteCompany(company.id);
+                Navigator.of(context).pop();
               },
-              child: const Text("Delete"),
+              child: const Text(AppLabels.deleteButtonText),
             ),
           ],
         );

@@ -1,4 +1,5 @@
 import 'package:auto_route/annotations.dart';
+import 'package:requirment_gathering_app/dashboard/home/company_details_page.dart';
 import 'package:requirment_gathering_app/dashboard/home/company_list_page.dart';
 import 'package:requirment_gathering_app/dashboard/home/add_company_page.dart';
 import 'package:requirment_gathering_app/dashboard/home/home_page.dart';
@@ -19,6 +20,7 @@ import 'package:requirment_gathering_app/login/splash_screen.dart';
     AutoRoute(page: ReportsPage, path: '/reports'),
     AutoRoute(page: CompanySettingPage, path: '/settings'),
     AutoRoute(page: AddCompanyPage, path: '/add-company'), // Added AddCompanyPage
+    AutoRoute(page: CompanyDetailsPage, path: '/company-details'), // Added CompanyDetailsPage
 
   ],
 )

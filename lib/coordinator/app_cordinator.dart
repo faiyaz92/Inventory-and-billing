@@ -1,5 +1,6 @@
 import 'package:requirment_gathering_app/app_router/app_router.gr.dart';
 import 'package:requirment_gathering_app/coordinator/coordinator.dart';
+import 'package:requirment_gathering_app/data/company.dart';
 
 class AppCoordinator implements Coordinator {
   final AppRouter _router;
@@ -45,7 +46,15 @@ class AppCoordinator implements Coordinator {
   void navigateToAddCompanyPage() {
     _router.push(const AddCompanyRoute()); // AddCompanyPage navigation
   }
+  @override
+  void navigateToCompanyDetailsPage(Company company) {
+    _router.push(CompanyDetailsRoute(company: company)); // Navigate to CompanyDetailsPage
+  }
 
+  @override
+  void navigateToEditCompanyPage(Company company) {
+    // _router.push(AddCompanyRoute(company: company)); // Navigate to AddCompanyPage with pre-filled data
+  }
   @override
   void navigateBack() {
     _router.pop();

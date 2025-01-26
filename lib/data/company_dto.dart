@@ -1,4 +1,4 @@
-import 'package:requirment_gathering_app/data/company_ui.dart';
+import 'package:requirment_gathering_app/data/company.dart';
 
 class CompanyDto {
   final String id;
@@ -99,8 +99,8 @@ class CompanyDto {
   }
 
   // Convert from DTO to UI Model
-  CompanyUi toUiModel() {
-    return CompanyUi(
+  Company toUiModel() {
+    return Company(
       id: id,
       companyName: companyName,
       source: source,
@@ -125,7 +125,7 @@ class CompanyDto {
   }
 
   // Convert from UI Model to DTO
-  factory CompanyDto.fromUiModel(CompanyUi uiModel) {
+  factory CompanyDto.fromUiModel(Company uiModel) {
     return CompanyDto(
       id: uiModel.id,
       companyName: uiModel.companyName,

@@ -53,7 +53,33 @@ class AppLabels {
 
   static const String contactPersonLabel = "Contact Persons";
   static const String emailSentYesLabel = "Yes"; // For the "Yes" option
-  static const String emailSentNoLabel = "No";   // For the "No" option
+  static const String emailSentNoLabel = "No"; // For the "No" option
   static const String deleteContactPersonTooltip = "Delete Contact Person";
+
+  // General Labels
+  static const String companyListTitle = "Company List";
+  static const String searchHint = "Search companies...";
+  static const String noCompaniesFound = "No companies found.";
+  static const String deleteConfirmationTitle = "Confirm Delete";
+  static const String deleteConfirmationMessage =
+      "Are you sure you want to delete the company";
+  static const String cancelButtonText = "Cancel";
+  static const String deleteButtonText = "Delete";
+
+  // Sort Tooltips
+  static const String sortAscendingTooltip = "Sort Ascending";
+  static const String sortDescendingTooltip = "Sort Descending";
+
+  // Default Values
+  static const String noAddress = "No Address";
+  static const String noEmail = "No Email";
+  static const String noContactNumber = "No Contact Number";
+
+  // Delete Tooltip
+  static const String deleteCompanyTooltip = "Delete this company";
+
+  // Button Tooltips
+  static const String viewCompanyTooltip = "View Details";
+  static const String editCompanyTooltip = "Edit this company";
 
 }

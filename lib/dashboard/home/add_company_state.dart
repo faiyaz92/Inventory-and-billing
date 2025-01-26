@@ -1,10 +1,10 @@
 import 'package:equatable/equatable.dart';
-import 'package:requirment_gathering_app/data/company_ui.dart';
+import 'package:requirment_gathering_app/data/company.dart';
 
 class CompanyState extends Equatable {
-  final CompanyUi? company; // Use Company object for the form data
-  final List<CompanyUi> companies; // List of companies for display
-  final List<CompanyUi> originalCompanies; // Full list of companies for filtering
+  final Company? company; // Use Company object for the form data
+  final List<Company> companies; // List of companies for display
+  final List<Company> originalCompanies; // Full list of companies for filtering
   final bool isSaving; // Tracks if a save operation is in progress
   final bool isLoading; // Tracks if data is loading
   final bool isSaved; // Tracks if the company was successfully saved
@@ -23,7 +23,7 @@ class CompanyState extends Equatable {
   // Initial state
   factory CompanyState.initial() {
     return CompanyState(
-      company: CompanyUi(
+      company: Company(
         id: '',
         companyName: '',
         source: null,
@@ -46,9 +46,9 @@ class CompanyState extends Equatable {
 
   // Copy with method for updating state
   CompanyState copyWith({
-    CompanyUi? company,
-    List<CompanyUi>? companies,
-    List<CompanyUi>? originalCompanies,
+    Company? company,
+    List<Company>? companies,
+    List<Company>? originalCompanies,
     bool? isSaving,
     bool? isLoading,
     bool? isSaved,

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/dashboard/home/add_company_state.dart';
 import 'package:requirment_gathering_app/dashboard/home/company_cubit.dart';
-import 'package:requirment_gathering_app/data/company_ui.dart';
+import 'package:requirment_gathering_app/data/company.dart';
 import 'package:requirment_gathering_app/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/utils/AppKeys.dart';
 import 'package:requirment_gathering_app/utils/AppLabels.dart';

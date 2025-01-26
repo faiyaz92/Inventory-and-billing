@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/dashboard/home/add_company_state.dart';
-import 'package:requirment_gathering_app/data/company_ui.dart';
+import 'package:requirment_gathering_app/data/company.dart';
 import 'package:requirment_gathering_app/repositories/company_repository.dart';
 import 'package:requirment_gathering_app/repositories/company_settings_repository.dart';
 
@@ -58,7 +58,7 @@ class CompanyCubit extends Cubit<CompanyState> {
 
   void updateVerification(String platform, bool isChecked) {
     final updatedVerification =
-        List<String>.from(state.company?.verifiedOn ?? []);
+    List<String>.from(state.company?.verifiedOn ?? []);
     if (isChecked) {
       if (!updatedVerification.contains(platform)) {
         updatedVerification.add(platform);
@@ -73,15 +73,15 @@ class CompanyCubit extends Cubit<CompanyState> {
   // Contact Persons Management
   void addContactPerson() {
     final updatedContacts =
-        List<ContactPerson>.from(state.company?.contactPersons ?? [])
-          ..add(ContactPerson(name: '', email: '', phoneNumber: ''));
+    List<ContactPerson>.from(state.company?.contactPersons ?? [])
+      ..add(ContactPerson(name: '', email: '', phoneNumber: ''));
     emit(state.copyWith(
         company: state.company?.copyWith(contactPersons: updatedContacts)));
   }
 
   void updateContactPerson(int index, ContactPerson updatedPerson) {
     final updatedContacts =
-        List<ContactPerson>.from(state.company?.contactPersons ?? []);
+    List<ContactPerson>.from(state.company?.contactPersons ?? []);
     updatedContacts[index] = updatedPerson;
     emit(state.copyWith(
         company: state.company?.copyWith(contactPersons: updatedContacts)));
@@ -89,8 +89,8 @@ class CompanyCubit extends Cubit<CompanyState> {
 
   void removeContactPerson(int index) {
     final updatedContacts =
-        List<ContactPerson>.from(state.company?.contactPersons ?? [])
-          ..removeAt(index);
+    List<ContactPerson>.from(state.company?.contactPersons ?? [])
+      ..removeAt(index);
     emit(state.copyWith(
         company: state.company?.copyWith(contactPersons: updatedContacts)));
   }
@@ -108,7 +108,7 @@ class CompanyCubit extends Cubit<CompanyState> {
 
     try {
       final isUnique =
-          await _repository.isCompanyNameUnique(state.company!.companyName);
+      await _repository.isCompanyNameUnique(state.company!.companyName);
       if (!isUnique) {
         emit(state.copyWith(
             isSaving: false, errorMessage: "Company name already exists."));
@@ -123,7 +123,7 @@ class CompanyCubit extends Cubit<CompanyState> {
     }
   }
 
-  void updateCompany(CompanyUi updatedCompany) {
+  void updateCompany(Company updatedCompany) {
     emit(state.copyWith(company: updatedCompany));
   }
 
@@ -131,7 +131,7 @@ class CompanyCubit extends Cubit<CompanyState> {
     emit(state.copyWith(isLoading: true));
     try {
       final companies =
-          await _repository.getAllCompanies(); // Now returns List<Company>
+      await _repository.getAllCompanies(); // Now returns List<Company>
       emit(state.copyWith(
         isLoading: false,
         companies: companies,
@@ -158,7 +158,7 @@ class CompanyCubit extends Cubit<CompanyState> {
 
   // Sort companies by date
   void sortCompaniesByDate({required bool ascending}) {
-    final sortedCompanies = List<CompanyUi>.from(state.companies);
+    final sortedCompanies = List<Company>.from(state.companies);
     sortedCompanies.sort((a, b) {
       return ascending
           ? a.dateCreated.compareTo(b.dateCreated)
@@ -173,7 +173,7 @@ class CompanyCubit extends Cubit<CompanyState> {
     try {
       await _repository.deleteCompany(id);
       final updatedCompanies =
-          state.companies.where((company) => company.id != id).toList();
+      state.companies.where((company) => company.id != id).toList();
       emit(state.copyWith(isSaving: false, companies: updatedCompanies));
     } catch (e) {
       emit(state.copyWith(isSaving: false, errorMessage: e.toString()));

@@ -11,30 +11,32 @@
 // ignore_for_file: type=lint
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i11;
+import 'dart:async' as _i12;
 
-import 'package:auto_route/auto_route.dart' as _i9;
-import 'package:flutter/material.dart' as _i10;
+import 'package:auto_route/auto_route.dart' as _i10;
+import 'package:flutter/material.dart' as _i11;
 
 import '../dashboard/home/add_company_page.dart' as _i8;
+import '../dashboard/home/company_details_page.dart' as _i9;
 import '../dashboard/home/company_list_page.dart' as _i5;
 import '../dashboard/home/dashboard_page.dart' as _i2;
 import '../dashboard/home/home_page.dart' as _i4;
 import '../dashboard/reports_page.dart' as _i6;
 import '../dashboard/settings_page.dart' as _i7;
+import '../data/company.dart' as _i13;
 import '../login/login_page.dart' as _i3;
 import '../login/splash_screen.dart' as _i1;
 
-class AppRouter extends _i9.RootStackRouter {
-  AppRouter([_i10.GlobalKey<_i10.NavigatorState>? navigatorKey])
+class AppRouter extends _i10.RootStackRouter {
+  AppRouter([_i11.GlobalKey<_i11.NavigatorState>? navigatorKey])
       : super(navigatorKey);
 
   @override
-  final Map<String, _i9.PageFactory> pagesMap = {
+  final Map<String, _i10.PageFactory> pagesMap = {
     SplashScreen.name: (routeData) {
       final args = routeData.argsAs<SplashScreenArgs>(
           orElse: () => const SplashScreenArgs());
-      return _i9.MaterialPageX<dynamic>(
+      return _i10.MaterialPageX<dynamic>(
         routeData: routeData,
         child: _i1.SplashScreen(
           key: args.key,
@@ -43,7 +45,7 @@ class AppRouter extends _i9.RootStackRouter {
       );
     },
     DashboardRoute.name: (routeData) {
-      return _i9.MaterialPageX<dynamic>(
+      return _i10.MaterialPageX<dynamic>(
         routeData: routeData,
         child: const _i2.DashboardPage(),
       );
@@ -51,86 +53,100 @@ class AppRouter extends _i9.RootStackRouter {
     LoginRoute.name: (routeData) {
       final args = routeData.argsAs<LoginRouteArgs>(
           orElse: () => const LoginRouteArgs());
-      return _i9.MaterialPageX<dynamic>(
+      return _i10.MaterialPageX<dynamic>(
         routeData: routeData,
         child: _i3.LoginPage(key: args.key),
       );
     },
     HomeRoute.name: (routeData) {
-      return _i9.MaterialPageX<dynamic>(
+      return _i10.MaterialPageX<dynamic>(
         routeData: routeData,
         child: const _i4.HomePage(),
       );
     },
     CompanyListRoute.name: (routeData) {
-      return _i9.MaterialPageX<dynamic>(
+      return _i10.MaterialPageX<dynamic>(
         routeData: routeData,
         child: const _i5.CompanyListPage(),
       );
     },
     ReportsRoute.name: (routeData) {
-      return _i9.MaterialPageX<dynamic>(
+      return _i10.MaterialPageX<dynamic>(
         routeData: routeData,
         child: const _i6.ReportsPage(),
       );
     },
     CompanySettingRoute.name: (routeData) {
-      return _i9.MaterialPageX<dynamic>(
+      return _i10.MaterialPageX<dynamic>(
         routeData: routeData,
         child: const _i7.CompanySettingPage(),
       );
     },
     AddCompanyRoute.name: (routeData) {
-      return _i9.MaterialPageX<dynamic>(
+      return _i10.MaterialPageX<dynamic>(
         routeData: routeData,
         child: const _i8.AddCompanyPage(),
+      );
+    },
+    CompanyDetailsRoute.name: (routeData) {
+      final args = routeData.argsAs<CompanyDetailsRouteArgs>();
+      return _i10.MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: _i9.CompanyDetailsPage(
+          key: args.key,
+          company: args.company,
+        ),
       );
     },
   };
 
   @override
-  List<_i9.RouteConfig> get routes => [
-        _i9.RouteConfig(
+  List<_i10.RouteConfig> get routes => [
+        _i10.RouteConfig(
           SplashScreen.name,
           path: '/',
         ),
-        _i9.RouteConfig(
+        _i10.RouteConfig(
           DashboardRoute.name,
           path: '/dashboard',
         ),
-        _i9.RouteConfig(
+        _i10.RouteConfig(
           LoginRoute.name,
           path: '/login',
         ),
-        _i9.RouteConfig(
+        _i10.RouteConfig(
           HomeRoute.name,
           path: '/home',
         ),
-        _i9.RouteConfig(
+        _i10.RouteConfig(
           CompanyListRoute.name,
           path: '/company-list',
         ),
-        _i9.RouteConfig(
+        _i10.RouteConfig(
           ReportsRoute.name,
           path: '/reports',
         ),
-        _i9.RouteConfig(
+        _i10.RouteConfig(
           CompanySettingRoute.name,
           path: '/settings',
         ),
-        _i9.RouteConfig(
+        _i10.RouteConfig(
           AddCompanyRoute.name,
           path: '/add-company',
+        ),
+        _i10.RouteConfig(
+          CompanyDetailsRoute.name,
+          path: '/company-details',
         ),
       ];
 }
 
 /// generated route for
 /// [_i1.SplashScreen]
-class SplashScreen extends _i9.PageRouteInfo<SplashScreenArgs> {
+class SplashScreen extends _i10.PageRouteInfo<SplashScreenArgs> {
   SplashScreen({
-    _i10.Key? key,
-    _i11.Future<void> Function()? onDelayComplete,
+    _i11.Key? key,
+    _i12.Future<void> Function()? onDelayComplete,
   }) : super(
           SplashScreen.name,
           path: '/',
@@ -149,9 +165,9 @@ class SplashScreenArgs {
     this.onDelayComplete,
   });
 
-  final _i10.Key? key;
+  final _i11.Key? key;
 
-  final _i11.Future<void> Function()? onDelayComplete;
+  final _i12.Future<void> Function()? onDelayComplete;
 
   @override
   String toString() {
@@ -161,7 +177,7 @@ class SplashScreenArgs {
 
 /// generated route for
 /// [_i2.DashboardPage]
-class DashboardRoute extends _i9.PageRouteInfo<void> {
+class DashboardRoute extends _i10.PageRouteInfo<void> {
   const DashboardRoute()
       : super(
           DashboardRoute.name,
@@ -173,8 +189,8 @@ class DashboardRoute extends _i9.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i3.LoginPage]
-class LoginRoute extends _i9.PageRouteInfo<LoginRouteArgs> {
-  LoginRoute({_i10.Key? key})
+class LoginRoute extends _i10.PageRouteInfo<LoginRouteArgs> {
+  LoginRoute({_i11.Key? key})
       : super(
           LoginRoute.name,
           path: '/login',
@@ -187,7 +203,7 @@ class LoginRoute extends _i9.PageRouteInfo<LoginRouteArgs> {
 class LoginRouteArgs {
   const LoginRouteArgs({this.key});
 
-  final _i10.Key? key;
+  final _i11.Key? key;
 
   @override
   String toString() {
@@ -197,7 +213,7 @@ class LoginRouteArgs {
 
 /// generated route for
 /// [_i4.HomePage]
-class HomeRoute extends _i9.PageRouteInfo<void> {
+class HomeRoute extends _i10.PageRouteInfo<void> {
   const HomeRoute()
       : super(
           HomeRoute.name,
@@ -209,7 +225,7 @@ class HomeRoute extends _i9.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i5.CompanyListPage]
-class CompanyListRoute extends _i9.PageRouteInfo<void> {
+class CompanyListRoute extends _i10.PageRouteInfo<void> {
   const CompanyListRoute()
       : super(
           CompanyListRoute.name,
@@ -221,7 +237,7 @@ class CompanyListRoute extends _i9.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i6.ReportsPage]
-class ReportsRoute extends _i9.PageRouteInfo<void> {
+class ReportsRoute extends _i10.PageRouteInfo<void> {
   const ReportsRoute()
       : super(
           ReportsRoute.name,
@@ -233,7 +249,7 @@ class ReportsRoute extends _i9.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i7.CompanySettingPage]
-class CompanySettingRoute extends _i9.PageRouteInfo<void> {
+class CompanySettingRoute extends _i10.PageRouteInfo<void> {
   const CompanySettingRoute()
       : super(
           CompanySettingRoute.name,
@@ -245,7 +261,7 @@ class CompanySettingRoute extends _i9.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i8.AddCompanyPage]
-class AddCompanyRoute extends _i9.PageRouteInfo<void> {
+class AddCompanyRoute extends _i10.PageRouteInfo<void> {
   const AddCompanyRoute()
       : super(
           AddCompanyRoute.name,
@@ -253,4 +269,38 @@ class AddCompanyRoute extends _i9.PageRouteInfo<void> {
         );
 
   static const String name = 'AddCompanyRoute';
+}
+
+/// generated route for
+/// [_i9.CompanyDetailsPage]
+class CompanyDetailsRoute extends _i10.PageRouteInfo<CompanyDetailsRouteArgs> {
+  CompanyDetailsRoute({
+    _i11.Key? key,
+    required _i13.Company company,
+  }) : super(
+          CompanyDetailsRoute.name,
+          path: '/company-details',
+          args: CompanyDetailsRouteArgs(
+            key: key,
+            company: company,
+          ),
+        );
+
+  static const String name = 'CompanyDetailsRoute';
+}
+
+class CompanyDetailsRouteArgs {
+  const CompanyDetailsRouteArgs({
+    this.key,
+    required this.company,
+  });
+
+  final _i11.Key? key;
+
+  final _i13.Company company;
+
+  @override
+  String toString() {
+    return 'CompanyDetailsRouteArgs{key: $key, company: $company}';
+  }
 }

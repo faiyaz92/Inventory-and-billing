@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:requirment_gathering_app/data/company_ui.dart';
+import 'package:requirment_gathering_app/data/company.dart';
 import 'package:requirment_gathering_app/data/company_dto.dart';
 import 'package:requirment_gathering_app/repositories/company_repository.dart';
 
@@ -9,18 +9,22 @@ class CompanyRepositoryImpl implements CompanyRepository {
   CompanyRepositoryImpl(this._firestore);
 
   @override
-  Future<void> addCompany(CompanyUi company) async {
+  Future<void> addCompany(Company company) async {
     try {
       // Convert UI Model to DTO and save to Firestore
       final dto = CompanyDto.fromUiModel(company);
       await _firestore.collection('companies').add(dto.toMap());
+      // await _firestore.doc('Easy2Solutions').collection('Organisations').doc('Abc pvt.ltd').collection('companies').add(dto.toMap());
+      // await _firestore.doc('Easy2Solutions').collection('Organisations').add(dto.toMap()); //to add company by super admin
+      // await _firestore.doc('Easy2Solutions').collection('Organisations').doc('compId').collection('companies').add(dto.toMap()); 3 layer super admin ->comp admin -> user
+      // await _firestore.doc('Easy2Solutions').collection('Organisations').doc('compId').collection('users').add(dto.toMap()); to add user by company admin
     } catch (e) {
       throw Exception("Failed to add company: $e");
     }
   }
 
   @override
-  Future<void> updateCompany(String id, CompanyUi company) async {
+  Future<void> updateCompany(String id, Company company) async {
     try {
       // Convert UI Model to DTO and update in Firestore
       final dto = CompanyDto.fromUiModel(company);
@@ -40,7 +44,7 @@ class CompanyRepositoryImpl implements CompanyRepository {
   }
 
   @override
-  Future<CompanyUi> getCompany(String id) async {
+  Future<Company> getCompany(String id) async {
     try {
       final doc = await _firestore.collection('companies').doc(id).get();
       if (doc.exists) {
@@ -55,7 +59,7 @@ class CompanyRepositoryImpl implements CompanyRepository {
   }
 
   @override
-  Future<List<CompanyUi>> getAllCompanies() async {
+  Future<List<Company>> getAllCompanies() async {
     try {
       final snapshot = await _firestore.collection('companies').get();
 

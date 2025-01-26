@@ -1,6 +1,6 @@
 import 'package:requirment_gathering_app/data/company_settings.dart';
 
-class CompanyUi {
+class Company {
   final String id;
   final String companyName;
   final String? source;
@@ -23,7 +23,7 @@ class CompanyUi {
   final String? goodFirmLink;
   final CompanySettingsUi? settings; // Embed CompanySettingUi
 
-  CompanyUi({
+  Company({
     required this.id,
     required this.companyName,
     this.source,
@@ -47,7 +47,7 @@ class CompanyUi {
     this.settings,
   });
 
-  CompanyUi copyWith({
+  Company copyWith({
     String? id,
     String? companyName,
     String? source,
@@ -70,7 +70,7 @@ class CompanyUi {
     String? goodFirmLink,
     CompanySettingsUi? settings,
   }) {
-    return CompanyUi(
+    return Company(
       id: id ?? this.id,
       companyName: companyName ?? this.companyName,
       source: source ?? this.source,
