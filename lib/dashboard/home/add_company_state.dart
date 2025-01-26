@@ -40,6 +40,8 @@ class CompanyState extends Equatable {
         assignedTo: null,
         verifiedOn: [],
         dateCreated: DateTime.now(),
+        createdBy: '',
+        lastUpdatedBy: '',
       ),
     );
   }
@@ -67,12 +69,12 @@ class CompanyState extends Equatable {
 
   @override
   List<Object?> get props => [
-    company,
-    companies,
-    originalCompanies,
-    isSaving,
-    isLoading,
-    isSaved,
-    errorMessage,
-  ];
+        company,
+        companies,
+        originalCompanies,
+        isSaving,
+        isLoading,
+        isSaved,
+        errorMessage,
+      ];
 }

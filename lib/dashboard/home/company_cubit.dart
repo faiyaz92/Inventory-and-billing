@@ -1,8 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/dashboard/home/add_company_state.dart';
 import 'package:requirment_gathering_app/data/company.dart';
 import 'package:requirment_gathering_app/repositories/company_repository.dart';
 import 'package:requirment_gathering_app/repositories/company_settings_repository.dart';
+import 'package:requirment_gathering_app/utils/AppLabels.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CompanyCubit extends Cubit<CompanyState> {
   final CompanyRepository _repository;
@@ -58,7 +61,7 @@ class CompanyCubit extends Cubit<CompanyState> {
 
   void updateVerification(String platform, bool isChecked) {
     final updatedVerification =
-    List<String>.from(state.company?.verifiedOn ?? []);
+        List<String>.from(state.company?.verifiedOn ?? []);
     if (isChecked) {
       if (!updatedVerification.contains(platform)) {
         updatedVerification.add(platform);
@@ -73,15 +76,15 @@ class CompanyCubit extends Cubit<CompanyState> {
   // Contact Persons Management
   void addContactPerson() {
     final updatedContacts =
-    List<ContactPerson>.from(state.company?.contactPersons ?? [])
-      ..add(ContactPerson(name: '', email: '', phoneNumber: ''));
+        List<ContactPerson>.from(state.company?.contactPersons ?? [])
+          ..add(ContactPerson(name: '', email: '', phoneNumber: ''));
     emit(state.copyWith(
         company: state.company?.copyWith(contactPersons: updatedContacts)));
   }
 
   void updateContactPerson(int index, ContactPerson updatedPerson) {
     final updatedContacts =
-    List<ContactPerson>.from(state.company?.contactPersons ?? []);
+        List<ContactPerson>.from(state.company?.contactPersons ?? []);
     updatedContacts[index] = updatedPerson;
     emit(state.copyWith(
         company: state.company?.copyWith(contactPersons: updatedContacts)));
@@ -89,8 +92,8 @@ class CompanyCubit extends Cubit<CompanyState> {
 
   void removeContactPerson(int index) {
     final updatedContacts =
-    List<ContactPerson>.from(state.company?.contactPersons ?? [])
-      ..removeAt(index);
+        List<ContactPerson>.from(state.company?.contactPersons ?? [])
+          ..removeAt(index);
     emit(state.copyWith(
         company: state.company?.copyWith(contactPersons: updatedContacts)));
   }
@@ -107,16 +110,23 @@ class CompanyCubit extends Cubit<CompanyState> {
     emit(state.copyWith(isSaving: true, errorMessage: null));
 
     try {
-      final isUnique =
-      await _repository.isCompanyNameUnique(state.company!.companyName);
-      if (!isUnique) {
-        emit(state.copyWith(
-            isSaving: false, errorMessage: "Company name already exists."));
-        return;
+      if (state.company!.id.isEmpty) {
+        // New company case
+        final isUnique =
+            await _repository.isCompanyNameUnique(state.company!.companyName);
+        if (!isUnique) {
+          emit(state.copyWith(
+              isSaving: false, errorMessage: "Company name already exists."));
+          return;
+        }
+
+        await _repository.addCompany(state.company!); // Add company
+      } else {
+        // Existing company case
+        await _repository.updateCompany(
+            state.company?.id ?? '', state.company!); // Update company
       }
 
-      await _repository
-          .addCompany(state.company!); // Pass Company object directly
       emit(CompanyState.initial());
     } catch (e) {
       emit(state.copyWith(isSaving: false, errorMessage: e.toString()));
@@ -124,6 +134,7 @@ class CompanyCubit extends Cubit<CompanyState> {
   }
 
   void updateCompany(Company updatedCompany) {
+    // local populate
     emit(state.copyWith(company: updatedCompany));
   }
 
@@ -131,7 +142,7 @@ class CompanyCubit extends Cubit<CompanyState> {
     emit(state.copyWith(isLoading: true));
     try {
       final companies =
-      await _repository.getAllCompanies(); // Now returns List<Company>
+          await _repository.getAllCompanies(); // Now returns List<Company>
       emit(state.copyWith(
         isLoading: false,
         companies: companies,
@@ -173,7 +184,7 @@ class CompanyCubit extends Cubit<CompanyState> {
     try {
       await _repository.deleteCompany(id);
       final updatedCompanies =
-      state.companies.where((company) => company.id != id).toList();
+          state.companies.where((company) => company.id != id).toList();
       emit(state.copyWith(isSaving: false, companies: updatedCompanies));
     } catch (e) {
       emit(state.copyWith(isSaving: false, errorMessage: e.toString()));
@@ -192,5 +203,40 @@ class CompanyCubit extends Cubit<CompanyState> {
   List<String> getCitiesForCountry(String? country) {
     final countryCityMap = state.company?.settings?.countryCityMap ?? {};
     return countryCityMap[country] ?? [];
+  }
+
+  Color getInterestLevelColor(String? level) {
+    if (level == null) return Colors.grey;
+
+    final percentage = int.tryParse(level.replaceAll('%', '')) ?? 0;
+    if (percentage >= 81) return Colors.green[900]!;
+    if (percentage >= 61) return Colors.green[400]!;
+    if (percentage >= 41) return Colors.orange;
+    if (percentage >= 21) return Colors.red[300]!;
+    return Colors.red[900]!;
+  }
+  Color getRepliedColor(bool replied) {
+    return replied ? Colors.green[900]! : Colors.red[900]!;
+  }
+
+  Color getEmailSentColor(bool emailSent) {
+    return emailSent ? Colors.blue : Colors.orange;
+  }
+  String validateValue(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return AppLabels.notAvailable;
+    }
+    return value;
+  }
+  Future<void> launchUrl(String url) async {
+    if (await canLaunch(url)) {
+      try {
+        await launch(url);
+      } catch (e) {
+        emit(state.copyWith(errorMessage: "Failed to launch URL: $e"));
+      }
+    } else {
+      emit(state.copyWith(errorMessage: "Cannot launch URL: $url"));
+    }
   }
 }

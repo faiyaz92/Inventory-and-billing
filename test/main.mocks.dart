@@ -8,6 +8,7 @@ import 'dart:async' as _i4;
 import 'package:flutter_bloc/flutter_bloc.dart' as _i5;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:requirment_gathering_app/coordinator/coordinator.dart' as _i6;
+import 'package:requirment_gathering_app/data/company.dart' as _i7;
 import 'package:requirment_gathering_app/login/splash_cubit.dart' as _i2;
 import 'package:requirment_gathering_app/repositories/account_repository.dart'
     as _i3;
@@ -255,6 +256,24 @@ class MockCoordinator extends _i1.Mock implements _i6.Coordinator {
         Invocation.method(
           #navigateToAddCompanyPage,
           [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void navigateToCompanyDetailsPage(_i7.Company? company) => super.noSuchMethod(
+        Invocation.method(
+          #navigateToCompanyDetailsPage,
+          [company],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void navigateToEditCompanyPage(_i7.Company? company) => super.noSuchMethod(
+        Invocation.method(
+          #navigateToEditCompanyPage,
+          [company],
         ),
         returnValueForMissingStub: null,
       );

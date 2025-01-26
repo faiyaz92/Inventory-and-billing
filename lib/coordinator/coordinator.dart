@@ -10,6 +10,6 @@ abstract class Coordinator {
   void navigateToCompanySettingsPage();
   void navigateToAddCompanyPage();
   void navigateToCompanyDetailsPage(Company company); // New method for navigating to company details
-  void navigateToEditCompanyPage(Company company); // New method for navigating to edit company page
+  void navigateToEditCompanyPage(Company? company); // New method for navigating to edit company page
   void navigateBack();
 }

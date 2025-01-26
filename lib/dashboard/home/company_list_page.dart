@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/coordinator/coordinator.dart';
-import 'package:requirment_gathering_app/data/company.dart';
-import 'package:requirment_gathering_app/dashboard/home/company_cubit.dart';
 import 'package:requirment_gathering_app/dashboard/home/add_company_state.dart';
+import 'package:requirment_gathering_app/dashboard/home/company_cubit.dart';
+import 'package:requirment_gathering_app/data/company.dart';
 import 'package:requirment_gathering_app/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/utils/AppColor.dart';
 import 'package:requirment_gathering_app/utils/AppLabels.dart';
+import 'package:requirment_gathering_app/utils/text_styles.dart';
 
 class CompanyListPage extends StatelessWidget {
   const CompanyListPage({Key? key}) : super(key: key);
@@ -62,19 +63,20 @@ class CompanyListPage extends StatelessWidget {
                   child: state.isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : state.companies.isEmpty
-                      ? const Center(
-                    child: Text(
-                      AppLabels.noCompaniesFound,
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  )
-                      : ListView.builder(
-                    itemCount: state.companies.length,
-                    itemBuilder: (context, index) {
-                      final company = state.companies[index];
-                      return _buildCompanyListTile(context, cubit, company);
-                    },
-                  ),
+                          ? const Center(
+                              child: Text(
+                                AppLabels.noCompaniesFound,
+                                style: TextStyle(fontSize: 18),
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: state.companies.length,
+                              itemBuilder: (context, index) {
+                                final company = state.companies[index];
+                                return _buildCompanyListTile(
+                                    context, cubit, company);
+                              },
+                            ),
                 ),
               ],
             ),
@@ -84,149 +86,15 @@ class CompanyListPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCompanyListTile(BuildContext context, CompanyCubit cubit, Company company) {
-    return Card(
-      margin: const EdgeInsets.all(8.0),
-      elevation: 4.0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildDetailedBox(AppLabels.companyNameLabel, company.companyName),
-                  _buildDetailedBox(AppLabels.addressLabel, company.address ?? AppLabels.noAddress),
-                  _buildDetailedBox(AppLabels.emailLabel, company.email ?? AppLabels.noEmail),
-                  _buildDetailedBox(AppLabels.contactNumberLabel, company.contactNumber ?? AppLabels.noContactNumber),
-                ],
-              ),
-            ),
-            Column(
-              children: [
-                // View Button
-                Container(
-                  margin: const EdgeInsets.only(bottom: 8.0),
-                  decoration: BoxDecoration(
-                    color: AppColors.viewButtonColor,
-                    shape: BoxShape.rectangle,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.remove_red_eye, color: Colors.white),
-                    onPressed: () {
-                      sl<Coordinator>().navigateToCompanyDetailsPage(company);
-                    },
-                    tooltip: AppLabels.viewCompanyTooltip,
-                  ),
-                ),
-
-                // Edit Button
-                Container(
-                  margin: const EdgeInsets.only(bottom: 8.0),
-                  decoration: BoxDecoration(
-                    color: AppColors.editButtonColor,
-                    shape: BoxShape.rectangle,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.white),
-                    onPressed: () {
-                      sl<Coordinator>().navigateToEditCompanyPage(company);
-                    },
-                    tooltip: AppLabels.editCompanyTooltip,
-                  ),
-                ),
-
-                // Delete Button
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.deleteButtonColor,
-                    shape: BoxShape.rectangle,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.white),
-                    onPressed: () {
-                      _showDeleteConfirmation(context, cubit, company);
-                    },
-                    tooltip: AppLabels.deleteCompanyTooltip,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailedBox(String label, String value) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4.0),
-      padding: const EdgeInsets.all(8.0),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey, width: 1.0),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.left,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTopAlignedDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.left,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-
-  void _showDeleteConfirmation(BuildContext context, CompanyCubit cubit, Company company) {
+  void _showDeleteConfirmation(
+      BuildContext context, CompanyCubit cubit, Company company) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text(AppLabels.deleteConfirmationTitle),
-          content: Text("${AppLabels.deleteConfirmationMessage} '${company.companyName}'?"),
+          content: Text(
+              "${AppLabels.deleteConfirmationMessage} '${company.companyName}'?"),
           actions: [
             TextButton(
               onPressed: () {
@@ -244,6 +112,147 @@ class CompanyListPage extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildCompanyListTile(
+      BuildContext context, CompanyCubit cubit, Company company) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      // Added consistent margin
+      elevation: 4.0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Company Details Column
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildDetailedBox(
+                      AppLabels.companyNameLabel, company.companyName),
+                  _buildDetailedBox(AppLabels.addressLabel,
+                      company.address ?? AppLabels.noAddress),
+                  _buildDetailedBox(
+                      AppLabels.emailLabel, company.email ?? AppLabels.noEmail),
+                  _buildDetailedBox(AppLabels.contactNumberLabel,
+                      company.contactNumber ?? AppLabels.noContactNumber),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16), // Added spacing between columns
+
+            // Action Buttons Column
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _buildIconButton(
+                  icon: Icons.remove_red_eye,
+                  color: AppColors.viewButtonColor,
+                  tooltip: AppLabels.viewCompanyTooltip,
+                  onPressed: () =>
+                      sl<Coordinator>().navigateToCompanyDetailsPage(company),
+                ),
+                const SizedBox(height: 8),
+                _buildIconButton(
+                  icon: Icons.edit,
+                  color: AppColors.editButtonColor,
+                  tooltip: AppLabels.editCompanyTooltip,
+                  onPressed: () =>
+                      sl<Coordinator>().navigateToEditCompanyPage(company),
+                ),
+                const SizedBox(height: 8),
+                _buildIconButton(
+                  icon: Icons.delete,
+                  color: AppColors.deleteButtonColor,
+                  tooltip: AppLabels.deleteCompanyTooltip,
+                  onPressed: () =>
+                      _showDeleteConfirmation(context, cubit, company),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+// Utility Methods
+
+// Builds a detailed row with a label and value
+  Widget _buildDetailedBox(String label, String? value) {
+    final displayValue = sl<CompanyCubit>().validateValue(value); // Validate value using cubit
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: defaultTextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: AppColors.labelColor,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: GestureDetector(
+              onTap: (label == AppLabels.emailLabel && value != null && value.trim().isNotEmpty)
+                  ? () async {
+                await sl<CompanyCubit>().launchUrl("mailto:$value");
+              }
+                  : (label == AppLabels.contactNumberLabel && value != null && value.trim().isNotEmpty)
+                  ? () async {
+                await sl<CompanyCubit>().launchUrl("tel:$value");
+              }
+                  : null,
+              child: Text(
+                displayValue,
+                style: defaultTextStyle(
+                  fontSize: 14,
+                  color: (label == AppLabels.emailLabel || label == AppLabels.contactNumberLabel)
+                      ? Colors.blue
+                      : AppColors.textFieldColor,
+                  decoration: (label == AppLabels.emailLabel || label == AppLabels.contactNumberLabel)
+                      ? TextDecoration.underline
+                      : null,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+// Builds a reusable icon button with consistent styling
+  Widget _buildIconButton({
+    required IconData icon,
+    required Color color,
+    required String tooltip,
+    required VoidCallback onPressed,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: IconButton(
+        icon: Icon(icon, color: Colors.white),
+        onPressed: onPressed,
+        tooltip: tooltip,
+      ),
     );
   }
 }

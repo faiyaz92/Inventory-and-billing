@@ -21,7 +21,10 @@ class Company {
   final String? linkedInLink;
   final String? clutchLink;
   final String? goodFirmLink;
-  final CompanySettingsUi? settings; // Embed CompanySettingUi
+  final String? description; // Added back
+  final CompanySettingsUi? settings; // Embed CompanySettingsUi
+  final String createdBy; // Retained
+  final String lastUpdatedBy; // Retained
 
   Company({
     required this.id,
@@ -42,9 +45,12 @@ class Company {
     this.linkedInLink,
     this.clutchLink,
     this.goodFirmLink,
+    this.description, // Added back
     this.verifiedOn = const [],
     required this.dateCreated,
     this.settings,
+    required this.createdBy, // Retained
+    required this.lastUpdatedBy, // Retained
   });
 
   Company copyWith({
@@ -68,7 +74,10 @@ class Company {
     String? linkedInLink,
     String? clutchLink,
     String? goodFirmLink,
+    String? description, // Added back
     CompanySettingsUi? settings,
+    String? createdBy, // Retained
+    String? lastUpdatedBy, // Retained
   }) {
     return Company(
       id: id ?? this.id,
@@ -91,7 +100,10 @@ class Company {
       linkedInLink: linkedInLink ?? this.linkedInLink,
       clutchLink: clutchLink ?? this.clutchLink,
       goodFirmLink: goodFirmLink ?? this.goodFirmLink,
+      description: description ?? this.description, // Added back
       settings: settings ?? this.settings,
+      createdBy: createdBy ?? this.createdBy, // Retained
+      lastUpdatedBy: lastUpdatedBy ?? this.lastUpdatedBy, // Retained
     );
   }
 }

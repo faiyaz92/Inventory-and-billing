@@ -1,4 +1,3 @@
-// Updated AddCompanyPage class with edit functionality
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/dashboard/home/add_company_state.dart';
@@ -14,9 +13,7 @@ import 'package:requirment_gathering_app/widget/custom_textfield.dart';
 import '../../utils/text_styles.dart';
 
 class AddCompanyPage extends StatefulWidget {
-  final Company? company; // Optional company for editing
-
-  const AddCompanyPage({Key? key, this.company}) : super(key: key);
+  const AddCompanyPage({Key? key}) : super(key: key);
 
   @override
   State<AddCompanyPage> createState() => _AddCompanyPageState();
@@ -28,47 +25,16 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
   final TextEditingController addressController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController contactNumberController = TextEditingController();
+
+// Declare controllers in the class for persistence
   final TextEditingController websiteLinkController = TextEditingController();
   final TextEditingController linkedInLinkController = TextEditingController();
   final TextEditingController clutchLinkController = TextEditingController();
   final TextEditingController goodFirmLinkController = TextEditingController();
-  final TextEditingController descriptionController = TextEditingController();
 
   // Dynamic controllers for Contact Persons
   final List<Map<String, TextEditingController>> contactPersonControllers = [];
   late final CompanyCubit companyCubit;
-
-  @override
-  void initState() {
-    super.initState();
-
-    companyCubit = sl<CompanyCubit>()..loadCompanySettings();
-
-    // If company is provided, pre-fill the data for editing
-    if (widget.company != null) {
-      final company = widget.company!;
-      companyNameController.text = company.companyName;
-      addressController.text = company.address ?? '';
-      emailController.text = company.email ?? '';
-      contactNumberController.text = company.contactNumber ?? '';
-      websiteLinkController.text = company.websiteLink ?? '';
-      linkedInLinkController.text = company.linkedInLink ?? '';
-      clutchLinkController.text = company.clutchLink ?? '';
-      goodFirmLinkController.text = company.goodFirmLink ?? '';
-      descriptionController.text = company.description ?? '';
-
-      for (final contact in company.contactPersons) {
-        contactPersonControllers.add({
-          AppKeys.companyNameKey: TextEditingController(text: contact.name),
-          AppKeys.emailKey: TextEditingController(text: contact.email),
-          AppKeys.contactNumberKey:
-              TextEditingController(text: contact.phoneNumber),
-        });
-      }
-
-      companyCubit.updateCompany(company);
-    }
-  }
 
   @override
   void dispose() {
@@ -87,6 +53,12 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
   }
 
   @override
+  void initState() {
+    companyCubit = sl<CompanyCubit>()..loadCompanySettings();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => companyCubit,
@@ -102,9 +74,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
               context: context,
               builder: (_) => AlertDialog(
                 title: const Text("Success"),
-                content: Text(widget.company == null
-                    ? "Company details saved successfully!"
-                    : "Company details updated successfully!"),
+                content: const Text("Company details saved successfully!"),
                 actions: [
                   TextButton(
                     onPressed: () {
@@ -122,8 +92,8 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
           final cubit = context.read<CompanyCubit>();
 
           return Scaffold(
-            appBar: CustomAppBar(
-              title: widget.company == null ? "Add Company" : "Edit Company",
+            appBar: const CustomAppBar(
+              title: "Add Company",
               automaticallyImplyLeading: true,
             ),
             body: SingleChildScrollView(
@@ -222,10 +192,6 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: _buildGoodFirmLinkField(cubit),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: _buildDescriptionField(),
-                  ),
                   const SizedBox(height: 16),
                   // Save Button
                   _buildSaveButton(cubit),
@@ -237,8 +203,6 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
       ),
     );
   }
-
-// Widget methods will be added in chunks as needed
 
   // Individual Field Builders
   // Individual Field Builders with Icons
@@ -264,6 +228,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
     );
   }
 
+
 // Field 2: Address
   Widget _buildAddressField() {
     return CustomTextField(
@@ -273,8 +238,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
       prefixIcon: const Icon(Icons.location_on),
       maxLength: 100,
       textInputAction: TextInputAction.next,
-      textCapitalization: TextCapitalization
-          .sentences, // Capitalize first letter of each sentence
+      textCapitalization: TextCapitalization.sentences, // Capitalize first letter of each sentence
     );
   }
 
@@ -304,13 +268,14 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
     );
   }
 
+
+
   // Field 5: Dynamic Contact Persons
   Widget _buildDynamicContactPersonsField(CompanyCubit cubit) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(AppLabels.contactPersonLabel,
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        _buildSectionTitle(AppLabels.contactPersonLabel),
         ...List.generate(contactPersonControllers.length, (index) {
           final controllers = contactPersonControllers[index];
           return Card(
@@ -321,11 +286,22 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(
+                    "Contact Person ${index + 1}",
+                    style: defaultTextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   CustomTextField(
                     controller: controllers[AppKeys.companyNameKey]!,
-                    labelText: AppLabels.contactPersonNameLabel,
-                    hintText: AppLabels.contactPersonNameHint,
+                    labelText: AppLabels.companyNameLabel,
+                    hintText: AppLabels.companyNameHint,
                     prefixIcon: const Icon(Icons.person),
+                    maxLength: 30,
+                    textInputAction: TextInputAction.next,
+                    textCapitalization: TextCapitalization.words,
                   ),
                   const SizedBox(height: 8),
                   CustomTextField(
@@ -333,6 +309,9 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
                     labelText: AppLabels.emailLabel,
                     hintText: AppLabels.emailHint,
                     prefixIcon: const Icon(Icons.email),
+                    maxLength: 50,
+                    textInputAction: TextInputAction.next,
+                    textCapitalization: TextCapitalization.none,
                   ),
                   const SizedBox(height: 8),
                   CustomTextField(
@@ -340,16 +319,30 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
                     labelText: AppLabels.contactNumberLabel,
                     hintText: AppLabels.contactNumberHint,
                     prefixIcon: const Icon(Icons.phone),
+                    maxLength: 15,
+                    textInputAction: TextInputAction.done,
+                    textCapitalization: TextCapitalization.none,
                   ),
+                  const SizedBox(height: 16), // Space before delete button
                   Center(
-                    child: IconButton(
-                      onPressed: () => setState(() {
-                        contactPersonControllers.removeAt(index);
-                      }),
-                      icon: const Icon(Icons.delete),
-                      color: Colors.red,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.red, // Background color for the rounded square
+                        shape: BoxShape.rectangle,
+                        borderRadius: BorderRadius.circular(8.0), // Rounded edges
+                      ),
+                      padding: const EdgeInsets.all(1.0), // Padding inside the container
+                      child: IconButton(
+                        onPressed: () => setState(() {
+                          contactPersonControllers.removeAt(index);
+                        }),
+                        icon: const Icon(Icons.delete),
+                        color: Colors.white, // White icon color
+                        tooltip: AppLabels.deleteContactPersonTooltip, // Tooltip from AppLabels
+                      ),
                     ),
-                  ),
+                  )
+
                 ],
               ),
             ),
@@ -371,13 +364,11 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
 
   // Field 6: Country
   Widget _buildCountryField(CompanyCubit cubit, CompanyState state) {
-    final countries =
-        state.company?.settings?.countryCityMap.keys.toList() ?? [];
+    final countries = state.company?.settings?.countryCityMap.keys.toList() ?? [];
     return DropdownButtonFormField<String>(
       value: state.company?.country,
       items: countries
-          .map((country) =>
-              DropdownMenuItem(value: country, child: Text(country)))
+          .map((country) => DropdownMenuItem(value: country, child: Text(country)))
           .toList(),
       onChanged: (selectedCountry) {
         if (selectedCountry != null) {
@@ -386,8 +377,8 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
         }
       },
       decoration: const InputDecoration(
-        labelText: AppLabels.countryLabel,
-        hintText: AppLabels.countryHint,
+        labelText: AppLabels.countryLabel, // Correct label for Country
+        hintText: AppLabels.countryHint, // Correct hint for Country
         border: OutlineInputBorder(),
       ),
     );
@@ -396,8 +387,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
   // Field 7: City
   Widget _buildCityField(CompanyCubit cubit, CompanyState state) {
     final selectedCountry = state.company?.country;
-    final cities =
-        state.company?.settings?.countryCityMap[selectedCountry] ?? [];
+    final cities = state.company?.settings?.countryCityMap[selectedCountry] ?? [];
     return DropdownButtonFormField<String>(
       value: cities.contains(state.company?.city) ? state.company?.city : null,
       items: cities
@@ -405,8 +395,8 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
           .toList(),
       onChanged: cubit.updateCity,
       decoration: const InputDecoration(
-        labelText: AppLabels.cityLabel,
-        hintText: AppLabels.cityHint,
+        labelText: AppLabels.cityLabel, // Correct label for City
+        hintText: AppLabels.cityHint, // Correct hint for City
         border: OutlineInputBorder(),
       ),
     );
@@ -418,11 +408,12 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
     return DropdownButtonFormField<String>(
       value: state.company?.source,
       items: sources
-          .map((source) => DropdownMenuItem(value: source, child: Text(source)))
+          .map((source) =>
+          DropdownMenuItem(value: source, child: Text(source)))
           .toList(),
       onChanged: cubit.updateSource,
       decoration: const InputDecoration(
-        labelText: AppLabels.sourceLabel,
+        labelText: AppLabels.sourceLabel, // Use label from AppLabels
         border: OutlineInputBorder(),
       ),
     );
@@ -436,6 +427,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
       cubit.updateEmailSent,
     );
   }
+
 
 // Field 10: They Replied
   Widget _buildRepliedField(CompanyCubit cubit, CompanyState state) {
@@ -452,11 +444,11 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
       value: state.company?.interestLevel,
       items: List.generate(11, (index) => '${index * 10}%')
           .map((percentage) =>
-              DropdownMenuItem(value: percentage, child: Text(percentage)))
+          DropdownMenuItem(value: percentage, child: Text(percentage)))
           .toList(),
       onChanged: cubit.updateInterestLevel,
       decoration: const InputDecoration(
-        labelText: AppLabels.interestLevelLabel,
+        labelText: AppLabels.interestLevelLabel, // Use label from AppLabels
         border: OutlineInputBorder(),
       ),
     );
@@ -469,11 +461,11 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
       value: state.company?.priority,
       items: priorities
           .map((priority) =>
-              DropdownMenuItem(value: priority, child: Text(priority)))
+          DropdownMenuItem(value: priority, child: Text(priority)))
           .toList(),
       onChanged: cubit.updatePriority,
       decoration: const InputDecoration(
-        labelText: AppLabels.priorityLabel,
+        labelText: AppLabels.priorityLabel, // Use label from AppLabels
         border: OutlineInputBorder(),
       ),
     );
@@ -484,11 +476,12 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
     return DropdownButtonFormField<String>(
       value: state.company?.assignedTo,
       items: ['Faiyaz', 'Faizan']
-          .map((user) => DropdownMenuItem(value: user, child: Text(user)))
+          .map((user) =>
+          DropdownMenuItem(value: user, child: Text(user)))
           .toList(),
       onChanged: cubit.updateAssignedTo,
       decoration: const InputDecoration(
-        labelText: AppLabels.assignedToLabel,
+        labelText: AppLabels.assignedToLabel, // Use label from AppLabels
         border: OutlineInputBorder(),
       ),
     );
@@ -497,56 +490,80 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
 // Field 14: Verified On
   Widget _buildVerifiedOnField(CompanyCubit cubit, CompanyState state) {
     final verifiedPlatforms = state.company?.settings?.verifiedOn ?? [];
+
     return Card(
-      elevation: 2,
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      child: SizedBox(
-        width: double.infinity, // Ensures the card matches the screen width
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                AppLabels.verifiedOnLabel,
-                style: TextStyle(fontWeight: FontWeight.bold),
+      elevation: 2, // Elevation for visual separation
+      margin: const EdgeInsets.symmetric(vertical: 12.0), // Margin around the card
+      child: Padding(
+        padding: const EdgeInsets.all(16.0), // Inner padding for the card
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Title
+            Text(
+              AppLabels.verifiedOnLabel,
+              style: defaultTextStyle(
+                fontWeight: FontWeight.bold,
+                fontStyle: FontStyle.italic,
+                fontSize: 14,
               ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8.0,
-                runSpacing: 8.0,
-                children: verifiedPlatforms.map((platform) {
-                  final isChecked =
-                      state.company?.verifiedOn.contains(platform) ?? false;
-                  return FilterChip(
-                    label: Text(
-                      platform,
-                      style: defaultTextStyle(
-                          color: isChecked ? Colors.white : Colors.black),
-                    ),
-                    selected: isChecked,
-                    onSelected: (value) =>
-                        cubit.updateVerification(platform, value),
-                    selectedColor: Colors.green,
-                    checkmarkColor: isChecked ? Colors.white : Colors.black,
-                  );
-                }).toList(),
+            ),
+            const SizedBox(height: 12), // Space between title and content
+
+            // Constrained GridView
+            GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, // Two columns
+                crossAxisSpacing: 12.0, // Horizontal spacing
+                mainAxisSpacing: 12.0, // Vertical spacing
+                childAspectRatio: 3, // Adjust for compact layout
               ),
-            ],
-          ),
+              shrinkWrap: true, // Ensure GridView doesn't expand infinitely
+              physics: const NeverScrollableScrollPhysics(), // Prevent independent scrolling
+              itemCount: verifiedPlatforms.length,
+              itemBuilder: (context, index) {
+                final platform = verifiedPlatforms[index];
+                final isChecked = state.company?.verifiedOn.contains(platform) ?? false;
+
+                return GestureDetector(
+                  onTap: () {
+                    // Toggle checkbox when text is tapped
+                    cubit.updateVerification(platform, !isChecked);
+                  },
+                  child: Row(
+                    children: [
+                      // Checkbox
+                      Checkbox(
+                        value: isChecked,
+                        onChanged: (value) =>
+                            cubit.updateVerification(platform, value ?? false),
+                      ),
+                      // Clickable Text
+                      Expanded(
+                        child: Text(
+                          platform,
+                          style: defaultTextStyle(fontSize: 14),
+                          overflow: TextOverflow.ellipsis, // Prevent text overflow
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
   }
 
+// Field 15: Website Link
   Widget _buildWebsiteLinkField(CompanyCubit cubit) {
     websiteLinkController.text = cubit.state.company?.websiteLink ?? '';
     return CustomTextField(
       controller: websiteLinkController,
-      labelText: AppLabels.websiteLinkLabel,
-      // Use label from AppLabels
-      hintText: AppLabels.websiteLinkHint,
-      // Use hint from AppLabels
+      labelText: AppLabels.websiteLinkLabel, // Use label from AppLabels
+      hintText: AppLabels.websiteLinkHint, // Use hint from AppLabels
       prefixIcon: const Icon(Icons.link),
       maxLength: 100,
       textInputAction: TextInputAction.next,
@@ -559,10 +576,8 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
     linkedInLinkController.text = cubit.state.company?.linkedInLink ?? '';
     return CustomTextField(
       controller: linkedInLinkController,
-      labelText: AppLabels.linkedInLinkLabel,
-      // Use label from AppLabels
-      hintText: AppLabels.linkedInLinkHint,
-      // Use hint from AppLabels
+      labelText: AppLabels.linkedInLinkLabel, // Use label from AppLabels
+      hintText: AppLabels.linkedInLinkHint, // Use hint from AppLabels
       prefixIcon: const Icon(Icons.link),
       maxLength: 100,
       textInputAction: TextInputAction.next,
@@ -575,10 +590,8 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
     clutchLinkController.text = cubit.state.company?.clutchLink ?? '';
     return CustomTextField(
       controller: clutchLinkController,
-      labelText: AppLabels.clutchLinkLabel,
-      // Use label from AppLabels
-      hintText: AppLabels.clutchLinkHint,
-      // Use hint from AppLabels
+      labelText: AppLabels.clutchLinkLabel, // Use label from AppLabels
+      hintText: AppLabels.clutchLinkHint, // Use hint from AppLabels
       prefixIcon: const Icon(Icons.link),
       maxLength: 100,
       textInputAction: TextInputAction.next,
@@ -591,35 +604,17 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
     goodFirmLinkController.text = cubit.state.company?.goodFirmLink ?? '';
     return CustomTextField(
       controller: goodFirmLinkController,
-      labelText: AppLabels.goodFirmLinkLabel,
-      // Use label from AppLabels
-      hintText: AppLabels.goodFirmLinkHint,
-      // Use hint from AppLabels
+      labelText: AppLabels.goodFirmLinkLabel, // Use label from AppLabels
+      hintText: AppLabels.goodFirmLinkHint, // Use hint from AppLabels
       prefixIcon: const Icon(Icons.link),
       maxLength: 100,
-      textInputAction: TextInputAction.next,
+      textInputAction: TextInputAction.done,
       textCapitalization: TextCapitalization.none,
     );
   }
 
-  //Field 18: GoodFirm Link: Description
-  Widget _buildDescriptionField() {
-    return CustomTextField(
-      controller: descriptionController,
-      // Use controller from the page for edit capability
-      labelText: AppLabels.descriptionLabel,
-      hintText: AppLabels.descriptionHint,
-      maxLength: 500,
-      // maxLines: 5,
-      textInputAction: TextInputAction.done,
-      textCapitalization: TextCapitalization.sentences,
-    );
-  }
-
 // Save Button
-  Widget _buildSaveButton(
-    CompanyCubit cubit,
-  ) {
+  Widget _buildSaveButton(CompanyCubit cubit) {
     return Center(
       child: CustomButton(
         text: AppLabels.saveButtonText, // Use label from AppLabels
@@ -644,10 +639,6 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
             linkedInLink: linkedInLinkController.text,
             clutchLink: clutchLinkController.text,
             goodFirmLink: goodFirmLinkController.text,
-            description: descriptionController.text,
-            // Use description controller's text
-            createdBy: "Faizan",
-            lastUpdatedBy: "Faizan",
           );
           if (updatedCompany != null) {
             cubit.updateCompany(updatedCompany);
@@ -658,8 +649,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
     );
   }
 
-  Widget _buildRadioField(
-      String title, bool groupValue, Function(bool?) onChanged) {
+  Widget _buildRadioField(String title, bool groupValue, Function(bool?) onChanged) {
     return Card(
       elevation: 2,
       margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -721,4 +711,5 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
       ),
     );
   }
+
 }

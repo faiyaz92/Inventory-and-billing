@@ -21,6 +21,9 @@ class CompanyDto {
   final String? linkedInLink;
   final String? clutchLink;
   final String? goodFirmLink;
+  final String? description; // New field
+  final String createdBy; // New field
+  final String lastUpdatedBy; // New field
 
   CompanyDto({
     required this.id,
@@ -43,6 +46,9 @@ class CompanyDto {
     this.linkedInLink,
     this.clutchLink,
     this.goodFirmLink,
+    this.description,
+    required this.createdBy,
+    required this.lastUpdatedBy,
   });
 
   // Map from Firebase data to DTO
@@ -70,6 +76,9 @@ class CompanyDto {
       linkedInLink: map['linkedInLink'] ?? '',
       clutchLink: map['clutchLink'] ?? '',
       goodFirmLink: map['goodFirmLink'] ?? '',
+      description: map['description'],
+      createdBy: map['createdBy'] ?? 'Unknown',
+      lastUpdatedBy: map['lastUpdatedBy'] ?? 'Unknown',
     );
   }
 
@@ -95,6 +104,9 @@ class CompanyDto {
       'linkedInLink': linkedInLink,
       'clutchLink': clutchLink,
       'goodFirmLink': goodFirmLink,
+      'description': description,
+      'createdBy': createdBy,
+      'lastUpdatedBy': lastUpdatedBy,
     };
   }
 
@@ -121,6 +133,9 @@ class CompanyDto {
       linkedInLink: linkedInLink,
       clutchLink: clutchLink,
       goodFirmLink: goodFirmLink,
+      description: description,
+      createdBy: createdBy,
+      lastUpdatedBy: lastUpdatedBy,
     );
   }
 
@@ -149,9 +164,13 @@ class CompanyDto {
       linkedInLink: uiModel.linkedInLink,
       clutchLink: uiModel.clutchLink,
       goodFirmLink: uiModel.goodFirmLink,
+      description: uiModel.description,
+      createdBy: uiModel.createdBy,
+      lastUpdatedBy: uiModel.lastUpdatedBy,
     );
   }
 }
+
 class ContactPersonDto {
   final String name;
   final String email;

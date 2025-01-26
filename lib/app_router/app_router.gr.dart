@@ -83,9 +83,14 @@ class AppRouter extends _i10.RootStackRouter {
       );
     },
     AddCompanyRoute.name: (routeData) {
+      final args = routeData.argsAs<AddCompanyRouteArgs>(
+          orElse: () => const AddCompanyRouteArgs());
       return _i10.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: const _i8.AddCompanyPage(),
+        child: _i8.AddCompanyPage(
+          key: args.key,
+          company: args.company,
+        ),
       );
     },
     CompanyDetailsRoute.name: (routeData) {
@@ -261,14 +266,36 @@ class CompanySettingRoute extends _i10.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i8.AddCompanyPage]
-class AddCompanyRoute extends _i10.PageRouteInfo<void> {
-  const AddCompanyRoute()
-      : super(
+class AddCompanyRoute extends _i10.PageRouteInfo<AddCompanyRouteArgs> {
+  AddCompanyRoute({
+    _i11.Key? key,
+    _i13.Company? company,
+  }) : super(
           AddCompanyRoute.name,
           path: '/add-company',
+          args: AddCompanyRouteArgs(
+            key: key,
+            company: company,
+          ),
         );
 
   static const String name = 'AddCompanyRoute';
+}
+
+class AddCompanyRouteArgs {
+  const AddCompanyRouteArgs({
+    this.key,
+    this.company,
+  });
+
+  final _i11.Key? key;
+
+  final _i13.Company? company;
+
+  @override
+  String toString() {
+    return 'AddCompanyRouteArgs{key: $key, company: $company}';
+  }
 }
 
 /// generated route for
