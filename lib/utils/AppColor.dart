@@ -17,5 +17,7 @@ class AppColors {
   static const Color deleteButtonColor = Colors.red; // Red for delete buttons
   static const Color viewButtonColor = Color(0xFF4CAF50); // Green for view buttons
   static const Color editButtonColor = Color(0xFF1E88E5); // Blue for edit buttons
+  static const Color verifiedChipBackground = Colors.grey; // Background for unselected chips
+  static const Color verifiedChipTextColor = Colors.black; // Text color for unselected chips
 
 }

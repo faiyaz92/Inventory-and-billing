@@ -1,5 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:requirment_gathering_app/coordinator/coordinator.dart';
+import 'package:requirment_gathering_app/dashboard/home/company_cubit.dart';
 import 'package:requirment_gathering_app/data/company.dart';
+import 'package:requirment_gathering_app/service_locator/service_locator.dart';
+import 'package:requirment_gathering_app/utils/AppColor.dart';
+import 'package:requirment_gathering_app/utils/AppLabels.dart';
+import 'package:requirment_gathering_app/utils/text_styles.dart';
+import 'package:requirment_gathering_app/widget/custom_appbar.dart';
+import 'package:requirment_gathering_app/widget/square_box_rounded_corner.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CompanyDetailsPage extends StatelessWidget {
   final Company company;
@@ -9,16 +18,17 @@ class CompanyDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Company Details"),
+      appBar: CustomAppBar(
+        title: AppLabels.companyListTitle,
+        automaticallyImplyLeading: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {
               // Navigate to AddCompanyPage for editing
-              // sl<Coordinator>().navigateToEditCompanyPage(company);
+              sl<Coordinator>().navigateToEditCompanyPage(company);
             },
-            tooltip: "Edit Company",
+            tooltip: AppLabels.editCompanyTooltip,
           ),
         ],
       ),
@@ -26,34 +36,42 @@ class CompanyDetailsPage extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            _buildDetailRow("Company Name", company.companyName),
-            _buildDetailRow("Address", company.address ?? "No Address"),
-            _buildDetailRow("Email", company.email ?? "No Email"),
-            _buildDetailRow("Contact Number", company.contactNumber ?? "No Contact Number"),
-            _buildDetailRow("Source", company.source ?? "No Source"),
-            _buildDetailRow("Interest Level", company.interestLevel ?? "No Interest Level"),
-            _buildDetailRow("Country", company.country ?? "No Country"),
-            _buildDetailRow("City", company.city ?? "No City"),
-            _buildDetailRow("Priority", company.priority ?? "No Priority"),
-            _buildDetailRow("Assigned To", company.assignedTo ?? "Not Assigned"),
-            _buildDetailRow("Website Link", company.websiteLink ?? "No Website Link"),
-            _buildDetailRow("LinkedIn Link", company.linkedInLink ?? "No LinkedIn Link"),
-            _buildDetailRow("Clutch Link", company.clutchLink ?? "No Clutch Link"),
-            _buildDetailRow("GoodFirm Link", company.goodFirmLink ?? "No GoodFirm Link"),
+            _buildDetailRow(AppLabels.companyNameLabel, company.companyName),
+            _buildDetailRow(AppLabels.addressLabel, company.address),
+            _buildClickableDetailRow(AppLabels.emailLabel, company.email),
+            _buildClickableDetailRow(AppLabels.contactNumberLabel, company.contactNumber),
+            _buildDetailRow(AppLabels.sourceLabel, company.source),
+            _buildInterestLevelRow(AppLabels.interestLevelLabel, company.interestLevel),
+            _buildDetailRow(AppLabels.countryLabel, company.country),
+            _buildDetailRow(AppLabels.cityLabel, company.city),
+            _buildDetailRow(AppLabels.priorityLabel, company.priority),
+            _buildRepliedRow(AppLabels.theyRepliedLabel, company.theyReplied),
+            _buildEmailSentRow(AppLabels.emailSentLabel, company.emailSent),
+            _buildDetailRow(AppLabels.assignedToLabel, company.assignedTo),
+            _buildClickableDetailRow(AppLabels.websiteLinkLabel, company.websiteLink),
+            _buildClickableDetailRow(AppLabels.linkedInLinkLabel, company.linkedInLink),
+            _buildClickableDetailRow(AppLabels.clutchLinkLabel, company.clutchLink),
+            _buildClickableDetailRow(AppLabels.goodFirmLinkLabel, company.goodFirmLink),
+            _buildDetailRow(AppLabels.descriptionLabel, company.description),
+            _buildVerifiedOnRow(AppLabels.verifiedOnLabel, company.verifiedOn),
+            _buildDetailRow(AppLabels.createdByLabel, company.createdBy),
+            _buildDetailRow(AppLabels.lastUpdatedByLabel, company.lastUpdatedBy),
             const SizedBox(height: 16),
             const Text(
-              "Contact Persons:",
+              AppLabels.contactPersonLabel,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             ...company.contactPersons.map((person) => _buildContactPersonRow(person)).toList(),
           ],
         ),
+
       ),
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(String label, String? value) {
+    final displayValue = sl<CompanyCubit>().validateValue(value);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -63,14 +81,62 @@ class CompanyDetailsPage extends StatelessWidget {
             flex: 2,
             child: Text(
               label,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: defaultTextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: AppColors.labelColor,
+              ),
             ),
           ),
           Expanded(
             flex: 3,
             child: Text(
-              value,
-              style: const TextStyle(fontSize: 16),
+              displayValue,
+              style: defaultTextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.normal,
+                color: AppColors.textFieldColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClickableDetailRow(String label, String? value) {
+    final displayValue = sl<CompanyCubit>().validateValue(value);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: defaultTextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: AppColors.labelColor,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: GestureDetector(
+              onTap: () async {
+                // await sl<CompanyCubit>().launchUrl(displayValue);
+              },
+              child: Text(
+                displayValue,
+                style: defaultTextStyle(
+                  fontSize: 14,
+                  color: Colors.blue,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
             ),
           ),
         ],
@@ -85,13 +151,194 @@ class CompanyDetailsPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Name: ${person.name}",
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            "${AppLabels.contactPersonNameLabel}:",
+            style: defaultTextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: AppColors.labelColor,
+            ),
           ),
-          Text("Email: ${person.email}", style: const TextStyle(fontSize: 16)),
-          Text("Phone: ${person.phoneNumber}", style: const TextStyle(fontSize: 16)),
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: Text(
+              person.name,
+              style: defaultTextStyle(
+                fontSize: 14,
+                color: AppColors.textFieldColor,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            "${AppLabels.contactPersonEmailLabel}:",
+            style: defaultTextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: AppColors.labelColor,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: GestureDetector(
+              onTap: () async {
+                // await sl<CompanyCubit>().launchUrl("mailto:${person.email}");
+              },
+              child: Text(
+                person.email,
+                style: defaultTextStyle(
+                  fontSize: 14,
+                  color: Colors.blue,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            "${AppLabels.contactPersonPhoneLabel}:",
+            style: defaultTextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: AppColors.labelColor,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: GestureDetector(
+              onTap: () async {
+                // await sl<CompanyCubit>().launchUrl("tel:${person.phoneNumber}");
+              },
+              child: Text(
+                person.phoneNumber,
+                style: defaultTextStyle(
+                  fontSize: 14,
+                  color: Colors.blue,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
+  }
+  Widget _buildVerifiedOnRow(String label, List<String> platforms) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: defaultTextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: AppColors.labelColor,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8.0,
+            runSpacing: 8.0,
+            children: platforms.isNotEmpty
+                ? platforms.map((platform) {
+              return Chip(
+                label: Text(
+                  platform,
+                  style: defaultTextStyle(
+                    fontSize: 14,
+                    color: AppColors.textFieldColor,
+                  ),
+                ),
+                backgroundColor: Colors.grey[300],
+              );
+            }).toList()
+                : [Text(AppLabels.notAvailable, style: defaultTextStyle(fontSize: 14))],
+          ),
+        ],
+      ),
+    );
+  }
+  Widget _buildInterestLevelRow(String label, String? interestLevel) {
+    final color = sl<CompanyCubit>().getInterestLevelColor(interestLevel);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: StatusSquare(
+              text: interestLevel ?? AppLabels.notAvailable,
+              backgroundColor: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  Widget _buildRepliedRow(String label, bool replied) {
+    final color = sl<CompanyCubit>().getRepliedColor(replied);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: StatusSquare(
+              text: replied ? AppLabels.emailSentYesLabel : AppLabels.emailSentNoLabel,
+              backgroundColor: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmailSentRow(String label, bool emailSent) {
+    final color = sl<CompanyCubit>().getEmailSentColor(emailSent);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: StatusSquare(
+              text: emailSent ? AppLabels.emailSentYesLabel : AppLabels.emailSentNoLabel,
+              backgroundColor: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  void launchDialer(String phoneNumber) async {
+    final telUri = "tel:$phoneNumber";
+
+    if (await canLaunch(telUri)) {
+      await launch(telUri);
+    } else {
+      print("Could not launch dialer for $phoneNumber");
+    }
   }
 }

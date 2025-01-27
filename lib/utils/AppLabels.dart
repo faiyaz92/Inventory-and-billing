@@ -81,5 +81,18 @@ class AppLabels {
   // Button Tooltips
   static const String viewCompanyTooltip = "View Details";
   static const String editCompanyTooltip = "Edit this company";
+  // General Labels
+  static const String editCompanyTitle = "Edit Company";
+
+  // Description Field
+  static const String descriptionLabel = "Description";
+  static const String descriptionHint = "Enter company description (max 500 characters)";
+
+  // Contact Person Fields
+  static const String addContactPersonLabel = "Add Contact Person";
+  static const String createdByLabel = "Created By";
+  static const String lastUpdatedByLabel = "Last Updated By";
+  // static const String verifiedOnLabel = "Verified Platforms";
+  static const String notAvailable = "Not Available";
 
 }

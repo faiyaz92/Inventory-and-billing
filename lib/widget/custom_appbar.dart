@@ -6,12 +6,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool centerTitle;
   final bool automaticallyImplyLeading;
+  final List<Widget>? actions; // Optional actions for the AppBar
 
   const CustomAppBar({
     Key? key,
     required this.title,
     this.centerTitle = true,
     this.automaticallyImplyLeading = true, // Enables back button by default
+    this.actions, // Accepts a list of actions
   }) : super(key: key);
 
   @override
@@ -22,13 +24,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Text(
         title,
         style: defaultTextStyle(
-          fontSize: 16,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
           color: AppColors.appBarTitleColor, // Use centralized title color
         ),
       ),
-      iconTheme: IconThemeData(color: AppColors.appBarIconColor), // Use centralized icon color
+      iconTheme: const IconThemeData(color: AppColors.appBarIconColor), // Use centralized icon color
       flexibleSpace: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
               AppColors.appBarStartColor, // Gradient start
@@ -41,6 +44,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ),
       ),
+      actions: actions, // Add actions to the AppBar
     );
   }
 

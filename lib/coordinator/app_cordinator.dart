@@ -14,7 +14,8 @@ class AppCoordinator implements Coordinator {
 
   @override
   void navigateToDashboardPage() {
-    _router.replace(const DashboardRoute()); // Replaces the current route with Dashboard
+    _router.replace(
+        const DashboardRoute()); // Replaces the current route with Dashboard
   }
 
   @override
@@ -44,17 +45,21 @@ class AppCoordinator implements Coordinator {
 
   @override
   void navigateToAddCompanyPage() {
-    _router.push(const AddCompanyRoute()); // AddCompanyPage navigation
-  }
-  @override
-  void navigateToCompanyDetailsPage(Company company) {
-    _router.push(CompanyDetailsRoute(company: company)); // Navigate to CompanyDetailsPage
+    _router.push(AddCompanyRoute()); // AddCompanyPage navigation
   }
 
   @override
-  void navigateToEditCompanyPage(Company company) {
-    // _router.push(AddCompanyRoute(company: company)); // Navigate to AddCompanyPage with pre-filled data
+  void navigateToCompanyDetailsPage(Company company) {
+    _router.push(CompanyDetailsRoute(
+        company: company)); // Navigate to CompanyDetailsPage
   }
+
+  @override
+  void navigateToEditCompanyPage(Company? company) {
+    _router.push(AddCompanyRoute(
+        company: company)); // Navigate to AddCompanyPage with pre-filled data
+  }
+
   @override
   void navigateBack() {
     _router.pop();
