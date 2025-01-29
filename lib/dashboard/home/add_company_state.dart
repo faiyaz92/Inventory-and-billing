@@ -2,13 +2,14 @@ import 'package:equatable/equatable.dart';
 import 'package:requirment_gathering_app/data/company.dart';
 
 class CompanyState extends Equatable {
-  final Company? company; // Use Company object for the form data
-  final List<Company> companies; // List of companies for display
-  final List<Company> originalCompanies; // Full list of companies for filtering
-  final bool isSaving; // Tracks if a save operation is in progress
-  final bool isLoading; // Tracks if data is loading
-  final bool isSaved; // Tracks if the company was successfully saved
-  final String? errorMessage; // Error messages if something goes wrong
+  final Company? company;
+  final List<Company> companies;
+  final List<Company> originalCompanies;
+  final bool isSaving;
+  final bool isLoading;
+  final bool isSaved;
+  final String? errorMessage;
+  final bool isFilterVisible; // Add filter visibility state here
 
   const CompanyState({
     this.company,
@@ -18,9 +19,9 @@ class CompanyState extends Equatable {
     this.isLoading = false,
     this.isSaved = false,
     this.errorMessage,
+    this.isFilterVisible = false, // Default to hidden
   });
 
-  // Initial state
   factory CompanyState.initial() {
     return CompanyState(
       company: Company(
@@ -46,7 +47,6 @@ class CompanyState extends Equatable {
     );
   }
 
-  // Copy with method for updating state
   CompanyState copyWith({
     Company? company,
     List<Company>? companies,
@@ -55,6 +55,7 @@ class CompanyState extends Equatable {
     bool? isLoading,
     bool? isSaved,
     String? errorMessage,
+    bool? isFilterVisible, // Add visibility to copyWith
   }) {
     return CompanyState(
       company: company ?? this.company,
@@ -63,18 +64,21 @@ class CompanyState extends Equatable {
       isSaving: isSaving ?? this.isSaving,
       isLoading: isLoading ?? this.isLoading,
       isSaved: isSaved ?? this.isSaved,
-      errorMessage: errorMessage,
+      errorMessage: errorMessage ?? this.errorMessage,
+      isFilterVisible: isFilterVisible ?? this.isFilterVisible,
     );
   }
 
   @override
   List<Object?> get props => [
-        company,
-        companies,
-        originalCompanies,
-        isSaving,
-        isLoading,
-        isSaved,
-        errorMessage,
-      ];
+    company,
+    companies,
+    originalCompanies,
+    isSaving,
+    isLoading,
+    isSaved,
+    errorMessage,
+    isFilterVisible, // Include in props
+  ];
 }
+

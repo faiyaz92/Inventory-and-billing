@@ -2,14 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/dashboard/home/add_company_state.dart';
 import 'package:requirment_gathering_app/data/company.dart';
+import 'package:requirment_gathering_app/data/company_settings.dart';
 import 'package:requirment_gathering_app/repositories/company_repository.dart';
 import 'package:requirment_gathering_app/repositories/company_settings_repository.dart';
 import 'package:requirment_gathering_app/utils/AppLabels.dart';
+import 'package:requirment_gathering_app/utils/utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class CompanyCubit extends Cubit<CompanyState> {
   final CompanyRepository _repository;
   final CompanySettingRepository _settingRepository;
+  final List<Company> originalCompanies =
+      []; // Full list of companies for filtering
+  late CompanySettingsUi companySettingsUi;
+  String searchKeyword = '';
 
   CompanyCubit(this._repository, this._settingRepository)
       : super(CompanyState.initial());
@@ -18,6 +24,7 @@ class CompanyCubit extends Cubit<CompanyState> {
   Future<void> loadCompanySettings() async {
     try {
       final settings = await _settingRepository.getSettings();
+      companySettingsUi = settings;
       final companyWithSettings = state.company?.copyWith(
         settings: settings,
       );
@@ -39,10 +46,13 @@ class CompanyCubit extends Cubit<CompanyState> {
   void updateInterestLevel(String? level) {
     emit(
         state.copyWith(company: state.company?.copyWith(interestLevel: level)));
+
+    applyGeneralFilters();
   }
 
   void updateCity(String? city) {
     emit(state.copyWith(company: state.company?.copyWith(city: city)));
+    applyGeneralFilters();
   }
 
   void updatePriority(String? priority) {
@@ -143,28 +153,17 @@ class CompanyCubit extends Cubit<CompanyState> {
     try {
       final companies =
           await _repository.getAllCompanies(); // Now returns List<Company>
+
+      originalCompanies.addAll(companies);
       emit(state.copyWith(
         isLoading: false,
         companies: companies,
-        originalCompanies: companies,
+        originalCompanies: originalCompanies,
       ));
+      sortCompaniesByDate(ascending: false);
     } catch (e) {
       emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
     }
-  }
-
-  // Search companies
-  void searchCompanies(String query) {
-    if (query.isEmpty) {
-      emit(state.copyWith(companies: state.originalCompanies));
-      return;
-    }
-
-    final filteredCompanies = state.originalCompanies.where((company) {
-      return company.companyName.toLowerCase().contains(query.toLowerCase());
-    }).toList();
-
-    emit(state.copyWith(companies: filteredCompanies));
   }
 
   // Sort companies by date
@@ -176,7 +175,7 @@ class CompanyCubit extends Cubit<CompanyState> {
           : b.dateCreated.compareTo(a.dateCreated);
     });
 
-    emit(state.copyWith(companies: sortedCompanies));
+    emit(state.copyWith(companies: sortedCompanies, isLoading: false));
   }
 
   Future<void> deleteCompany(String id) async {
@@ -215,6 +214,7 @@ class CompanyCubit extends Cubit<CompanyState> {
     if (percentage >= 21) return Colors.red[300]!;
     return Colors.red[900]!;
   }
+
   Color getRepliedColor(bool replied) {
     return replied ? Colors.green[900]! : Colors.red[900]!;
   }
@@ -222,12 +222,14 @@ class CompanyCubit extends Cubit<CompanyState> {
   Color getEmailSentColor(bool emailSent) {
     return emailSent ? Colors.blue : Colors.orange;
   }
+
   String validateValue(String? value) {
     if (value == null || value.trim().isEmpty) {
       return AppLabels.notAvailable;
     }
     return value;
   }
+
   Future<void> launchUrl(String url) async {
     if (await canLaunch(url)) {
       try {
@@ -239,4 +241,199 @@ class CompanyCubit extends Cubit<CompanyState> {
       emit(state.copyWith(errorMessage: "Cannot launch URL: $url"));
     }
   }
+
+  void sortCompaniesByName() {
+    final sorted = List.of(state.companies)
+      ..sort((a, b) => a.companyName.compareTo(b.companyName));
+    emit(state.copyWith(companies: sorted));
+  }
+
+  void sortCompaniesByCountry() {
+    final sorted = List.of(state.companies)
+      ..sort((a, b) => (a.country ?? '').compareTo(b.country ?? ''));
+    emit(state.copyWith(companies: sorted));
+  }
+
+  void updateEmailReplied(bool? value) {
+    emit(state.copyWith(
+      company: state.company?.copyWith(theyReplied: value ?? false),
+    ));
+  }
+
+  // Search companies
+  void searchCompanies(String query) {
+    searchKeyword = query;
+    applyGeneralFilters();
+  }
+
+  void filterByCountry() {
+    applyGeneralFilters();
+  }
+
+  void clearFilters() {
+    state.companies.clear();
+    state.companies.addAll(state.originalCompanies);
+    searchKeyword = '';
+    emit(CompanyState.initial());
+    List<Company> initialCompanyList = List.from(originalCompanies);
+
+    emit(state.copyWith(
+        companies: initialCompanyList,
+        company: state.company?.copyWith(settings: companySettingsUi)));
+    sortCompaniesByDate(ascending: false);
+
+    // emit(state.copyWith(
+    //   companies: state.companies,
+    //   originalCompanies: state.originalCompanies,
+    //   company: state.company?.copyWith(
+    //     country: null,
+    //     city: null,
+    //     interestLevel: null,
+    //     priority: null,
+    //     source: null,
+    //     emailSent: false,
+    //     theyReplied: false,
+    //   ),
+    // ));
+  }
+
+  Future<void> applyGeneralFilters() async {
+    // Start with the original company list
+    List<Company> filteredCompanies = List.from(originalCompanies);
+
+    // Filter by search keyword
+    if (searchKeyword.isNotEmpty) {
+      filteredCompanies = filteredCompanies.where((company) {
+        return company.companyName
+            .toLowerCase()
+            .contains(searchKeyword.toLowerCase());
+      }).toList();
+    }
+
+    // Filter by country
+    if (state.company?.country != null && state.company!.country!.isNotEmpty) {
+      filteredCompanies = filteredCompanies.where((company) {
+        return company.country == state.company?.country;
+      }).toList();
+    }
+
+    // Filter by city
+    if (state.company?.city != null && state.company!.city!.isNotEmpty) {
+      filteredCompanies = filteredCompanies.where((company) {
+        return company.city == state.company?.city;
+      }).toList();
+    }
+
+    // Filter by interest level
+    if (state.company?.interestLevel != null &&
+        state.company!.interestLevel!.isNotEmpty) {
+      final range =
+          state.company!.interestLevel!.split('-').map(int.parse).toList();
+      final lowerBound = range[0];
+      final upperBound = range[1];
+      filteredCompanies = filteredCompanies.where((company) {
+        final interestValue =
+            int.tryParse(company.interestLevel?.replaceAll('%', '') ?? '0') ??
+                0;
+        return interestValue >= lowerBound && interestValue <= upperBound;
+      }).toList();
+    }
+
+    // Filter by email sent
+    if (state.company?.emailSent != null) {
+      filteredCompanies = filteredCompanies.where((company) {
+        return company.emailSent == state.company?.emailSent;
+      }).toList();
+    }
+    //
+    // // Filter by replied status
+    if (state.company?.theyReplied != null) {
+      filteredCompanies = filteredCompanies.where((company) {
+        return company.theyReplied == state.company?.theyReplied;
+      }).toList();
+    }
+
+    // Filter by priority
+    if (state.company?.priority != null &&
+        state.company!.priority!.isNotEmpty) {
+      filteredCompanies = filteredCompanies.where((company) {
+        return company.priority == state.company?.priority;
+      }).toList();
+    }
+
+    // Filter by source
+    if (state.company?.source != null && state.company!.source!.isNotEmpty) {
+      filteredCompanies = filteredCompanies.where((company) {
+        return company.source == state.company?.source;
+      }).toList();
+    }
+
+    // Emit the filtered state
+    emit(state.copyWith(companies: filteredCompanies));
+  }
+
+  void setSearchKeyword(String keyword) {
+    searchKeyword = keyword;
+    applyGeneralFilters();
+  }
+  void toggleFilterVisibility() {
+    emit(state.copyWith(isFilterVisible: !state.isFilterVisible));
+  }
+  // Sort companies by different types
+  void sortCompaniesBy(String? sortTypeString) {
+    List<Company> sortedCompanies = List.from(state.companies);
+
+    // Handle null input by defaulting to SortType.latest
+    SortType sortType = (sortTypeString != null)
+        ? SortType.values.firstWhere(
+          (e) => e.toString() == 'SortType.' + sortTypeString,
+      orElse: () => SortType.latest, // Default if no match
+    )
+        : SortType.latest;
+
+    // Perform sorting based on the enum value
+    switch (sortType) {
+      case SortType.latest:
+        sortedCompanies.sort((a, b) => b.dateCreated.compareTo(a.dateCreated));
+        break;
+      case SortType.oldest:
+        sortedCompanies.sort((a, b) => a.dateCreated.compareTo(b.dateCreated));
+        break;
+      case SortType.highToLowInterest:
+        sortedCompanies.sort((a, b) {
+          final interestA =
+              int.tryParse(a.interestLevel?.replaceAll('%', '') ?? '0') ?? 0;
+          final interestB =
+              int.tryParse(b.interestLevel?.replaceAll('%', '') ?? '0') ?? 0;
+          return interestB.compareTo(interestA);
+        });
+        break;
+      case SortType.lowToHighInterest:
+        sortedCompanies.sort((a, b) {
+          final interestA =
+              int.tryParse(a.interestLevel?.replaceAll('%', '') ?? '0') ?? 0;
+          final interestB =
+              int.tryParse(b.interestLevel?.replaceAll('%', '') ?? '0') ?? 0;
+          return interestA.compareTo(interestB);
+        });
+        break;
+    }
+
+    emit(state.copyWith(companies: sortedCompanies));
+  }
+
+  Color getPriorityColor(String? priority) {
+    switch (priority?.toLowerCase()) {
+      case 'high':
+        return Colors.green[900]!;
+      case 'medium':
+        return Colors.green[300]!;
+      case 'low':
+        return Colors.red[900]!;
+      default:
+        return Colors.grey;
+    }
+  }
+
+
 }

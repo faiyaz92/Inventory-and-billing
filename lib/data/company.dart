@@ -91,7 +91,7 @@ class Company {
       theyReplied: theyReplied ?? this.theyReplied,
       interestLevel: interestLevel ?? this.interestLevel,
       country: country ?? this.country,
-      city: city ?? this.city,
+      city: city /*?? this.city*/,
       priority: priority ?? this.priority,
       assignedTo: assignedTo ?? this.assignedTo,
       verifiedOn: verifiedOn ?? this.verifiedOn,

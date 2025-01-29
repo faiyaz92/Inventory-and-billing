@@ -94,5 +94,36 @@ class AppLabels {
   static const String lastUpdatedByLabel = "Last Updated By";
   // static const String verifiedOnLabel = "Verified Platforms";
   static const String notAvailable = "Not Available";
+  // General Labels
+
+  // Filters
+  static const String clearFiltersLabel = "Clear Filters";
+  static const String moreFiltersLabel = "More Filters";
+
+  // More Filters Popup
+  static const String moreFiltersTitle = "More Filters";
+  static const String applyFiltersLabel = "Apply Filters";
+
+  // Sorting
+  static const String sortTooltip = "Sort Options";
+  static const String sortOptionsTitle = "Sort Companies";
+  static const String sortByDateAsc = "Sort by Date (Asc)";
+  static const String sortByDateDesc = "Sort by Date (Desc)";
+  static const String sortByName = "Sort by Name";
+  static const String sortByCountry = "Sort by Country";
+  static const String sortByInterestLevelHighToLow = "Interest Level (High to Low)";
+  static const String sortByInterestLevelLowToHigh = "Interest Level (Low to High)";
+  static const String sortLatest = "latest";
+  static const String sortOldest = "oldest";
+  static const String sortHighToLowInterest = "highToLowInterest";
+  static const String sortLowToHighInterest = "lowToHighInterest";
+
+  static const String sortByLatest = "Sort by Latest";
+  static const String sortByOldest = "Sort by Oldest";
+  static const String sortHighToLowInterestLabel = "High to Low Interest";
+  static const String sortLowToHighInterestLabel = "Low to High Interest";
+
+  static const String sortOptionsTooltip= "Sort";
+  static const String filterTooltip= "Filter";
 
 }
