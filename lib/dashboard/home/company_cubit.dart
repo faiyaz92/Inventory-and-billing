@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:requirment_gathering_app/dashboard/home/add_company_state.dart';
 import 'package:requirment_gathering_app/data/company.dart';
 import 'package:requirment_gathering_app/data/company_settings.dart';
 import 'package:requirment_gathering_app/repositories/company_repository.dart';
 import 'package:requirment_gathering_app/repositories/company_settings_repository.dart';
 import 'package:requirment_gathering_app/utils/AppLabels.dart';
+import 'package:requirment_gathering_app/utils/date_time_utils.dart';
 import 'package:requirment_gathering_app/utils/utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -279,6 +281,7 @@ class CompanyCubit extends Cubit<CompanyState> {
 
     emit(state.copyWith(
         companies: initialCompanyList,
+        originalCompanies: originalCompanies,
         company: state.company?.copyWith(settings: companySettingsUi)));
     sortCompaniesByDate(ascending: false);
 
@@ -376,9 +379,11 @@ class CompanyCubit extends Cubit<CompanyState> {
     searchKeyword = keyword;
     applyGeneralFilters();
   }
+
   void toggleFilterVisibility() {
     emit(state.copyWith(isFilterVisible: !state.isFilterVisible));
   }
+
   // Sort companies by different types
   void sortCompaniesBy(String? sortTypeString) {
     List<Company> sortedCompanies = List.from(state.companies);
@@ -386,9 +391,9 @@ class CompanyCubit extends Cubit<CompanyState> {
     // Handle null input by defaulting to SortType.latest
     SortType sortType = (sortTypeString != null)
         ? SortType.values.firstWhere(
-          (e) => e.toString() == 'SortType.' + sortTypeString,
-      orElse: () => SortType.latest, // Default if no match
-    )
+            (e) => e.toString() == 'SortType.' + sortTypeString,
+            orElse: () => SortType.latest, // Default if no match
+          )
         : SortType.latest;
 
     // Perform sorting based on the enum value
@@ -433,6 +438,114 @@ class CompanyCubit extends Cubit<CompanyState> {
       default:
         return Colors.grey;
     }
+  }
+
+///for report page methods
+
+  Map<String, int> getFollowUpDataForYear(String? year) {
+    List<Company> filteredCompanies = state.companies.where((c) {
+      return DateFormat('yyyy').format(c.dateCreated) == year;
+    }).toList();
+
+    int totalCompanies = filteredCompanies.length;
+    int emailSentCount = filteredCompanies.where((c) => c.emailSent).length;
+    int emailNotSentCount = totalCompanies - emailSentCount;
+
+    return {
+      "total": totalCompanies,
+      "sent": emailSentCount,
+      "notSent": emailNotSentCount,
+    };
+  }
+
+  void updateSelectedYear(String year) {
+    if (getAvailableYears().contains(year)) {
+      emit(state.copyWith(selectedYear: year));
+    }
+  }
+
+  List<String> getAvailableYears() {
+    Set<String> years = state.companies
+        .map((company) => DateFormat('yyyy').format(company.dateCreated))
+        .toSet();
+
+    // Ensure the last 10 years are selectable
+    int currentYear = DateTime.now().year;
+    for (int i = 0; i < 10; i++) {
+      years.add((currentYear - i).toString());
+    }
+
+    List<String> sortedYears = years.toList()..sort((a, b) => b.compareTo(a));
+
+    // Ensure selectedYear is always valid
+    if (!sortedYears.contains(state.selectedYear)) {
+      emit(state.copyWith(selectedYear: sortedYears.first));
+    }
+
+    return sortedYears;
+  }
+
+
+
+  Map<String, int> getComparisonData(String? period1, String? period2) {
+    if (period1 == null || period2 == null || period1.isEmpty || period2.isEmpty) {
+      return {"period1": 0, "period2": 0}; // ✅ Prevents null pointer exception
+    }
+
+    return {
+      "period1": _getCompanyCountForPeriod(period1),
+      "period2": _getCompanyCountForPeriod(period2),
+    };
+  }
+
+  /// ✅ Helper method to get company count for a given period (year, month, or quarter)
+  int _getCompanyCountForPeriod(String? period) {
+    if (period == null || period.isEmpty) return 0; // ✅ Prevents null period issues
+
+    return state.companies.where((company) {
+      String companyYear = DateFormat('yyyy').format(company.dateCreated);
+      String companyMonth = DateFormat('MMM yyyy').format(company.dateCreated);
+
+      // Calculate quarter
+      int quarter = ((company.dateCreated.month - 1) ~/ 3) + 1;
+      String companyQuarter = "Q$quarter $companyYear";
+
+      return companyYear == period || companyMonth == period || companyQuarter == period;
+    }).length;
+  }
+  List<String> getAvailablePeriods() {
+    Set<String> periods = {};
+
+    for (var company in state.companies) {
+      String year = getYearFromDate(company.dateCreated.toString());
+      String month = getMonthYearFromDate(company.dateCreated.toString());
+      String quarter = getQuarterFromDate(company.dateCreated.toString());
+
+      periods.add(year);
+      periods.add(month);
+      periods.add(quarter);
+    }
+
+    return periods.toList()..sort((a, b) => b.compareTo(a)); // ✅ Sort in descending order
+  }
+
+  void updateSelectedPeriod1(String period) {
+    if (period.isNotEmpty && getAvailablePeriods().contains(period)) {
+      emit(state.copyWith(selectedPeriod1: period));
+    }
+  }
+
+  void updateSelectedPeriod2(String period) {
+    if (period.isNotEmpty && getAvailablePeriods().contains(period)) {
+      emit(state.copyWith(selectedPeriod2: period));
+    }
+  }
+  void updateSelectedYearForFollowUp(String year) {
+    emit(state.copyWith(selectedYearForFollowUp: year));
+  }
+
+  void updateSelectedYearForProgress(String year) {
+    emit(state.copyWith(selectedYearForProgress: year));
   }
 
 

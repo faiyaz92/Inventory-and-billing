@@ -30,34 +30,41 @@ class CompanyListPage extends StatelessWidget {
                 SliverAppBar(
                   pinned: false,
                   floating: false,
-                  expandedHeight: state.isFilterVisible ? 436 : 82,
+                  expandedHeight: state.isFilterVisible ? 436 : 76,
                   flexibleSpace: FlexibleSpaceBar(
                     background: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Expanded(
-                                child: TextField(
-                                  onChanged: cubit.searchCompanies,
-                                  decoration: InputDecoration(
-                                    prefixIcon: const Icon(Icons.search),
-                                    hintText: AppLabels.searchHint,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(30.0),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(30.0),
-                                      borderSide:
-                                          const BorderSide(color: Colors.blue),
+                                child: SizedBox(
+                                  height: 60,
+                                  child: TextField(
+                                    onChanged: cubit.searchCompanies,
+                                    decoration: InputDecoration(
+                                      prefixIcon: const Icon(Icons.search),
+                                      hintText: AppLabels.searchHint,
+                                      border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(30.0),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(30.0),
+                                        borderSide: const BorderSide(
+                                            color: Colors.blue),
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.filter_alt,color: Colors.blue,),
+                                icon: const Icon(Icons.filter_alt,
+                                    color: Colors.blue),
                                 tooltip: AppLabels.filterTooltip,
                                 onPressed: () => cubit.toggleFilterVisibility(),
                               ),
@@ -142,15 +149,26 @@ class CompanyListPage extends StatelessWidget {
                   ),
                 ),
 
+                // Sticky Company Count
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _StickyHeaderDelegate(
+                    companyCount: state.companies.length,
+                    totalCompanyCount:state.originalCompanies.length,
+                  ),
+                ),
+
                 // Loading or Empty State
                 if (state.isLoading)
                   const SliverFillRemaining(
+                    hasScrollBody: false,
                     child: Center(
                       child: CircularProgressIndicator(),
                     ),
                   )
                 else if (state.companies.isEmpty)
                   const SliverFillRemaining(
+                    hasScrollBody: false,
                     child: Center(
                       child: Text(
                         AppLabels.noCompaniesFound,
@@ -425,5 +443,40 @@ class CompanyListPage extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final int companyCount;
+  final int totalCompanyCount;
+
+  _StickyHeaderDelegate({
+    required this.companyCount,
+    required this.totalCompanyCount,
+  });
+
+  @override
+  double get minExtent => 25; // Minimum height of the sticky header
+  @override
+  double get maxExtent => 25; // Maximum height
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: Colors.blue, // Background color
+      padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+      alignment: Alignment.centerLeft,
+      child: Text(
+        'Total Companies: $companyCount/$totalCompanyCount',
+        style: const TextStyle(
+            fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
+    return true; // Ensures updates when company count changes
   }
 }
