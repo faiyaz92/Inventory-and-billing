@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -6,6 +7,8 @@ import 'package:requirment_gathering_app/data/company.dart';
 import 'package:requirment_gathering_app/data/company_settings.dart';
 import 'package:requirment_gathering_app/repositories/company_repository.dart';
 import 'package:requirment_gathering_app/repositories/company_settings_repository.dart';
+import 'package:requirment_gathering_app/utils/AppColor.dart';
+import 'package:requirment_gathering_app/utils/AppKeys.dart';
 import 'package:requirment_gathering_app/utils/AppLabels.dart';
 import 'package:requirment_gathering_app/utils/date_time_utils.dart';
 import 'package:requirment_gathering_app/utils/utils.dart';
@@ -442,111 +445,114 @@ class CompanyCubit extends Cubit<CompanyState> {
 
 ///for report page methods
 
+
+
+
+  ///---------------------------------------------------------------
+// Fetch follow-up data for the selected year
   Map<String, int> getFollowUpDataForYear(String? year) {
-    List<Company> filteredCompanies = state.companies.where((c) {
-      return DateFormat('yyyy').format(c.dateCreated) == year;
-    }).toList();
-
-    int totalCompanies = filteredCompanies.length;
-    int emailSentCount = filteredCompanies.where((c) => c.emailSent).length;
-    int emailNotSentCount = totalCompanies - emailSentCount;
-
     return {
-      "total": totalCompanies,
-      "sent": emailSentCount,
-      "notSent": emailNotSentCount,
+      AppKeys.totalKey: state.companies.where((c) => getYearFromDate(c.dateCreated.toString()) == year).length,
+      AppKeys.sentKey: state.companies.where((c) => getYearFromDate(c.dateCreated.toString()) == year && c.emailSent).length,
+      AppKeys.notSentKey: state.companies.where((c) => getYearFromDate(c.dateCreated.toString()) == year && !c.emailSent).length,
     };
   }
 
-  void updateSelectedYear(String year) {
-    if (getAvailableYears().contains(year)) {
-      emit(state.copyWith(selectedYear: year));
-    }
+// Fetch progress data for the selected year
+  ProgressChartData getProgressData(String? selectedYearForProgress) {
+    final companies = state.companies.where((c) => getYearFromDate(c.dateCreated.toString()) == selectedYearForProgress).toList();
+
+    List<int> data = List.generate(12, (index) {
+      return companies.where((c) => c.dateCreated.month == index + 1).length;
+    });
+
+    return ProgressChartData(
+      bars: List.generate(data.length, (index) {
+        return BarChartGroupData(
+          x: index,
+          barRods: [
+            BarChartRodData(
+              y: data[index].toDouble(),
+              colors: [data[index] > 0 ? AppColors.blue : AppColors.transparent],
+              width: 20,
+              borderRadius: BorderRadius.circular(6),
+            ),
+          ],
+        );
+      }),
+      labels: AppKeys.monthLabels, // List of month names stored in AppKeys
+      maxValue: data.isNotEmpty ? data.reduce((a, b) => a > b ? a : b) : 1,
+    );
   }
 
-  List<String> getAvailableYears() {
-    Set<String> years = state.companies
-        .map((company) => DateFormat('yyyy').format(company.dateCreated))
-        .toSet();
-
-    // Ensure the last 10 years are selectable
-    int currentYear = DateTime.now().year;
-    for (int i = 0; i < 10; i++) {
-      years.add((currentYear - i).toString());
-    }
-
-    List<String> sortedYears = years.toList()..sort((a, b) => b.compareTo(a));
-
-    // Ensure selectedYear is always valid
-    if (!sortedYears.contains(state.selectedYear)) {
-      emit(state.copyWith(selectedYear: sortedYears.first));
-    }
-
-    return sortedYears;
-  }
-
-
-
+// Fetch comparison data between two selected periods
   Map<String, int> getComparisonData(String? period1, String? period2) {
-    if (period1 == null || period2 == null || period1.isEmpty || period2.isEmpty) {
-      return {"period1": 0, "period2": 0}; // ✅ Prevents null pointer exception
-    }
-
     return {
-      "period1": _getCompanyCountForPeriod(period1),
-      "period2": _getCompanyCountForPeriod(period2),
+      AppKeys.period1Key: _getCompanyCountForPeriod(period1),
+      AppKeys.period2Key: _getCompanyCountForPeriod(period2),
     };
   }
 
-  /// ✅ Helper method to get company count for a given period (year, month, or quarter)
-  int _getCompanyCountForPeriod(String? period) {
-    if (period == null || period.isEmpty) return 0; // ✅ Prevents null period issues
-
-    return state.companies.where((company) {
-      String companyYear = DateFormat('yyyy').format(company.dateCreated);
-      String companyMonth = DateFormat('MMM yyyy').format(company.dateCreated);
-
-      // Calculate quarter
-      int quarter = ((company.dateCreated.month - 1) ~/ 3) + 1;
-      String companyQuarter = "Q$quarter $companyYear";
-
-      return companyYear == period || companyMonth == period || companyQuarter == period;
-    }).length;
+// Get available years from companies' data
+  List<String> getAvailableYears() {
+    return state.companies
+        .map((company) => getYearFromDate(company.dateCreated.toString()))
+        .toSet()
+        .toList()
+      ..sort((a, b) => b.compareTo(a));
   }
+
+// Get available periods (years, months, and quarters)
   List<String> getAvailablePeriods() {
     Set<String> periods = {};
-
     for (var company in state.companies) {
-      String year = getYearFromDate(company.dateCreated.toString());
-      String month = getMonthYearFromDate(company.dateCreated.toString());
-      String quarter = getQuarterFromDate(company.dateCreated.toString());
-
-      periods.add(year);
-      periods.add(month);
-      periods.add(quarter);
+      periods.add(getYearFromDate(company.dateCreated.toString()));
+      periods.add(getMonthYearFromDate(company.dateCreated.toString()));
+      periods.add(getQuarterFromDate(company.dateCreated.toString()));
     }
-
-    return periods.toList()..sort((a, b) => b.compareTo(a)); // ✅ Sort in descending order
+    return periods.toList()..sort((a, b) => b.compareTo(a));
   }
 
-  void updateSelectedPeriod1(String period) {
-    if (period.isNotEmpty && getAvailablePeriods().contains(period)) {
-      emit(state.copyWith(selectedPeriod1: period));
-    }
-  }
-
-  void updateSelectedPeriod2(String period) {
-    if (period.isNotEmpty && getAvailablePeriods().contains(period)) {
-      emit(state.copyWith(selectedPeriod2: period));
-    }
-  }
+// Update selected year for follow-up
   void updateSelectedYearForFollowUp(String year) {
     emit(state.copyWith(selectedYearForFollowUp: year));
   }
 
+// Update selected year for progress
   void updateSelectedYearForProgress(String year) {
     emit(state.copyWith(selectedYearForProgress: year));
   }
 
+// Update selected period 1 for comparison
+  void updateSelectedPeriod1(String period) {
+    emit(state.copyWith(selectedPeriod1: period));
+  }
 
+// Update selected period 2 for comparison
+  void updateSelectedPeriod2(String period) {
+    emit(state.copyWith(selectedPeriod2: period));
+  }
+
+
+// Private helper method to get company count for a given period
+  int _getCompanyCountForPeriod(String? period) {
+    if (period == null || period.isEmpty) return 0;
+    return state.companies.where((company) {
+      return getYearFromDate(company.dateCreated.toString()) == period ||
+          getMonthYearFromDate(company.dateCreated.toString()) == period ||
+          getQuarterFromDate(company.dateCreated.toString()) == period;
+    }).length;
+  }
+
+}
+class ProgressChartData {
+  final List<BarChartGroupData> bars;
+  final List<String> labels;
+  final int maxValue;
+
+  ProgressChartData({
+    required this.bars,
+    required this.labels,
+    required this.maxValue,
+  });
 }

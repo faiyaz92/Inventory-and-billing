@@ -125,5 +125,21 @@ class AppLabels {
 
   static const String sortOptionsTooltip= "Sort";
   static const String filterTooltip= "Filter";
+// Follow-Up Chart Labels
+  static const String followUpChartTitle = "Follow-Up Chart";
+  static const String emailNotSentLabel = "Email Not Sent";
+  static const String noDataAvailable = "No data available for this year";
+
+  // Progress Chart Labels
+  static const String progressChartTitle = "Progress Chart";
+
+  // Comparison Chart Labels
+  static const String comparisonChartTitle = "Comparison Chart";
+  static const String selectPeriod1 = "Select Period 1";
+  static const String selectPeriod2 = "Select Period 2";
+
+  // Dropdown Labels
+  static const String selectYear = "Select Year";
+  static const String noDataMessage = "No data available";
 
 }
