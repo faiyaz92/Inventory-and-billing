@@ -73,7 +73,7 @@ class AppRouter extends _i10.RootStackRouter {
     ReportsRoute.name: (routeData) {
       return _i10.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: const _i6.ReportsPage(),
+        child: const _i6.ReportPage(),
       );
     },
     CompanySettingRoute.name: (routeData) {

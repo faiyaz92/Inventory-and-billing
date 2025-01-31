@@ -1,11 +1,16 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:requirment_gathering_app/dashboard/home/add_company_state.dart';
 import 'package:requirment_gathering_app/data/company.dart';
 import 'package:requirment_gathering_app/data/company_settings.dart';
 import 'package:requirment_gathering_app/repositories/company_repository.dart';
 import 'package:requirment_gathering_app/repositories/company_settings_repository.dart';
+import 'package:requirment_gathering_app/utils/AppColor.dart';
+import 'package:requirment_gathering_app/utils/AppKeys.dart';
 import 'package:requirment_gathering_app/utils/AppLabels.dart';
+import 'package:requirment_gathering_app/utils/date_time_utils.dart';
 import 'package:requirment_gathering_app/utils/utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -279,6 +284,7 @@ class CompanyCubit extends Cubit<CompanyState> {
 
     emit(state.copyWith(
         companies: initialCompanyList,
+        originalCompanies: originalCompanies,
         company: state.company?.copyWith(settings: companySettingsUi)));
     sortCompaniesByDate(ascending: false);
 
@@ -376,9 +382,11 @@ class CompanyCubit extends Cubit<CompanyState> {
     searchKeyword = keyword;
     applyGeneralFilters();
   }
+
   void toggleFilterVisibility() {
     emit(state.copyWith(isFilterVisible: !state.isFilterVisible));
   }
+
   // Sort companies by different types
   void sortCompaniesBy(String? sortTypeString) {
     List<Company> sortedCompanies = List.from(state.companies);
@@ -386,9 +394,9 @@ class CompanyCubit extends Cubit<CompanyState> {
     // Handle null input by defaulting to SortType.latest
     SortType sortType = (sortTypeString != null)
         ? SortType.values.firstWhere(
-          (e) => e.toString() == 'SortType.' + sortTypeString,
-      orElse: () => SortType.latest, // Default if no match
-    )
+            (e) => e.toString() == 'SortType.' + sortTypeString,
+            orElse: () => SortType.latest, // Default if no match
+          )
         : SortType.latest;
 
     // Perform sorting based on the enum value
@@ -435,5 +443,116 @@ class CompanyCubit extends Cubit<CompanyState> {
     }
   }
 
+///for report page methods
 
+
+
+
+  ///---------------------------------------------------------------
+// Fetch follow-up data for the selected year
+  Map<String, int> getFollowUpDataForYear(String? year) {
+    return {
+      AppKeys.totalKey: state.companies.where((c) => getYearFromDate(c.dateCreated.toString()) == year).length,
+      AppKeys.sentKey: state.companies.where((c) => getYearFromDate(c.dateCreated.toString()) == year && c.emailSent).length,
+      AppKeys.notSentKey: state.companies.where((c) => getYearFromDate(c.dateCreated.toString()) == year && !c.emailSent).length,
+    };
+  }
+
+// Fetch progress data for the selected year
+  ProgressChartData getProgressData(String? selectedYearForProgress) {
+    final companies = state.companies.where((c) => getYearFromDate(c.dateCreated.toString()) == selectedYearForProgress).toList();
+
+    List<int> data = List.generate(12, (index) {
+      return companies.where((c) => c.dateCreated.month == index + 1).length;
+    });
+
+    return ProgressChartData(
+      bars: List.generate(data.length, (index) {
+        return BarChartGroupData(
+          x: index,
+          barRods: [
+            BarChartRodData(
+              y: data[index].toDouble(),
+              colors: [data[index] > 0 ? AppColors.blue : AppColors.transparent],
+              width: 20,
+              borderRadius: BorderRadius.circular(6),
+            ),
+          ],
+        );
+      }),
+      labels: AppKeys.monthLabels, // List of month names stored in AppKeys
+      maxValue: data.isNotEmpty ? data.reduce((a, b) => a > b ? a : b) : 1,
+    );
+  }
+
+// Fetch comparison data between two selected periods
+  Map<String, int> getComparisonData(String? period1, String? period2) {
+    return {
+      AppKeys.period1Key: _getCompanyCountForPeriod(period1),
+      AppKeys.period2Key: _getCompanyCountForPeriod(period2),
+    };
+  }
+
+// Get available years from companies' data
+  List<String> getAvailableYears() {
+    return state.companies
+        .map((company) => getYearFromDate(company.dateCreated.toString()))
+        .toSet()
+        .toList()
+      ..sort((a, b) => b.compareTo(a));
+  }
+
+// Get available periods (years, months, and quarters)
+  List<String> getAvailablePeriods() {
+    Set<String> periods = {};
+    for (var company in state.companies) {
+      periods.add(getYearFromDate(company.dateCreated.toString()));
+      periods.add(getMonthYearFromDate(company.dateCreated.toString()));
+      periods.add(getQuarterFromDate(company.dateCreated.toString()));
+    }
+    return periods.toList()..sort((a, b) => b.compareTo(a));
+  }
+
+// Update selected year for follow-up
+  void updateSelectedYearForFollowUp(String year) {
+    emit(state.copyWith(selectedYearForFollowUp: year));
+  }
+
+// Update selected year for progress
+  void updateSelectedYearForProgress(String year) {
+    emit(state.copyWith(selectedYearForProgress: year));
+  }
+
+// Update selected period 1 for comparison
+  void updateSelectedPeriod1(String period) {
+    emit(state.copyWith(selectedPeriod1: period));
+  }
+
+// Update selected period 2 for comparison
+  void updateSelectedPeriod2(String period) {
+    emit(state.copyWith(selectedPeriod2: period));
+  }
+
+
+// Private helper method to get company count for a given period
+  int _getCompanyCountForPeriod(String? period) {
+    if (period == null || period.isEmpty) return 0;
+    return state.companies.where((company) {
+      return getYearFromDate(company.dateCreated.toString()) == period ||
+          getMonthYearFromDate(company.dateCreated.toString()) == period ||
+          getQuarterFromDate(company.dateCreated.toString()) == period;
+    }).length;
+  }
+
+}
+class ProgressChartData {
+  final List<BarChartGroupData> bars;
+  final List<String> labels;
+  final int maxValue;
+
+  ProgressChartData({
+    required this.bars,
+    required this.labels,
+    required this.maxValue,
+  });
 }

@@ -23,8 +23,8 @@ class DashboardPage extends StatelessWidget {
           builder: (context, state) {
             final pages = [
               const HomePage(),
-               CompanyListPage(),
-              const ReportsPage(),
+               const CompanyListPage(),
+               const ReportPage(),
               const CompanySettingPage(),
             ];
             return pages[state];

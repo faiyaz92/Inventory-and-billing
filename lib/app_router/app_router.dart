@@ -17,7 +17,7 @@ import 'package:requirment_gathering_app/login/splash_screen.dart';
     AutoRoute(page: LoginPage, path: '/login'),
     AutoRoute(page: HomePage, path: '/home'),
     AutoRoute(page: CompanyListPage, path: '/company-list'),
-    AutoRoute(page: ReportsPage, path: '/reports'),
+    AutoRoute(page: ReportPage, path: '/reports'),
     AutoRoute(page: CompanySettingPage, path: '/settings'),
     AutoRoute(page: AddCompanyPage, path: '/add-company'), // Added AddCompanyPage
     AutoRoute(page: CompanyDetailsPage, path: '/company-details'), // Added CompanyDetailsPage

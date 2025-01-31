@@ -8,4 +8,17 @@ class AppKeys {
   static const String priorityKey = 'priority';
   static const String sourceKey = 'source';
   static const String verifiedOnKey = 'verifiedOn';
+  static const String totalKey = "total";
+  static const String sentKey = "sent";
+  static const String notSentKey = "notSent";
+
+  // Keys for Comparison Data
+  static const String period1Key = "period1";
+  static const String period2Key = "period2";
+
+  // Month Labels (To avoid raw strings)
+  static const List<String> monthLabels = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
 }
