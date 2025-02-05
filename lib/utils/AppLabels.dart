@@ -27,6 +27,7 @@ class AppLabels {
   static const String cityLabel = "City";
   static const String cityHint = "Select city";
   static const String sourceLabel = "Source";
+  static const String businessTypeLabel = "BusinessType";
   static const String sourceHint = "Select source";
   static const String priorityLabel = "Priority";
   static const String priorityHint = "Select priority";

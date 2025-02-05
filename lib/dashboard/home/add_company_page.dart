@@ -1,6 +1,7 @@
 // Updated AddCompanyPage class with edit functionality
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:requirment_gathering_app/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/dashboard/home/add_company_state.dart';
 import 'package:requirment_gathering_app/dashboard/home/company_cubit.dart';
 import 'package:requirment_gathering_app/data/company.dart';
@@ -125,6 +126,14 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
             appBar: CustomAppBar(
               title: widget.company == null ? "Add Company" : "Edit Company",
               automaticallyImplyLeading: true,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.list_alt), // You can use any icon you like
+                  onPressed: () {
+                    sl<Coordinator>().navigateToAiCompanyListPage();
+                  },
+                ),
+              ],
             ),
             body: SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
@@ -158,6 +167,10 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
                     child: _buildDynamicContactPersonsField(cubit),
                   ),
                   // Field 6: Country
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: _buildBusinessTypeField(cubit, state),
+                  ),// Field 6: Country
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: _buildCountryField(cubit, state),
@@ -615,7 +628,21 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
       textCapitalization: TextCapitalization.sentences,
     );
   }
-
+  // Field 19: Source
+  Widget _buildBusinessTypeField(CompanyCubit cubit, CompanyState state) {
+    final sources = state.company?.settings?.businessTypes ?? [];
+    return DropdownButtonFormField<String>(
+      value: state.company?.businessType,
+      items: sources
+          .map((source) => DropdownMenuItem(value: source, child: Text(source)))
+          .toList(),
+      onChanged: cubit.updateBusinessType,
+      decoration: const InputDecoration(
+        labelText: AppLabels.businessTypeLabel,
+        border: OutlineInputBorder(),
+      ),
+    );
+  }
 // Save Button
   Widget _buildSaveButton(
     CompanyCubit cubit,

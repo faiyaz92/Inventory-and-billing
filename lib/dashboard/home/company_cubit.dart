@@ -1,7 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:requirment_gathering_app/dashboard/home/add_company_state.dart';
 import 'package:requirment_gathering_app/data/company.dart';
 import 'package:requirment_gathering_app/data/company_settings.dart';
@@ -25,22 +24,37 @@ class CompanyCubit extends Cubit<CompanyState> {
   CompanyCubit(this._repository, this._settingRepository)
       : super(CompanyState.initial());
 
+
   // Update company form data via the Company object
   Future<void> loadCompanySettings() async {
     try {
-      final settings = await _settingRepository.getSettings();
-      companySettingsUi = settings;
-      final companyWithSettings = state.company?.copyWith(
-        settings: settings,
+      final result = await _settingRepository.getSettings();
+      result.fold(
+            (error) {
+          // If there’s an error, emit error state with the message
+          emit(state.copyWith(errorMessage: "Failed to load settings: $error"));
+        },
+            (settings) {
+          // If success, update the settings and company state
+          companySettingsUi = settings;
+          final companyWithSettings = state.company?.copyWith(settings: settings);
+          emit(state.copyWith(company: companyWithSettings));
+        },
       );
-      emit(state.copyWith(company: companyWithSettings));
     } catch (e) {
-      emit(state.copyWith(errorMessage: "Failed to load settings: $e"));
+      // General error catch if something unexpected happens
+      emit(state.copyWith(errorMessage: "Unexpected error: $e"));
     }
   }
 
+
   void updateSource(String? source) {
     emit(state.copyWith(company: state.company?.copyWith(source: source)));
+  }
+
+  void updateBusinessType(String? businessType) {
+    emit(state.copyWith(
+        company: state.company?.copyWith(businessType: businessType)));
   }
 
   void updateEmailSent(bool? value) {
@@ -117,8 +131,7 @@ class CompanyCubit extends Cubit<CompanyState> {
     if (state.company == null ||
         state.company!.companyName.isEmpty ||
         state.company!.source == null) {
-      emit(state.copyWith(
-          errorMessage: "Company Name and Source are required."));
+      emit(state.copyWith(errorMessage: "Company Name and Source are required."));
       return;
     }
 
@@ -127,22 +140,33 @@ class CompanyCubit extends Cubit<CompanyState> {
     try {
       if (state.company!.id.isEmpty) {
         // New company case
-        final isUnique =
-            await _repository.isCompanyNameUnique(state.company!.companyName);
-        if (!isUnique) {
-          emit(state.copyWith(
-              isSaving: false, errorMessage: "Company name already exists."));
-          return;
-        }
+        final isUnique = await _repository.isCompanyNameUnique(state.company!.companyName);
 
-        await _repository.addCompany(state.company!); // Add company
+        isUnique.fold(
+              (error) {
+            // If error occurred while checking uniqueness, emit error message
+            emit(state.copyWith(isSaving: false, errorMessage: error.toString()));
+          },
+              (isUnique) {
+            // If company name is not unique
+            if (!isUnique) {
+              emit(state.copyWith(isSaving: false, errorMessage: "Company name already exists."));
+              return;
+            }
+
+            // Add new company to repository
+            _repository.addCompany(state.company!).then((_) {
+              emit(CompanyState.initial());
+            }).catchError((e) {
+              emit(state.copyWith(isSaving: false, errorMessage: e.toString()));
+            });
+          },
+        );
       } else {
         // Existing company case
-        await _repository.updateCompany(
-            state.company?.id ?? '', state.company!); // Update company
+        await _repository.updateCompany(state.company!.id, state.company!);
+        emit(CompanyState.initial());
       }
-
-      emit(CompanyState.initial());
     } catch (e) {
       emit(state.copyWith(isSaving: false, errorMessage: e.toString()));
     }
@@ -156,20 +180,30 @@ class CompanyCubit extends Cubit<CompanyState> {
   Future<void> loadCompanies() async {
     emit(state.copyWith(isLoading: true));
     try {
-      final companies =
-          await _repository.getAllCompanies(); // Now returns List<Company>
+      final result = await _repository.getAllCompanies(); // Returns Either<Exception, List<Company>>
 
-      originalCompanies.addAll(companies);
-      emit(state.copyWith(
-        isLoading: false,
-        companies: companies,
-        originalCompanies: originalCompanies,
-      ));
-      sortCompaniesByDate(ascending: false);
+      result.fold(
+            (error) {
+          // If it's a Left (error), handle it by emitting the error message
+          emit(state.copyWith(isLoading: false, errorMessage: error.toString()));
+        },
+            (companies) {
+          // If it's a Right (success), proceed with the company data
+          originalCompanies.addAll(companies);
+          emit(state.copyWith(
+            isLoading: false,
+            companies: companies,
+            originalCompanies: originalCompanies,
+          ));
+          sortCompaniesByDate(ascending: false);
+        },
+      );
     } catch (e) {
+      // Catch any unhandled errors and emit them
       emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
     }
   }
+
 
   // Sort companies by date
   void sortCompaniesByDate({required bool ascending}) {
@@ -330,6 +364,13 @@ class CompanyCubit extends Cubit<CompanyState> {
       }).toList();
     }
 
+    if (state.company?.businessType != null &&
+        state.company!.businessType!.isNotEmpty) {
+      filteredCompanies = filteredCompanies.where((company) {
+        return company.businessType == state.company?.businessType;
+      }).toList();
+    }
+
     // Filter by interest level
     if (state.company?.interestLevel != null &&
         state.company!.interestLevel!.isNotEmpty) {
@@ -443,24 +484,33 @@ class CompanyCubit extends Cubit<CompanyState> {
     }
   }
 
-///for report page methods
-
-
-
+  ///for report page methods
 
   ///---------------------------------------------------------------
 // Fetch follow-up data for the selected year
   Map<String, int> getFollowUpDataForYear(String? year) {
     return {
-      AppKeys.totalKey: state.companies.where((c) => getYearFromDate(c.dateCreated.toString()) == year).length,
-      AppKeys.sentKey: state.companies.where((c) => getYearFromDate(c.dateCreated.toString()) == year && c.emailSent).length,
-      AppKeys.notSentKey: state.companies.where((c) => getYearFromDate(c.dateCreated.toString()) == year && !c.emailSent).length,
+      AppKeys.totalKey: state.companies
+          .where((c) => getYearFromDate(c.dateCreated.toString()) == year)
+          .length,
+      AppKeys.sentKey: state.companies
+          .where((c) =>
+              getYearFromDate(c.dateCreated.toString()) == year && c.emailSent)
+          .length,
+      AppKeys.notSentKey: state.companies
+          .where((c) =>
+              getYearFromDate(c.dateCreated.toString()) == year && !c.emailSent)
+          .length,
     };
   }
 
 // Fetch progress data for the selected year
   ProgressChartData getProgressData(String? selectedYearForProgress) {
-    final companies = state.companies.where((c) => getYearFromDate(c.dateCreated.toString()) == selectedYearForProgress).toList();
+    final companies = state.companies
+        .where((c) =>
+            getYearFromDate(c.dateCreated.toString()) ==
+            selectedYearForProgress)
+        .toList();
 
     List<int> data = List.generate(12, (index) {
       return companies.where((c) => c.dateCreated.month == index + 1).length;
@@ -473,7 +523,9 @@ class CompanyCubit extends Cubit<CompanyState> {
           barRods: [
             BarChartRodData(
               y: data[index].toDouble(),
-              colors: [data[index] > 0 ? AppColors.blue : AppColors.transparent],
+              colors: [
+                data[index] > 0 ? AppColors.blue : AppColors.transparent
+              ],
               width: 20,
               borderRadius: BorderRadius.circular(6),
             ),
@@ -533,7 +585,6 @@ class CompanyCubit extends Cubit<CompanyState> {
     emit(state.copyWith(selectedPeriod2: period));
   }
 
-
 // Private helper method to get company count for a given period
   int _getCompanyCountForPeriod(String? period) {
     if (period == null || period.isEmpty) return 0;
@@ -543,8 +594,8 @@ class CompanyCubit extends Cubit<CompanyState> {
           getQuarterFromDate(company.dateCreated.toString()) == period;
     }).length;
   }
-
 }
+
 class ProgressChartData {
   final List<BarChartGroupData> bars;
   final List<String> labels;

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
+import 'package:requirment_gathering_app/ai_module/ai_company_list_cubit.dart';
 import 'package:requirment_gathering_app/app_router/app_router.gr.dart';
 import 'package:requirment_gathering_app/coordinator/app_cordinator.dart';
 import 'package:requirment_gathering_app/coordinator/coordinator.dart';
@@ -11,10 +12,14 @@ import 'package:requirment_gathering_app/login/login_cubit.dart';
 import 'package:requirment_gathering_app/login/splash_cubit.dart';
 import 'package:requirment_gathering_app/repositories/account_repository.dart';
 import 'package:requirment_gathering_app/repositories/account_repository_impl.dart';
+import 'package:requirment_gathering_app/repositories/ai_company_repository.dart';
+import 'package:requirment_gathering_app/repositories/ai_company_repository_impl.dart';
 import 'package:requirment_gathering_app/repositories/company_repository.dart';
 import 'package:requirment_gathering_app/repositories/company_repository_impl.dart';
 import 'package:requirment_gathering_app/repositories/company_settings_repository.dart';
 import 'package:requirment_gathering_app/repositories/company_settings_repository_impl.dart';
+import 'package:requirment_gathering_app/services/company_service_impl.dart';
+import 'package:requirment_gathering_app/services/provider.dart';
 
 final sl = GetIt.instance;
 
@@ -38,13 +43,33 @@ void setupServiceLocator() {
   sl.registerLazySingleton<CompanyRepository>(
     () => CompanyRepositoryImpl(sl<FirebaseFirestore>()),
   );
+  sl.registerLazySingleton<CompanyService>(
+        () => CompanyService(companyRepository: sl<CompanyRepository>(),companySettingRepository: sl<CompanySettingRepository>()),
+  );
   sl.registerFactory(() =>
-      CompanyCubit(sl<CompanyRepository>(), sl<CompanySettingRepository>()));
+      CompanyCubit(sl<CompanyRepository>(), sl<CompanySettingRepository>(),/*sl<CompanyService>()*/));
   sl.registerFactory(() => DashboardCubit());
   sl.registerLazySingleton<CompanySettingRepository>(
     () => CompanySettingRepositoryImpl(sl<FirebaseFirestore>()),
   );
   sl.registerFactory(() => CompanySettingCubit(sl<CompanySettingRepository>()));
+
+  ///---------- AI---------
+  ///
+  // Register DioClientProvider instead of Dio directly
+  sl.registerLazySingleton<DioClientProvider>(() => DioClientProvider());
+
+  // Register CompanyListRepository and use DioClientProvider
+  sl.registerLazySingleton<AiCompanyListRepository>(
+    () => AiCompanyListRepositoryImpl(sl<DioClientProvider>()),
+  );
+
+  // Register CompanyListCubit
+  sl.registerFactory(() => AiCompanyListCubit(
+        sl<AiCompanyListRepository>(),
+        sl<CompanySettingRepository>(),
+        sl<CompanyRepository>(),
+      ));
 
   // AddCompany Cubit
 }

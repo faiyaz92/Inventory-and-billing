@@ -27,7 +27,7 @@ class ReportPage extends StatelessWidget {
                   _buildSection(
                     title: AppLabels.followUpChartTitle,
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         _buildDropdown(
                           context,
@@ -44,7 +44,7 @@ class ReportPage extends StatelessWidget {
                   _buildSection(
                     title: AppLabels.progressChartTitle,
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         _buildDropdown(
                           context,
@@ -109,9 +109,15 @@ class ReportPage extends StatelessWidget {
     List<String> options,
     Function(String) onChanged,
   ) {
+    // Remove duplicates using Set
+    final uniqueOptions =
+        options.toSet().toList(); // This will remove duplicates
+    if (!uniqueOptions.contains(selectedValue)) {
+      selectedValue = null;
+    }
     return DropdownButton<String>(
       value: selectedValue,
-      items: options.map((year) {
+      items: uniqueOptions.map((year) {
         return DropdownMenuItem(value: year, child: Text(year));
       }).toList(),
       onChanged: (value) {
@@ -129,32 +135,32 @@ class ReportPage extends StatelessWidget {
       children: [
         hasData
             ? SizedBox(
-          height: 250,
-          child: PieChart(
-            PieChartData(
-              sections: [
-                PieChartSectionData(
-                  color: AppColors.green,
-                  value: data[AppKeys.sentKey]!.toDouble(),
-                  title: "${data[AppKeys.sentKey]}",
-                  radius: 60,
-                  titleStyle:
-                  const TextStyle(fontSize: 14, color: Colors.white),
+                height: 250,
+                child: PieChart(
+                  PieChartData(
+                    sections: [
+                      PieChartSectionData(
+                        color: AppColors.green,
+                        value: data[AppKeys.sentKey]!.toDouble(),
+                        title: "${data[AppKeys.sentKey]}",
+                        radius: 60,
+                        titleStyle:
+                            const TextStyle(fontSize: 14, color: Colors.white),
+                      ),
+                      PieChartSectionData(
+                        color: AppColors.orange,
+                        value: data[AppKeys.notSentKey]!.toDouble(),
+                        title: "${data[AppKeys.notSentKey]}",
+                        radius: 60,
+                        titleStyle:
+                            const TextStyle(fontSize: 14, color: Colors.white),
+                      ),
+                    ],
+                    sectionsSpace: 2,
+                    centerSpaceRadius: 40,
+                  ),
                 ),
-                PieChartSectionData(
-                  color: AppColors.orange,
-                  value: data[AppKeys.notSentKey]!.toDouble(),
-                  title: "${data[AppKeys.notSentKey]}",
-                  radius: 60,
-                  titleStyle:
-                  const TextStyle(fontSize: 14, color: Colors.white),
-                ),
-              ],
-              sectionsSpace: 2,
-              centerSpaceRadius: 40,
-            ),
-          ),
-        )
+              )
             : _buildNoDataMessage(),
 
         // ✅ Email Sent & Email Not Sent Count Below Pie Chart (Wapas Add Kiya)
@@ -175,6 +181,7 @@ class ReportPage extends StatelessWidget {
       ],
     );
   }
+
   Widget _buildLegendItem(Color color, String text) {
     return Row(
       children: [
@@ -191,6 +198,7 @@ class ReportPage extends StatelessWidget {
       ],
     );
   }
+
   /// Progress Chart (Bar Chart)
   Widget _buildProgressChart(CompanyCubit cubit, CompanyState state) {
     final progressData = cubit.getProgressData(state.selectedYearForProgress);
@@ -237,22 +245,23 @@ class ReportPage extends StatelessWidget {
                   double barValue = progressData.bars[index].barRods[0].y;
                   return barValue > 0
                       ? Column(
-                    children: [
-                      Text(
-                        barValue.toInt().toString(),
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                        textAlign: TextAlign.left,
-                      ),
-                      SizedBox(
-                        height: (chartHeight * (1 - (barValue / maxValue)))
-                            .clamp(5, chartHeight), // Relative adjustment
-                      ),
-                    ],
-                  )
+                          children: [
+                            Text(
+                              barValue.toInt().toString(),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                              textAlign: TextAlign.left,
+                            ),
+                            SizedBox(
+                              height: (chartHeight *
+                                      (1 - (barValue / maxValue)))
+                                  .clamp(5, chartHeight), // Relative adjustment
+                            ),
+                          ],
+                        )
                       : const SizedBox(width: 20);
                 }),
               ),

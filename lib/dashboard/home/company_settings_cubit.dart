@@ -12,15 +12,29 @@ class CompanySettingCubit extends Cubit<CompanySettingState> {
   Future<void> loadSettings() async {
     emit(state.copyWith(isLoading: true));
     try {
-      final settings = await _repository.getSettings();
-      emit(state.copyWith(settings: settings, isLoading: false));
+      final result = await _repository.getSettings();
+      result.fold(
+            (error) {
+          // Handle the error and update the UI state
+          emit(state.copyWith(
+            isLoading: false,
+            errorMessage: "Failed to load settings: $error",
+          ));
+        },
+            (settings) {
+          // Handle the success case and update the state with the settings
+          emit(state.copyWith(settings: settings, isLoading: false));
+        },
+      );
     } catch (e) {
+      // General catch for any unexpected errors
       emit(state.copyWith(
         isLoading: false,
-        errorMessage: "Failed to load settings: $e",
+        errorMessage: "Unexpected error: $e",
       ));
     }
   }
+
 
   Future<void> addSource(String source, BuildContext context) async {
     if (state.settings.sources.contains(source)) {
@@ -120,7 +134,21 @@ class CompanySettingCubit extends Cubit<CompanySettingState> {
       ));
     }
   }
+// Add Business Type
+  Future<void> addBusinessType(String businessType, BuildContext context) async {
+    if (state.settings.businessTypes.contains(businessType)) {
+      _showSnackbar(context, "Business Type '$businessType' already exists.");
+      return;
+    }
+    final updatedBusinessTypes = List<String>.from(state.settings.businessTypes)..add(businessType);
+    await _updateSettings(state.settings.copyWith(businessTypes: updatedBusinessTypes));
+  }
 
+  // Remove Business Type
+  Future<void> removeBusinessType(String businessType) async {
+    final updatedBusinessTypes = List<String>.from(state.settings.businessTypes)..remove(businessType);
+    await _updateSettings(state.settings.copyWith(businessTypes: updatedBusinessTypes));
+  }
   void _showSnackbar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),

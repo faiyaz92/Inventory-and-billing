@@ -234,6 +234,15 @@ class MockCoordinator extends _i1.Mock implements _i6.Coordinator {
       );
 
   @override
+  void navigateToAiCompanyListPage() => super.noSuchMethod(
+        Invocation.method(
+          #navigateToAiCompanyListPage,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void navigateToReportsPage() => super.noSuchMethod(
         Invocation.method(
           #navigateToReportsPage,

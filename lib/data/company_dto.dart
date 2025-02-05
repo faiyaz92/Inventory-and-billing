@@ -22,6 +22,7 @@ class CompanyDto {
   final String? clutchLink;
   final String? goodFirmLink;
   final String? description; // New field
+  final String? businessType; // Added businessType field
   final String createdBy; // New field
   final String lastUpdatedBy; // New field
 
@@ -47,6 +48,7 @@ class CompanyDto {
     this.clutchLink,
     this.goodFirmLink,
     this.description,
+    this.businessType, // Added businessType field
     required this.createdBy,
     required this.lastUpdatedBy,
   });
@@ -77,6 +79,7 @@ class CompanyDto {
       clutchLink: map['clutchLink'] ?? '',
       goodFirmLink: map['goodFirmLink'] ?? '',
       description: map['description'],
+      businessType: map['businessType'], // Parse businessType field
       createdBy: map['createdBy'] ?? 'Unknown',
       lastUpdatedBy: map['lastUpdatedBy'] ?? 'Unknown',
     );
@@ -105,6 +108,7 @@ class CompanyDto {
       'clutchLink': clutchLink,
       'goodFirmLink': goodFirmLink,
       'description': description,
+      'businessType': businessType, // Include businessType in the map
       'createdBy': createdBy,
       'lastUpdatedBy': lastUpdatedBy,
     };
@@ -134,6 +138,7 @@ class CompanyDto {
       clutchLink: clutchLink,
       goodFirmLink: goodFirmLink,
       description: description,
+      businessType: businessType, // Transfer businessType to UI Model
       createdBy: createdBy,
       lastUpdatedBy: lastUpdatedBy,
     );
@@ -165,6 +170,7 @@ class CompanyDto {
       clutchLink: uiModel.clutchLink,
       goodFirmLink: uiModel.goodFirmLink,
       description: uiModel.description,
+      businessType: uiModel.businessType, // Include businessType
       createdBy: uiModel.createdBy,
       lastUpdatedBy: uiModel.lastUpdatedBy,
     );

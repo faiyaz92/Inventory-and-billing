@@ -12,6 +12,7 @@ class FiltersSection extends StatelessWidget {
   final Function(bool?) onEmailRepliedSelected;
   final Function(String?) onPrioritySelected;
   final Function(String?) onSourceSelected;
+  final Function(String?) onBusinessTypeSelected; // New callback for business type
   final Function(String?) onSortSelected;
   final VoidCallback onClearFilters;
 
@@ -20,6 +21,7 @@ class FiltersSection extends StatelessWidget {
   final List<String> interestLevels;
   final List<String> priorities;
   final List<String> sources;
+  final List<String> businessTypes; // List for business types
   final Company? company;
 
   const FiltersSection({
@@ -31,6 +33,7 @@ class FiltersSection extends StatelessWidget {
     required this.onEmailRepliedSelected,
     required this.onPrioritySelected,
     required this.onSourceSelected,
+    required this.onBusinessTypeSelected, // New parameter
     required this.onSortSelected,
     required this.onClearFilters,
     required this.countries,
@@ -38,6 +41,7 @@ class FiltersSection extends StatelessWidget {
     required this.interestLevels,
     required this.priorities,
     required this.sources,
+    required this.businessTypes, // New parameter
     required this.company,
   }) : super(key: key);
 
@@ -100,6 +104,30 @@ class FiltersSection extends StatelessWidget {
                     onChanged: onPrioritySelected,
                     decoration: const InputDecoration(
                       labelText: AppLabels.priorityLabel,
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // Business Type Dropdown (Added below Interest Level and Priority)
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: businessTypes.contains(company?.businessType)
+                        ? company?.businessType
+                        : null,
+                    items: businessTypes
+                        .map((businessType) => DropdownMenuItem(
+                      value: businessType,
+                      child: Text(businessType),
+                    ))
+                        .toList(),
+                    onChanged: onBusinessTypeSelected, // Callback for business type
+                    decoration: const InputDecoration(
+                      labelText: AppLabels.businessTypeLabel, // Label for business type
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -188,7 +216,6 @@ class FiltersSection extends StatelessWidget {
                     ),
                   ],
                 ),
-
               ],
             ),
           ],

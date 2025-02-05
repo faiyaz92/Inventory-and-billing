@@ -62,6 +62,7 @@ class CompanyState extends Equatable {
         dateCreated: DateTime.now(),
         createdBy: '',
         lastUpdatedBy: '',
+        businessType: null,
       ),
       selectedYear: DateFormat('yyyy').format(DateTime.now()),
       selectedPeriod1: defaultPeriods[0],
@@ -118,5 +119,8 @@ class CompanyState extends Equatable {
         isFilterVisible, // Include in props
         selectedYearForFollowUp,
         selectedYearForProgress,
+        selectedPeriod1,
+        selectedPeriod2,
+
       ];
 }
