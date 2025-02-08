@@ -12,6 +12,7 @@ import 'package:requirment_gathering_app/data/company.dart' as _i7;
 import 'package:requirment_gathering_app/login/splash_cubit.dart' as _i2;
 import 'package:requirment_gathering_app/repositories/account_repository.dart'
     as _i3;
+import 'package:requirment_gathering_app/services/login_service.dart' as _i8;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -295,4 +296,49 @@ class MockCoordinator extends _i1.Mock implements _i6.Coordinator {
         ),
         returnValueForMissingStub: null,
       );
+}
+
+/// A class which mocks [LoginService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockLoginService extends _i1.Mock implements _i8.LoginService {
+  MockLoginService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i4.Future<void> signIn(
+    String? email,
+    String? password,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #signIn,
+          [
+            email,
+            password,
+          ],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> signOut() => (super.noSuchMethod(
+        Invocation.method(
+          #signOut,
+          [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  bool isUserLoggedIn() => (super.noSuchMethod(
+        Invocation.method(
+          #isUserLoggedIn,
+          [],
+        ),
+        returnValue: false,
+      ) as bool);
 }

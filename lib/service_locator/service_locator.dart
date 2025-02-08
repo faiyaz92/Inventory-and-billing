@@ -18,58 +18,76 @@ import 'package:requirment_gathering_app/repositories/company_repository.dart';
 import 'package:requirment_gathering_app/repositories/company_repository_impl.dart';
 import 'package:requirment_gathering_app/repositories/company_settings_repository.dart';
 import 'package:requirment_gathering_app/repositories/company_settings_repository_impl.dart';
+import 'package:requirment_gathering_app/services/company_service.dart';
 import 'package:requirment_gathering_app/services/company_service_impl.dart';
+import 'package:requirment_gathering_app/services/firestore_provider.dart';
+import 'package:requirment_gathering_app/services/firestore_provider_impl.dart';
+import 'package:requirment_gathering_app/services/login_service.dart';
+import 'package:requirment_gathering_app/services/login_service_impl.dart';
 import 'package:requirment_gathering_app/services/provider.dart';
 
 final sl = GetIt.instance;
 
 void setupServiceLocator() {
-  // Register FirebaseAuth
+  _initFirebase();
+  _initRepositories();
+  _initServices();
+  _initCubits();
+  _initAppNavigation();
+}
+
+/// **1. Initialize Firebase Dependencies**
+void _initFirebase() {
   sl.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);
-
-  // Register AccountRepository
-  sl.registerLazySingleton<AccountRepository>(
-      () => AccountRepositoryImpl(sl<FirebaseAuth>()));
-  sl.registerLazySingleton<AppRouter>(() => AppRouter());
-  sl.registerLazySingleton<Coordinator>(() => AppCoordinator(sl<AppRouter>()));
-
-  // Register LoginCubit
-  sl.registerFactory(() => LoginCubit(sl<AccountRepository>()));
-  // SplashCubit
-  sl.registerFactory(() => SplashCubit(sl<AccountRepository>()));
   sl.registerLazySingleton<FirebaseFirestore>(() => FirebaseFirestore.instance);
+  sl.registerLazySingleton<FirestorePathProvider>(() => FirestorePathProviderImpl(sl<FirebaseFirestore>()));
+}
+
+/// **2. Initialize Repositories**
+void _initRepositories() {
+  // Account Repository
+  sl.registerLazySingleton<AccountRepository>(() => AccountRepositoryImpl(sl<FirebaseAuth>()));
 
   // Company Repository
-  sl.registerLazySingleton<CompanyRepository>(
-    () => CompanyRepositoryImpl(sl<FirebaseFirestore>()),
-  );
+  sl.registerFactory<CompanyRepository>(() => CompanyRepositoryImpl(sl<FirestorePathProvider>()));
+
+  // Company Setting Repository
+  sl.registerLazySingleton<CompanySettingRepository>(() => CompanySettingRepositoryImpl(sl<FirestorePathProvider>()));
+
+  // AI Company Repository
+  sl.registerLazySingleton<AiCompanyListRepository>(() => AiCompanyListRepositoryImpl(sl<DioClientProvider>()));
+}
+
+/// **3. Initialize Services**
+void _initServices() {
+  sl.registerLazySingleton<LoginService>(() => LoginServiceImpl(sl<AccountRepository>()));
+
   sl.registerLazySingleton<CompanyService>(
-        () => CompanyService(companyRepository: sl<CompanyRepository>(),companySettingRepository: sl<CompanySettingRepository>()),
+        () => CompanyServiceImpl(
+      sl<CompanyRepository>(),
+      companySettingRepository: sl<CompanySettingRepository>(),
+    ),
   );
-  sl.registerFactory(() =>
-      CompanyCubit(sl<CompanyRepository>(), sl<CompanySettingRepository>(),/*sl<CompanyService>()*/));
+}
+
+/// **4. Initialize Cubits (State Management)**
+void _initCubits() {
+  sl.registerFactory(() => LoginCubit(sl<LoginService>()));
+  sl.registerFactory(() => SplashCubit(sl<AccountRepository>()));
+
+  sl.registerFactory(() => CompanyCubit(sl<CompanyService>()));
   sl.registerFactory(() => DashboardCubit());
-  sl.registerLazySingleton<CompanySettingRepository>(
-    () => CompanySettingRepositoryImpl(sl<FirebaseFirestore>()),
-  );
-  sl.registerFactory(() => CompanySettingCubit(sl<CompanySettingRepository>()));
+  sl.registerFactory(() => CompanySettingCubit(sl<CompanyService>()));
 
-  ///---------- AI---------
-  ///
-  // Register DioClientProvider instead of Dio directly
-  sl.registerLazySingleton<DioClientProvider>(() => DioClientProvider());
-
-  // Register CompanyListRepository and use DioClientProvider
-  sl.registerLazySingleton<AiCompanyListRepository>(
-    () => AiCompanyListRepositoryImpl(sl<DioClientProvider>()),
-  );
-
-  // Register CompanyListCubit
   sl.registerFactory(() => AiCompanyListCubit(
-        sl<AiCompanyListRepository>(),
-        sl<CompanySettingRepository>(),
-        sl<CompanyRepository>(),
-      ));
+    sl<AiCompanyListRepository>(),
+    sl<CompanySettingRepository>(),
+    sl<CompanyRepository>(),
+  ));
+}
 
-  // AddCompany Cubit
+/// **5. Initialize App Navigation & Coordinator**
+void _initAppNavigation() {
+  sl.registerLazySingleton<AppRouter>(() => AppRouter());
+  sl.registerLazySingleton<Coordinator>(() => AppCoordinator(sl<AppRouter>()));
 }
