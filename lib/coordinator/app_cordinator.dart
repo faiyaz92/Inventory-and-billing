@@ -35,7 +35,7 @@ class AppCoordinator implements Coordinator {
 
   @override
   void navigateToReportsPage() {
-    _router.push(const ReportsRoute());
+    _router.push(const ReportRoute());
   }
 
   @override
@@ -59,7 +59,10 @@ class AppCoordinator implements Coordinator {
     _router.push(AddCompanyRoute(
         company: company)); // Navigate to AddCompanyPage with pre-filled data
   }
-
+  @override
+  void navigateToAiCompanyListPage() {
+    _router.push(const AiCompanyListRoute());  // For the new AiCompanyListPage
+  }
   @override
   void navigateBack() {
     _router.pop();

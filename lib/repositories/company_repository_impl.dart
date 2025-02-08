@@ -1,90 +1,153 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dartz/dartz.dart';
 import 'package:requirment_gathering_app/data/company.dart';
 import 'package:requirment_gathering_app/data/company_dto.dart';
 import 'package:requirment_gathering_app/repositories/company_repository.dart';
+import 'package:requirment_gathering_app/services/firestore_provider.dart';
 
 class CompanyRepositoryImpl implements CompanyRepository {
-  final FirebaseFirestore _firestore;
+  final FirestorePathProvider _pathProvider;
 
-  CompanyRepositoryImpl(this._firestore);
+  CompanyRepositoryImpl(this._pathProvider);
 
   @override
-  Future<void> addCompany(Company company) async {
+  Future<Either<Exception, void>> addCompany(Company company) async {
     try {
-      // Convert UI Model to DTO and save to Firestore
       final dto = CompanyDto.fromUiModel(company);
-      await _firestore.collection('companies').add(dto.toMap());
-      // await _firestore.doc('Easy2Solutions').collection('Organisations').doc('Abc pvt.ltd').collection('companies').add(dto.toMap());
-      // await _firestore.doc('Easy2Solutions').collection('Organisations').add(dto.toMap()); //to add company by super admin
-      // await _firestore.doc('Easy2Solutions').collection('Organisations').doc('compId').collection('companies').add(dto.toMap()); 3 layer super admin ->comp admin -> user
-      // await _firestore.doc('Easy2Solutions').collection('Organisations').doc('compId').collection('users').add(dto.toMap()); to add user by company admin
+      await _pathProvider.basePath.collection('companies').add(dto.toMap());
+      return const Right(null);
     } catch (e) {
-      throw Exception("Failed to add company: $e");
+      return Left(Exception("Failed to add company: $e"));
     }
   }
 
   @override
-  Future<void> updateCompany(String id, Company company) async {
+  Future<Either<Exception, void>> updateCompany(String id, Company company) async {
     try {
-      // Convert UI Model to DTO and update in Firestore
       final dto = CompanyDto.fromUiModel(company);
-      await _firestore.collection('companies').doc(id).update(dto.toMap());
+      await _pathProvider.basePath.collection('companies').doc(id).update(dto.toMap());
+      return const Right(null);
     } catch (e) {
-      throw Exception("Failed to update company: $e");
+      return Left(Exception("Failed to update company: $e"));
     }
   }
 
   @override
-  Future<void> deleteCompany(String id) async {
+  Future<Either<Exception, void>> deleteCompany(String id) async {
     try {
-      await _firestore.collection('companies').doc(id).delete();
+      await _pathProvider.basePath.collection('companies').doc(id).delete();
+      return const Right(null);
     } catch (e) {
-      throw Exception("Failed to delete company: $e");
+      return Left(Exception("Failed to delete company: $e"));
     }
   }
 
   @override
-  Future<Company> getCompany(String id) async {
+  Future<Either<Exception, Company>> getCompany(String id) async {
     try {
-      final doc = await _firestore.collection('companies').doc(id).get();
+      final doc = await _pathProvider.basePath.collection('companies').doc(id).get();
       if (doc.exists) {
         final dto = CompanyDto.fromMap(doc.data()!, doc.id);
-        return dto.toUiModel();
+        return Right(dto.toUiModel());
       } else {
-        throw Exception("Company with ID $id not found");
+        return Left(Exception("Company with ID $id not found"));
       }
     } catch (e) {
-      throw Exception("Failed to fetch company: $e");
+      return Left(Exception("Failed to fetch company: $e"));
     }
   }
 
   @override
-  Future<List<Company>> getAllCompanies() async {
+  Future<Either<Exception, List<Company>>> getAllCompanies() async {
     try {
-      final snapshot = await _firestore.collection('companies').get();
-
-      // Map Firebase documents to a list of UI Models via DTO
-      return snapshot.docs.map((doc) {
+      final snapshot = await _pathProvider.basePath.collection('companies').get();
+      final companies = snapshot.docs.map((doc) {
         final dto = CompanyDto.fromMap(doc.data(), doc.id);
         return dto.toUiModel();
       }).toList();
+      return Right(companies);
     } catch (e) {
-      throw Exception("Failed to fetch companies: $e");
+      return Left(Exception("Failed to fetch companies: $e"));
     }
   }
 
   @override
-  Future<bool> isCompanyNameUnique(String companyName) async {
+  Future<Either<Exception, bool>> isCompanyNameUnique(String companyName) async {
     try {
-      final querySnapshot = await _firestore
+      final querySnapshot = await _pathProvider.basePath
           .collection('companies')
           .where('companyName', isEqualTo: companyName)
           .get();
 
-      // Returns true if no documents match the company name
-      return querySnapshot.docs.isEmpty;
+      return Right(querySnapshot.docs.isEmpty);
     } catch (e) {
-      throw Exception("Failed to check company name uniqueness: $e");
+      return Left(Exception("Failed to check company name uniqueness: $e"));
     }
+  }
+
+  @override
+  Future<Either<Exception, List<Company>>> getFilteredCompanies(
+      String? country, String? city, String? businessType) async {
+    try {
+      Query<Map<String, dynamic>> query = _pathProvider.basePath.collection('companies');
+
+      if (country != null && country.isNotEmpty) {
+        query = query.where('country', isEqualTo: country);
+      }
+      if (city != null && city.isNotEmpty) {
+        query = query.where('city', isEqualTo: city);
+      }
+      if (businessType != null && businessType.isNotEmpty) {
+        query = query.where('businessType', isEqualTo: businessType);
+      }
+
+      final snapshot = await query.get();
+      final companies = snapshot.docs.map((doc) {
+        final dto = CompanyDto.fromMap(doc.data(), doc.id);
+        return dto.toUiModel();
+      }).toList();
+
+      return Right(companies);
+    } catch (e) {
+      return Left(Exception("Failed to fetch companies: $e"));
+    }
+  }
+
+  @override
+  Future<Either<Exception, List<Company>>> saveCompaniesBulk(List<Company> companies) async {
+    WriteBatch batch = _pathProvider.basePath.firestore.batch();
+    List<Company> successfullySaved = [];
+    List<Company> failedToSave = [];
+
+    for (var company in companies) {
+      try {
+        final isUnique = await isCompanyNameUnique(company.companyName);
+
+        isUnique.fold(
+              (l) {
+            failedToSave.add(company);
+          },
+              (r) {
+            if (!r) {
+              failedToSave.add(company);
+              return;
+            }
+
+            final dto = CompanyDto.fromUiModel(company);
+            final companyRef = _pathProvider.basePath.collection('companies').doc();
+            batch.set(companyRef, dto.toMap());
+            successfullySaved.add(company);
+          },
+        );
+      } catch (e) {
+        failedToSave.add(company);
+      }
+    }
+
+    if (successfullySaved.isNotEmpty) {
+      await batch.commit();
+    }
+
+    return Right(failedToSave);
   }
 }

@@ -5,12 +5,14 @@ class CompanySettingDto {
   final List<String> priorities;
   final List<String> verifiedOn;
   final Map<String, List<String>> countryCityMap;
+  final List<String> businessTypes; // New field for Business Types
 
   CompanySettingDto({
     required this.sources,
     required this.priorities,
     required this.verifiedOn,
     required this.countryCityMap,
+    required this.businessTypes, // Add businessTypes to the constructor
   });
 
   factory CompanySettingDto.fromMap(Map<String, dynamic> map) {
@@ -20,8 +22,8 @@ class CompanySettingDto {
       verifiedOn: List<String>.from(map['verifiedOn'] ?? []),
       countryCityMap: (map['countryCityMap'] as Map<String, dynamic>?)?.map(
             (key, value) => MapEntry(key, List<String>.from(value)),
-      ) ??
-          {},
+      ) ?? {},
+      businessTypes: List<String>.from(map['businessTypes'] ?? []), // Extract businessTypes from the map
     );
   }
 
@@ -31,6 +33,7 @@ class CompanySettingDto {
       'priorities': priorities,
       'verifiedOn': verifiedOn,
       'countryCityMap': countryCityMap,
+      'businessTypes': businessTypes, // Include businessTypes in the map
     };
   }
 
@@ -41,6 +44,7 @@ class CompanySettingDto {
       priorities: priorities,
       verifiedOn: verifiedOn,
       countryCityMap: countryCityMap,
+      businessTypes: businessTypes, // Map businessTypes to UI model
     );
   }
 
@@ -51,6 +55,7 @@ class CompanySettingDto {
       priorities: uiModel.priorities,
       verifiedOn: uiModel.verifiedOn,
       countryCityMap: uiModel.countryCityMap,
+      businessTypes: uiModel.businessTypes, // Map businessTypes to DTO
     );
   }
 }

@@ -5,11 +5,12 @@ abstract class Coordinator {
   void navigateToDashboardPage();
   void navigateToSplashScreen();
   void navigateToHomePage();
-  void navigateToCompanyListPage();
+  void navigateToCompanyListPage();  // For existing CompanyListPage
+  void navigateToAiCompanyListPage();  // For AiCompanyListPage
   void navigateToReportsPage();
   void navigateToCompanySettingsPage();
   void navigateToAddCompanyPage();
-  void navigateToCompanyDetailsPage(Company company); // New method for navigating to company details
-  void navigateToEditCompanyPage(Company? company); // New method for navigating to edit company page
+  void navigateToCompanyDetailsPage(Company company);
+  void navigateToEditCompanyPage(Company? company);
   void navigateBack();
 }

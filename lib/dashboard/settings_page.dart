@@ -57,6 +57,14 @@ class CompanySettingPage extends StatelessWidget {
                               cubit.removeVerifiedOn(platform),
                         ),
                         const SizedBox(height: 16),
+                        _buildSection(
+                          title: "Business Types", // New section for business types
+                          items: state.settings.businessTypes,
+                          onAdd: (newBusinessType) => cubit.addBusinessType(newBusinessType, context),
+                          onDelete: (businessType) => cubit.removeBusinessType(businessType),
+                        ),
+
+                        const SizedBox(height: 16),
                         _buildCountrySection(context, cubit, state),
                       ],
                     ),

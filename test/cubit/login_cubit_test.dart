@@ -2,16 +2,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:requirment_gathering_app/login/login_cubit.dart';
+import 'package:requirment_gathering_app/login/login_state.dart';
 
 import '../main.mocks.dart'; // Auto-generated mocks
 
 void main() {
-  late MockAccountRepository mockAccountRepository;
+  late MockLoginService mockLoginService;
   late LoginCubit loginCubit;
 
   setUp(() {
-    mockAccountRepository = MockAccountRepository();
-    loginCubit = LoginCubit(mockAccountRepository);
+    mockLoginService = MockLoginService();
+    loginCubit = LoginCubit(mockLoginService);
   });
 
   tearDown(() {
@@ -40,7 +41,7 @@ void main() {
     blocTest<LoginCubit, LoginState>(
       'emits [LoginLoading, LoginSuccess] when login is successful',
       build: () {
-        when(mockAccountRepository.signIn(any, any))
+        when(mockLoginService.signIn(any, any))
             .thenAnswer((_) async => null); // Mock successful login
         return loginCubit;
       },
@@ -54,7 +55,7 @@ void main() {
     blocTest<LoginCubit, LoginState>(
       'emits [LoginLoading, LoginFailure] when login fails',
       build: () {
-        when(mockAccountRepository.signIn(any, any))
+        when(mockLoginService.signIn(any, any))
             .thenThrow(Exception('Login failed')); // Mock login failure
         return loginCubit;
       },
@@ -68,7 +69,7 @@ void main() {
     blocTest<LoginCubit, LoginState>(
       'emits [LoginInitial] after logout',
       build: () {
-        when(mockAccountRepository.signOut()).thenAnswer((_) async => null);
+        when(mockLoginService.signOut()).thenAnswer((_) async => null);
         return loginCubit;
       },
       act: (cubit) => cubit.logout(),

@@ -48,6 +48,9 @@ dependencies:
   google_fonts: 5.0.0
   url_launcher: 6.0.20
   intl: 0.18.0
+  dio: 5.8.0+1  # Make sure to use the latest version available
+  dartz: 0.10.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

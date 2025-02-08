@@ -4,6 +4,7 @@
     final String id;
     final String companyName;
     final String? source;
+    final String? businessType;
     final String? address;
     final String? email;
     final String? contactNumber;
@@ -26,7 +27,7 @@
     final String createdBy; // Retained
     final String lastUpdatedBy; // Retained
 
-    Company({
+    Company( {
       required this.id,
       required this.companyName,
       this.source,
@@ -47,10 +48,12 @@
       this.goodFirmLink,
       this.description, // Added back
       this.verifiedOn = const [],
+      this.businessType,
       required this.dateCreated,
       this.settings,
       required this.createdBy, // Retained
-      required this.lastUpdatedBy, // Retained
+      required this.lastUpdatedBy,
+      // Retained
     });
 
     Company copyWith({
@@ -78,6 +81,8 @@
       CompanySettingsUi? settings,
       String? createdBy, // Retained
       String? lastUpdatedBy, // Retained
+       String? businessType,
+
     }) {
       return Company(
         id: id ?? this.id,
@@ -91,7 +96,7 @@
         theyReplied: theyReplied ?? this.theyReplied,
         interestLevel: interestLevel ?? this.interestLevel,
         country: country ?? this.country,
-        city: city /*?? this.city*/,
+        city: city ?? this.city,
         priority: priority ?? this.priority,
         assignedTo: assignedTo ?? this.assignedTo,
         verifiedOn: verifiedOn ?? this.verifiedOn,
@@ -103,7 +108,8 @@
         description: description ?? this.description, // Added back
         settings: settings ?? this.settings,
         createdBy: createdBy ?? this.createdBy, // Retained
-        lastUpdatedBy: lastUpdatedBy ?? this.lastUpdatedBy, // Retained
+        lastUpdatedBy: lastUpdatedBy ?? this.lastUpdatedBy,
+        businessType: businessType?? this.businessType// Retained
       );
     }
   }

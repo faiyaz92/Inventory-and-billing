@@ -1,51 +1,14 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:requirment_gathering_app/repositories/account_repository.dart';
-import 'package:equatable/equatable.dart';
+import 'package:requirment_gathering_app/login/login_state.dart';
+import 'package:requirment_gathering_app/services/login_service.dart';
 
-// States for Login
-abstract class LoginState extends Equatable {
-  @override
-  List<Object?> get props => [];
-}
 
-class LoginInitial extends LoginState {}
-
-class LoginLoading extends LoginState {}
-
-class LoginSuccess extends LoginState {}
-
-class EmailValidationError extends LoginState {
-  final String error;
-
-  EmailValidationError(this.error);
-
-  @override
-  List<Object?> get props => [error];
-}
-
-class PasswordValidationError extends LoginState {
-  final String error;
-
-  PasswordValidationError(this.error);
-
-  @override
-  List<Object?> get props => [error];
-}
-
-class LoginFailure extends LoginState {
-  final String error;
-
-  LoginFailure(this.error);
-
-  @override
-  List<Object?> get props => [error];
-}
 
 // LoginCubit
 class LoginCubit extends Cubit<LoginState> {
-  final AccountRepository _accountRepository;
+  final LoginService _loginService;
 
-  LoginCubit(this._accountRepository) : super(LoginInitial());
+  LoginCubit(this._loginService) : super(LoginInitial());
 
   Future<void> login(String email, String password) async {
     if (email.isEmpty || !_isValidEmail(email)) {
@@ -60,7 +23,7 @@ class LoginCubit extends Cubit<LoginState> {
 
     emit(LoginLoading());
     try {
-      await _accountRepository.signIn(email, password);
+      await _loginService.signIn(email, password);
       emit(LoginSuccess());
     } catch (e) {
       emit(LoginFailure(e.toString()));
@@ -68,7 +31,7 @@ class LoginCubit extends Cubit<LoginState> {
   }
 
   Future<void> logout() async {
-    await _accountRepository.signOut();
+    await _loginService.signOut();
     emit(LoginInitial());
   }
 

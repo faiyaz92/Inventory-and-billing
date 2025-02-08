@@ -30,7 +30,7 @@ class CompanyListPage extends StatelessWidget {
                 SliverAppBar(
                   pinned: false,
                   floating: false,
-                  expandedHeight: state.isFilterVisible ? 436 : 76,
+                  expandedHeight: state.isFilterVisible ? 436+68 : 76,
                   flexibleSpace: FlexibleSpaceBar(
                     background: Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -130,7 +130,7 @@ class CompanyListPage extends StatelessWidget {
                                     [],
                                 cities: cubit.getCitiesForCountry(
                                     state.company?.country),
-                                interestLevels: [
+                                interestLevels: const [
                                   '0-20',
                                   '21-40',
                                   '41-60',
@@ -141,6 +141,14 @@ class CompanyListPage extends StatelessWidget {
                                     state.company?.settings?.priorities ?? [],
                                 sources: state.company?.settings?.sources ?? [],
                                 company: state.company,
+                                onBusinessTypeSelected:
+                                    (String? businessType) {
+                                  cubit.updateBusinessType(businessType);
+                                  cubit.applyGeneralFilters();
+                                    },
+                                businessTypes:
+                                    state.company?.settings?.businessTypes ??
+                                        [],
                               ),
                             ),
                         ],
@@ -154,7 +162,7 @@ class CompanyListPage extends StatelessWidget {
                   pinned: true,
                   delegate: _StickyHeaderDelegate(
                     companyCount: state.companies.length,
-                    totalCompanyCount:state.originalCompanies.length,
+                    totalCompanyCount: state.originalCompanies.length,
                   ),
                 ),
 
