@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:bloc_test/bloc_test.dart';
-import 'package:requirment_gathering_app/login/splash_cubit.dart';
+import 'package:requirment_gathering_app/core_module/presentation/login/splash_cubit.dart';
 
 import '../main.mocks.dart';
 

@@ -1,18 +1,21 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:bloc_test/bloc_test.dart';
-import 'package:requirment_gathering_app/login/login_cubit.dart';
-import 'package:requirment_gathering_app/login/login_state.dart';
+import 'package:requirment_gathering_app/core_module/presentation/login/login_cubit.dart';
+import 'package:requirment_gathering_app/core_module/presentation/login/login_state.dart';
 
-import '../main.mocks.dart'; // Auto-generated mocks
+import '../main.mocks.dart';
+
 
 void main() {
-  late MockLoginService mockLoginService;
+  late  MockAuthService mockLoginService;
+  late MockTenantCompanyService mockITenantCompanyService;
   late LoginCubit loginCubit;
 
   setUp(() {
-    mockLoginService = MockLoginService();
-    loginCubit = LoginCubit(mockLoginService);
+    mockLoginService = MockAuthService();
+    mockITenantCompanyService = MockTenantCompanyService();
+    loginCubit = LoginCubit(mockLoginService,mockITenantCompanyService);
   });
 
   tearDown(() {
