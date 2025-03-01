@@ -2,15 +2,15 @@ import 'package:dartz/dartz.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.dart';
 import 'package:requirment_gathering_app/user_module/data/company.dart';
 import 'package:requirment_gathering_app/user_module/data/company_settings.dart';
-import 'package:requirment_gathering_app/user_module/repo/company_repository.dart';
+import 'package:requirment_gathering_app/user_module/repo/customer_company_repository.dart';
 import 'package:requirment_gathering_app/user_module/repo/company_settings_repository.dart';
-import 'package:requirment_gathering_app/user_module/services/company_service.dart';
+import 'package:requirment_gathering_app/user_module/services/customer_company_service.dart';
 
-class CompanyServiceImpl implements CompanyService {
-  final CompanyRepository _companyRepository;
+class CustomerCompanyServiceImpl implements CustomerCompanyService {
+  final CustomerCompanyRepository _companyRepository;
   final CompanySettingRepository companySettingRepository;
 
-  CompanyServiceImpl(
+  CustomerCompanyServiceImpl(
     this._companyRepository, {
     required this.companySettingRepository,
   });
@@ -75,9 +75,9 @@ class CompanyServiceImpl implements CompanyService {
   }
 
   @override
-  Future<List<UserInfoDto>> getUsersFromTenantCompany() async {
+  Future<List<UserInfoDto>> getUsersFromOwnCompany() async {
     try {
-      return await _companyRepository.getUsersFromTenantCompany();
+      return await _companyRepository.getUsersFromOwnCompany();
     } catch (e) {
       throw Exception(e.toString());
     }

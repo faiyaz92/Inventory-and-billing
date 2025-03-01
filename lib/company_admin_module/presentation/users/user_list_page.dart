@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:requirment_gathering_app/company_admin_module/presentation/user_list_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/users/user_list_cubit.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';

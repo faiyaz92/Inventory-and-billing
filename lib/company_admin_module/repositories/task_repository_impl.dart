@@ -22,8 +22,8 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<void> deleteTask(String taskId) async {
-    await _firestorePathProvider.getSingleTaskRef(taskId, taskId).delete();
+  Future<void> deleteTask(String companyId,String taskId) async {
+    await _firestorePathProvider.getSingleTaskRef(companyId, taskId).delete();
   }
 
   @override
@@ -32,7 +32,8 @@ class TaskRepositoryImpl implements TaskRepository {
         await _firestorePathProvider.getTaskCollectionRef(companyId).get();
 
     return snapshot.docs
-        .map((doc) => TaskDto.fromMap(doc.data() as Map<String, dynamic>))
+        .map((doc) =>
+            TaskDto.fromMap(doc.data() as Map<String, dynamic>, doc.id))
         .toList();
   }
 }

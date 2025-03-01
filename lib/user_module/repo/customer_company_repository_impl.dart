@@ -6,15 +6,15 @@ import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart'
 import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.dart';
 import 'package:requirment_gathering_app/user_module/data/company.dart';
 import 'package:requirment_gathering_app/user_module/data/company_dto.dart';
-import 'package:requirment_gathering_app/user_module/repo/company_repository.dart';
+import 'package:requirment_gathering_app/user_module/repo/customer_company_repository.dart';
 
-class CompanyRepositoryImpl implements CompanyRepository {
+class CustomerCompanyRepositoryImpl implements CustomerCompanyRepository {
   final IFirestorePathProvider _pathProvider;
   final AccountRepository _accountRepository;
 
   UserInfo? _userInfo; // Private nullable field
 
-  CompanyRepositoryImpl(this._pathProvider, this._accountRepository);
+  CustomerCompanyRepositoryImpl(this._pathProvider, this._accountRepository);
 
   // ✅ Lazy Initialization for userInfo
   Future<UserInfo?> get userInfo async {
@@ -233,7 +233,7 @@ class CompanyRepositoryImpl implements CompanyRepository {
   }
 
   @override
-  Future<List<UserInfoDto>> getUsersFromTenantCompany() async {
+  Future<List<UserInfoDto>> getUsersFromOwnCompany() async {
     try {
       // Get reference to the tenant company
       final currentUser = await userInfo;

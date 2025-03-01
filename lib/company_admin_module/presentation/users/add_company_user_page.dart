@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:requirment_gathering_app/company_admin_module/presentation/add_user_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/users/add_user_cubit.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
@@ -164,7 +164,6 @@ class _AddUserViewState extends State<_AddUserView> {
                             userId: widget.user?.userId, // Keep userId if editing
                             email: emailController.text.trim(),
                             role: _selectedRole,
-                            companyId: "Company123", // TODO: Replace with actual company ID
                             name: nameController.text.trim(),
                             userName: userNameController.text.trim(),
                           );

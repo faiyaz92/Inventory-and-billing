@@ -1,21 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
-import 'package:requirment_gathering_app/company_admin_module/presentation/account_ledger_cubit.dart';
-import 'package:requirment_gathering_app/company_admin_module/presentation/add_user_cubit.dart';
-import 'package:requirment_gathering_app/company_admin_module/presentation/task_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/account_ledger_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/tasks/task_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/users/add_user_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/users/user_list_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/account_ledger_repository.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/task_repository.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/task_repository_impl.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/account_ledger_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/task_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/task_service_impl.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/tenant_company_service.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/tenant_company_service_impl.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services_impl.dart';
 import 'package:requirment_gathering_app/core_module/app_router/app_router.gr.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/app_cordinator.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
-import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/dashboard_cubit.dart';
+import 'package:requirment_gathering_app/core_module/presentation/dashboard/dashboard/dashboard_cubit.dart';
+import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/home_cubit.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/login_cubit.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/splash_cubit.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
@@ -25,6 +27,8 @@ import 'package:requirment_gathering_app/core_module/services/auth_service_impl.
 import 'package:requirment_gathering_app/core_module/services/firestore_provider.dart';
 import 'package:requirment_gathering_app/core_module/services/firestore_provider_impl.dart';
 import 'package:requirment_gathering_app/core_module/services/provider.dart';
+import 'package:requirment_gathering_app/core_module/services/user_service.dart';
+import 'package:requirment_gathering_app/core_module/services/user_service_impl.dart';
 import 'package:requirment_gathering_app/super_admin_module/ai_module/presentation/ai_company_list_cubit.dart';
 import 'package:requirment_gathering_app/super_admin_module/ai_module/repositories/ai_company_repository.dart';
 import 'package:requirment_gathering_app/super_admin_module/ai_module/repositories/ai_company_repository_impl.dart';
@@ -33,14 +37,14 @@ import 'package:requirment_gathering_app/super_admin_module/repository/tenant_co
 import 'package:requirment_gathering_app/super_admin_module/repository/tenant_company_repository_impl.dart';
 import 'package:requirment_gathering_app/super_admin_module/services/tenant_company_service.dart';
 import 'package:requirment_gathering_app/super_admin_module/services/tenant_company_service_impl.dart';
-import 'package:requirment_gathering_app/user_module/presentation/add_company/company_cubit.dart';
+import 'package:requirment_gathering_app/user_module/presentation/add_company/customer_company_cubit.dart';
 import 'package:requirment_gathering_app/user_module/presentation/company_settings/company_settings_cubit.dart';
-import 'package:requirment_gathering_app/user_module/repo/company_repository.dart';
-import 'package:requirment_gathering_app/user_module/repo/company_repository_impl.dart';
 import 'package:requirment_gathering_app/user_module/repo/company_settings_repository.dart';
 import 'package:requirment_gathering_app/user_module/repo/company_settings_repository_impl.dart';
-import 'package:requirment_gathering_app/user_module/services/company_service.dart';
-import 'package:requirment_gathering_app/user_module/services/company_service_impl.dart';
+import 'package:requirment_gathering_app/user_module/repo/customer_company_repository.dart';
+import 'package:requirment_gathering_app/user_module/repo/customer_company_repository_impl.dart';
+import 'package:requirment_gathering_app/user_module/services/customer_company_service.dart';
+import 'package:requirment_gathering_app/user_module/services/customer_company_service_impl.dart';
 
 final sl = GetIt.instance;
 
@@ -69,8 +73,9 @@ void _initRepositories() {
       ));
 
   // Company Repository
-  sl.registerFactory<CompanyRepository>(() => CompanyRepositoryImpl(
-      sl<IFirestorePathProvider>(), sl<AccountRepository>()));
+  sl.registerFactory<CustomerCompanyRepository>(() =>
+      CustomerCompanyRepositoryImpl(
+          sl<IFirestorePathProvider>(), sl<AccountRepository>()));
 
   // Company Setting Repository
   sl.registerLazySingleton<CompanySettingRepository>(
@@ -91,9 +96,9 @@ void _initRepositories() {
           ));
 
   sl.registerLazySingleton<TaskRepository>(
-          () => TaskRepositoryImpl(sl<IFirestorePathProvider>()));
+      () => TaskRepositoryImpl(sl<IFirestorePathProvider>()));
   sl.registerLazySingleton<IAccountLedgerRepository>(
-          () => AccountLedgerRepositoryImpl(sl<IFirestorePathProvider>()));
+      () => AccountLedgerRepositoryImpl(sl<IFirestorePathProvider>()));
 }
 
 /// **3. Initialize Services**
@@ -101,9 +106,9 @@ void _initServices() {
   sl.registerLazySingleton<AuthService>(
       () => AuthServiceImpl(sl<AccountRepository>()));
 
-  sl.registerLazySingleton<CompanyService>(
-    () => CompanyServiceImpl(
-      sl<CompanyRepository>(),
+  sl.registerLazySingleton<CustomerCompanyService>(
+    () => CustomerCompanyServiceImpl(
+      sl<CustomerCompanyRepository>(),
       companySettingRepository: sl<CompanySettingRepository>(),
     ),
   );
@@ -114,18 +119,19 @@ void _initServices() {
   );
 
   // ✅ Register CompanyOperationsService
-  sl.registerLazySingleton<CompanyOperationsService>(
-    () => CompanyOperationsServiceImpl(
+  sl.registerLazySingleton<UserServices>(
+    () => UserServicesImpl(
       sl<ITenantCompanyRepository>(),
       sl<AccountRepository>(),
     ),
   );
   sl.registerLazySingleton<TaskService>(
-          () => TaskServiceImpl(sl<TaskRepository>(), sl<AccountRepository>()));
+      () => TaskServiceImpl(sl<TaskRepository>(), sl<AccountRepository>()));
 
   sl.registerLazySingleton<IAccountLedgerService>(
-          () => AccountLedgerServiceImpl(sl<IAccountLedgerRepository>()));
-
+      () => AccountLedgerServiceImpl(sl<IAccountLedgerRepository>()));
+  sl.registerLazySingleton<IUserService>(
+      () => UserServiceImpl(sl<AccountRepository>()));
 }
 
 /// **4. Initialize Cubits (State Management)**
@@ -134,14 +140,15 @@ void _initCubits() {
       () => LoginCubit(sl<AuthService>(), sl<TenantCompanyService>()));
   sl.registerFactory(() => SplashCubit(sl<AccountRepository>()));
 
-  sl.registerFactory(() => CompanyCubit(sl<CompanyService>()));
+  sl.registerFactory(() =>
+      CustomerCompanyCubit(sl<CustomerCompanyService>(), sl<UserServices>()));
   sl.registerFactory(() => DashboardCubit());
-  sl.registerFactory(() => CompanySettingCubit(sl<CompanyService>()));
+  sl.registerFactory(() => CompanySettingCubit(sl<CustomerCompanyService>()));
 
   sl.registerFactory(() => AiCompanyListCubit(
         sl<AiCompanyListRepository>(),
         sl<CompanySettingRepository>(),
-        sl<CompanyRepository>(),
+        sl<CustomerCompanyRepository>(),
       ));
 
   // ✅ Register AddTenantCompanyCubit
@@ -151,11 +158,13 @@ void _initCubits() {
 
   // ✅ Register AddUserCubit for adding users
   sl.registerFactory(() => AddUserCubit(
-        sl<CompanyOperationsService>(),
+        sl<UserServices>(),
       ));
-  sl.registerFactory(() => TaskCubit(sl<TaskService>()));
+  sl.registerFactory(() => TaskCubit(
+      sl<TaskService>(), sl<UserServices>(), sl<CustomerCompanyService>()));
   sl.registerFactory(() => AccountLedgerCubit(sl<IAccountLedgerService>()));
-
+  sl.registerFactory(() => HomeCubit(sl<IUserService>()));
+  sl.registerFactory(() => UserListCubit(sl<UserServices>()));
 }
 
 /// **5. Initialize App Navigation & Coordinator**

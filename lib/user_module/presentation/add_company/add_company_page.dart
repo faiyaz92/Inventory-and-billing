@@ -1,18 +1,18 @@
 // Updated AddCompanyPage class with edit functionality
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
+import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_button.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_textfield.dart';
+import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppKeys.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
 import 'package:requirment_gathering_app/core_module/utils/text_styles.dart';
 import 'package:requirment_gathering_app/user_module/data/company.dart';
-import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/user_module/presentation/add_company/add_company_state.dart';
-import 'package:requirment_gathering_app/user_module/presentation/add_company/company_cubit.dart';
-import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
-
+import 'package:requirment_gathering_app/user_module/presentation/add_company/customer_company_cubit.dart';
 
 class AddCompanyPage extends StatefulWidget {
   final Company? company; // Optional company for editing
@@ -37,14 +37,15 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
 
   // Dynamic controllers for Contact Persons
   final List<Map<String, TextEditingController>> contactPersonControllers = [];
-  late final CompanyCubit companyCubit;
+  late final CustomerCompanyCubit companyCubit;
 
   @override
   void initState() {
     super.initState();
 
-    companyCubit = sl<CompanyCubit>()..loadCompanySettings()..loadUsers();
-    
+    companyCubit = sl<CustomerCompanyCubit>()
+      ..loadCompanySettings()
+      ..loadUsers();
 
     // If company is provided, pre-fill the data for editing
     if (widget.company != null) {
@@ -92,7 +93,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => companyCubit,
-      child: BlocConsumer<CompanyCubit, CompanyState>(
+      child: BlocConsumer<CustomerCompanyCubit, CompanyState>(
         listener: (context, state) {
           if (state.errorMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -121,7 +122,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
           }
         },
         builder: (context, state) {
-          final cubit = context.read<CompanyCubit>();
+          final cubit = context.read<CustomerCompanyCubit>();
 
           return Scaffold(
             appBar: CustomAppBar(
@@ -129,7 +130,8 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
               automaticallyImplyLeading: true,
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.list_alt), // You can use any icon you like
+                  icon: const Icon(Icons.list_alt),
+                  // You can use any icon you like
                   onPressed: () {
                     sl<Coordinator>().navigateToAiCompanyListPage();
                   },
@@ -171,7 +173,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: _buildBusinessTypeField(cubit, state),
-                  ),// Field 6: Country
+                  ), // Field 6: Country
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: _buildCountryField(cubit, state),
@@ -319,7 +321,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
   }
 
   // Field 5: Dynamic Contact Persons
-  Widget _buildDynamicContactPersonsField(CompanyCubit cubit) {
+  Widget _buildDynamicContactPersonsField(CustomerCompanyCubit cubit) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -384,7 +386,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
   }
 
   // Field 6: Country
-  Widget _buildCountryField(CompanyCubit cubit, CompanyState state) {
+  Widget _buildCountryField(CustomerCompanyCubit cubit, CompanyState state) {
     final countries =
         state.company?.settings?.countryCityMap.keys.toList() ?? [];
     return DropdownButtonFormField<String>(
@@ -408,7 +410,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
   }
 
   // Field 7: City
-  Widget _buildCityField(CompanyCubit cubit, CompanyState state) {
+  Widget _buildCityField(CustomerCompanyCubit cubit, CompanyState state) {
     final selectedCountry = state.company?.country;
     final cities =
         state.company?.settings?.countryCityMap[selectedCountry] ?? [];
@@ -427,7 +429,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
   }
 
   // Field 8: Source
-  Widget _buildSourceField(CompanyCubit cubit, CompanyState state) {
+  Widget _buildSourceField(CustomerCompanyCubit cubit, CompanyState state) {
     final sources = state.company?.settings?.sources ?? [];
     return DropdownButtonFormField<String>(
       value: state.company?.source,
@@ -443,7 +445,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
   }
 
 // Field 9: Email Sent
-  Widget _buildEmailSentField(CompanyCubit cubit, CompanyState state) {
+  Widget _buildEmailSentField(CustomerCompanyCubit cubit, CompanyState state) {
     return _buildRadioField(
       AppLabels.emailSentLabel,
       state.company?.emailSent ?? false,
@@ -452,7 +454,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
   }
 
 // Field 10: They Replied
-  Widget _buildRepliedField(CompanyCubit cubit, CompanyState state) {
+  Widget _buildRepliedField(CustomerCompanyCubit cubit, CompanyState state) {
     return _buildRadioField(
       AppLabels.theyRepliedLabel, // Use label from AppLabels
       state.company?.theyReplied ?? false,
@@ -461,7 +463,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
   }
 
 // Field 11: Interest Level
-  Widget _buildInterestLevelField(CompanyCubit cubit, CompanyState state) {
+  Widget _buildInterestLevelField(CustomerCompanyCubit cubit, CompanyState state) {
     return DropdownButtonFormField<String>(
       value: state.company?.interestLevel,
       items: List.generate(11, (index) => '${index * 10}%')
@@ -477,7 +479,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
   }
 
 // Field 12: Priority
-  Widget _buildPriorityField(CompanyCubit cubit, CompanyState state) {
+  Widget _buildPriorityField(CustomerCompanyCubit cubit, CompanyState state) {
     final priorities = state.company?.settings?.priorities ?? [];
     return DropdownButtonFormField<String>(
       value: state.company?.priority,
@@ -494,24 +496,27 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
   }
 
 // Field 13: Assigned To
-  Widget _buildAssignedToField(CompanyCubit cubit, CompanyState state) {
+  Widget _buildAssignedToField(CustomerCompanyCubit cubit, CompanyState state) {
     return DropdownButtonFormField<String>(
-      value: state.company?.assignedTo?.isNotEmpty == true ? state.company?.assignedTo : null,
-      items: state.users?.map((user) =>
-          DropdownMenuItem(value: user, child: Text(user??''))
-      ).toList(),
-      onChanged: (selectedUser) {
-        cubit.updateAssignedTo(selectedUser);
+      value: state.company?.assignedTo,
+      onChanged: (newValue) {
+        cubit.updateAssignedTo(newValue);
+
       },
+      items: state.users.map((user) {
+        return DropdownMenuItem(
+          value: user.userId,
+          child: Text(user.userName ?? "Unknown"),
+        );
+      }).toList(),
       decoration: const InputDecoration(
-        labelText: AppLabels.assignedToLabel,
+        labelText: "Assigned To",
         border: OutlineInputBorder(),
       ),
     );
   }
-
 // Field 14: Verified On
-  Widget _buildVerifiedOnField(CompanyCubit cubit, CompanyState state) {
+  Widget _buildVerifiedOnField(CustomerCompanyCubit cubit, CompanyState state) {
     final verifiedPlatforms = state.company?.settings?.verifiedOn ?? [];
     return Card(
       elevation: 2,
@@ -555,7 +560,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
     );
   }
 
-  Widget _buildWebsiteLinkField(CompanyCubit cubit) {
+  Widget _buildWebsiteLinkField(CustomerCompanyCubit cubit) {
     websiteLinkController.text = cubit.state.company?.websiteLink ?? '';
     return CustomTextField(
       controller: websiteLinkController,
@@ -571,7 +576,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
   }
 
 // Field 16: LinkedIn Link
-  Widget _buildLinkedInLinkField(CompanyCubit cubit) {
+  Widget _buildLinkedInLinkField(CustomerCompanyCubit cubit) {
     linkedInLinkController.text = cubit.state.company?.linkedInLink ?? '';
     return CustomTextField(
       controller: linkedInLinkController,
@@ -587,7 +592,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
   }
 
 // Field 17: Clutch Link
-  Widget _buildClutchLinkField(CompanyCubit cubit) {
+  Widget _buildClutchLinkField(CustomerCompanyCubit cubit) {
     clutchLinkController.text = cubit.state.company?.clutchLink ?? '';
     return CustomTextField(
       controller: clutchLinkController,
@@ -603,7 +608,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
   }
 
 // Field 18: GoodFirm Link
-  Widget _buildGoodFirmLinkField(CompanyCubit cubit) {
+  Widget _buildGoodFirmLinkField(CustomerCompanyCubit cubit) {
     goodFirmLinkController.text = cubit.state.company?.goodFirmLink ?? '';
     return CustomTextField(
       controller: goodFirmLinkController,
@@ -631,8 +636,9 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
       textCapitalization: TextCapitalization.sentences,
     );
   }
+
   // Field 19: Source
-  Widget _buildBusinessTypeField(CompanyCubit cubit, CompanyState state) {
+  Widget _buildBusinessTypeField(CustomerCompanyCubit cubit, CompanyState state) {
     final sources = state.company?.settings?.businessTypes ?? [];
     return DropdownButtonFormField<String>(
       value: state.company?.businessType,
@@ -646,9 +652,10 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
       ),
     );
   }
+
 // Save Button
   Widget _buildSaveButton(
-    CompanyCubit cubit,
+    CustomerCompanyCubit cubit,
   ) {
     return Center(
       child: CustomButton(

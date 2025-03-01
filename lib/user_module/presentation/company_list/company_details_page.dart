@@ -7,7 +7,7 @@ import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
 import 'package:requirment_gathering_app/core_module/utils/text_styles.dart';
 import 'package:requirment_gathering_app/user_module/data/company.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
-import 'package:requirment_gathering_app/user_module/presentation/add_company/company_cubit.dart';
+import 'package:requirment_gathering_app/user_module/presentation/add_company/customer_company_cubit.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class CompanyDetailsPage extends StatelessWidget {
@@ -71,7 +71,7 @@ class CompanyDetailsPage extends StatelessWidget {
   }
 
   Widget _buildDetailRow(String label, String? value) {
-    final displayValue = sl<CompanyCubit>().validateValue(value);
+    final displayValue = sl<CustomerCompanyCubit>().validateValue(value);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -105,7 +105,7 @@ class CompanyDetailsPage extends StatelessWidget {
   }
 
   Widget _buildClickableDetailRow(String label, String? value) {
-    final displayValue = sl<CompanyCubit>().validateValue(value);
+    final displayValue = sl<CustomerCompanyCubit>().validateValue(value);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -260,7 +260,7 @@ class CompanyDetailsPage extends StatelessWidget {
     );
   }
   Widget _buildInterestLevelRow(String label, String? interestLevel) {
-    final color = sl<CompanyCubit>().getInterestLevelColor(interestLevel);
+    final color = sl<CustomerCompanyCubit>().getInterestLevelColor(interestLevel);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -284,7 +284,7 @@ class CompanyDetailsPage extends StatelessWidget {
     );
   }
   Widget _buildRepliedRow(String label, bool replied) {
-    final color = sl<CompanyCubit>().getRepliedColor(replied);
+    final color = sl<CustomerCompanyCubit>().getRepliedColor(replied);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -309,7 +309,7 @@ class CompanyDetailsPage extends StatelessWidget {
   }
 
   Widget _buildEmailSentRow(String label, bool emailSent) {
-    final color = sl<CompanyCubit>().getEmailSentColor(emailSent);
+    final color = sl<CustomerCompanyCubit>().getEmailSentColor(emailSent);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(

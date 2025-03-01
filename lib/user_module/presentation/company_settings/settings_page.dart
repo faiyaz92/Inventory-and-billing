@@ -65,6 +65,14 @@ class CompanySettingPage extends StatelessWidget {
                         ),
 
                         const SizedBox(height: 16),
+
+                        _buildSection(
+                          title: "Task Statuses",
+                          items: state.settings.taskStatuses,
+                          onAdd: (newStatus) => cubit.addTaskStatus(newStatus, context),
+                          onDelete: (status) => cubit.removeTaskStatus(status),
+                        ),
+                        const SizedBox(height: 16),
                         _buildCountrySection(context, cubit, state),
                       ],
                     ),

@@ -3,6 +3,11 @@ import 'dart:convert';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 
+import 'dart:convert';
+
+import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
+
 class UserInfo {
   final String? userId;
   final String? email;
@@ -67,6 +72,25 @@ class UserInfo {
       companyId: json['companyId'],
       name: json['name'],
       userName: json['userName'],
+    );
+  }
+
+  /// 🔹 CopyWith method to create a modified instance
+  UserInfo copyWith({
+    String? userId,
+    String? email,
+    Role? role,
+    String? companyId,
+    String? name,
+    String? userName,
+  }) {
+    return UserInfo(
+      userId: userId ?? this.userId,
+      email: email ?? this.email,
+      role: role ?? this.role,
+      companyId: companyId ?? this.companyId,
+      name: name ?? this.name,
+      userName: userName ?? this.userName,
     );
   }
 }

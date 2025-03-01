@@ -6,7 +6,7 @@ import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppKeys.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
 import 'package:requirment_gathering_app/user_module/presentation/add_company/add_company_state.dart';
-import 'package:requirment_gathering_app/user_module/presentation/add_company/company_cubit.dart';
+import 'package:requirment_gathering_app/user_module/presentation/add_company/customer_company_cubit.dart';
 
 class ReportPage extends StatelessWidget {
   const ReportPage({Key? key}) : super(key: key);
@@ -14,10 +14,10 @@ class ReportPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => sl<CompanyCubit>()..loadCompanies(),
-      child: BlocBuilder<CompanyCubit, CompanyState>(
+      create: (_) => sl<CustomerCompanyCubit>()..loadCompanies(),
+      child: BlocBuilder<CustomerCompanyCubit, CompanyState>(
         builder: (context, state) {
-          final cubit = context.read<CompanyCubit>();
+          final cubit = context.read<CustomerCompanyCubit>();
 
           return Scaffold(
             body: SingleChildScrollView(
@@ -104,7 +104,7 @@ class ReportPage extends StatelessWidget {
   /// Dropdown for selecting a year
   Widget _buildDropdown(
     BuildContext context,
-    CompanyCubit cubit,
+    CustomerCompanyCubit cubit,
     String? selectedValue,
     List<String> options,
     Function(String) onChanged,
@@ -127,7 +127,7 @@ class ReportPage extends StatelessWidget {
   }
 
   /// Follow-Up Chart (Pie Chart)
-  Widget _buildFollowUpChart(CompanyCubit cubit, CompanyState state) {
+  Widget _buildFollowUpChart(CustomerCompanyCubit cubit, CompanyState state) {
     final data = cubit.getFollowUpDataForYear(state.selectedYearForFollowUp);
     bool hasData = data[AppKeys.totalKey]! > 0;
 
@@ -200,7 +200,7 @@ class ReportPage extends StatelessWidget {
   }
 
   /// Progress Chart (Bar Chart)
-  Widget _buildProgressChart(CompanyCubit cubit, CompanyState state) {
+  Widget _buildProgressChart(CustomerCompanyCubit cubit, CompanyState state) {
     final progressData = cubit.getProgressData(state.selectedYearForProgress);
 
     int maxValue = progressData.maxValue > 0 ? progressData.maxValue : 1;
@@ -274,7 +274,7 @@ class ReportPage extends StatelessWidget {
 
   /// Comparison Chart (Line Chart)
   Widget _buildComparisonChart(
-      CompanyCubit cubit, CompanyState state, context) {
+      CustomerCompanyCubit cubit, CompanyState state, context) {
     final comparisonData =
         cubit.getComparisonData(state.selectedPeriod1, state.selectedPeriod2);
 

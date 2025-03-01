@@ -17,17 +17,17 @@ import 'package:auto_route/auto_route.dart' as _i20;
 import 'package:flutter/material.dart' as _i21;
 
 import '../../company_admin_module/data/task_model.dart' as _i26;
-import '../../company_admin_module/presentation/account_ledger_page.dart'
+import '../../company_admin_module/presentation/ledger/account_ledger_page.dart'
     as _i18;
-import '../../company_admin_module/presentation/add_company_user_page.dart'
+import '../../company_admin_module/presentation/users/add_company_user_page.dart'
     as _i13;
-import '../../company_admin_module/presentation/add_edit_task.dart' as _i17;
+import '../../company_admin_module/presentation/tasks/add_edit_task.dart' as _i17;
 import '../../company_admin_module/presentation/company_admin_dashboard.dart'
     as _i14;
-import '../../company_admin_module/presentation/create_account_ledger.dart'
+import '../../company_admin_module/presentation/ledger/create_account_ledger.dart'
     as _i19;
-import '../../company_admin_module/presentation/task_list_page.dart' as _i16;
-import '../../company_admin_module/presentation/user_list_page.dart' as _i15;
+import '../../company_admin_module/presentation/tasks/task_list_page.dart' as _i16;
+import '../../company_admin_module/presentation/users/user_list_page.dart' as _i15;
 import '../../super_admin_module/ai_module/presentation/ai_company_list_page.dart'
     as _i10;
 import '../../super_admin_module/data/tenant_company.dart' as _i24;
@@ -45,9 +45,9 @@ import '../../user_module/presentation/company_list/company_list_page.dart'
     as _i5;
 import '../../user_module/presentation/company_settings/settings_page.dart'
     as _i7;
-import '../presentation/dashboard/home/dashboard_page.dart' as _i2;
+import '../presentation/dashboard/dashboard/dashboard_page.dart' as _i2;
 import '../presentation/dashboard/home/home_page.dart' as _i4;
-import '../presentation/dashboard/home/reports_page.dart' as _i6;
+import '../presentation/dashboard/dashboard/reports_page.dart' as _i6;
 import '../presentation/login/login_page.dart' as _i3;
 import '../presentation/login/splash_screen.dart' as _i1;
 

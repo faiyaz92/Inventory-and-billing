@@ -19,9 +19,9 @@ class TaskDto {
     required this.deadline,
   });
 
-  factory TaskDto.fromMap(Map<String, dynamic> map) {
+  factory TaskDto.fromMap(Map<String, dynamic> map,id) {
     return TaskDto(
-      taskId: map["taskId"],
+      taskId: id,
       companyId: map["companyId"],
       title: map["title"],
       description: map["description"],

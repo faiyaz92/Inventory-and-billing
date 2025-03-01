@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/dashboard_cubit.dart';
+import 'package:requirment_gathering_app/core_module/presentation/dashboard/dashboard/dashboard_cubit.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/home_page.dart';
 import 'package:requirment_gathering_app/user_module/presentation/company_list/company_list_page.dart';
-import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/reports_page.dart';
+import 'package:requirment_gathering_app/core_module/presentation/dashboard/dashboard/reports_page.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/user_module/presentation/company_settings/settings_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';

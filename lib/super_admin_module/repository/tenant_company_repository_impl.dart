@@ -76,8 +76,7 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
         .doc(userId)
         .set(adminUser.toMap());
 
-    await _firestoreProvider.basePath
-        .collection('users')
+    await _firestoreProvider.getCommonUsersPath()
         .doc(userId)
         .set(adminUser.toMap());
   }
@@ -108,8 +107,7 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
         .set(updatedUserInfo.toMap());
 
     // ✅ Save the user in the global users collection
-    await _firestoreProvider.basePath
-        .collection('users')
+    await _firestoreProvider.getCommonUsersPath()
         .doc(userId)
         .set(updatedUserInfo.toMap());
   }

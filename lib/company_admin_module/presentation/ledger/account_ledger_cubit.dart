@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/account_ledger_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/transaction_model.dart';
-import 'package:requirment_gathering_app/company_admin_module/presentation/account_ledger_state.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/account_ledger_state.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/account_ledger_service.dart';
 
 class AccountLedgerCubit extends Cubit<AccountLedgerState> {

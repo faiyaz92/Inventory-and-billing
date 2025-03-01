@@ -46,7 +46,7 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
   }
   @override
   CollectionReference getCommonUsersPath() {
-    return _firestore.collection(users);  // 🔥 Global users ke liye
+    return basePath.collection(users);  // 🔥 Global users ke liye
   }
   @override
   Future<bool> checkCompanyExists(String companyId) async {

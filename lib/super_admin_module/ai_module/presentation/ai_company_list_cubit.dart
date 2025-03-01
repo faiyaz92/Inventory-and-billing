@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/super_admin_module/ai_module/data/company_response_dto.dart';
 import 'package:requirment_gathering_app/super_admin_module/ai_module/repositories/ai_company_repository.dart';
 import 'package:requirment_gathering_app/user_module/data/company.dart';
-import 'package:requirment_gathering_app/user_module/repo/company_repository.dart';
+import 'package:requirment_gathering_app/user_module/repo/customer_company_repository.dart';
 import 'package:requirment_gathering_app/user_module/repo/company_settings_repository.dart';
 
 abstract class AiCompanyListState extends Equatable {}
@@ -105,7 +105,7 @@ class CitiesUpdated extends AiCompanyListState {
 class AiCompanyListCubit extends Cubit<AiCompanyListState> {
   final AiCompanyListRepository _repository;
   final CompanySettingRepository _settingRepository;
-  final CompanyRepository _companyRepository;
+  final CustomerCompanyRepository _companyRepository;
   late final List<String> businessTypes;
 
   Map<String, List<String>> countryCityMap = {}; // Country -> Cities Map

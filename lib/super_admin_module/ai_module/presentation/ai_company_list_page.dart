@@ -7,7 +7,7 @@ import 'package:requirment_gathering_app/core_module/utils/text_styles.dart';
 import 'package:requirment_gathering_app/super_admin_module/ai_module/presentation/ai_company_list_cubit.dart';
 import 'package:requirment_gathering_app/user_module/data/company.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
-import 'package:requirment_gathering_app/user_module/presentation/add_company/company_cubit.dart';
+import 'package:requirment_gathering_app/user_module/presentation/add_company/customer_company_cubit.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 
 
@@ -445,7 +445,7 @@ class _AiCompanyListPageState extends State<AiCompanyListPage> {
   }
 
   Widget _buildDetailedBox(String label, String? value) {
-    final displayValue = sl<CompanyCubit>().validateValue(value);
+    final displayValue = sl<CustomerCompanyCubit>().validateValue(value);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -470,13 +470,13 @@ class _AiCompanyListPageState extends State<AiCompanyListPage> {
                       value != null &&
                       value.trim().isNotEmpty)
                   ? () async {
-                      await sl<CompanyCubit>().launchUrl("mailto:$value");
+                      await sl<CustomerCompanyCubit>().launchUrl("mailto:$value");
                     }
                   : (label == AppLabels.contactNumberLabel &&
                           value != null &&
                           value.trim().isNotEmpty)
                       ? () async {
-                          await sl<CompanyCubit>().launchUrl("tel:$value");
+                          await sl<CustomerCompanyCubit>().launchUrl("tel:$value");
                         }
                       : null,
               child: Text(

@@ -1,9 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/tenant_company_service.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 
 class AddUserCubit extends Cubit<AddUserState> {
-  final CompanyOperationsService _companyOperationsService;
+  final UserServices _companyOperationsService;
 
   AddUserCubit(this._companyOperationsService) : super(AddUserInitial());
 

@@ -1,26 +1,29 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppKeys.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
+import 'package:requirment_gathering_app/core_module/utils/date_time_utils.dart';
 import 'package:requirment_gathering_app/core_module/utils/utils.dart';
-import 'package:requirment_gathering_app/user_module/presentation/add_company/add_company_state.dart';
 import 'package:requirment_gathering_app/user_module/data/company.dart';
 import 'package:requirment_gathering_app/user_module/data/company_settings.dart';
-import 'package:requirment_gathering_app/user_module/services/company_service.dart';
-import 'package:requirment_gathering_app/core_module/utils/date_time_utils.dart';
+import 'package:requirment_gathering_app/user_module/presentation/add_company/add_company_state.dart';
+import 'package:requirment_gathering_app/user_module/services/customer_company_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class CompanyCubit extends Cubit<CompanyState> {
+class CustomerCompanyCubit extends Cubit<CompanyState> {
   // final CompanySettingRepository _settingRepository;
   final List<Company> originalCompanies =
       []; // Full list of companies for filtering
   late CompanySettingsUi companySettingsUi;
   String searchKeyword = '';
-  final CompanyService _companyService;
+  final CustomerCompanyService _companyService;
+  final UserServices _userServices;
 
-  CompanyCubit(this._companyService) : super(CompanyState.initial());
+  CustomerCompanyCubit(this._companyService, this._userServices)
+      : super(CompanyState.initial());
 
   // Update company form data via the Company object
   Future<void> loadCompanySettings() async {
@@ -587,12 +590,10 @@ class CompanyCubit extends Cubit<CompanyState> {
   void loadUsers() async {
     emit(state.copyWith(isLoading: true));
 
-    final result = await _companyService.getUsersFromTenantCompany();
-    List<String?> userNames = result.map((user) => user.name).toList();
-    emit(state.copyWith(users: userNames, isLoading: false));
-
+    final result = await _userServices.getUsersFromTenantCompany();
+    // List<String?> userNames = result.map((user) => user.name).toList();
+    emit(state.copyWith(users: result, isLoading: false));
   }
-
 }
 
 class ProgressChartData {

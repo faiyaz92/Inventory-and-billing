@@ -2,15 +2,17 @@ class CompanySettingsUi {
   final List<String> sources;
   final List<String> priorities;
   final List<String> verifiedOn;
-  final Map<String, List<String>> countryCityMap; // Country -> Cities Map
-  final List<String> businessTypes; // New field for Business Types
+  final Map<String, List<String>> countryCityMap;
+  final List<String> businessTypes;
+  final List<String> taskStatuses;
 
   CompanySettingsUi({
     required this.sources,
     required this.priorities,
     required this.verifiedOn,
     required this.countryCityMap,
-    required this.businessTypes, // Add businessTypes to the constructor
+    required this.businessTypes,
+    required this.taskStatuses,
   });
 
   factory CompanySettingsUi.initial() {
@@ -19,7 +21,8 @@ class CompanySettingsUi {
       priorities: [],
       verifiedOn: [],
       countryCityMap: {},
-      businessTypes: [], // Initialize businessTypes as an empty list
+      businessTypes: [],
+      taskStatuses: [],
     );
   }
 
@@ -28,14 +31,16 @@ class CompanySettingsUi {
     List<String>? priorities,
     List<String>? verifiedOn,
     Map<String, List<String>>? countryCityMap,
-    List<String>? businessTypes, // Add businessTypes parameter to copyWith
+    List<String>? businessTypes,
+    List<String>? taskStatuses,
   }) {
     return CompanySettingsUi(
       sources: sources ?? this.sources,
       priorities: priorities ?? this.priorities,
       verifiedOn: verifiedOn ?? this.verifiedOn,
       countryCityMap: countryCityMap ?? this.countryCityMap,
-      businessTypes: businessTypes ?? this.businessTypes, // Handle businessTypes in copyWith
+      businessTypes: businessTypes ?? this.businessTypes,
+      taskStatuses: taskStatuses ?? this.taskStatuses,
     );
   }
 }

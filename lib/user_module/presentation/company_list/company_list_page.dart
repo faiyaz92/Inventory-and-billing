@@ -5,7 +5,7 @@ import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
 import 'package:requirment_gathering_app/core_module/utils/text_styles.dart';
 import 'package:requirment_gathering_app/user_module/presentation/add_company/add_company_state.dart';
-import 'package:requirment_gathering_app/user_module/presentation/add_company/company_cubit.dart';
+import 'package:requirment_gathering_app/user_module/presentation/add_company/customer_company_cubit.dart';
 import 'package:requirment_gathering_app/user_module/presentation/company_list/filter_section.dart';
 import 'package:requirment_gathering_app/user_module/data/company.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
@@ -16,12 +16,12 @@ class CompanyListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => sl<CompanyCubit>()
+      create: (_) => sl<CustomerCompanyCubit>()
         ..loadCompanySettings()
         ..loadCompanies(),
-      child: BlocBuilder<CompanyCubit, CompanyState>(
+      child: BlocBuilder<CustomerCompanyCubit, CompanyState>(
         builder: (context, state) {
-          final cubit = context.read<CompanyCubit>();
+          final cubit = context.read<CustomerCompanyCubit>();
 
           return Scaffold(
             body: CustomScrollView(
@@ -204,7 +204,7 @@ class CompanyListPage extends StatelessWidget {
   }
 
   Widget _buildCompanyListTile(
-      BuildContext context, CompanyCubit cubit, Company company) {
+      BuildContext context, CustomerCompanyCubit cubit, Company company) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       elevation: 4.0,
@@ -350,7 +350,7 @@ class CompanyListPage extends StatelessWidget {
   }
 
   Widget _buildDetailedBox(String label, String? value) {
-    final displayValue = sl<CompanyCubit>().validateValue(value);
+    final displayValue = sl<CustomerCompanyCubit>().validateValue(value);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -375,13 +375,13 @@ class CompanyListPage extends StatelessWidget {
                       value != null &&
                       value.trim().isNotEmpty)
                   ? () async {
-                      await sl<CompanyCubit>().launchUrl("mailto:$value");
+                      await sl<CustomerCompanyCubit>().launchUrl("mailto:$value");
                     }
                   : (label == AppLabels.contactNumberLabel &&
                           value != null &&
                           value.trim().isNotEmpty)
                       ? () async {
-                          await sl<CompanyCubit>().launchUrl("tel:$value");
+                          await sl<CustomerCompanyCubit>().launchUrl("tel:$value");
                         }
                       : null,
               child: Text(
@@ -425,7 +425,7 @@ class CompanyListPage extends StatelessWidget {
   }
 
   void _showDeleteConfirmation(
-      BuildContext context, CompanyCubit cubit, Company company) {
+      BuildContext context, CustomerCompanyCubit cubit, Company company) {
     showDialog(
       context: context,
       builder: (context) {

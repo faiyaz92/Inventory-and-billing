@@ -1,12 +1,13 @@
 import 'package:equatable/equatable.dart';
 import 'package:intl/intl.dart';
+import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/user_module/data/company.dart';
 
 class CompanyState extends Equatable {
   final Company? company;
   final List<Company> companies;
   final List<Company> originalCompanies;
-  final List<String?>? users; // ✅ Added users list for dropdown
+  final List<UserInfo> users; // ✅ Added users list for dropdown
   final bool isSaving;
   final bool isLoading;
   final bool isSaved;
@@ -75,7 +76,7 @@ class CompanyState extends Equatable {
     Company? company,
     List<Company>? companies,
     List<Company>? originalCompanies,
-    List<String?>? users, // ✅ Added in copyWith
+    List<UserInfo>? users, // ✅ Added in copyWith
     bool? isSaving,
     bool? isLoading,
     bool? isSaved,

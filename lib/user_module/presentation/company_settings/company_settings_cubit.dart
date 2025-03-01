@@ -3,10 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/user_module/presentation/company_settings/compaby_setting_state.dart';
 import 'package:requirment_gathering_app/user_module/data/company_settings.dart';
 import 'package:requirment_gathering_app/user_module/repo/company_settings_repository.dart';
-import 'package:requirment_gathering_app/user_module/services/company_service.dart';
+import 'package:requirment_gathering_app/user_module/services/customer_company_service.dart';
 
 class CompanySettingCubit extends Cubit<CompanySettingState> {
-  final CompanyService _companyService;
+  final CustomerCompanyService _companyService;
 
   CompanySettingCubit(this._companyService) : super(CompanySettingState.initial());
 
@@ -178,4 +178,22 @@ class CompanySettingCubit extends Cubit<CompanySettingState> {
       SnackBar(content: Text(message)),
     );
   }
+  /// 🔹 Add Task Status
+  Future<void> addTaskStatus(String status, BuildContext context) async {
+    if (state.settings.taskStatuses.contains(status)) {
+      _showSnackbar(context, "Task Status '$status' already exists.");
+      return;
+    }
+    final updatedStatuses = List<String>.from(state.settings.taskStatuses)
+      ..add(status);
+    await _updateSettings(state.settings.copyWith(taskStatuses: updatedStatuses));
+  }
+
+  /// 🔹 Remove Task Status
+  Future<void> removeTaskStatus(String status) async {
+    final updatedStatuses = List<String>.from(state.settings.taskStatuses)
+      ..remove(status);
+    await _updateSettings(state.settings.copyWith(taskStatuses: updatedStatuses));
+  }
+
 }

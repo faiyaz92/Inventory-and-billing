@@ -3,7 +3,7 @@ import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.d
 import 'package:requirment_gathering_app/user_module/data/company.dart';
 import 'package:requirment_gathering_app/user_module/data/company_settings.dart';
 
-abstract class CompanyService {
+abstract class CustomerCompanyService {
   Future<Either<Exception, List<Company>>> fetchCompanies();
 
   Future<Either<Exception, void>> saveCompany(Company company);
@@ -23,5 +23,5 @@ abstract class CompanyService {
   Future<Either<Exception, CompanySettingsUi>> getSettings();
 
   Future<Either<Exception, void>> updateSettings(CompanySettingsUi settings);
-  Future<List<UserInfoDto>> getUsersFromTenantCompany();
+  Future<List<UserInfoDto>> getUsersFromOwnCompany();
 }

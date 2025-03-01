@@ -5,14 +5,16 @@ class CompanySettingDto {
   final List<String> priorities;
   final List<String> verifiedOn;
   final Map<String, List<String>> countryCityMap;
-  final List<String> businessTypes; // New field for Business Types
+  final List<String> businessTypes;
+  final List<String> taskStatuses;
 
   CompanySettingDto({
     required this.sources,
     required this.priorities,
     required this.verifiedOn,
     required this.countryCityMap,
-    required this.businessTypes, // Add businessTypes to the constructor
+    required this.businessTypes,
+    required this.taskStatuses,
   });
 
   factory CompanySettingDto.fromMap(Map<String, dynamic> map) {
@@ -23,7 +25,8 @@ class CompanySettingDto {
       countryCityMap: (map['countryCityMap'] as Map<String, dynamic>?)?.map(
             (key, value) => MapEntry(key, List<String>.from(value)),
       ) ?? {},
-      businessTypes: List<String>.from(map['businessTypes'] ?? []), // Extract businessTypes from the map
+      businessTypes: List<String>.from(map['businessTypes'] ?? []),
+      taskStatuses: List<String>.from(map['taskStatuses'] ?? []),
     );
   }
 
@@ -33,29 +36,30 @@ class CompanySettingDto {
       'priorities': priorities,
       'verifiedOn': verifiedOn,
       'countryCityMap': countryCityMap,
-      'businessTypes': businessTypes, // Include businessTypes in the map
+      'businessTypes': businessTypes,
+      'taskStatuses': taskStatuses,
     };
   }
 
-  // Map DTO to UI Model
   CompanySettingsUi toUiModel() {
     return CompanySettingsUi(
       sources: sources,
       priorities: priorities,
       verifiedOn: verifiedOn,
       countryCityMap: countryCityMap,
-      businessTypes: businessTypes, // Map businessTypes to UI model
+      businessTypes: businessTypes,
+      taskStatuses: taskStatuses,
     );
   }
 
-  // Map UI Model to DTO
   factory CompanySettingDto.fromUiModel(CompanySettingsUi uiModel) {
     return CompanySettingDto(
       sources: uiModel.sources,
       priorities: uiModel.priorities,
       verifiedOn: uiModel.verifiedOn,
       countryCityMap: uiModel.countryCityMap,
-      businessTypes: uiModel.businessTypes, // Map businessTypes to DTO
+      businessTypes: uiModel.businessTypes,
+      taskStatuses: uiModel.taskStatuses,
     );
   }
 }

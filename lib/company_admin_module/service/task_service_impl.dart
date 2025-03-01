@@ -34,7 +34,12 @@ class TaskServiceImpl implements TaskService {
 
   @override
   Future<void> deleteTask(String taskId) async {
-    await _taskRepository.deleteTask(taskId);
+    final userInfo = await _accountRepository.getUserInfo();
+    if (userInfo == null || userInfo.companyId == null) {
+      throw Exception("User not associated with any company.");
+    }
+
+    await _taskRepository.deleteTask(userInfo.companyId??'',taskId);
   }
 
   @override
