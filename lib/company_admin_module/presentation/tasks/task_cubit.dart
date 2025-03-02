@@ -3,6 +3,7 @@ import 'package:requirment_gathering_app/company_admin_module/data/task_model.da
 import 'package:requirment_gathering_app/company_admin_module/presentation/tasks/task_state.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/task_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
+import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/user_module/data/company_settings.dart';
 import 'package:requirment_gathering_app/user_module/services/customer_company_service.dart';
 
@@ -38,7 +39,6 @@ class TaskCubit extends Cubit<TaskState> {
       emit(TaskLoading());
       final tasks = await _taskService.getAllTasks();
       final users = await _companyOperationsService.getUsersFromTenantCompany();
-
       emit(TaskLoaded(tasks, users));
     } catch (e) {
       emit(TaskError(e.toString()));
@@ -48,6 +48,9 @@ class TaskCubit extends Cubit<TaskState> {
   Future<void> addTask(TaskModel task) async {
     try {
       emit(TaskLoading());
+      task = task.copyWith(
+          assignedToUserName: getUserNameById(task.assignedTo,
+              await _companyOperationsService.getUsersFromTenantCompany()));
       await _taskService.createTask(task);
       await fetchTasks();
     } catch (e) {
@@ -55,9 +58,22 @@ class TaskCubit extends Cubit<TaskState> {
     }
   }
 
+  String getUserNameById(String userId, List<UserInfo> users) {
+    final user = users.firstWhere(
+      (user) => user.userId == userId,
+      orElse: () =>
+          UserInfo(userName: "Unknown User"), // ✅ Default value if not found
+    );
+
+    return user.userName ?? "Unknown User"; // ✅ Ensures non-null return
+  }
+
   Future<void> updateTask(String taskId, TaskModel task) async {
     try {
       emit(TaskLoading());
+      task = task.copyWith(
+          assignedToUserName: getUserNameById(task.assignedTo,
+              await _companyOperationsService.getUsersFromTenantCompany()));
       await _taskService.updateTask(taskId, task);
       await fetchTasks();
     } catch (e) {
@@ -73,5 +89,9 @@ class TaskCubit extends Cubit<TaskState> {
     } catch (e) {
       emit(TaskError(e.toString()));
     }
+  }
+
+  List<String> getUniqueStatuses(List<TaskModel> tasks) {
+    return tasks.map((task) => task.status).toSet().toList();
   }
 }

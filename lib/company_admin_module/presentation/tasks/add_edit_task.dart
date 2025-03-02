@@ -55,23 +55,25 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 return const Center(child: CircularProgressIndicator());
               } else if (state is TaskLoaded) {
                 taskCubit.loadTaskSettings();
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTextField(titleController, "Title"),
-                    _buildTextField(descriptionController, "Description"),
-                    _buildDropdown(state),
-                    _buildStatusDropdown(context),
-                    _buildDateField(),
-                    const SizedBox(height: 20),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: ElevatedButton(
-                        onPressed: _onSubmit,
-                        child: Text(isEditing ? "Update Task" : "Create Task"),
+                return SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildTextField(titleController, "Title"),
+                      _buildTextField(descriptionController, "Description"),
+                      _buildDropdown(state),
+                      _buildStatusDropdown(context),
+                      _buildDateField(),
+                      const SizedBox(height: 20),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: ElevatedButton(
+                          onPressed: _onSubmit,
+                          child: Text(isEditing ? "Update Task" : "Create Task"),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 );
               }
               return const Center(child: Text("Error loading users"));
@@ -194,6 +196,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
       createdBy: "Admin",
       status: selectedStatus ?? '',
       deadline: DateTime.tryParse(deadlineController.text) ?? DateTime.now(),
+      assignedToUserName: '',
     );
 
     if (widget.task != null) {
