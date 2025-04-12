@@ -1,7 +1,7 @@
 
 
 import 'package:equatable/equatable.dart';
-import 'package:requirment_gathering_app/company_admin_module/data/task_model.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/task/task_model.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 
 abstract class TaskState extends Equatable {

@@ -1,5 +1,11 @@
 import 'package:auto_route/annotations.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/account_ledger_page.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/product/add_edit_category_page.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/product/add_edit_product_page.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/product/add_edit_sub_category_page.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/product/category_sub_category_list_page.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/product/dashboard/product_mgt_page.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/product/product_list_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/add_company_user_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/tasks/add_edit_task.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/company_admin_dashboard.dart';
@@ -48,6 +54,19 @@ import 'package:requirment_gathering_app/user_module/presentation/company_settin
       page: CreateLedgerPage,
       path: '/create-ledger/:companyId/:customerCompanyId',
     ),
+    // ✅ New Product Management Routes
+    AutoRoute(page: ProductListPage, path: '/product-list'),
+    AutoRoute(page: AddEditProductPage, path: '/add-edit-product'),
+    AutoRoute(page: ProductMgtPage, path: '/manage-product'),
+
+    // New Category Management Routes
+    // AutoRoute(page: CategoryListPage, path: '/category-list'),  // Newly Added
+    AutoRoute(page: AddEditCategoryPage, path: '/add-edit-category'),  // Newly Added
+
+    // Add/Edit Subcategory Routes
+    AutoRoute(page: AddEditSubcategoryPage, path: '/add-edit-subcategory'),  // Newly Added
+    AutoRoute(page: CategoriesWithSubcategoriesPage, path: '/categories-with-subcategories'),
+
   ],
 )
 class $AppRouter {}

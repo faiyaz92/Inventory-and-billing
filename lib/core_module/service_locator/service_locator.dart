@@ -2,13 +2,22 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/account_ledger_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/product/add_edit_category_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/product/product_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/tasks/task_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/add_user_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/user_list_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/account_ledger_repository.dart';
+import 'package:requirment_gathering_app/company_admin_module/repositories/category_repository.dart';
+import 'package:requirment_gathering_app/company_admin_module/repositories/product_repository.dart';
+import 'package:requirment_gathering_app/company_admin_module/repositories/product_repository_impl.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/task_repository.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/task_repository_impl.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/account_ledger_service.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/category_service.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/category_service_impl.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/product_service.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/product_service_impl.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/task_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/task_service_impl.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
@@ -99,6 +108,13 @@ void _initRepositories() {
       () => TaskRepositoryImpl(sl<IFirestorePathProvider>()));
   sl.registerLazySingleton<IAccountLedgerRepository>(
       () => AccountLedgerRepositoryImpl(sl<IFirestorePathProvider>()));
+  // ✅ Register Product Repository
+  sl.registerLazySingleton<ProductRepository>(() => ProductRepositoryImpl(
+      firestore: sl<FirebaseFirestore>(),
+      firestorePathProvider: sl<IFirestorePathProvider>()));
+  sl.registerLazySingleton<CategoryRepository>(() => CategoryRepositoryImpl(
+        firestorePathProvider: sl<IFirestorePathProvider>(),
+      ));
 }
 
 /// **3. Initialize Services**
@@ -129,9 +145,20 @@ void _initServices() {
       () => TaskServiceImpl(sl<TaskRepository>(), sl<AccountRepository>()));
 
   sl.registerLazySingleton<IAccountLedgerService>(
-      () => AccountLedgerServiceImpl(sl<IAccountLedgerRepository>()));
+      () => AccountLedgerServiceImpl(
+            sl<IAccountLedgerRepository>(),
+            sl<AccountRepository>(),
+            sl<CustomerCompanyService>(),
+          ));
   sl.registerLazySingleton<IUserService>(
       () => UserServiceImpl(sl<AccountRepository>()));
+  // ✅ Register Product Service
+  sl.registerLazySingleton<ProductService>(() => ProductServiceImpl(
+      productRepository: sl<ProductRepository>(), sl<AccountRepository>()));
+  sl.registerLazySingleton<CategoryService>(() => CategoryServiceImpl(
+        categoryRepository: sl<CategoryRepository>(),
+        accountRepository: sl<AccountRepository>(),
+      ));
 }
 
 /// **4. Initialize Cubits (State Management)**
@@ -160,11 +187,21 @@ void _initCubits() {
   sl.registerFactory(() => AddUserCubit(
         sl<UserServices>(),
       ));
-  sl.registerFactory(() => TaskCubit(
-      sl<TaskService>(), sl<UserServices>(), sl<CustomerCompanyService>()));
-  sl.registerFactory(() => AccountLedgerCubit(sl<IAccountLedgerService>()));
+  sl.registerFactory(() => TaskCubit(sl<TaskService>(), sl<UserServices>(),
+      sl<CustomerCompanyService>(), sl<AccountRepository>()));
+  sl.registerFactory(() => AccountLedgerCubit(
+        sl<IAccountLedgerService>(),
+        sl<AccountRepository>(),
+      ));
   sl.registerFactory(() => HomeCubit(sl<IUserService>()));
   sl.registerFactory(() => UserListCubit(sl<UserServices>()));
+  sl.registerFactory(() => ProductCubit(
+        productService: sl<ProductService>(),
+        categoryService: sl<CategoryService>(),
+      ));
+  sl.registerFactory(() => CategoryCubit(
+        categoryService: sl<CategoryService>(),
+      ));
 }
 
 /// **5. Initialize App Navigation & Coordinator**

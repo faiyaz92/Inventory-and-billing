@@ -7,7 +7,13 @@ import 'dart:async' as _i5;
 
 import 'package:flutter_bloc/flutter_bloc.dart' as _i7;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:requirment_gathering_app/company_admin_module/data/task_model.dart'
+import 'package:requirment_gathering_app/company_admin_module/data/product/category.dart'
+    as _i13;
+import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart'
+    as _i12;
+import 'package:requirment_gathering_app/company_admin_module/data/product/sub_category.dart'
+    as _i14;
+import 'package:requirment_gathering_app/company_admin_module/data/task/task_model.dart'
     as _i11;
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart'
     as _i8;
@@ -16,7 +22,7 @@ import 'package:requirment_gathering_app/core_module/presentation/login/splash_c
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart'
     as _i4;
 import 'package:requirment_gathering_app/core_module/services/auth_service.dart'
-    as _i12;
+    as _i15;
 import 'package:requirment_gathering_app/super_admin_module/data/tenant_company.dart'
     as _i10;
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart'
@@ -24,7 +30,7 @@ import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart'
 import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.dart'
     as _i2;
 import 'package:requirment_gathering_app/super_admin_module/services/tenant_company_service.dart'
-    as _i13;
+    as _i16;
 import 'package:requirment_gathering_app/user_module/data/company.dart' as _i9;
 
 // ignore_for_file: type=lint
@@ -329,10 +335,11 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
       );
 
   @override
-  void navigateBack() => super.noSuchMethod(
+  void navigateBack({bool? isUpdated}) => super.noSuchMethod(
         Invocation.method(
           #navigateBack,
           [],
+          {#isUpdated: isUpdated},
         ),
         returnValueForMissingStub: null,
       );
@@ -395,28 +402,23 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
       );
 
   @override
-  void navigateToAddTaskPage({_i11.TaskModel? task}) => super.noSuchMethod(
+  _i5.Future<dynamic> navigateToAddTaskPage({_i11.TaskModel? task}) =>
+      (super.noSuchMethod(
         Invocation.method(
           #navigateToAddTaskPage,
           [],
           {#task: task},
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  void navigateToAccountLedgerPage({
-    required String? companyId,
-    required String? customerCompanyId,
-  }) =>
+  void navigateToAccountLedgerPage({required _i9.Company? company}) =>
       super.noSuchMethod(
         Invocation.method(
           #navigateToAccountLedgerPage,
           [],
-          {
-            #companyId: companyId,
-            #customerCompanyId: customerCompanyId,
-          },
+          {#company: company},
         ),
         returnValueForMissingStub: null,
       );
@@ -436,12 +438,79 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
         ),
         returnValueForMissingStub: null,
       );
+
+  @override
+  void navigateToProductListPage() => super.noSuchMethod(
+        Invocation.method(
+          #navigateToProductListPage,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i5.Future<dynamic> navigateToAddEditProductPage({_i12.Product? product}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #navigateToAddEditProductPage,
+          [],
+          {#product: product},
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  void navigateToAddEditCategoryPage({_i13.Category? category}) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #navigateToAddEditCategoryPage,
+          [],
+          {#category: category},
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void navigateToAddEditSubcategoryPage({
+    _i14.Subcategory? subcategory,
+    required String? categoryId,
+  }) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #navigateToAddEditSubcategoryPage,
+          [],
+          {
+            #subcategory: subcategory,
+            #categoryId: categoryId,
+          },
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void navigateToProductManagementPage() => super.noSuchMethod(
+        Invocation.method(
+          #navigateToProductManagementPage,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i5.Future<dynamic> navigateToCategoriesWithSubcategoriesPage() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #navigateToCategoriesWithSubcategoriesPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 }
 
 /// A class which mocks [AuthService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAuthService extends _i1.Mock implements _i12.AuthService {
+class MockAuthService extends _i1.Mock implements _i15.AuthService {
   MockAuthService() {
     _i1.throwOnMissingStub(this);
   }
@@ -487,7 +556,7 @@ class MockAuthService extends _i1.Mock implements _i12.AuthService {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockTenantCompanyService extends _i1.Mock
-    implements _i13.TenantCompanyService {
+    implements _i16.TenantCompanyService {
   MockTenantCompanyService() {
     _i1.throwOnMissingStub(this);
   }

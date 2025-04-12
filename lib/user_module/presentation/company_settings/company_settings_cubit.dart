@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/user_module/presentation/company_settings/compaby_setting_state.dart';
 import 'package:requirment_gathering_app/user_module/data/company_settings.dart';
-import 'package:requirment_gathering_app/user_module/repo/company_settings_repository.dart';
 import 'package:requirment_gathering_app/user_module/services/customer_company_service.dart';
 
 class CompanySettingCubit extends Cubit<CompanySettingState> {

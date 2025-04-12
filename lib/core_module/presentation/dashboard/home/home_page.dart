@@ -77,6 +77,13 @@ class HomePage extends StatelessWidget {
                               sl<Coordinator>().navigateToCompanyAdminPage();
                             },
                           ),
+                          _buildGridItem(
+                            icon: Icons.manage_accounts,
+                            label: 'Product management',
+                            onTap: () {
+                              sl<Coordinator>().navigateToProductManagementPage();
+                            },
+                          ),
                         ],
                       ),
                     ),

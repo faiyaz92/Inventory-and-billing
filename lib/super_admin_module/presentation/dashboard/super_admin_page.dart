@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
+import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 
 class SuperAdminPage extends StatelessWidget {
@@ -8,6 +9,7 @@ class SuperAdminPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: const CustomAppBar(title: "Super Admin",),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

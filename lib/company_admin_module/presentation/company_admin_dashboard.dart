@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
+import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 
 class CompanyAdminPage extends StatelessWidget {
@@ -8,7 +9,7 @@ class CompanyAdminPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Company Admin Dashboard")),
+      appBar: const CustomAppBar(title: 'Company Admin Dashboard'),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

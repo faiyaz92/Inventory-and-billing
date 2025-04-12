@@ -1,4 +1,4 @@
-import 'package:requirment_gathering_app/company_admin_module/data/transcation_dto.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/ledger/transcation_dto.dart';
 
 class TransactionModel {
   final String? transactionId;
@@ -36,6 +36,24 @@ class TransactionModel {
       billNumber: billNumber,
       receivedBy: receivedBy,
       createdAt: createdAt,
+    );
+  }
+
+  TransactionModel copyWith({
+    String? transactionId,
+    String? type,
+    double? amount,
+    String? billNumber,
+    String? receivedBy,
+    DateTime? createdAt,
+  }) {
+    return TransactionModel(
+      transactionId: transactionId ?? this.transactionId,
+      type: type ?? this.type,
+      amount: amount ?? this.amount,
+      billNumber: billNumber ?? this.billNumber,
+      receivedBy: receivedBy ?? this.receivedBy,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 }

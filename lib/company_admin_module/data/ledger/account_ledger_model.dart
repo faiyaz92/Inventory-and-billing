@@ -1,19 +1,19 @@
-import 'package:requirment_gathering_app/company_admin_module/data/account_ledger_dto.dart';
-import 'package:requirment_gathering_app/company_admin_module/data/transaction_model.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_ledger_dto.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/ledger/transaction_model.dart';
 
 class AccountLedger {
   final String? ledgerId;
   final double totalOutstanding;
   final double? promiseAmount;
   final DateTime? promiseDate;
-  final List<TransactionModel> transactions; // 🛑 Missing Transactions Added
+  final List<TransactionModel>? transactions; // 🛑 Missing Transactions Added
 
   AccountLedger({
     this.ledgerId,
     required this.totalOutstanding,
     this.promiseAmount,
     this.promiseDate,
-    required this.transactions, // 🟢 Initialize in constructor
+     this.transactions, // 🟢 Initialize in constructor
   });
 
   factory AccountLedger.fromDto(AccountLedgerDto dto) {
@@ -32,7 +32,7 @@ class AccountLedger {
       totalOutstanding: totalOutstanding,
       promiseAmount: promiseAmount,
       promiseDate: promiseDate?.toIso8601String(),
-      transactions: transactions.map((txn) => txn.toDto()).toList(), // 🟢 Convert transactions back to DTO
+      transactions: transactions?.map((txn) => txn.toDto()).toList(), // 🟢 Convert transactions back to DTO
     );
   }
 }

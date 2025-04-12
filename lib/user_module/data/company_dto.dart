@@ -25,6 +25,7 @@ class CompanyDto {
   final String? businessType; // Added businessType field
   final String createdBy; // New field
   final String lastUpdatedBy; // New field
+  final String? accountLedgerId; // Added Account Ledger ID
 
   CompanyDto({
     required this.id,
@@ -51,6 +52,7 @@ class CompanyDto {
     this.businessType, // Added businessType field
     required this.createdBy,
     required this.lastUpdatedBy,
+    this.accountLedgerId, // Added Account Ledger ID
   });
 
   // Map from Firebase data to DTO
@@ -79,9 +81,11 @@ class CompanyDto {
       clutchLink: map['clutchLink'] ?? '',
       goodFirmLink: map['goodFirmLink'] ?? '',
       description: map['description'],
-      businessType: map['businessType'], // Parse businessType field
+      businessType: map['businessType'],
+      // Parse businessType field
       createdBy: map['createdBy'] ?? 'Unknown',
       lastUpdatedBy: map['lastUpdatedBy'] ?? 'Unknown',
+      accountLedgerId: map['accountLedgerId'], // Added Account Ledger ID
     );
   }
 
@@ -111,6 +115,7 @@ class CompanyDto {
       'businessType': businessType, // Include businessType in the map
       'createdBy': createdBy,
       'lastUpdatedBy': lastUpdatedBy,
+      'accountLedgerId': accountLedgerId, // Added Account Ledger ID
     };
   }
 
@@ -138,9 +143,11 @@ class CompanyDto {
       clutchLink: clutchLink,
       goodFirmLink: goodFirmLink,
       description: description,
-      businessType: businessType, // Transfer businessType to UI Model
+      businessType: businessType,
+      // Transfer businessType to UI Model
       createdBy: createdBy,
       lastUpdatedBy: lastUpdatedBy,
+      accountLedgerId: accountLedgerId, // Added Account Ledger ID
     );
   }
 
@@ -170,9 +177,11 @@ class CompanyDto {
       clutchLink: uiModel.clutchLink,
       goodFirmLink: uiModel.goodFirmLink,
       description: uiModel.description,
-      businessType: uiModel.businessType, // Include businessType
+      businessType: uiModel.businessType,
+      // Include businessType
       createdBy: uiModel.createdBy,
       lastUpdatedBy: uiModel.lastUpdatedBy,
+      accountLedgerId: uiModel.accountLedgerId,
     );
   }
 }
