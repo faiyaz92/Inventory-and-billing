@@ -1,4 +1,4 @@
-import 'package:requirment_gathering_app/company_admin_module/data/task_model.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/task/task_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/task_repository.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/task_repository_impl.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/task_service.dart';

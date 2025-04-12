@@ -51,7 +51,7 @@ dependencies:
   dio: 5.8.0+1  # Make sure to use the latest version available
   dartz: 0.10.1
   shared_preferences: 2.2.3
-
+  sticky_headers: 0.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

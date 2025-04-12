@@ -1,5 +1,5 @@
 
-import 'package:requirment_gathering_app/company_admin_module/data/transcation_dto.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/ledger/transcation_dto.dart';
 
 class AccountLedgerDto {
   final String? ledgerId;

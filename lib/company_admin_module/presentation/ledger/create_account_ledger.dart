@@ -51,13 +51,13 @@ class _CreateLedgerViewState extends State<_CreateLedgerView> {
     final double? promiseAmount =
     double.tryParse(_promiseAmountController.text);
 
-    context.read<AccountLedgerCubit>().createLedger(
+   /* context.read<AccountLedgerCubit>().createLedger(
       widget.companyId,
       widget.customerCompanyId,
       totalOutstanding,
       promiseAmount,
       _promiseDate,
-    );
+    );*/
   }
 
   @override

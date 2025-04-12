@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
+import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/tenant_company.dart';
 import 'package:requirment_gathering_app/super_admin_module/presentation/add_tenant_company/add_tenant_company_cubit.dart';
@@ -96,7 +97,8 @@ class _AddTenantCompanyViewState extends State<_AddTenantCompanyView> {
     final coordinator = sl<Coordinator>();
 
     return Scaffold(
-      appBar: AppBar(title: Text(isEditing ? "Edit Tenant Company" : "Add Tenant Company")),
+      appBar: CustomAppBar(
+          title: isEditing ? "Edit Tenant Company" : "Add Tenant Company"),
       body: BlocConsumer<AddTenantCompanyCubit, AddTenantCompanyState>(
         listener: (context, state) {
           if (state is AddTenantCompanySuccess) {
@@ -118,44 +120,69 @@ class _AddTenantCompanyViewState extends State<_AddTenantCompanyView> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  TextField(controller: nameController, decoration: const InputDecoration(labelText: "Company Name")),
-                  TextField(controller: emailController, decoration: const InputDecoration(labelText: "Email")),
-                  TextField(controller: phoneController, decoration: const InputDecoration(labelText: "Phone Number")),
-                  TextField(controller: gstController, decoration: const InputDecoration(labelText: "GSTIN")),
-                  TextField(controller: countryController, decoration: const InputDecoration(labelText: "Country")),
-                  TextField(controller: stateController, decoration: const InputDecoration(labelText: "State")),
-                  TextField(controller: cityController, decoration: const InputDecoration(labelText: "City")),
-                  TextField(controller: addressController, decoration: const InputDecoration(labelText: "Address")),
-                  TextField(controller: zipCodeController, decoration: const InputDecoration(labelText: "Zip Code")),
-
+                  TextField(
+                      controller: nameController,
+                      decoration:
+                          const InputDecoration(labelText: "Company Name")),
+                  TextField(
+                      controller: emailController,
+                      decoration: const InputDecoration(labelText: "Email")),
+                  TextField(
+                      controller: phoneController,
+                      decoration:
+                          const InputDecoration(labelText: "Phone Number")),
+                  TextField(
+                      controller: gstController,
+                      decoration: const InputDecoration(labelText: "GSTIN")),
+                  TextField(
+                      controller: countryController,
+                      decoration: const InputDecoration(labelText: "Country")),
+                  TextField(
+                      controller: stateController,
+                      decoration: const InputDecoration(labelText: "State")),
+                  TextField(
+                      controller: cityController,
+                      decoration: const InputDecoration(labelText: "City")),
+                  TextField(
+                      controller: addressController,
+                      decoration: const InputDecoration(labelText: "Address")),
+                  TextField(
+                      controller: zipCodeController,
+                      decoration: const InputDecoration(labelText: "Zip Code")),
                   if (!isEditing) // Show password field only when adding a new company
-                    TextField(controller: passwordController, decoration: const InputDecoration(labelText: "Password"), obscureText: true),
-
+                    TextField(
+                        controller: passwordController,
+                        decoration:
+                            const InputDecoration(labelText: "Password"),
+                        obscureText: true),
                   const SizedBox(height: 20),
                   state is AddTenantCompanyLoading
                       ? const CircularProgressIndicator() // Show loading indicator
                       : ElevatedButton(
-                    onPressed: () {
-                      final tenantCompany = TenantCompany(
-                        name: nameController.text,
-                        email: emailController.text,
-                        mobileNumber: phoneController.text,
-                        gstin: gstController.text,
-                        country: countryController.text,
-                        state: stateController.text,
-                        city: cityController.text,
-                        address: addressController.text,
-                        zipCode: zipCodeController.text,
-                      );
+                          onPressed: () {
+                            final tenantCompany = TenantCompany(
+                              name: nameController.text,
+                              email: emailController.text,
+                              mobileNumber: phoneController.text,
+                              gstin: gstController.text,
+                              country: countryController.text,
+                              state: stateController.text,
+                              city: cityController.text,
+                              address: addressController.text,
+                              zipCode: zipCodeController.text,
+                            );
 
-                      if (isEditing) {
-                        addTenantCompanyCubit.updateTenantCompany(tenantCompany);
-                      } else {
-                        addTenantCompanyCubit.addTenantCompany(tenantCompany, passwordController.text);
-                      }
-                    },
-                    child: Text(isEditing ? "Update Company" : "Create Company"),
-                  ),
+                            if (isEditing) {
+                              addTenantCompanyCubit
+                                  .updateTenantCompany(tenantCompany);
+                            } else {
+                              addTenantCompanyCubit.addTenantCompany(
+                                  tenantCompany, passwordController.text);
+                            }
+                          },
+                          child: Text(
+                              isEditing ? "Update Company" : "Create Company"),
+                        ),
                 ],
               ),
             ),

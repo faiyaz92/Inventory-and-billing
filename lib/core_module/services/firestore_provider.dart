@@ -21,9 +21,24 @@ abstract class IFirestorePathProvider {
       String companyId, String customerCompanyId);
 
   CollectionReference getCustomerCompanyRef(String companyId);
+
   CollectionReference getTaskCollectionRef(String companyId);
+
   DocumentReference getSingleTaskRef(String companyId, String taskId);
+
   CollectionReference getCommonUsersPath();
+
+  CollectionReference getAccountLedger(String companyId);
+
   DocumentReference getAccountLedgerRef(String companyId, String ledgerId);
+
   CollectionReference getTransactionsRef(String companyId, String ledgerId);
+
+  CollectionReference getProductCollectionRef(String companyId);
+
+  CollectionReference getCategoryCollectionRef(String companyId);
+
+  CollectionReference getSubcategoryCollectionRef(
+    String companyId,
+  );
 }

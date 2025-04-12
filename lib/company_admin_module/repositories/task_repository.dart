@@ -1,4 +1,5 @@
-import 'package:requirment_gathering_app/company_admin_module/data/task_model_dto.dart';
+
+import 'package:requirment_gathering_app/company_admin_module/data/task/task_model_dto.dart';
 
 abstract class TaskRepository {
   Future<void> createTask(TaskDto taskDto);

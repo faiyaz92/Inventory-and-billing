@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/user_list_cubit.dart';
+import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
@@ -14,7 +15,7 @@ class UserListPage extends StatelessWidget {
     return BlocProvider(
       create: (_) => sl<UserListCubit>()..fetchUsers(),
       child: Scaffold(
-        appBar: AppBar(title: const Text("User Management")),
+        appBar: const CustomAppBar(title: "User Management"),
         body: BlocBuilder<UserListCubit, UserListState>(
           builder: (context, state) {
             if (state is UserListLoading) {
@@ -33,6 +34,7 @@ class UserListPage extends StatelessWidget {
 
   Widget _buildUserList(BuildContext context, List<UserInfo> users) {
     return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
       itemCount: users.length,
       itemBuilder: (context, index) {
         UserInfo user = users[index];
