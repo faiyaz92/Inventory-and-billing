@@ -3,15 +3,35 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i4;
+import 'dart:async' as _i5;
 
-import 'package:flutter_bloc/flutter_bloc.dart' as _i5;
+import 'package:flutter_bloc/flutter_bloc.dart' as _i7;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:requirment_gathering_app/coordinator/coordinator.dart' as _i6;
-import 'package:requirment_gathering_app/data/company.dart' as _i7;
-import 'package:requirment_gathering_app/login/splash_cubit.dart' as _i2;
-import 'package:requirment_gathering_app/repositories/account_repository.dart'
+import 'package:requirment_gathering_app/company_admin_module/data/product/category.dart'
+    as _i13;
+import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart'
+    as _i12;
+import 'package:requirment_gathering_app/company_admin_module/data/product/sub_category.dart'
+    as _i14;
+import 'package:requirment_gathering_app/company_admin_module/data/task/task_model.dart'
+    as _i11;
+import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart'
+    as _i8;
+import 'package:requirment_gathering_app/core_module/presentation/login/splash_cubit.dart'
     as _i3;
+import 'package:requirment_gathering_app/core_module/repository/account_repository.dart'
+    as _i4;
+import 'package:requirment_gathering_app/core_module/services/auth_service.dart'
+    as _i15;
+import 'package:requirment_gathering_app/super_admin_module/data/tenant_company.dart'
+    as _i10;
+import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart'
+    as _i6;
+import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.dart'
+    as _i2;
+import 'package:requirment_gathering_app/super_admin_module/services/tenant_company_service.dart'
+    as _i16;
+import 'package:requirment_gathering_app/user_module/data/company.dart' as _i9;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -26,8 +46,18 @@ import 'package:requirment_gathering_app/repositories/account_repository.dart'
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
-class _FakeSplashState_0 extends _i1.SmartFake implements _i2.SplashState {
-  _FakeSplashState_0(
+class _FakeUserInfoDto_0 extends _i1.SmartFake implements _i2.UserInfoDto {
+  _FakeUserInfoDto_0(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _FakeSplashState_1 extends _i1.SmartFake implements _i3.SplashState {
+  _FakeSplashState_1(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -39,13 +69,13 @@ class _FakeSplashState_0 extends _i1.SmartFake implements _i2.SplashState {
 /// A class which mocks [AccountRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAccountRepository extends _i1.Mock implements _i3.AccountRepository {
+class MockAccountRepository extends _i1.Mock implements _i4.AccountRepository {
   MockAccountRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i4.Future<void> signIn(
+  _i5.Future<_i2.UserInfoDto> signIn(
     String? email,
     String? password,
   ) =>
@@ -57,19 +87,27 @@ class MockAccountRepository extends _i1.Mock implements _i3.AccountRepository {
             password,
           ],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<_i2.UserInfoDto>.value(_FakeUserInfoDto_0(
+          this,
+          Invocation.method(
+            #signIn,
+            [
+              email,
+              password,
+            ],
+          ),
+        )),
+      ) as _i5.Future<_i2.UserInfoDto>);
 
   @override
-  _i4.Future<void> signOut() => (super.noSuchMethod(
+  _i5.Future<void> signOut() => (super.noSuchMethod(
         Invocation.method(
           #signOut,
           [],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   bool isUserLoggedIn() => (super.noSuchMethod(
@@ -79,30 +117,39 @@ class MockAccountRepository extends _i1.Mock implements _i3.AccountRepository {
         ),
         returnValue: false,
       ) as bool);
+
+  @override
+  _i5.Future<_i6.UserInfo?> getUserInfo() => (super.noSuchMethod(
+        Invocation.method(
+          #getUserInfo,
+          [],
+        ),
+        returnValue: _i5.Future<_i6.UserInfo?>.value(),
+      ) as _i5.Future<_i6.UserInfo?>);
 }
 
 /// A class which mocks [SplashCubit].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockSplashCubit extends _i1.Mock implements _i2.SplashCubit {
+class MockSplashCubit extends _i1.Mock implements _i3.SplashCubit {
   MockSplashCubit() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i2.SplashState get state => (super.noSuchMethod(
+  _i3.SplashState get state => (super.noSuchMethod(
         Invocation.getter(#state),
-        returnValue: _FakeSplashState_0(
+        returnValue: _FakeSplashState_1(
           this,
           Invocation.getter(#state),
         ),
-      ) as _i2.SplashState);
+      ) as _i3.SplashState);
 
   @override
-  _i4.Stream<_i2.SplashState> get stream => (super.noSuchMethod(
+  _i5.Stream<_i3.SplashState> get stream => (super.noSuchMethod(
         Invocation.getter(#stream),
-        returnValue: _i4.Stream<_i2.SplashState>.empty(),
-      ) as _i4.Stream<_i2.SplashState>);
+        returnValue: _i5.Stream<_i3.SplashState>.empty(),
+      ) as _i5.Stream<_i3.SplashState>);
 
   @override
   bool get isClosed => (super.noSuchMethod(
@@ -120,7 +167,7 @@ class MockSplashCubit extends _i1.Mock implements _i2.SplashCubit {
       );
 
   @override
-  void emit(_i2.SplashState? state) => super.noSuchMethod(
+  void emit(_i3.SplashState? state) => super.noSuchMethod(
         Invocation.method(
           #emit,
           [state],
@@ -129,7 +176,7 @@ class MockSplashCubit extends _i1.Mock implements _i2.SplashCubit {
       );
 
   @override
-  void onChange(_i5.Change<_i2.SplashState>? change) => super.noSuchMethod(
+  void onChange(_i7.Change<_i3.SplashState>? change) => super.noSuchMethod(
         Invocation.method(
           #onChange,
           [change],
@@ -170,20 +217,20 @@ class MockSplashCubit extends _i1.Mock implements _i2.SplashCubit {
       );
 
   @override
-  _i4.Future<void> close() => (super.noSuchMethod(
+  _i5.Future<void> close() => (super.noSuchMethod(
         Invocation.method(
           #close,
           [],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }
 
 /// A class which mocks [Coordinator].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockCoordinator extends _i1.Mock implements _i6.Coordinator {
+class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
   MockCoordinator() {
     _i1.throwOnMissingStub(this);
   }
@@ -234,6 +281,15 @@ class MockCoordinator extends _i1.Mock implements _i6.Coordinator {
       );
 
   @override
+  void navigateToAiCompanyListPage() => super.noSuchMethod(
+        Invocation.method(
+          #navigateToAiCompanyListPage,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void navigateToReportsPage() => super.noSuchMethod(
         Invocation.method(
           #navigateToReportsPage,
@@ -261,7 +317,7 @@ class MockCoordinator extends _i1.Mock implements _i6.Coordinator {
       );
 
   @override
-  void navigateToCompanyDetailsPage(_i7.Company? company) => super.noSuchMethod(
+  void navigateToCompanyDetailsPage(_i9.Company? company) => super.noSuchMethod(
         Invocation.method(
           #navigateToCompanyDetailsPage,
           [company],
@@ -270,7 +326,7 @@ class MockCoordinator extends _i1.Mock implements _i6.Coordinator {
       );
 
   @override
-  void navigateToEditCompanyPage(_i7.Company? company) => super.noSuchMethod(
+  void navigateToEditCompanyPage(_i9.Company? company) => super.noSuchMethod(
         Invocation.method(
           #navigateToEditCompanyPage,
           [company],
@@ -279,11 +335,267 @@ class MockCoordinator extends _i1.Mock implements _i6.Coordinator {
       );
 
   @override
-  void navigateBack() => super.noSuchMethod(
+  void navigateBack({bool? isUpdated}) => super.noSuchMethod(
         Invocation.method(
           #navigateBack,
+          [],
+          {#isUpdated: isUpdated},
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void navigateToSuperAdminPage() => super.noSuchMethod(
+        Invocation.method(
+          #navigateToSuperAdminPage,
           [],
         ),
         returnValueForMissingStub: null,
       );
+
+  @override
+  void navigateToAddTenantCompanyPage({_i10.TenantCompany? company}) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #navigateToAddTenantCompanyPage,
+          [],
+          {#company: company},
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void navigateToAddUserPage({_i6.UserInfo? user}) => super.noSuchMethod(
+        Invocation.method(
+          #navigateToAddUserPage,
+          [],
+          {#user: user},
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void navigateToCompanyAdminPage() => super.noSuchMethod(
+        Invocation.method(
+          #navigateToCompanyAdminPage,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void navigateToUserListPage() => super.noSuchMethod(
+        Invocation.method(
+          #navigateToUserListPage,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void navigateToTaskListPage() => super.noSuchMethod(
+        Invocation.method(
+          #navigateToTaskListPage,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i5.Future<dynamic> navigateToAddTaskPage({_i11.TaskModel? task}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #navigateToAddTaskPage,
+          [],
+          {#task: task},
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  void navigateToAccountLedgerPage({required _i9.Company? company}) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #navigateToAccountLedgerPage,
+          [],
+          {#company: company},
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void navigateToCreateLedgerPage(
+    String? companyId,
+    String? customerCompanyId,
+  ) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #navigateToCreateLedgerPage,
+          [
+            companyId,
+            customerCompanyId,
+          ],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void navigateToProductListPage() => super.noSuchMethod(
+        Invocation.method(
+          #navigateToProductListPage,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i5.Future<dynamic> navigateToAddEditProductPage({_i12.Product? product}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #navigateToAddEditProductPage,
+          [],
+          {#product: product},
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  void navigateToAddEditCategoryPage({_i13.Category? category}) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #navigateToAddEditCategoryPage,
+          [],
+          {#category: category},
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void navigateToAddEditSubcategoryPage({
+    _i14.Subcategory? subcategory,
+    required String? categoryId,
+  }) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #navigateToAddEditSubcategoryPage,
+          [],
+          {
+            #subcategory: subcategory,
+            #categoryId: categoryId,
+          },
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void navigateToProductManagementPage() => super.noSuchMethod(
+        Invocation.method(
+          #navigateToProductManagementPage,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i5.Future<dynamic> navigateToCategoriesWithSubcategoriesPage() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #navigateToCategoriesWithSubcategoriesPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+}
+
+/// A class which mocks [AuthService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockAuthService extends _i1.Mock implements _i15.AuthService {
+  MockAuthService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i5.Future<void> signIn(
+    String? email,
+    String? password,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #signIn,
+          [
+            email,
+            password,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> signOut() => (super.noSuchMethod(
+        Invocation.method(
+          #signOut,
+          [],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  bool isUserLoggedIn() => (super.noSuchMethod(
+        Invocation.method(
+          #isUserLoggedIn,
+          [],
+        ),
+        returnValue: false,
+      ) as bool);
+}
+
+/// A class which mocks [TenantCompanyService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockTenantCompanyService extends _i1.Mock
+    implements _i16.TenantCompanyService {
+  MockTenantCompanyService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i5.Future<void> createTenantCompany(
+    _i10.TenantCompany? company,
+    String? password,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #createTenantCompany,
+          [
+            company,
+            password,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> updateTenantCompany(_i10.TenantCompany? company) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateTenantCompany,
+          [company],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> addSuperAdmin() => (super.noSuchMethod(
+        Invocation.method(
+          #addSuperAdmin,
+          [],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }

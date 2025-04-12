@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:requirment_gathering_app/app_router/app_router.gr.dart';
-import 'package:requirment_gathering_app/service_locator/service_locator.dart';
+import 'package:requirment_gathering_app/core_module/app_router/app_router.gr.dart';
+import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mockito/mockito.dart';
-import 'package:requirment_gathering_app/login/splash_cubit.dart';
-import 'package:requirment_gathering_app/coordinator/coordinator.dart';
-import 'package:requirment_gathering_app/login/splash_screen.dart';
-import 'package:requirment_gathering_app/service_locator/service_locator.dart';
+import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
+import 'package:requirment_gathering_app/core_module/presentation/login/splash_cubit.dart';
+import 'package:requirment_gathering_app/core_module/presentation/login/splash_screen.dart';
+import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 
 import '../main.mocks.dart';
 
