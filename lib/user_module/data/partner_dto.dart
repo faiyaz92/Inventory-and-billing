@@ -1,7 +1,8 @@
-import 'package:requirment_gathering_app/user_module/data/company.dart';
+import 'package:requirment_gathering_app/user_module/data/partner.dart';
 
-class CompanyDto {
+class PartnerDto {
   final String id;
+  final String? companyType; // Added
   final String companyName;
   final String? source;
   final String? address;
@@ -21,14 +22,15 @@ class CompanyDto {
   final String? linkedInLink;
   final String? clutchLink;
   final String? goodFirmLink;
-  final String? description; // New field
-  final String? businessType; // Added businessType field
-  final String createdBy; // New field
-  final String lastUpdatedBy; // New field
-  final String? accountLedgerId; // Added Account Ledger ID
+  final String? description;
+  final String? businessType;
+  final String createdBy;
+  final String lastUpdatedBy;
+  final String? accountLedgerId;
 
-  CompanyDto({
+  PartnerDto({
     required this.id,
+    this.companyType,
     required this.companyName,
     this.source,
     this.address,
@@ -49,16 +51,16 @@ class CompanyDto {
     this.clutchLink,
     this.goodFirmLink,
     this.description,
-    this.businessType, // Added businessType field
+    this.businessType,
     required this.createdBy,
     required this.lastUpdatedBy,
-    this.accountLedgerId, // Added Account Ledger ID
+    this.accountLedgerId,
   });
 
-  // Map from Firebase data to DTO
-  factory CompanyDto.fromMap(Map<String, dynamic> map, String id) {
-    return CompanyDto(
+  factory PartnerDto.fromMap(Map<String, dynamic> map, String id) {
+    return PartnerDto(
       id: id,
+      companyType: map['companyType'],
       companyName: map['companyName'] ?? '',
       source: map['source'],
       address: map['address'],
@@ -82,16 +84,15 @@ class CompanyDto {
       goodFirmLink: map['goodFirmLink'] ?? '',
       description: map['description'],
       businessType: map['businessType'],
-      // Parse businessType field
       createdBy: map['createdBy'] ?? 'Unknown',
       lastUpdatedBy: map['lastUpdatedBy'] ?? 'Unknown',
-      accountLedgerId: map['accountLedgerId'], // Added Account Ledger ID
+      accountLedgerId: map['accountLedgerId'],
     );
   }
 
-  // Map to Firebase data
   Map<String, dynamic> toMap() {
     return {
+      'companyType': companyType,
       'companyName': companyName,
       'source': source,
       'address': address,
@@ -112,17 +113,17 @@ class CompanyDto {
       'clutchLink': clutchLink,
       'goodFirmLink': goodFirmLink,
       'description': description,
-      'businessType': businessType, // Include businessType in the map
+      'businessType': businessType,
       'createdBy': createdBy,
       'lastUpdatedBy': lastUpdatedBy,
-      'accountLedgerId': accountLedgerId, // Added Account Ledger ID
+      'accountLedgerId': accountLedgerId,
     };
   }
 
-  // Convert from DTO to UI Model
-  Company toUiModel() {
-    return Company(
+  Partner toUiModel() {
+    return Partner(
       id: id,
+      companyType: companyType,
       companyName: companyName,
       source: source,
       address: address,
@@ -144,17 +145,16 @@ class CompanyDto {
       goodFirmLink: goodFirmLink,
       description: description,
       businessType: businessType,
-      // Transfer businessType to UI Model
       createdBy: createdBy,
       lastUpdatedBy: lastUpdatedBy,
-      accountLedgerId: accountLedgerId, // Added Account Ledger ID
+      accountLedgerId: accountLedgerId,
     );
   }
 
-  // Convert from UI Model to DTO
-  factory CompanyDto.fromUiModel(Company uiModel) {
-    return CompanyDto(
+  factory PartnerDto.fromUiModel(Partner uiModel) {
+    return PartnerDto(
       id: uiModel.id,
+      companyType: uiModel.companyType,
       companyName: uiModel.companyName,
       source: uiModel.source,
       address: uiModel.address,
@@ -178,7 +178,6 @@ class CompanyDto {
       goodFirmLink: uiModel.goodFirmLink,
       description: uiModel.description,
       businessType: uiModel.businessType,
-      // Include businessType
       createdBy: uiModel.createdBy,
       lastUpdatedBy: uiModel.lastUpdatedBy,
       accountLedgerId: uiModel.accountLedgerId,
@@ -197,7 +196,6 @@ class ContactPersonDto {
     required this.phoneNumber,
   });
 
-  // Convert from Firebase Map to DTO
   factory ContactPersonDto.fromMap(Map<String, dynamic> map) {
     return ContactPersonDto(
       name: map['name'] ?? '',
@@ -206,7 +204,6 @@ class ContactPersonDto {
     );
   }
 
-  // Convert DTO to Firebase Map
   Map<String, dynamic> toMap() {
     return {
       'name': name,
@@ -215,7 +212,6 @@ class ContactPersonDto {
     };
   }
 
-  // Convert from DTO to UI Model
   ContactPerson toUiModel() {
     return ContactPerson(
       name: name,
@@ -224,7 +220,6 @@ class ContactPersonDto {
     );
   }
 
-  // Convert from UI Model to DTO
   factory ContactPersonDto.fromUiModel(ContactPerson uiModel) {
     return ContactPersonDto(
       name: uiModel.name,

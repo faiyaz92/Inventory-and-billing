@@ -5,19 +5,50 @@ import 'package:requirment_gathering_app/core_module/service_locator/service_loc
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppKeys.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
+import 'package:requirment_gathering_app/user_module/data/partner.dart';
 import 'package:requirment_gathering_app/user_module/presentation/add_company/add_company_state.dart';
 import 'package:requirment_gathering_app/user_module/presentation/add_company/customer_company_cubit.dart';
 
-class ReportPage extends StatelessWidget {
+class ReportPage extends StatefulWidget {
   const ReportPage({Key? key}) : super(key: key);
+
+  @override
+  _ReportPageState createState() => _ReportPageState();
+}
+
+class _ReportPageState extends State<ReportPage> {
+  String? selectedYearForFollowUp;
+  String? selectedYearForProgress;
+  String? selectedPeriod1;
+  String? selectedPeriod2;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => sl<CustomerCompanyCubit>()..loadCompanies(),
-      child: BlocBuilder<CustomerCompanyCubit, CompanyState>(
+      create: (_) => sl<PartnerCubit>()..loadCompanies(),
+      child: BlocBuilder<PartnerCubit, CompanyState>(
         builder: (context, state) {
-          final cubit = context.read<CustomerCompanyCubit>();
+          final cubit = context.read<PartnerCubit>();
+          List<Partner> companies = [];
+          List<Partner> originalCompanies = [];
+
+          // Individual state checks (like CompanyListPage)
+          if (state is CompaniesLoadedState) {
+            companies = state.companies ?? [];
+            originalCompanies = state.originalCompanies ?? [];
+          } else if (state is CompaniesFilteredState) {
+            companies = state.companies ?? [];
+            originalCompanies = state.originalCompanies ?? [];
+          } else if (state is CompaniesSortedState) {
+            companies = state.companies ?? [];
+            originalCompanies = state.originalCompanies ?? [];
+          } else if (state is CompanyDeletedState) {
+            companies = state.companies ?? [];
+            originalCompanies = state.originalCompanies ?? [];
+          } else if (state is FilterToggledState) {
+            companies = state.companies ?? [];
+            originalCompanies = state.originalCompanies ?? [];
+          }
 
           return Scaffold(
             body: SingleChildScrollView(
@@ -32,11 +63,11 @@ class ReportPage extends StatelessWidget {
                         _buildDropdown(
                           context,
                           cubit,
-                          state.selectedYearForFollowUp,
+                          selectedYearForFollowUp,
                           cubit.getAvailableYears(),
-                          cubit.updateSelectedYearForFollowUp,
+                              (value) => setState(() => selectedYearForFollowUp = value),
                         ),
-                        _buildFollowUpChart(cubit, state),
+                        _buildFollowUpChart(cubit, selectedYearForFollowUp),
                       ],
                     ),
                   ),
@@ -49,18 +80,18 @@ class ReportPage extends StatelessWidget {
                         _buildDropdown(
                           context,
                           cubit,
-                          state.selectedYearForProgress,
+                          selectedYearForProgress,
                           cubit.getAvailableYears(),
-                          cubit.updateSelectedYearForProgress,
+                              (value) => setState(() => selectedYearForProgress = value),
                         ),
-                        _buildProgressChart(cubit, state),
+                        _buildProgressChart(cubit, selectedYearForProgress),
                       ],
                     ),
                   ),
                   const SizedBox(height: 16),
                   _buildSection(
                     title: AppLabels.comparisonChartTitle,
-                    child: _buildComparisonChart(cubit, state, context),
+                    child: _buildComparisonChart(cubit, selectedPeriod1, selectedPeriod2, context),
                   ),
                 ],
               ),
@@ -71,7 +102,6 @@ class ReportPage extends StatelessWidget {
     );
   }
 
-  /// Reusable section wrapper
   Widget _buildSection({required String title, required Widget child}) {
     return Container(
       padding: const EdgeInsets.all(12.0),
@@ -101,18 +131,15 @@ class ReportPage extends StatelessWidget {
     );
   }
 
-  /// Dropdown for selecting a year
   Widget _buildDropdown(
-    BuildContext context,
-    CustomerCompanyCubit cubit,
-    String? selectedValue,
-    List<String> options,
-    Function(String) onChanged,
-  ) {
-    // Remove duplicates using Set
-    final uniqueOptions =
-        options.toSet().toList(); // This will remove duplicates
-    if (!uniqueOptions.contains(selectedValue)) {
+      BuildContext context,
+      PartnerCubit cubit,
+      String? selectedValue,
+      List<String> options,
+      Function(String) onChanged,
+      ) {
+    final uniqueOptions = options.toSet().toList();
+    if (selectedValue != null && !uniqueOptions.contains(selectedValue)) {
       selectedValue = null;
     }
     return DropdownButton<String>(
@@ -126,44 +153,39 @@ class ReportPage extends StatelessWidget {
     );
   }
 
-  /// Follow-Up Chart (Pie Chart)
-  Widget _buildFollowUpChart(CustomerCompanyCubit cubit, CompanyState state) {
-    final data = cubit.getFollowUpDataForYear(state.selectedYearForFollowUp);
+  Widget _buildFollowUpChart(PartnerCubit cubit, String? selectedYear) {
+    final data = cubit.getFollowUpDataForYear(selectedYear);
     bool hasData = data[AppKeys.totalKey]! > 0;
 
     return Column(
       children: [
         hasData
             ? SizedBox(
-                height: 250,
-                child: PieChart(
-                  PieChartData(
-                    sections: [
-                      PieChartSectionData(
-                        color: AppColors.green,
-                        value: data[AppKeys.sentKey]!.toDouble(),
-                        title: "${data[AppKeys.sentKey]}",
-                        radius: 60,
-                        titleStyle:
-                            const TextStyle(fontSize: 14, color: Colors.white),
-                      ),
-                      PieChartSectionData(
-                        color: AppColors.orange,
-                        value: data[AppKeys.notSentKey]!.toDouble(),
-                        title: "${data[AppKeys.notSentKey]}",
-                        radius: 60,
-                        titleStyle:
-                            const TextStyle(fontSize: 14, color: Colors.white),
-                      ),
-                    ],
-                    sectionsSpace: 2,
-                    centerSpaceRadius: 40,
-                  ),
+          height: 250,
+          child: PieChart(
+            PieChartData(
+              sections: [
+                PieChartSectionData(
+                  color: AppColors.green,
+                  value: data[AppKeys.sentKey]!.toDouble(),
+                  title: "${data[AppKeys.sentKey]}",
+                  radius: 60,
+                  titleStyle: const TextStyle(fontSize: 14, color: Colors.white),
                 ),
-              )
+                PieChartSectionData(
+                  color: AppColors.orange,
+                  value: data[AppKeys.notSentKey]!.toDouble(),
+                  title: "${data[AppKeys.notSentKey]}",
+                  radius: 60,
+                  titleStyle: const TextStyle(fontSize: 14, color: Colors.white),
+                ),
+              ],
+              sectionsSpace: 2,
+              centerSpaceRadius: 40,
+            ),
+          ),
+        )
             : _buildNoDataMessage(),
-
-        // ✅ Email Sent & Email Not Sent Count Below Pie Chart (Wapas Add Kiya)
         if (hasData)
           Padding(
             padding: const EdgeInsets.only(top: 16),
@@ -199,12 +221,11 @@ class ReportPage extends StatelessWidget {
     );
   }
 
-  /// Progress Chart (Bar Chart)
-  Widget _buildProgressChart(CustomerCompanyCubit cubit, CompanyState state) {
-    final progressData = cubit.getProgressData(state.selectedYearForProgress);
+  Widget _buildProgressChart(PartnerCubit cubit, String? selectedYear) {
+    final progressData = cubit.getProgressData(selectedYear);
 
     int maxValue = progressData.maxValue > 0 ? progressData.maxValue : 1;
-    double chartHeight = 250; // Reduced height
+    double chartHeight = 250;
 
     return SizedBox(
       height: chartHeight,
@@ -234,8 +255,6 @@ class ReportPage extends StatelessWidget {
               gridData: FlGridData(show: false),
             ),
           ),
-
-          /// Adjusted the bar heights relatively
           Column(
             children: [
               Row(
@@ -245,23 +264,23 @@ class ReportPage extends StatelessWidget {
                   double barValue = progressData.bars[index].barRods[0].y;
                   return barValue > 0
                       ? Column(
-                          children: [
-                            Text(
-                              barValue.toInt().toString(),
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                              textAlign: TextAlign.left,
-                            ),
-                            SizedBox(
-                              height: (chartHeight *
-                                      (1 - (barValue / maxValue)))
-                                  .clamp(5, chartHeight), // Relative adjustment
-                            ),
-                          ],
-                        )
+                    children: [
+                      Text(
+                        barValue.toInt().toString(),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                        textAlign: TextAlign.left,
+                      ),
+                      SizedBox(
+                        height: (chartHeight *
+                            (1 - (barValue / maxValue)))
+                            .clamp(5, chartHeight),
+                      ),
+                    ],
+                  )
                       : const SizedBox(width: 20);
                 }),
               ),
@@ -272,11 +291,9 @@ class ReportPage extends StatelessWidget {
     );
   }
 
-  /// Comparison Chart (Line Chart)
   Widget _buildComparisonChart(
-      CustomerCompanyCubit cubit, CompanyState state, context) {
-    final comparisonData =
-        cubit.getComparisonData(state.selectedPeriod1, state.selectedPeriod2);
+      PartnerCubit cubit, String? selectedPeriod1, String? selectedPeriod2, BuildContext context) {
+    final comparisonData = cubit.getComparisonData(selectedPeriod1, selectedPeriod2);
 
     return Column(
       children: [
@@ -286,16 +303,16 @@ class ReportPage extends StatelessWidget {
             _buildDropdown(
               context,
               cubit,
-              state.selectedPeriod1,
+              selectedPeriod1,
               cubit.getAvailablePeriods(),
-              cubit.updateSelectedPeriod1,
+                  (value) => setState(() => selectedPeriod1 = value),
             ),
             _buildDropdown(
               context,
               cubit,
-              state.selectedPeriod2,
+              selectedPeriod2,
               cubit.getAvailablePeriods(),
-              cubit.updateSelectedPeriod2,
+                  (value) => setState(() => selectedPeriod2 = value),
             ),
           ],
         ),
@@ -307,10 +324,8 @@ class ReportPage extends StatelessWidget {
               lineBarsData: [
                 LineChartBarData(
                   spots: [
-                    FlSpot(1,
-                        comparisonData[AppKeys.period1Key]?.toDouble() ?? 0.0),
-                    FlSpot(2,
-                        comparisonData[AppKeys.period2Key]?.toDouble() ?? 0.0),
+                    FlSpot(1, comparisonData[AppKeys.period1Key]?.toDouble() ?? 0.0),
+                    FlSpot(2, comparisonData[AppKeys.period2Key]?.toDouble() ?? 0.0),
                   ],
                   isCurved: true,
                   barWidth: 4,
@@ -319,8 +334,7 @@ class ReportPage extends StatelessWidget {
                   belowBarData: BarAreaData(show: false),
                 ),
               ],
-              titlesData: _buildComparisonChartTitles(
-                  state.selectedPeriod1, state.selectedPeriod2),
+              titlesData: _buildComparisonChartTitles(selectedPeriod1, selectedPeriod2),
               gridData: FlGridData(show: false),
               borderData: FlBorderData(show: false),
             ),
@@ -347,7 +361,6 @@ class ReportPage extends StatelessWidget {
     );
   }
 
-  /// No data message
   Widget _buildNoDataMessage() {
     return const Center(
       child: Padding(

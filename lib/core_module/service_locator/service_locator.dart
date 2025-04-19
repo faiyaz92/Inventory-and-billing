@@ -126,6 +126,7 @@ void _initServices() {
     () => CustomerCompanyServiceImpl(
       sl<CustomerCompanyRepository>(),
       companySettingRepository: sl<CompanySettingRepository>(),
+      accountService: sl<AccountRepository>(),
     ),
   );
   sl.registerLazySingleton<TenantCompanyService>(
@@ -167,8 +168,8 @@ void _initCubits() {
       () => LoginCubit(sl<AuthService>(), sl<TenantCompanyService>()));
   sl.registerFactory(() => SplashCubit(sl<AccountRepository>()));
 
-  sl.registerFactory(() =>
-      CustomerCompanyCubit(sl<CustomerCompanyService>(), sl<UserServices>()));
+  sl.registerFactory(() => PartnerCubit(sl<CustomerCompanyService>(),
+      sl<UserServices>(), sl<IAccountLedgerService>()));
   sl.registerFactory(() => DashboardCubit());
   sl.registerFactory(() => CompanySettingCubit(sl<CustomerCompanyService>()));
 
@@ -192,6 +193,7 @@ void _initCubits() {
   sl.registerFactory(() => AccountLedgerCubit(
         sl<IAccountLedgerService>(),
         sl<AccountRepository>(),
+        sl<CustomerCompanyService>(),
       ));
   sl.registerFactory(() => HomeCubit(sl<IUserService>()));
   sl.registerFactory(() => UserListCubit(sl<UserServices>()));

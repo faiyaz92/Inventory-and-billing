@@ -1,26 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/account_ledger_cubit.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/square_box_rounded_corner.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
-import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
 import 'package:requirment_gathering_app/core_module/utils/text_styles.dart';
 import 'package:requirment_gathering_app/user_module/data/partner.dart';
 import 'package:requirment_gathering_app/user_module/presentation/add_company/customer_company_cubit.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-class CompanyDetailsPage extends StatelessWidget {
+class SupplierDetailsPage extends StatelessWidget {
   final Partner company;
 
-  const CompanyDetailsPage({Key? key, required this.company}) : super(key: key);
+  const SupplierDetailsPage({Key? key, required this.company}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: AppLabels.companyListTitle,
+        title: "Supplier Details",
         automaticallyImplyLeading: true,
         actions: [
           IconButton(
@@ -28,37 +25,14 @@ class CompanyDetailsPage extends StatelessWidget {
             onPressed: () {
               sl<Coordinator>().navigateToEditCompanyPage(company);
             },
-            tooltip: AppLabels.editCompanyTooltip,
+            tooltip: "Edit Supplier",
           ),
-          StatefulBuilder(
-            builder: (context, setState) {
-              return IconButton(
-                icon: Icon(
-                  company.accountLedgerId == null ||
-                          company.accountLedgerId!.isEmpty
-                      ? Icons.add // Create Ledger Icon
-                      : Icons.receipt_long, // Go to Ledger Icon
-                ),
-                onPressed: () async {
-                  if (company.accountLedgerId == null ||
-                      company.accountLedgerId!.isEmpty) {
-                    // 🔥 Ledger Create Karna
-                    final newLedgerId =
-                        await _createAccountLedger(context, company);
-                    setState(() {
-                      company.copyWith(accountLedgerId: newLedgerId);
-                    });
-                  } else {
-                    // 🔥 Ledger Page Pe Jaana
-                    _goToAccountLedger(context, company);
-                  }
-                },
-                tooltip: company.accountLedgerId == null ||
-                        company.accountLedgerId!.isEmpty
-                    ? "Create Ledger"
-                    : "Go to Ledger",
-              );
+          IconButton(
+            icon: const Icon(Icons.receipt_long),
+            onPressed: () {
+              sl<Coordinator>().navigateToAccountLedgerPage(company: company);
             },
+            tooltip: "Go to Ledger",
           ),
         ],
       ),
@@ -66,36 +40,29 @@ class CompanyDetailsPage extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            _buildDetailRow(AppLabels.companyNameLabel, company.companyName),
-            _buildDetailRow(AppLabels.addressLabel, company.address),
-            _buildClickableDetailRow(AppLabels.emailLabel, company.email),
-            _buildClickableDetailRow(
-                AppLabels.contactNumberLabel, company.contactNumber),
-            _buildDetailRow(AppLabels.sourceLabel, company.source),
-            _buildInterestLevelRow(
-                AppLabels.interestLevelLabel, company.interestLevel),
-            _buildDetailRow(AppLabels.countryLabel, company.country),
-            _buildDetailRow(AppLabels.cityLabel, company.city),
-            _buildDetailRow(AppLabels.priorityLabel, company.priority),
-            _buildRepliedRow(AppLabels.theyRepliedLabel, company.theyReplied),
-            _buildEmailSentRow(AppLabels.emailSentLabel, company.emailSent),
-            _buildDetailRow(AppLabels.assignedToLabel, company.assignedTo),
-            _buildClickableDetailRow(
-                AppLabels.websiteLinkLabel, company.websiteLink),
-            _buildClickableDetailRow(
-                AppLabels.linkedInLinkLabel, company.linkedInLink),
-            _buildClickableDetailRow(
-                AppLabels.clutchLinkLabel, company.clutchLink),
-            _buildClickableDetailRow(
-                AppLabels.goodFirmLinkLabel, company.goodFirmLink),
-            _buildDetailRow(AppLabels.descriptionLabel, company.description),
-            _buildVerifiedOnRow(AppLabels.verifiedOnLabel, company.verifiedOn),
-            _buildDetailRow(AppLabels.createdByLabel, company.createdBy),
-            _buildDetailRow(
-                AppLabels.lastUpdatedByLabel, company.lastUpdatedBy),
+            _buildDetailRow("Supplier Name", company.companyName),
+            _buildDetailRow("Address", company.address),
+            _buildClickableDetailRow("Email", company.email),
+            _buildClickableDetailRow("Contact Number", company.contactNumber),
+            _buildDetailRow("Source", company.source),
+            _buildInterestLevelRow("Interest Level", company.interestLevel),
+            _buildDetailRow("Country", company.country),
+            _buildDetailRow("City", company.city),
+            _buildDetailRow("Priority", company.priority),
+            _buildRepliedRow("They Replied", company.theyReplied),
+            _buildEmailSentRow("Email Sent", company.emailSent),
+            _buildDetailRow("Assigned To", company.assignedTo),
+            _buildClickableDetailRow("Website", company.websiteLink),
+            _buildClickableDetailRow("LinkedIn", company.linkedInLink),
+            _buildClickableDetailRow("Clutch", company.clutchLink),
+            _buildClickableDetailRow("GoodFirm", company.goodFirmLink),
+            _buildDetailRow("Description", company.description),
+            _buildVerifiedOnRow("Verified On", company.verifiedOn),
+            _buildDetailRow("Created By", company.createdBy),
+            _buildDetailRow("Last Updated By", company.lastUpdatedBy),
             const SizedBox(height: 16),
             const Text(
-              AppLabels.contactPersonLabel,
+              "Contact Person",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
@@ -106,33 +73,6 @@ class CompanyDetailsPage extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Future<String> _createAccountLedger(
-      BuildContext context, Partner company) async {
-    final ledgerCubit = sl<AccountLedgerCubit>();
-
-    try {
-      await ledgerCubit.createLedger(
-        company,
-        0.0, // Initial outstanding balance
-        null,
-        null,
-      );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Account Ledger Created Successfully!")));
-
-      return "GENERATED_LEDGER_ID"; // 🔥 Return the newly created ledger ID
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to create Account Ledger: $e")));
-      return "";
-    }
-  }
-
-  void _goToAccountLedger(BuildContext context, Partner company) {
-    sl<Coordinator>().navigateToAccountLedgerPage(company: company);
   }
 
   Widget _buildDetailRow(String label, String? value) {
@@ -171,7 +111,6 @@ class CompanyDetailsPage extends StatelessWidget {
 
   Widget _buildClickableDetailRow(String label, String? value) {
     final displayValue = sl<PartnerCubit>().validateValue(value);
-
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -192,7 +131,7 @@ class CompanyDetailsPage extends StatelessWidget {
             flex: 3,
             child: GestureDetector(
               onTap: () async {
-                // await sl<CompanyCubit>().launchUrl(displayValue);
+                // Handle URL launch
               },
               child: Text(
                 displayValue,
@@ -216,7 +155,7 @@ class CompanyDetailsPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "${AppLabels.contactPersonNameLabel}:",
+            "Name:",
             style: defaultTextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -235,7 +174,7 @@ class CompanyDetailsPage extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            "${AppLabels.contactPersonEmailLabel}:",
+            "Email:",
             style: defaultTextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -246,7 +185,7 @@ class CompanyDetailsPage extends StatelessWidget {
             padding: const EdgeInsets.only(left: 8.0),
             child: GestureDetector(
               onTap: () async {
-                // await sl<CompanyCubit>().launchUrl("mailto:${person.email}");
+                // Handle email
               },
               child: Text(
                 person.email,
@@ -260,7 +199,7 @@ class CompanyDetailsPage extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            "${AppLabels.contactPersonPhoneLabel}:",
+            "Phone:",
             style: defaultTextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -271,7 +210,7 @@ class CompanyDetailsPage extends StatelessWidget {
             padding: const EdgeInsets.only(left: 8.0),
             child: GestureDetector(
               onTap: () async {
-                // await sl<CompanyCubit>().launchUrl("tel:${person.phoneNumber}");
+                // Handle phone
               },
               child: Text(
                 person.phoneNumber,
@@ -308,21 +247,21 @@ class CompanyDetailsPage extends StatelessWidget {
             runSpacing: 8.0,
             children: platforms.isNotEmpty
                 ? platforms.map((platform) {
-                    return Chip(
-                      label: Text(
-                        platform,
-                        style: defaultTextStyle(
-                          fontSize: 14,
-                          color: AppColors.textFieldColor,
-                        ),
-                      ),
-                      backgroundColor: Colors.grey[300],
-                    );
-                  }).toList()
+              return Chip(
+                label: Text(
+                  platform,
+                  style: defaultTextStyle(
+                    fontSize: 14,
+                    color: AppColors.textFieldColor,
+                  ),
+                ),
+                backgroundColor: Colors.grey[300],
+              );
+            }).toList()
                 : [
-                    Text(AppLabels.notAvailable,
-                        style: defaultTextStyle(fontSize: 14))
-                  ],
+              Text("Not Available",
+                  style: defaultTextStyle(fontSize: 14))
+            ],
           ),
         ],
       ),
@@ -331,7 +270,7 @@ class CompanyDetailsPage extends StatelessWidget {
 
   Widget _buildInterestLevelRow(String label, String? interestLevel) {
     final color =
-        sl<PartnerCubit>().getInterestLevelColor(interestLevel);
+    sl<PartnerCubit>().getInterestLevelColor(interestLevel);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -346,7 +285,7 @@ class CompanyDetailsPage extends StatelessWidget {
           Expanded(
             flex: 3,
             child: StatusSquare(
-              text: interestLevel ?? AppLabels.notAvailable,
+              text: interestLevel ?? "Not Available",
               backgroundColor: color,
             ),
           ),
@@ -371,9 +310,7 @@ class CompanyDetailsPage extends StatelessWidget {
           Expanded(
             flex: 3,
             child: StatusSquare(
-              text: replied
-                  ? AppLabels.emailSentYesLabel
-                  : AppLabels.emailSentNoLabel,
+              text: replied ? "Yes" : "No",
               backgroundColor: color,
             ),
           ),
@@ -398,24 +335,12 @@ class CompanyDetailsPage extends StatelessWidget {
           Expanded(
             flex: 3,
             child: StatusSquare(
-              text: emailSent
-                  ? AppLabels.emailSentYesLabel
-                  : AppLabels.emailSentNoLabel,
+              text: emailSent ? "Yes" : "No",
               backgroundColor: color,
             ),
           ),
         ],
       ),
     );
-  }
-
-  void launchDialer(String phoneNumber) async {
-    final telUri = "tel:$phoneNumber";
-
-    if (await canLaunch(telUri)) {
-      await launch(telUri);
-    } else {
-      print("Could not launch dialer for $phoneNumber");
-    }
   }
 }

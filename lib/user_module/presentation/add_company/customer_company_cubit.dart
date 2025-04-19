@@ -1,96 +1,280 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_ledger_model.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/account_ledger_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppKeys.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
 import 'package:requirment_gathering_app/core_module/utils/date_time_utils.dart';
-import 'package:requirment_gathering_app/core_module/utils/utils.dart';
-import 'package:requirment_gathering_app/user_module/data/company.dart';
-import 'package:requirment_gathering_app/user_module/data/company_settings.dart';
+import 'package:requirment_gathering_app/user_module/data/partner.dart';
 import 'package:requirment_gathering_app/user_module/presentation/add_company/add_company_state.dart';
 import 'package:requirment_gathering_app/user_module/services/customer_company_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class CustomerCompanyCubit extends Cubit<CompanyState> {
-  // final CompanySettingRepository _settingRepository;
-  final List<Company> originalCompanies =
-      []; // Full list of companies for filtering
-  late CompanySettingsUi companySettingsUi;
-  String searchKeyword = '';
+class PartnerCubit extends Cubit<CompanyState> {
   final CustomerCompanyService _companyService;
+  final IAccountLedgerService _accountLedgerService;
   final UserServices _userServices;
+  final List<Partner> originalCompanies = [];
+  String searchKeyword = '';
+  Partner? currentCompany;
 
-  CustomerCompanyCubit(this._companyService, this._userServices)
-      : super(CompanyState.initial());
+  PartnerCubit(this._companyService, this._userServices, this._accountLedgerService)
+      : super(CompanyDataState.initial());
 
-  // Update company form data via the Company object
+  // AddCompanyPage Methods
+  Future<void> initializeWithCompany(Partner? company) async {
+    if (company != null) {
+      currentCompany = company.copyWith(companyType: company.companyType ?? 'Site');
+      emit(CompanyDataState(company: currentCompany));
+    } else {
+      currentCompany = CompanyDataState.initial().company;
+      emit(CompanyDataState.initial());
+    }
+  }
+
   Future<void> loadCompanySettings() async {
     try {
       final result = await _companyService.getSettings();
       result.fold(
-        (error) {
-          // If there’s an error, emit error state with the message
-          emit(state.copyWith(errorMessage: "Failed to load settings: $error"));
-        },
-        (settings) {
-          // If success, update the settings and company state
-          companySettingsUi = settings;
-          final companyWithSettings =
-              state.company?.copyWith(settings: settings);
-          emit(state.copyWith(company: companyWithSettings));
-        },
+            (error) => emit(ErrorState("Failed to load settings: $error")),
+            (settings) => emit(CompanyDataState(
+          company: currentCompany,
+          settings: settings,
+          users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        )),
       );
     } catch (e) {
-      // General error catch if something unexpected happens
-      emit(state.copyWith(errorMessage: "Unexpected error: $e"));
+      emit(ErrorState("Unexpected error: $e"));
+    }
+  }
+
+  Future<void> loadUsers() async {
+    try {
+      final result = await _userServices.getUsersFromTenantCompany();
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: result,
+      ));
+    } catch (e) {
+      emit(ErrorState("Failed to load users: $e"));
+    }
+  }
+
+  void updateCompanyName(String name) {
+    currentCompany = currentCompany?.copyWith(companyName: name);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
+  }
+
+  void updateCompanyType(String? type) {
+    currentCompany = currentCompany?.copyWith(companyType: type);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
+  }
+
+  void updateAddress(String? address) {
+    currentCompany = currentCompany?.copyWith(address: address);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
+  }
+
+  void updateEmail(String? email) {
+    currentCompany = currentCompany?.copyWith(email: email);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
+  }
+
+  void updateContactNumber(String? number) {
+    currentCompany = currentCompany?.copyWith(contactNumber: number);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
+  }
+
+  void updateWebsiteLink(String? link) {
+    currentCompany = currentCompany?.copyWith(websiteLink: link);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
+  }
+
+  void updateLinkedInLink(String? link) {
+    currentCompany = currentCompany?.copyWith(linkedInLink: link);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
+  }
+
+  void updateClutchLink(String? link) {
+    currentCompany = currentCompany?.copyWith(clutchLink: link);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
+  }
+
+  void updateGoodFirmLink(String? link) {
+    currentCompany = currentCompany?.copyWith(goodFirmLink: link);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
+  }
+
+  void updateDescription(String? description) {
+    currentCompany = currentCompany?.copyWith(description: description);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
     }
   }
 
   void updateSource(String? source) {
-    emit(state.copyWith(company: state.company?.copyWith(source: source)));
+    currentCompany = currentCompany?.copyWith(source: source);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
   }
 
   void updateBusinessType(String? businessType) {
-    emit(state.copyWith(
-        company: state.company?.copyWith(businessType: businessType)));
+    currentCompany = currentCompany?.copyWith(businessType: businessType);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
   }
 
   void updateEmailSent(bool? value) {
-    emit(state.copyWith(
-        company: state.company?.copyWith(emailSent: value ?? false)));
-  }
-
-  void updateInterestLevel(String? level) {
-    emit(
-        state.copyWith(company: state.company?.copyWith(interestLevel: level)));
-
-    applyGeneralFilters();
-  }
-
-  void updateCity(String? city) {
-    emit(state.copyWith(company: state.company?.copyWith(city: city)));
-    applyGeneralFilters();
-  }
-
-  void updatePriority(String? priority) {
-    emit(state.copyWith(company: state.company?.copyWith(priority: priority)));
-  }
-
-  void updateAssignedTo(String? assignedTo) {
-    emit(state.copyWith(
-        company: state.company?.copyWith(assignedTo: assignedTo)));
+    currentCompany = currentCompany?.copyWith(emailSent: value ?? false);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
   }
 
   void updateRepliedTo(bool? value) {
-    emit(state.copyWith(
-        company: state.company?.copyWith(theyReplied: value ?? false)));
+    currentCompany = currentCompany?.copyWith(theyReplied: value ?? false);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
+  }
+
+  void updateInterestLevel(String? level) {
+    currentCompany = currentCompany?.copyWith(interestLevel: level);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
+  }
+
+  void updatePriority(String? priority) {
+    currentCompany = currentCompany?.copyWith(priority: priority);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
+  }
+
+  void updateAssignedTo(String? assignedTo) {
+    currentCompany = currentCompany?.copyWith(assignedTo: assignedTo);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
+  }
+
+  void updateCountry(String? country) {
+    currentCompany = currentCompany?.copyWith(country: country, city: null);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
+  }
+
+  void updateCity(String? city) {
+    currentCompany = currentCompany?.copyWith(city: city);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
   }
 
   void updateVerification(String platform, bool isChecked) {
-    final updatedVerification =
-        List<String>.from(state.company?.verifiedOn ?? []);
+    final updatedVerification = List<String>.from(currentCompany?.verifiedOn ?? []);
     if (isChecked) {
       if (!updatedVerification.contains(platform)) {
         updatedVerification.add(platform);
@@ -98,107 +282,112 @@ class CustomerCompanyCubit extends Cubit<CompanyState> {
     } else {
       updatedVerification.remove(platform);
     }
-    emit(state.copyWith(
-        company: state.company?.copyWith(verifiedOn: updatedVerification)));
+    currentCompany = currentCompany?.copyWith(verifiedOn: updatedVerification);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
   }
 
-  // Contact Persons Management
-  void addContactPerson() {
-    final updatedContacts =
-        List<ContactPerson>.from(state.company?.contactPersons ?? [])
-          ..add(ContactPerson(name: '', email: '', phoneNumber: ''));
-    emit(state.copyWith(
-        company: state.company?.copyWith(contactPersons: updatedContacts)));
+  void addContactPerson(String name, String email, String phoneNumber) {
+    final updatedContacts = List<ContactPerson>.from(currentCompany?.contactPersons ?? [])
+      ..add(ContactPerson(name: name, email: email, phoneNumber: phoneNumber));
+    currentCompany = currentCompany?.copyWith(contactPersons: updatedContacts);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
   }
 
-  void updateContactPerson(int index, ContactPerson updatedPerson) {
-    final updatedContacts =
-        List<ContactPerson>.from(state.company?.contactPersons ?? []);
-    updatedContacts[index] = updatedPerson;
-    emit(state.copyWith(
-        company: state.company?.copyWith(contactPersons: updatedContacts)));
+  void updateContactPerson(int index, String name, String email, String phoneNumber) {
+    final updatedContacts = List<ContactPerson>.from(currentCompany?.contactPersons ?? []);
+    updatedContacts[index] = ContactPerson(name: name, email: email, phoneNumber: phoneNumber);
+    currentCompany = currentCompany?.copyWith(contactPersons: updatedContacts);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
   }
 
   void removeContactPerson(int index) {
-    final updatedContacts =
-        List<ContactPerson>.from(state.company?.contactPersons ?? [])
-          ..removeAt(index);
-    emit(state.copyWith(
-        company: state.company?.copyWith(contactPersons: updatedContacts)));
+    final updatedContacts = List<ContactPerson>.from(currentCompany?.contactPersons ?? [])
+      ..removeAt(index);
+    currentCompany = currentCompany?.copyWith(contactPersons: updatedContacts);
+    if (currentCompany != null) {
+      emit(CompanyDataState(
+        company: currentCompany,
+        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      ));
+    }
   }
 
   Future<void> saveCompany() async {
-    if (state.company == null ||
-        state.company!.companyName.isEmpty ||
-        state.company!.source == null) {
-      emit(state.copyWith(
-          errorMessage: "Company Name and Source are required."));
-      return;
-    }
-
-    emit(state.copyWith(isSaving: true, errorMessage: null));
-
+    emit( SavingState());
     try {
-      if (state.company!.id.isEmpty) {
-        // New company case
-        final isUnique = await _companyService
-            .isCompanyNameUnique(state.company!.companyName);
-
-        isUnique.fold(
-          (error) {
-            // If error occurred while checking uniqueness, emit error message
-            emit(state.copyWith(
-                isSaving: false, errorMessage: error.toString()));
-          },
-          (isUnique) {
-            // If company name is not unique
-            if (!isUnique) {
-              emit(state.copyWith(
-                  isSaving: false,
-                  errorMessage: "Company name already exists."));
-              return;
-            }
-
-            // Add new company to repository
-            _companyService.addCompany(state.company!).then((_) {
-              emit(CompanyState.initial());
-            }).catchError((e) {
-              emit(state.copyWith(isSaving: false, errorMessage: e.toString()));
-            });
-          },
-        );
-      } else {
-        // Existing company case
-        await _companyService.updateCompany(state.company!.id, state.company!);
-        emit(CompanyState.initial());
+      final company = currentCompany!;
+      if (company.companyName.isEmpty) {
+        emit(const ErrorState("Company name is required"));
+        return;
       }
+
+      final isUnique = await _companyService.isCompanyNameUnique(company.companyName);
+      isUnique.fold(
+            (l) => emit(ErrorState(l.toString())),
+            (r) async {
+          if (!r && (company.id.isEmpty)) {
+            emit(const ErrorState("Company name already exists"));
+            return;
+          }
+          if (company.id.isEmpty) {
+            await _companyService.addCompany(company);
+            final newLedger = AccountLedger(
+              totalOutstanding: 0,
+              promiseAmount: null,
+              promiseDate: null,
+              transactions: [],
+            );
+            await _accountLedgerService.createLedger(company, newLedger);
+          } else {
+            await _companyService.updateCompany(company.id!, company);
+          }
+          emit( SavedState());
+        },
+      );
     } catch (e) {
-      emit(state.copyWith(isSaving: false, errorMessage: e.toString()));
+      emit(ErrorState("Failed to save: $e"));
     }
   }
 
-  void updateCompany(Company updatedCompany) {
-    // local populate
-    emit(state.copyWith(company: updatedCompany));
+  void updateCompany(Partner updatedCompany) {
+    currentCompany = updatedCompany;
+    emit(CompanyDataState(
+      company: currentCompany,
+      settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+      users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+    ));
   }
 
+  // CompanyListPage Methods
   Future<void> loadCompanies() async {
-    emit(state.copyWith(isLoading: true));
+    emit( LoadingState());
     try {
-      final result = await _companyService
-          .getAllCompanies(); // Returns Either<Exception, List<Company>>
-
+      final result = await _companyService.getAllCompanies();
       result.fold(
-        (error) {
-          // If it's a Left (error), handle it by emitting the error message
-          emit(
-              state.copyWith(isLoading: false, errorMessage: error.toString()));
-        },
-        (companies) {
-          // If it's a Right (success), proceed with the company data
+            (error) => emit(ErrorState(error.toString())),
+            (companies) {
+          originalCompanies.clear();
           originalCompanies.addAll(companies);
-          emit(state.copyWith(
-            isLoading: false,
+          emit(CompaniesLoadedState(
             companies: companies,
             originalCompanies: originalCompanies,
           ));
@@ -206,52 +395,184 @@ class CustomerCompanyCubit extends Cubit<CompanyState> {
         },
       );
     } catch (e) {
-      // Catch any unhandled errors and emit them
-      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
+      emit(ErrorState(e.toString()));
     }
   }
 
-  // Sort companies by date
-  void sortCompaniesByDate({required bool ascending}) {
-    final sortedCompanies = List<Company>.from(state.companies);
-    sortedCompanies.sort((a, b) {
-      return ascending
-          ? a.dateCreated.compareTo(b.dateCreated)
-          : b.dateCreated.compareTo(a.dateCreated);
-    });
+  void filterByCompanyType(String companyType) {
+    final filteredCompanies = originalCompanies.where((company) => company.companyType == companyType).toList();
+    emit(CompaniesFilteredState(
+      companies: filteredCompanies,
+      originalCompanies: originalCompanies,
+    ));
+  }
 
-    emit(state.copyWith(companies: sortedCompanies, isLoading: false));
+  void sortCompaniesByDate({required bool ascending}) {
+    final sortedCompanies = List<Partner>.from(originalCompanies);
+    sortedCompanies.sort((a, b) => ascending ? a.dateCreated.compareTo(b.dateCreated) : b.dateCreated.compareTo(a.dateCreated));
+    emit(CompaniesSortedState(
+      companies: sortedCompanies,
+      originalCompanies: originalCompanies,
+    ));
   }
 
   Future<void> deleteCompany(String id) async {
-    emit(state.copyWith(isSaving: true));
+    emit( LoadingState());
     try {
       await _companyService.deleteCompany(id);
-      final updatedCompanies =
-          state.companies.where((company) => company.id != id).toList();
-      emit(state.copyWith(isSaving: false, companies: updatedCompanies));
-    } catch (e) {
-      emit(state.copyWith(isSaving: false, errorMessage: e.toString()));
-    }
-  }
-
-  void updateCountry(String? country) {
-    if (country != null) {
-      emit(state.copyWith(
-        company: state.company?.copyWith(
-            country: country, city: null), // Reset city when country changes
+      final updatedCompanies = originalCompanies.where((company) => company.id != id).toList();
+      originalCompanies.clear();
+      originalCompanies.addAll(updatedCompanies);
+      emit(CompanyDeletedState(
+        companies: updatedCompanies,
+        originalCompanies: originalCompanies,
       ));
+    } catch (e) {
+      emit(ErrorState(e.toString()));
     }
   }
 
-  List<String> getCitiesForCountry(String? country) {
-    final countryCityMap = state.company?.settings?.countryCityMap ?? {};
-    return countryCityMap[country] ?? [];
+  void sortCompaniesByName() {
+    final sortedCompanies = List<Partner>.from(originalCompanies)..sort((a, b) => a.companyName.compareTo(b.companyName));
+    emit(CompaniesSortedState(
+      companies: sortedCompanies,
+      originalCompanies: originalCompanies,
+    ));
   }
 
+  void sortCompaniesByCountry() {
+    final sortedCompanies = List<Partner>.from(originalCompanies)..sort((a, b) => (a.country ?? '').compareTo(b.country ?? ''));
+    emit(CompaniesSortedState(
+      companies: sortedCompanies,
+      originalCompanies: originalCompanies,
+    ));
+  }
+
+  void searchCompanies(String query) {
+    searchKeyword = query;
+    applyGeneralFilters();
+  }
+
+  void toggleFilterVisibility() {
+    emit(FilterToggledState(
+      isFilterVisible: !originalCompanies.isEmpty,
+      companies: originalCompanies,
+      originalCompanies: originalCompanies,
+    ));
+  }
+
+  void clearFilters() {
+    searchKeyword = '';
+    emit(CompaniesFilteredState(
+      companies: originalCompanies,
+      originalCompanies: originalCompanies,
+    ));
+  }
+
+  Future<void> applyGeneralFilters() async {
+    List<Partner> filteredCompanies = List.from(originalCompanies);
+
+    if (searchKeyword.isNotEmpty) {
+      filteredCompanies = filteredCompanies.where((company) {
+        return company.companyName.toLowerCase().contains(searchKeyword.toLowerCase());
+      }).toList();
+    }
+
+    if (currentCompany?.country != null && currentCompany!.country!.isNotEmpty) {
+      filteredCompanies = filteredCompanies.where((company) {
+        return company.country == currentCompany?.country;
+      }).toList();
+    }
+
+    if (currentCompany?.city != null && currentCompany!.city!.isNotEmpty) {
+      filteredCompanies = filteredCompanies.where((company) {
+        return company.city == currentCompany?.city;
+      }).toList();
+    }
+
+    if (currentCompany?.businessType != null && currentCompany!.businessType!.isNotEmpty) {
+      filteredCompanies = filteredCompanies.where((company) {
+        return company.businessType == currentCompany?.businessType;
+      }).toList();
+    }
+
+    if (currentCompany?.interestLevel != null && currentCompany!.interestLevel!.isNotEmpty) {
+      filteredCompanies = filteredCompanies.where((company) {
+        return company.interestLevel == currentCompany?.interestLevel;
+      }).toList();
+    }
+
+    if (currentCompany?.emailSent != null) {
+      filteredCompanies = filteredCompanies.where((company) {
+        return company.emailSent == currentCompany?.emailSent;
+      }).toList();
+    }
+
+    if (currentCompany?.theyReplied != null) {
+      filteredCompanies = filteredCompanies.where((company) {
+        return company.theyReplied == currentCompany?.theyReplied;
+      }).toList();
+    }
+
+    if (currentCompany?.priority != null && currentCompany!.priority!.isNotEmpty) {
+      filteredCompanies = filteredCompanies.where((company) {
+        return company.priority == currentCompany?.priority;
+      }).toList();
+    }
+
+    if (currentCompany?.source != null && currentCompany!.source!.isNotEmpty) {
+      filteredCompanies = filteredCompanies.where((company) {
+        return company.source == currentCompany?.source;
+      }).toList();
+    }
+
+    emit(CompaniesFilteredState(
+      companies: filteredCompanies,
+      originalCompanies: originalCompanies,
+    ));
+  }
+
+  void sortCompaniesBy(String? sortTypeString) {
+    List<Partner> sortedCompanies = List.from(originalCompanies);
+    SortType sortType = sortTypeString != null
+        ? SortType.values.firstWhere(
+          (e) => e.toString() == 'SortType.$sortTypeString',
+      orElse: () => SortType.latest,
+    )
+        : SortType.latest;
+
+    switch (sortType) {
+      case SortType.latest:
+        sortedCompanies.sort((a, b) => b.dateCreated.compareTo(a.dateCreated));
+        break;
+      case SortType.oldest:
+        sortedCompanies.sort((a, b) => a.dateCreated.compareTo(b.dateCreated));
+        break;
+      case SortType.highToLowInterest:
+        sortedCompanies.sort((a, b) {
+          final interestA = int.tryParse(a.interestLevel?.replaceAll('%', '') ?? '0') ?? 0;
+          final interestB = int.tryParse(b.interestLevel?.replaceAll('%', '') ?? '0') ?? 0;
+          return interestB.compareTo(interestA);
+        });
+        break;
+      case SortType.lowToHighInterest:
+        sortedCompanies.sort((a, b) {
+          final interestA = int.tryParse(a.interestLevel?.replaceAll('%', '') ?? '0') ?? 0;
+          final interestB = int.tryParse(b.interestLevel?.replaceAll('%', '') ?? '0') ?? 0;
+          return interestA.compareTo(interestB);
+        });
+        break;
+    }
+
+    emit(CompaniesSortedState(
+      companies: sortedCompanies,
+      originalCompanies: originalCompanies,
+    ));
+  }
+
+  // Utility Methods
   Color getInterestLevelColor(String? level) {
     if (level == null) return Colors.grey;
-
     final percentage = int.tryParse(level.replaceAll('%', '')) ?? 0;
     if (percentage >= 81) return Colors.green[900]!;
     if (percentage >= 61) return Colors.green[400]!;
@@ -268,201 +589,6 @@ class CustomerCompanyCubit extends Cubit<CompanyState> {
     return emailSent ? Colors.blue : Colors.orange;
   }
 
-  String validateValue(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return AppLabels.notAvailable;
-    }
-    return value;
-  }
-
-  Future<void> launchUrl(String url) async {
-    if (await canLaunch(url)) {
-      try {
-        await launch(url);
-      } catch (e) {
-        emit(state.copyWith(errorMessage: "Failed to launch URL: $e"));
-      }
-    } else {
-      emit(state.copyWith(errorMessage: "Cannot launch URL: $url"));
-    }
-  }
-
-  void sortCompaniesByName() {
-    final sorted = List.of(state.companies)
-      ..sort((a, b) => a.companyName.compareTo(b.companyName));
-    emit(state.copyWith(companies: sorted));
-  }
-
-  void sortCompaniesByCountry() {
-    final sorted = List.of(state.companies)
-      ..sort((a, b) => (a.country ?? '').compareTo(b.country ?? ''));
-    emit(state.copyWith(companies: sorted));
-  }
-
-  void updateEmailReplied(bool? value) {
-    emit(state.copyWith(
-      company: state.company?.copyWith(theyReplied: value ?? false),
-    ));
-  }
-
-  // Search companies
-  void searchCompanies(String query) {
-    searchKeyword = query;
-    applyGeneralFilters();
-  }
-
-  void filterByCountry() {
-    applyGeneralFilters();
-  }
-
-  void clearFilters() {
-    state.companies.clear();
-    state.companies.addAll(state.originalCompanies);
-    searchKeyword = '';
-    emit(CompanyState.initial());
-    List<Company> initialCompanyList = List.from(originalCompanies);
-
-    emit(state.copyWith(
-        companies: initialCompanyList,
-        originalCompanies: originalCompanies,
-        company: state.company?.copyWith(settings: companySettingsUi)));
-    sortCompaniesByDate(ascending: false);
-  }
-
-  Future<void> applyGeneralFilters() async {
-    // Start with the original company list
-    List<Company> filteredCompanies = List.from(originalCompanies);
-
-    // Filter by search keyword
-    if (searchKeyword.isNotEmpty) {
-      filteredCompanies = filteredCompanies.where((company) {
-        return company.companyName
-            .toLowerCase()
-            .contains(searchKeyword.toLowerCase());
-      }).toList();
-    }
-
-    // Filter by country
-    if (state.company?.country != null && state.company!.country!.isNotEmpty) {
-      filteredCompanies = filteredCompanies.where((company) {
-        return company.country == state.company?.country;
-      }).toList();
-    }
-
-    // Filter by city
-    if (state.company?.city != null && state.company!.city!.isNotEmpty) {
-      filteredCompanies = filteredCompanies.where((company) {
-        return company.city == state.company?.city;
-      }).toList();
-    }
-
-    if (state.company?.businessType != null &&
-        state.company!.businessType!.isNotEmpty) {
-      filteredCompanies = filteredCompanies.where((company) {
-        return company.businessType == state.company?.businessType;
-      }).toList();
-    }
-
-    // Filter by interest level
-    if (state.company?.interestLevel != null &&
-        state.company!.interestLevel!.isNotEmpty) {
-      final range =
-          state.company!.interestLevel!.split('-').map(int.parse).toList();
-      final lowerBound = range[0];
-      final upperBound = range[1];
-      filteredCompanies = filteredCompanies.where((company) {
-        final interestValue =
-            int.tryParse(company.interestLevel?.replaceAll('%', '') ?? '0') ??
-                0;
-        return interestValue >= lowerBound && interestValue <= upperBound;
-      }).toList();
-    }
-
-    // Filter by email sent
-    if (state.company?.emailSent != null) {
-      filteredCompanies = filteredCompanies.where((company) {
-        return company.emailSent == state.company?.emailSent;
-      }).toList();
-    }
-    //
-    // // Filter by replied status
-    if (state.company?.theyReplied != null) {
-      filteredCompanies = filteredCompanies.where((company) {
-        return company.theyReplied == state.company?.theyReplied;
-      }).toList();
-    }
-
-    // Filter by priority
-    if (state.company?.priority != null &&
-        state.company!.priority!.isNotEmpty) {
-      filteredCompanies = filteredCompanies.where((company) {
-        return company.priority == state.company?.priority;
-      }).toList();
-    }
-
-    // Filter by source
-    if (state.company?.source != null && state.company!.source!.isNotEmpty) {
-      filteredCompanies = filteredCompanies.where((company) {
-        return company.source == state.company?.source;
-      }).toList();
-    }
-
-    // Emit the filtered state
-    emit(state.copyWith(companies: filteredCompanies));
-  }
-
-  void setSearchKeyword(String keyword) {
-    searchKeyword = keyword;
-    applyGeneralFilters();
-  }
-
-  void toggleFilterVisibility() {
-    emit(state.copyWith(isFilterVisible: !state.isFilterVisible));
-  }
-
-  // Sort companies by different types
-  void sortCompaniesBy(String? sortTypeString) {
-    List<Company> sortedCompanies = List.from(state.companies);
-
-    // Handle null input by defaulting to SortType.latest
-    SortType sortType = (sortTypeString != null)
-        ? SortType.values.firstWhere(
-            (e) => e.toString() == 'SortType.' + sortTypeString,
-            orElse: () => SortType.latest, // Default if no match
-          )
-        : SortType.latest;
-
-    // Perform sorting based on the enum value
-    switch (sortType) {
-      case SortType.latest:
-        sortedCompanies.sort((a, b) => b.dateCreated.compareTo(a.dateCreated));
-        break;
-      case SortType.oldest:
-        sortedCompanies.sort((a, b) => a.dateCreated.compareTo(b.dateCreated));
-        break;
-      case SortType.highToLowInterest:
-        sortedCompanies.sort((a, b) {
-          final interestA =
-              int.tryParse(a.interestLevel?.replaceAll('%', '') ?? '0') ?? 0;
-          final interestB =
-              int.tryParse(b.interestLevel?.replaceAll('%', '') ?? '0') ?? 0;
-          return interestB.compareTo(interestA);
-        });
-        break;
-      case SortType.lowToHighInterest:
-        sortedCompanies.sort((a, b) {
-          final interestA =
-              int.tryParse(a.interestLevel?.replaceAll('%', '') ?? '0') ?? 0;
-          final interestB =
-              int.tryParse(b.interestLevel?.replaceAll('%', '') ?? '0') ?? 0;
-          return interestA.compareTo(interestB);
-        });
-        break;
-    }
-
-    emit(state.copyWith(companies: sortedCompanies));
-  }
-
   Color getPriorityColor(String? priority) {
     switch (priority?.toLowerCase()) {
       case 'high':
@@ -476,125 +602,148 @@ class CustomerCompanyCubit extends Cubit<CompanyState> {
     }
   }
 
-  ///for report page methods
-
-  ///---------------------------------------------------------------
-// Fetch follow-up data for the selected year
-  Map<String, int> getFollowUpDataForYear(String? year) {
-    return {
-      AppKeys.totalKey: state.companies
-          .where((c) => getYearFromDate(c.dateCreated.toString()) == year)
-          .length,
-      AppKeys.sentKey: state.companies
-          .where((c) =>
-              getYearFromDate(c.dateCreated.toString()) == year && c.emailSent)
-          .length,
-      AppKeys.notSentKey: state.companies
-          .where((c) =>
-              getYearFromDate(c.dateCreated.toString()) == year && !c.emailSent)
-          .length,
-    };
+  String validateValue(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return AppLabels.notAvailable;
+    }
+    return value;
   }
 
-// Fetch progress data for the selected year
+  Future<void> launchUrl(String url) async {
+    if (await canLaunch(url)) {
+      try {
+        await launch(url);
+      } catch (e) {
+        emit(ErrorState("Failed to launch URL: $e"));
+      }
+    } else {
+      emit(ErrorState("Cannot launch URL: $url"));
+    }
+  }
+
+  List<String> getCitiesForCountry(String? country) {
+    final countryCityMap = currentCompany?.settings?.countryCityMap ?? {};
+    return countryCityMap[country] ?? [];
+  }
+
+  // Report Page Methods
+  Map<String, int> getFollowUpDataForYear(String? year) {
+    final followUpData = {
+      AppKeys.totalKey: originalCompanies.where((c) => getYearFromDate(c.dateCreated.toString()) == year).length,
+      AppKeys.sentKey: originalCompanies.where((c) => getYearFromDate(c.dateCreated.toString()) == year && c.emailSent).length,
+      AppKeys.notSentKey: originalCompanies.where((c) => getYearFromDate(c.dateCreated.toString()) == year && !c.emailSent).length,
+    };
+    emit(FollowUpDataLoadedState(followUpData));
+    return followUpData;
+  }
+
   ProgressChartData getProgressData(String? selectedYearForProgress) {
-    final companies = state.companies
-        .where((c) =>
-            getYearFromDate(c.dateCreated.toString()) ==
-            selectedYearForProgress)
-        .toList();
+    final companies = originalCompanies.where((c) => getYearFromDate(c.dateCreated.toString()) == selectedYearForProgress).toList();
 
     List<int> data = List.generate(12, (index) {
       return companies.where((c) => c.dateCreated.month == index + 1).length;
     });
 
-    return ProgressChartData(
+    final progressData = ProgressChartData(
       bars: List.generate(data.length, (index) {
         return BarChartGroupData(
           x: index,
           barRods: [
             BarChartRodData(
-              y: data[index].toDouble(),
-              colors: [
-                data[index] > 0 ? AppColors.blue : AppColors.transparent
-              ],
+              colors: [AppColors.blue],
               width: 20,
               borderRadius: BorderRadius.circular(6),
+              y: data[index].toDouble(),
             ),
           ],
         );
       }),
-      labels: AppKeys.monthLabels, // List of month names stored in AppKeys
+      labels: AppKeys.monthLabels,
       maxValue: data.isNotEmpty ? data.reduce((a, b) => a > b ? a : b) : 1,
     );
+
+    emit(ProgressDataLoadedState(progressData));
+    return progressData;
   }
 
-// Fetch comparison data between two selected periods
   Map<String, int> getComparisonData(String? period1, String? period2) {
-    return {
+    final comparisonData = {
       AppKeys.period1Key: _getCompanyCountForPeriod(period1),
       AppKeys.period2Key: _getCompanyCountForPeriod(period2),
     };
+    emit(ComparisonDataLoadedState(comparisonData));
+    return comparisonData;
   }
 
-// Get available years from companies' data
   List<String> getAvailableYears() {
-    return state.companies
+    final years = originalCompanies
         .map((company) => getYearFromDate(company.dateCreated.toString()))
         .toSet()
         .toList()
       ..sort((a, b) => b.compareTo(a));
+    emit(AvailableYearsLoadedState(years));
+    return years;
   }
 
-// Get available periods (years, months, and quarters)
   List<String> getAvailablePeriods() {
     Set<String> periods = {};
-    for (var company in state.companies) {
+    for (var company in originalCompanies) {
       periods.add(getYearFromDate(company.dateCreated.toString()));
       periods.add(getMonthYearFromDate(company.dateCreated.toString()));
       periods.add(getQuarterFromDate(company.dateCreated.toString()));
     }
-    return periods.toList()..sort((a, b) => b.compareTo(a));
+    final periodList = periods.toList()..sort((a, b) => b.compareTo(a));
+    emit(AvailablePeriodsLoadedState(periodList));
+    return periodList;
   }
 
-// Update selected year for follow-up
   void updateSelectedYearForFollowUp(String year) {
-    emit(state.copyWith(selectedYearForFollowUp: year));
+    emit(CompanyDataState(
+      company: currentCompany,
+      settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+      users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      selectedYearForFollowUp: year,
+    ));
   }
 
-// Update selected year for progress
   void updateSelectedYearForProgress(String year) {
-    emit(state.copyWith(selectedYearForProgress: year));
+    emit(CompanyDataState(
+      company: currentCompany,
+      settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+      users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      selectedYearForProgress: year,
+    ));
   }
 
-// Update selected period 1 for comparison
   void updateSelectedPeriod1(String period) {
-    emit(state.copyWith(selectedPeriod1: period));
+    emit(CompanyDataState(
+      company: currentCompany,
+      settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+      users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      selectedPeriod1: period,
+    ));
   }
 
-// Update selected period 2 for comparison
   void updateSelectedPeriod2(String period) {
-    emit(state.copyWith(selectedPeriod2: period));
+    emit(CompanyDataState(
+      company: currentCompany,
+      settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+      users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+      selectedPeriod2: period,
+    ));
   }
 
-// Private helper method to get company count for a given period
   int _getCompanyCountForPeriod(String? period) {
     if (period == null || period.isEmpty) return 0;
-    return state.companies.where((company) {
+    return originalCompanies.where((company) {
       return getYearFromDate(company.dateCreated.toString()) == period ||
           getMonthYearFromDate(company.dateCreated.toString()) == period ||
           getQuarterFromDate(company.dateCreated.toString()) == period;
     }).length;
   }
-
-  void loadUsers() async {
-    emit(state.copyWith(isLoading: true));
-
-    final result = await _userServices.getUsersFromTenantCompany();
-    // List<String?> userNames = result.map((user) => user.name).toList();
-    emit(state.copyWith(users: result, isLoading: false));
-  }
 }
+
+enum SortType { latest, oldest, highToLowInterest, lowToHighInterest }
 
 class ProgressChartData {
   final List<BarChartGroupData> bars;

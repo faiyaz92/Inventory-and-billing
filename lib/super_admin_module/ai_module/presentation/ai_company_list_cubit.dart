@@ -3,7 +3,8 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/super_admin_module/ai_module/data/company_response_dto.dart';
 import 'package:requirment_gathering_app/super_admin_module/ai_module/repositories/ai_company_repository.dart';
-import 'package:requirment_gathering_app/user_module/data/company.dart';
+import 'package:requirment_gathering_app/user_module/data/partner.dart';
+import 'package:requirment_gathering_app/user_module/data/partner_dto.dart';
 import 'package:requirment_gathering_app/user_module/repo/customer_company_repository.dart';
 import 'package:requirment_gathering_app/user_module/repo/company_settings_repository.dart';
 
@@ -35,7 +36,7 @@ class CompanyListLoadedWithSettings extends AiCompanyListState {
 }
 
 class CompanyListLoaded extends AiCompanyListState {
-  final List<Company> companies;
+  final List<Partner> companies;
 
   CompanyListLoaded(this.companies);
 
@@ -210,7 +211,7 @@ class AiCompanyListCubit extends Cubit<AiCompanyListState> {
 
     try {
       // Fetch existing companies from Firestore using the updated repository method
-      Either<Exception, List<Company>> existingCompaniesResponse =
+      Either<Exception, List<PartnerDto>> existingCompaniesResponse =
       await _companyRepository.getFilteredCompanies(
         selectedCountry,
         selectedCity,
@@ -225,9 +226,9 @@ class AiCompanyListCubit extends Cubit<AiCompanyListState> {
         },
             (existingCompanies) async {
           // For each company, create a new instance with the source set to 'AI'
-          existingCompanies = existingCompanies.map((company) {
-            return company.copyWith(source: 'AI');
-          }).toList();
+          // existingCompanies = existingCompanies.map((company) {
+          //   return company.copyWith(source: 'AI');
+          // }).toList();
 
           List<String> existingCompanyNames =
           existingCompanies.map((c) => c.companyName).toList();
@@ -255,10 +256,10 @@ class AiCompanyListCubit extends Cubit<AiCompanyListState> {
               // }).toList();
 
               // Emit the final loaded state with both existing and new companies
-              emit(CompanyListLoaded(existingCompanies));
+              // emit(CompanyListLoaded(existingCompanies));
             },
           );
-          emit(CompanyListLoaded(existingCompanies));
+          // emit(CompanyListLoaded(existingCompanies));
 
             },
       );
@@ -296,21 +297,21 @@ class AiCompanyListCubit extends Cubit<AiCompanyListState> {
 
   }
 
-  Future<void> saveCompanies(List<Company> companies) async {
+  Future<void> saveCompanies(List<Partner> companies) async {
     try {
-      final result = await _companyRepository.saveCompaniesBulk(companies);
-
-      result.fold(
-            (error) {
-          // In case of an error, emit an error state or handle it accordingly
-          print("Error saving companies: $error");
-          emit(CompanyListError("Error saving companies: ${error.toString()}"));
-        },
-            (failedToSave) {
-          // If saving is successful, emit the loaded state with the failed companies
-          emit(CompanyListLoaded(failedToSave));
-        },
-      );
+      // final result = await _companyRepository.saveCompaniesBulk(companies);
+      //
+      // result.fold(
+      //       (error) {
+      //     In case of an error, emit an error state or handle it accordingly
+          // print("Error saving companies: $error");
+          // emit(CompanyListError("Error saving companies: ${error.toString()}"));
+        // },
+        //     (failedToSave) {
+        //   If saving is successful, emit the loaded state with the failed companies
+        //   emit(CompanyListLoaded(failedToSave));
+        // },
+      // );
     } catch (e) {
       print("Unexpected error: $e");
       emit(CompanyListError("Unexpected error: ${e.toString()}"));

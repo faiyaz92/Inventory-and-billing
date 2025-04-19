@@ -4,7 +4,7 @@ import 'package:requirment_gathering_app/company_admin_module/data/product/sub_c
 import 'package:requirment_gathering_app/company_admin_module/data/task/task_model.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/tenant_company.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
-import 'package:requirment_gathering_app/user_module/data/company.dart';
+import 'package:requirment_gathering_app/user_module/data/partner.dart';
 
 abstract class Coordinator {
   void navigateToLoginPage();
@@ -23,9 +23,9 @@ abstract class Coordinator {
 
   void navigateToAddCompanyPage();
 
-  void navigateToCompanyDetailsPage(Company company);
+  void navigateToCompanyDetailsPage(Partner company);
 
-  void navigateToEditCompanyPage(Company? company);
+  void navigateToEditCompanyPage(Partner? company);
 
   void navigateBack({bool isUpdated});
 
@@ -45,7 +45,7 @@ abstract class Coordinator {
 
   Future<dynamic> navigateToAddTaskPage({TaskModel? task});
 
-  void navigateToAccountLedgerPage({required Company company});
+  void navigateToAccountLedgerPage({required Partner company});
 
   void navigateToCreateLedgerPage(String companyId, String customerCompanyId);
 
@@ -64,4 +64,9 @@ abstract class Coordinator {
 
   Future<dynamic>
       navigateToCategoriesWithSubcategoriesPage(); // Add this line for the new page.
+  void navigateToSupplierListPage(); // For SupplierListPage
+
+  void navigateToSupplierDetailsPage(Partner company);
+  void navigateToAddEditSupplierPage({Partner? company});
+
 }

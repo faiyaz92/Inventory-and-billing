@@ -4,8 +4,8 @@ class AppLabels {
   static const String saveButtonText = "Save";
 
   // Company Fields
-  static const String companyNameLabel = "Company Name";
-  static const String companyNameHint = "Enter company name";
+  static const String companyNameLabel = "Site owner name";
+  static const String companyNameHint = "Enter site owner name";
   static const String addressLabel = "Address";
   static const String addressHint = "Enter address";
   static const String emailLabel = "Email";

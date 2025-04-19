@@ -37,16 +37,30 @@ class HomePage extends StatelessWidget {
                         children: [
                           _buildGridItem(
                             icon: Icons.business,
-                            label: 'Add Company',
+                            label: 'Add Site',
                             onTap: () {
                               sl<Coordinator>().navigateToAddCompanyPage();
                             },
                           ),
                           _buildGridItem(
-                            icon: Icons.person_add,
-                            label: 'Add Customer',
+                            icon: Icons.add_business,
+                            label: 'Site list',
                             onTap: () {
-                              // Implement navigation to Add Customer Page
+                              // sl<Coordinator>().navigateToSi();
+                            },
+                          ),
+                           _buildGridItem(
+                            icon: Icons.business,
+                            label: 'Add Supplier',
+                            onTap: () {
+                              sl<Coordinator>().navigateToAddEditSupplierPage();
+                            },
+                          ),
+                          _buildGridItem(
+                            icon: Icons.add_business,
+                            label: 'Supplier list',
+                            onTap: () {
+                              sl<Coordinator>().navigateToSupplierListPage();
                             },
                           ),
                           _buildGridItem(
@@ -81,7 +95,8 @@ class HomePage extends StatelessWidget {
                             icon: Icons.manage_accounts,
                             label: 'Product management',
                             onTap: () {
-                              sl<Coordinator>().navigateToProductManagementPage();
+                              sl<Coordinator>()
+                                  .navigateToProductManagementPage();
                             },
                           ),
                         ],

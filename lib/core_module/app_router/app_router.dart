@@ -24,6 +24,9 @@ import 'package:requirment_gathering_app/user_module/presentation/add_company/ad
 import 'package:requirment_gathering_app/user_module/presentation/company_list/company_details_page.dart';
 import 'package:requirment_gathering_app/user_module/presentation/company_list/company_list_page.dart';
 import 'package:requirment_gathering_app/user_module/presentation/company_settings/settings_page.dart';
+import 'package:requirment_gathering_app/user_module/presentation/suppliers/add_supplier_page.dart';
+import 'package:requirment_gathering_app/user_module/presentation/suppliers/supplier_details_page.dart';
+import 'package:requirment_gathering_app/user_module/presentation/suppliers/supplier_list_page.dart';
 
 @MaterialAutoRouter(
   replaceInRouteName: 'Page,Route',
@@ -36,6 +39,7 @@ import 'package:requirment_gathering_app/user_module/presentation/company_settin
     AutoRoute(page: ReportPage, path: '/reports'),
     AutoRoute(page: CompanySettingPage, path: '/settings'),
     AutoRoute(page: AddCompanyPage, path: '/add-company'),
+    AutoRoute(page: AddSupplierPage, path: '/add-supplier'),
     // Added AddCompanyPage
     AutoRoute(page: CompanyDetailsPage, path: '/company-details'),
     // Added CompanyDetailsPage
@@ -66,6 +70,8 @@ import 'package:requirment_gathering_app/user_module/presentation/company_settin
     // Add/Edit Subcategory Routes
     AutoRoute(page: AddEditSubcategoryPage, path: '/add-edit-subcategory'),  // Newly Added
     AutoRoute(page: CategoriesWithSubcategoriesPage, path: '/categories-with-subcategories'),
+    AutoRoute(page: SupplierListPage, path: '/supplierList'),
+    AutoRoute(page: SupplierDetailsPage, path: '/supplierDetailsPage'),
 
   ],
 )

@@ -11,74 +11,79 @@
 // ignore_for_file: type=lint
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i28;
+import 'dart:async' as _i31;
 
-import 'package:auto_route/auto_route.dart' as _i26;
-import 'package:flutter/material.dart' as _i27;
+import 'package:auto_route/auto_route.dart' as _i29;
+import 'package:flutter/material.dart' as _i30;
 
-import '../../company_admin_module/data/product/category.dart' as _i34;
-import '../../company_admin_module/data/product/product_model.dart' as _i33;
-import '../../company_admin_module/data/product/sub_category.dart' as _i35;
-import '../../company_admin_module/data/task/task_model.dart' as _i32;
+import '../../company_admin_module/data/product/category.dart' as _i37;
+import '../../company_admin_module/data/product/product_model.dart' as _i36;
+import '../../company_admin_module/data/product/sub_category.dart' as _i38;
+import '../../company_admin_module/data/task/task_model.dart' as _i35;
 import '../../company_admin_module/presentation/company_admin_dashboard.dart'
-    as _i14;
-import '../../company_admin_module/presentation/ledger/account_ledger_page.dart'
-    as _i18;
-import '../../company_admin_module/presentation/ledger/create_account_ledger.dart'
-    as _i19;
-import '../../company_admin_module/presentation/product/add_edit_category_page.dart'
-    as _i23;
-import '../../company_admin_module/presentation/product/add_edit_product_page.dart'
-    as _i21;
-import '../../company_admin_module/presentation/product/add_edit_sub_category_page.dart'
-    as _i24;
-import '../../company_admin_module/presentation/product/category_sub_category_list_page.dart'
-    as _i25;
-import '../../company_admin_module/presentation/product/dashboard/product_mgt_page.dart'
-    as _i22;
-import '../../company_admin_module/presentation/product/product_list_page.dart'
-    as _i20;
-import '../../company_admin_module/presentation/tasks/add_edit_task.dart'
-    as _i17;
-import '../../company_admin_module/presentation/tasks/task_list_page.dart'
-    as _i16;
-import '../../company_admin_module/presentation/users/add_company_user_page.dart'
-    as _i13;
-import '../../company_admin_module/presentation/users/user_list_page.dart'
     as _i15;
+import '../../company_admin_module/presentation/ledger/account_ledger_page.dart'
+    as _i19;
+import '../../company_admin_module/presentation/ledger/create_account_ledger.dart'
+    as _i20;
+import '../../company_admin_module/presentation/product/add_edit_category_page.dart'
+    as _i24;
+import '../../company_admin_module/presentation/product/add_edit_product_page.dart'
+    as _i22;
+import '../../company_admin_module/presentation/product/add_edit_sub_category_page.dart'
+    as _i25;
+import '../../company_admin_module/presentation/product/category_sub_category_list_page.dart'
+    as _i26;
+import '../../company_admin_module/presentation/product/dashboard/product_mgt_page.dart'
+    as _i23;
+import '../../company_admin_module/presentation/product/product_list_page.dart'
+    as _i21;
+import '../../company_admin_module/presentation/tasks/add_edit_task.dart'
+    as _i18;
+import '../../company_admin_module/presentation/tasks/task_list_page.dart'
+    as _i17;
+import '../../company_admin_module/presentation/users/add_company_user_page.dart'
+    as _i14;
+import '../../company_admin_module/presentation/users/user_list_page.dart'
+    as _i16;
 import '../../super_admin_module/ai_module/presentation/ai_company_list_page.dart'
-    as _i10;
-import '../../super_admin_module/data/tenant_company.dart' as _i30;
-import '../../super_admin_module/data/user_info.dart' as _i31;
-import '../../super_admin_module/presentation/add_tenant_company/add_tenant_company_page.dart'
-    as _i12;
-import '../../super_admin_module/presentation/dashboard/super_admin_page.dart'
     as _i11;
-import '../../user_module/data/company.dart' as _i29;
+import '../../super_admin_module/data/tenant_company.dart' as _i33;
+import '../../super_admin_module/data/user_info.dart' as _i34;
+import '../../super_admin_module/presentation/add_tenant_company/add_tenant_company_page.dart'
+    as _i13;
+import '../../super_admin_module/presentation/dashboard/super_admin_page.dart'
+    as _i12;
+import '../../user_module/data/partner.dart' as _i32;
 import '../../user_module/presentation/add_company/add_company_page.dart'
     as _i8;
 import '../../user_module/presentation/company_list/company_details_page.dart'
-    as _i9;
+    as _i10;
 import '../../user_module/presentation/company_list/company_list_page.dart'
     as _i5;
 import '../../user_module/presentation/company_settings/settings_page.dart'
     as _i7;
+import '../../user_module/presentation/suppliers/add_supplier_page.dart' as _i9;
+import '../../user_module/presentation/suppliers/supplier_details_page.dart'
+    as _i28;
+import '../../user_module/presentation/suppliers/supplier_list_page.dart'
+    as _i27;
 import '../presentation/dashboard/dashboard/dashboard_page.dart' as _i2;
 import '../presentation/dashboard/dashboard/reports_page.dart' as _i6;
 import '../presentation/dashboard/home/home_page.dart' as _i4;
 import '../presentation/login/login_page.dart' as _i3;
 import '../presentation/login/splash_screen.dart' as _i1;
 
-class AppRouter extends _i26.RootStackRouter {
-  AppRouter([_i27.GlobalKey<_i27.NavigatorState>? navigatorKey])
+class AppRouter extends _i29.RootStackRouter {
+  AppRouter([_i30.GlobalKey<_i30.NavigatorState>? navigatorKey])
       : super(navigatorKey);
 
   @override
-  final Map<String, _i26.PageFactory> pagesMap = {
+  final Map<String, _i29.PageFactory> pagesMap = {
     SplashScreen.name: (routeData) {
       final args = routeData.argsAs<SplashScreenArgs>(
           orElse: () => const SplashScreenArgs());
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
         child: _i1.SplashScreen(
           key: args.key,
@@ -87,7 +92,7 @@ class AppRouter extends _i26.RootStackRouter {
       );
     },
     DashboardRoute.name: (routeData) {
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
         child: const _i2.DashboardPage(),
       );
@@ -95,31 +100,31 @@ class AppRouter extends _i26.RootStackRouter {
     LoginRoute.name: (routeData) {
       final args = routeData.argsAs<LoginRouteArgs>(
           orElse: () => const LoginRouteArgs());
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
         child: _i3.LoginPage(key: args.key),
       );
     },
     HomeRoute.name: (routeData) {
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
         child: const _i4.HomePage(),
       );
     },
     CompanyListRoute.name: (routeData) {
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
         child: const _i5.CompanyListPage(),
       );
     },
     ReportRoute.name: (routeData) {
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
         child: const _i6.ReportPage(),
       );
     },
     CompanySettingRoute.name: (routeData) {
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
         child: const _i7.CompanySettingPage(),
       );
@@ -127,7 +132,7 @@ class AppRouter extends _i26.RootStackRouter {
     AddCompanyRoute.name: (routeData) {
       final args = routeData.argsAs<AddCompanyRouteArgs>(
           orElse: () => const AddCompanyRouteArgs());
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
         child: _i8.AddCompanyPage(
           key: args.key,
@@ -135,34 +140,45 @@ class AppRouter extends _i26.RootStackRouter {
         ),
       );
     },
+    AddSupplierRoute.name: (routeData) {
+      final args = routeData.argsAs<AddSupplierRouteArgs>(
+          orElse: () => const AddSupplierRouteArgs());
+      return _i29.MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: _i9.AddSupplierPage(
+          key: args.key,
+          company: args.company,
+        ),
+      );
+    },
     CompanyDetailsRoute.name: (routeData) {
       final args = routeData.argsAs<CompanyDetailsRouteArgs>();
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: _i9.CompanyDetailsPage(
+        child: _i10.CompanyDetailsPage(
           key: args.key,
           company: args.company,
         ),
       );
     },
     AiCompanyListRoute.name: (routeData) {
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: const _i10.AiCompanyListPage(),
+        child: const _i11.AiCompanyListPage(),
       );
     },
     SuperAdminRoute.name: (routeData) {
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: const _i11.SuperAdminPage(),
+        child: const _i12.SuperAdminPage(),
       );
     },
     AddTenantCompanyRoute.name: (routeData) {
       final args = routeData.argsAs<AddTenantCompanyRouteArgs>(
           orElse: () => const AddTenantCompanyRouteArgs());
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: _i12.AddTenantCompanyPage(
+        child: _i13.AddTenantCompanyPage(
           key: args.key,
           company: args.company,
         ),
@@ -171,38 +187,38 @@ class AppRouter extends _i26.RootStackRouter {
     AddUserRoute.name: (routeData) {
       final args = routeData.argsAs<AddUserRouteArgs>(
           orElse: () => const AddUserRouteArgs());
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: _i13.AddUserPage(
+        child: _i14.AddUserPage(
           key: args.key,
           user: args.user,
         ),
       );
     },
     CompanyAdminRoute.name: (routeData) {
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: const _i14.CompanyAdminPage(),
+        child: const _i15.CompanyAdminPage(),
       );
     },
     UserListRoute.name: (routeData) {
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: const _i15.UserListPage(),
+        child: const _i16.UserListPage(),
       );
     },
     TaskListRoute.name: (routeData) {
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: const _i16.TaskListPage(),
+        child: const _i17.TaskListPage(),
       );
     },
     AddTaskRoute.name: (routeData) {
       final args = routeData.argsAs<AddTaskRouteArgs>(
           orElse: () => const AddTaskRouteArgs());
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: _i17.AddTaskPage(
+        child: _i18.AddTaskPage(
           key: args.key,
           task: args.task,
         ),
@@ -210,9 +226,9 @@ class AppRouter extends _i26.RootStackRouter {
     },
     AccountLedgerRoute.name: (routeData) {
       final args = routeData.argsAs<AccountLedgerRouteArgs>();
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: _i18.AccountLedgerPage(
+        child: _i19.AccountLedgerPage(
           key: args.key,
           company: args.company,
         ),
@@ -220,9 +236,9 @@ class AppRouter extends _i26.RootStackRouter {
     },
     CreateLedgerRoute.name: (routeData) {
       final args = routeData.argsAs<CreateLedgerRouteArgs>();
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: _i19.CreateLedgerPage(
+        child: _i20.CreateLedgerPage(
           key: args.key,
           companyId: args.companyId,
           customerCompanyId: args.customerCompanyId,
@@ -232,34 +248,34 @@ class AppRouter extends _i26.RootStackRouter {
     ProductListRoute.name: (routeData) {
       final args = routeData.argsAs<ProductListRouteArgs>(
           orElse: () => const ProductListRouteArgs());
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: _i20.ProductListPage(key: args.key),
+        child: _i21.ProductListPage(key: args.key),
       );
     },
     AddEditProductRoute.name: (routeData) {
       final args = routeData.argsAs<AddEditProductRouteArgs>(
           orElse: () => const AddEditProductRouteArgs());
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: _i21.AddEditProductPage(
+        child: _i22.AddEditProductPage(
           key: args.key,
           product: args.product,
         ),
       );
     },
     ProductMgtRoute.name: (routeData) {
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: const _i22.ProductMgtPage(),
+        child: const _i23.ProductMgtPage(),
       );
     },
     AddEditCategoryRoute.name: (routeData) {
       final args = routeData.argsAs<AddEditCategoryRouteArgs>(
           orElse: () => const AddEditCategoryRouteArgs());
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: _i23.AddEditCategoryPage(
+        child: _i24.AddEditCategoryPage(
           key: args.key,
           category: args.category,
         ),
@@ -267,9 +283,9 @@ class AppRouter extends _i26.RootStackRouter {
     },
     AddEditSubcategoryRoute.name: (routeData) {
       final args = routeData.argsAs<AddEditSubcategoryRouteArgs>();
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: _i24.AddEditSubcategoryPage(
+        child: _i25.AddEditSubcategoryPage(
           key: args.key,
           subcategory: args.subcategory,
           category: args.category,
@@ -277,124 +293,152 @@ class AppRouter extends _i26.RootStackRouter {
       );
     },
     CategoriesWithSubcategoriesRoute.name: (routeData) {
-      return _i26.MaterialPageX<dynamic>(
+      return _i29.MaterialPageX<dynamic>(
         routeData: routeData,
-        child: const _i25.CategoriesWithSubcategoriesPage(),
+        child: const _i26.CategoriesWithSubcategoriesPage(),
+      );
+    },
+    SupplierListRoute.name: (routeData) {
+      return _i29.MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const _i27.SupplierListPage(),
+      );
+    },
+    SupplierDetailsRoute.name: (routeData) {
+      final args = routeData.argsAs<SupplierDetailsRouteArgs>();
+      return _i29.MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: _i28.SupplierDetailsPage(
+          key: args.key,
+          company: args.company,
+        ),
       );
     },
   };
 
   @override
-  List<_i26.RouteConfig> get routes => [
-        _i26.RouteConfig(
+  List<_i29.RouteConfig> get routes => [
+        _i29.RouteConfig(
           SplashScreen.name,
           path: '/',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           DashboardRoute.name,
           path: '/dashboard',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           LoginRoute.name,
           path: '/login',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           HomeRoute.name,
           path: '/home',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           CompanyListRoute.name,
           path: '/company-list',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           ReportRoute.name,
           path: '/reports',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           CompanySettingRoute.name,
           path: '/settings',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           AddCompanyRoute.name,
           path: '/add-company',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
+          AddSupplierRoute.name,
+          path: '/add-supplier',
+        ),
+        _i29.RouteConfig(
           CompanyDetailsRoute.name,
           path: '/company-details',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           AiCompanyListRoute.name,
           path: '/ai-company-list',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           SuperAdminRoute.name,
           path: '/super-admin',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           AddTenantCompanyRoute.name,
           path: '/add-tenant-company',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           AddUserRoute.name,
           path: '/add-user',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           CompanyAdminRoute.name,
           path: '/company-admin',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           UserListRoute.name,
           path: '/user-list',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           TaskListRoute.name,
           path: '/task-list',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           AddTaskRoute.name,
           path: '/add-task',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           AccountLedgerRoute.name,
           path: '/account-ledger',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           CreateLedgerRoute.name,
           path: '/create-ledger/:companyId/:customerCompanyId',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           ProductListRoute.name,
           path: '/product-list',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           AddEditProductRoute.name,
           path: '/add-edit-product',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           ProductMgtRoute.name,
           path: '/manage-product',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           AddEditCategoryRoute.name,
           path: '/add-edit-category',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           AddEditSubcategoryRoute.name,
           path: '/add-edit-subcategory',
         ),
-        _i26.RouteConfig(
+        _i29.RouteConfig(
           CategoriesWithSubcategoriesRoute.name,
           path: '/categories-with-subcategories',
+        ),
+        _i29.RouteConfig(
+          SupplierListRoute.name,
+          path: '/supplierList',
+        ),
+        _i29.RouteConfig(
+          SupplierDetailsRoute.name,
+          path: '/supplierDetailsPage',
         ),
       ];
 }
 
 /// generated route for
 /// [_i1.SplashScreen]
-class SplashScreen extends _i26.PageRouteInfo<SplashScreenArgs> {
+class SplashScreen extends _i29.PageRouteInfo<SplashScreenArgs> {
   SplashScreen({
-    _i27.Key? key,
-    _i28.Future<void> Function()? onDelayComplete,
+    _i30.Key? key,
+    _i31.Future<void> Function()? onDelayComplete,
   }) : super(
           SplashScreen.name,
           path: '/',
@@ -413,9 +457,9 @@ class SplashScreenArgs {
     this.onDelayComplete,
   });
 
-  final _i27.Key? key;
+  final _i30.Key? key;
 
-  final _i28.Future<void> Function()? onDelayComplete;
+  final _i31.Future<void> Function()? onDelayComplete;
 
   @override
   String toString() {
@@ -425,7 +469,7 @@ class SplashScreenArgs {
 
 /// generated route for
 /// [_i2.DashboardPage]
-class DashboardRoute extends _i26.PageRouteInfo<void> {
+class DashboardRoute extends _i29.PageRouteInfo<void> {
   const DashboardRoute()
       : super(
           DashboardRoute.name,
@@ -437,8 +481,8 @@ class DashboardRoute extends _i26.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i3.LoginPage]
-class LoginRoute extends _i26.PageRouteInfo<LoginRouteArgs> {
-  LoginRoute({_i27.Key? key})
+class LoginRoute extends _i29.PageRouteInfo<LoginRouteArgs> {
+  LoginRoute({_i30.Key? key})
       : super(
           LoginRoute.name,
           path: '/login',
@@ -451,7 +495,7 @@ class LoginRoute extends _i26.PageRouteInfo<LoginRouteArgs> {
 class LoginRouteArgs {
   const LoginRouteArgs({this.key});
 
-  final _i27.Key? key;
+  final _i30.Key? key;
 
   @override
   String toString() {
@@ -461,7 +505,7 @@ class LoginRouteArgs {
 
 /// generated route for
 /// [_i4.HomePage]
-class HomeRoute extends _i26.PageRouteInfo<void> {
+class HomeRoute extends _i29.PageRouteInfo<void> {
   const HomeRoute()
       : super(
           HomeRoute.name,
@@ -473,7 +517,7 @@ class HomeRoute extends _i26.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i5.CompanyListPage]
-class CompanyListRoute extends _i26.PageRouteInfo<void> {
+class CompanyListRoute extends _i29.PageRouteInfo<void> {
   const CompanyListRoute()
       : super(
           CompanyListRoute.name,
@@ -485,7 +529,7 @@ class CompanyListRoute extends _i26.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i6.ReportPage]
-class ReportRoute extends _i26.PageRouteInfo<void> {
+class ReportRoute extends _i29.PageRouteInfo<void> {
   const ReportRoute()
       : super(
           ReportRoute.name,
@@ -497,7 +541,7 @@ class ReportRoute extends _i26.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i7.CompanySettingPage]
-class CompanySettingRoute extends _i26.PageRouteInfo<void> {
+class CompanySettingRoute extends _i29.PageRouteInfo<void> {
   const CompanySettingRoute()
       : super(
           CompanySettingRoute.name,
@@ -509,10 +553,10 @@ class CompanySettingRoute extends _i26.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i8.AddCompanyPage]
-class AddCompanyRoute extends _i26.PageRouteInfo<AddCompanyRouteArgs> {
+class AddCompanyRoute extends _i29.PageRouteInfo<AddCompanyRouteArgs> {
   AddCompanyRoute({
-    _i27.Key? key,
-    _i29.Company? company,
+    _i30.Key? key,
+    _i32.Partner? company,
   }) : super(
           AddCompanyRoute.name,
           path: '/add-company',
@@ -531,9 +575,9 @@ class AddCompanyRouteArgs {
     this.company,
   });
 
-  final _i27.Key? key;
+  final _i30.Key? key;
 
-  final _i29.Company? company;
+  final _i32.Partner? company;
 
   @override
   String toString() {
@@ -542,11 +586,45 @@ class AddCompanyRouteArgs {
 }
 
 /// generated route for
-/// [_i9.CompanyDetailsPage]
-class CompanyDetailsRoute extends _i26.PageRouteInfo<CompanyDetailsRouteArgs> {
+/// [_i9.AddSupplierPage]
+class AddSupplierRoute extends _i29.PageRouteInfo<AddSupplierRouteArgs> {
+  AddSupplierRoute({
+    _i30.Key? key,
+    _i32.Partner? company,
+  }) : super(
+          AddSupplierRoute.name,
+          path: '/add-supplier',
+          args: AddSupplierRouteArgs(
+            key: key,
+            company: company,
+          ),
+        );
+
+  static const String name = 'AddSupplierRoute';
+}
+
+class AddSupplierRouteArgs {
+  const AddSupplierRouteArgs({
+    this.key,
+    this.company,
+  });
+
+  final _i30.Key? key;
+
+  final _i32.Partner? company;
+
+  @override
+  String toString() {
+    return 'AddSupplierRouteArgs{key: $key, company: $company}';
+  }
+}
+
+/// generated route for
+/// [_i10.CompanyDetailsPage]
+class CompanyDetailsRoute extends _i29.PageRouteInfo<CompanyDetailsRouteArgs> {
   CompanyDetailsRoute({
-    _i27.Key? key,
-    required _i29.Company company,
+    _i30.Key? key,
+    required _i32.Partner company,
   }) : super(
           CompanyDetailsRoute.name,
           path: '/company-details',
@@ -565,9 +643,9 @@ class CompanyDetailsRouteArgs {
     required this.company,
   });
 
-  final _i27.Key? key;
+  final _i30.Key? key;
 
-  final _i29.Company company;
+  final _i32.Partner company;
 
   @override
   String toString() {
@@ -576,8 +654,8 @@ class CompanyDetailsRouteArgs {
 }
 
 /// generated route for
-/// [_i10.AiCompanyListPage]
-class AiCompanyListRoute extends _i26.PageRouteInfo<void> {
+/// [_i11.AiCompanyListPage]
+class AiCompanyListRoute extends _i29.PageRouteInfo<void> {
   const AiCompanyListRoute()
       : super(
           AiCompanyListRoute.name,
@@ -588,8 +666,8 @@ class AiCompanyListRoute extends _i26.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i11.SuperAdminPage]
-class SuperAdminRoute extends _i26.PageRouteInfo<void> {
+/// [_i12.SuperAdminPage]
+class SuperAdminRoute extends _i29.PageRouteInfo<void> {
   const SuperAdminRoute()
       : super(
           SuperAdminRoute.name,
@@ -600,12 +678,12 @@ class SuperAdminRoute extends _i26.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i12.AddTenantCompanyPage]
+/// [_i13.AddTenantCompanyPage]
 class AddTenantCompanyRoute
-    extends _i26.PageRouteInfo<AddTenantCompanyRouteArgs> {
+    extends _i29.PageRouteInfo<AddTenantCompanyRouteArgs> {
   AddTenantCompanyRoute({
-    _i27.Key? key,
-    _i30.TenantCompany? company,
+    _i30.Key? key,
+    _i33.TenantCompany? company,
   }) : super(
           AddTenantCompanyRoute.name,
           path: '/add-tenant-company',
@@ -624,9 +702,9 @@ class AddTenantCompanyRouteArgs {
     this.company,
   });
 
-  final _i27.Key? key;
+  final _i30.Key? key;
 
-  final _i30.TenantCompany? company;
+  final _i33.TenantCompany? company;
 
   @override
   String toString() {
@@ -635,11 +713,11 @@ class AddTenantCompanyRouteArgs {
 }
 
 /// generated route for
-/// [_i13.AddUserPage]
-class AddUserRoute extends _i26.PageRouteInfo<AddUserRouteArgs> {
+/// [_i14.AddUserPage]
+class AddUserRoute extends _i29.PageRouteInfo<AddUserRouteArgs> {
   AddUserRoute({
-    _i27.Key? key,
-    _i31.UserInfo? user,
+    _i30.Key? key,
+    _i34.UserInfo? user,
   }) : super(
           AddUserRoute.name,
           path: '/add-user',
@@ -658,9 +736,9 @@ class AddUserRouteArgs {
     this.user,
   });
 
-  final _i27.Key? key;
+  final _i30.Key? key;
 
-  final _i31.UserInfo? user;
+  final _i34.UserInfo? user;
 
   @override
   String toString() {
@@ -669,8 +747,8 @@ class AddUserRouteArgs {
 }
 
 /// generated route for
-/// [_i14.CompanyAdminPage]
-class CompanyAdminRoute extends _i26.PageRouteInfo<void> {
+/// [_i15.CompanyAdminPage]
+class CompanyAdminRoute extends _i29.PageRouteInfo<void> {
   const CompanyAdminRoute()
       : super(
           CompanyAdminRoute.name,
@@ -681,8 +759,8 @@ class CompanyAdminRoute extends _i26.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i15.UserListPage]
-class UserListRoute extends _i26.PageRouteInfo<void> {
+/// [_i16.UserListPage]
+class UserListRoute extends _i29.PageRouteInfo<void> {
   const UserListRoute()
       : super(
           UserListRoute.name,
@@ -693,8 +771,8 @@ class UserListRoute extends _i26.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i16.TaskListPage]
-class TaskListRoute extends _i26.PageRouteInfo<void> {
+/// [_i17.TaskListPage]
+class TaskListRoute extends _i29.PageRouteInfo<void> {
   const TaskListRoute()
       : super(
           TaskListRoute.name,
@@ -705,11 +783,11 @@ class TaskListRoute extends _i26.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i17.AddTaskPage]
-class AddTaskRoute extends _i26.PageRouteInfo<AddTaskRouteArgs> {
+/// [_i18.AddTaskPage]
+class AddTaskRoute extends _i29.PageRouteInfo<AddTaskRouteArgs> {
   AddTaskRoute({
-    _i27.Key? key,
-    _i32.TaskModel? task,
+    _i30.Key? key,
+    _i35.TaskModel? task,
   }) : super(
           AddTaskRoute.name,
           path: '/add-task',
@@ -728,9 +806,9 @@ class AddTaskRouteArgs {
     this.task,
   });
 
-  final _i27.Key? key;
+  final _i30.Key? key;
 
-  final _i32.TaskModel? task;
+  final _i35.TaskModel? task;
 
   @override
   String toString() {
@@ -739,11 +817,11 @@ class AddTaskRouteArgs {
 }
 
 /// generated route for
-/// [_i18.AccountLedgerPage]
-class AccountLedgerRoute extends _i26.PageRouteInfo<AccountLedgerRouteArgs> {
+/// [_i19.AccountLedgerPage]
+class AccountLedgerRoute extends _i29.PageRouteInfo<AccountLedgerRouteArgs> {
   AccountLedgerRoute({
-    _i27.Key? key,
-    required _i29.Company company,
+    _i30.Key? key,
+    required _i32.Partner company,
   }) : super(
           AccountLedgerRoute.name,
           path: '/account-ledger',
@@ -762,9 +840,9 @@ class AccountLedgerRouteArgs {
     required this.company,
   });
 
-  final _i27.Key? key;
+  final _i30.Key? key;
 
-  final _i29.Company company;
+  final _i32.Partner company;
 
   @override
   String toString() {
@@ -773,10 +851,10 @@ class AccountLedgerRouteArgs {
 }
 
 /// generated route for
-/// [_i19.CreateLedgerPage]
-class CreateLedgerRoute extends _i26.PageRouteInfo<CreateLedgerRouteArgs> {
+/// [_i20.CreateLedgerPage]
+class CreateLedgerRoute extends _i29.PageRouteInfo<CreateLedgerRouteArgs> {
   CreateLedgerRoute({
-    _i27.Key? key,
+    _i30.Key? key,
     required String companyId,
     required String customerCompanyId,
   }) : super(
@@ -799,7 +877,7 @@ class CreateLedgerRouteArgs {
     required this.customerCompanyId,
   });
 
-  final _i27.Key? key;
+  final _i30.Key? key;
 
   final String companyId;
 
@@ -812,9 +890,9 @@ class CreateLedgerRouteArgs {
 }
 
 /// generated route for
-/// [_i20.ProductListPage]
-class ProductListRoute extends _i26.PageRouteInfo<ProductListRouteArgs> {
-  ProductListRoute({_i27.Key? key})
+/// [_i21.ProductListPage]
+class ProductListRoute extends _i29.PageRouteInfo<ProductListRouteArgs> {
+  ProductListRoute({_i30.Key? key})
       : super(
           ProductListRoute.name,
           path: '/product-list',
@@ -827,7 +905,7 @@ class ProductListRoute extends _i26.PageRouteInfo<ProductListRouteArgs> {
 class ProductListRouteArgs {
   const ProductListRouteArgs({this.key});
 
-  final _i27.Key? key;
+  final _i30.Key? key;
 
   @override
   String toString() {
@@ -836,11 +914,11 @@ class ProductListRouteArgs {
 }
 
 /// generated route for
-/// [_i21.AddEditProductPage]
-class AddEditProductRoute extends _i26.PageRouteInfo<AddEditProductRouteArgs> {
+/// [_i22.AddEditProductPage]
+class AddEditProductRoute extends _i29.PageRouteInfo<AddEditProductRouteArgs> {
   AddEditProductRoute({
-    _i27.Key? key,
-    _i33.Product? product,
+    _i30.Key? key,
+    _i36.Product? product,
   }) : super(
           AddEditProductRoute.name,
           path: '/add-edit-product',
@@ -859,9 +937,9 @@ class AddEditProductRouteArgs {
     this.product,
   });
 
-  final _i27.Key? key;
+  final _i30.Key? key;
 
-  final _i33.Product? product;
+  final _i36.Product? product;
 
   @override
   String toString() {
@@ -870,8 +948,8 @@ class AddEditProductRouteArgs {
 }
 
 /// generated route for
-/// [_i22.ProductMgtPage]
-class ProductMgtRoute extends _i26.PageRouteInfo<void> {
+/// [_i23.ProductMgtPage]
+class ProductMgtRoute extends _i29.PageRouteInfo<void> {
   const ProductMgtRoute()
       : super(
           ProductMgtRoute.name,
@@ -882,12 +960,12 @@ class ProductMgtRoute extends _i26.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i23.AddEditCategoryPage]
+/// [_i24.AddEditCategoryPage]
 class AddEditCategoryRoute
-    extends _i26.PageRouteInfo<AddEditCategoryRouteArgs> {
+    extends _i29.PageRouteInfo<AddEditCategoryRouteArgs> {
   AddEditCategoryRoute({
-    _i27.Key? key,
-    _i34.Category? category,
+    _i30.Key? key,
+    _i37.Category? category,
   }) : super(
           AddEditCategoryRoute.name,
           path: '/add-edit-category',
@@ -906,9 +984,9 @@ class AddEditCategoryRouteArgs {
     this.category,
   });
 
-  final _i27.Key? key;
+  final _i30.Key? key;
 
-  final _i34.Category? category;
+  final _i37.Category? category;
 
   @override
   String toString() {
@@ -917,13 +995,13 @@ class AddEditCategoryRouteArgs {
 }
 
 /// generated route for
-/// [_i24.AddEditSubcategoryPage]
+/// [_i25.AddEditSubcategoryPage]
 class AddEditSubcategoryRoute
-    extends _i26.PageRouteInfo<AddEditSubcategoryRouteArgs> {
+    extends _i29.PageRouteInfo<AddEditSubcategoryRouteArgs> {
   AddEditSubcategoryRoute({
-    _i27.Key? key,
-    _i35.Subcategory? subcategory,
-    required _i34.Category category,
+    _i30.Key? key,
+    _i38.Subcategory? subcategory,
+    required _i37.Category category,
   }) : super(
           AddEditSubcategoryRoute.name,
           path: '/add-edit-subcategory',
@@ -944,11 +1022,11 @@ class AddEditSubcategoryRouteArgs {
     required this.category,
   });
 
-  final _i27.Key? key;
+  final _i30.Key? key;
 
-  final _i35.Subcategory? subcategory;
+  final _i38.Subcategory? subcategory;
 
-  final _i34.Category category;
+  final _i37.Category category;
 
   @override
   String toString() {
@@ -957,8 +1035,8 @@ class AddEditSubcategoryRouteArgs {
 }
 
 /// generated route for
-/// [_i25.CategoriesWithSubcategoriesPage]
-class CategoriesWithSubcategoriesRoute extends _i26.PageRouteInfo<void> {
+/// [_i26.CategoriesWithSubcategoriesPage]
+class CategoriesWithSubcategoriesRoute extends _i29.PageRouteInfo<void> {
   const CategoriesWithSubcategoriesRoute()
       : super(
           CategoriesWithSubcategoriesRoute.name,
@@ -966,4 +1044,51 @@ class CategoriesWithSubcategoriesRoute extends _i26.PageRouteInfo<void> {
         );
 
   static const String name = 'CategoriesWithSubcategoriesRoute';
+}
+
+/// generated route for
+/// [_i27.SupplierListPage]
+class SupplierListRoute extends _i29.PageRouteInfo<void> {
+  const SupplierListRoute()
+      : super(
+          SupplierListRoute.name,
+          path: '/supplierList',
+        );
+
+  static const String name = 'SupplierListRoute';
+}
+
+/// generated route for
+/// [_i28.SupplierDetailsPage]
+class SupplierDetailsRoute
+    extends _i29.PageRouteInfo<SupplierDetailsRouteArgs> {
+  SupplierDetailsRoute({
+    _i30.Key? key,
+    required _i32.Partner company,
+  }) : super(
+          SupplierDetailsRoute.name,
+          path: '/supplierDetailsPage',
+          args: SupplierDetailsRouteArgs(
+            key: key,
+            company: company,
+          ),
+        );
+
+  static const String name = 'SupplierDetailsRoute';
+}
+
+class SupplierDetailsRouteArgs {
+  const SupplierDetailsRouteArgs({
+    this.key,
+    required this.company,
+  });
+
+  final _i30.Key? key;
+
+  final _i32.Partner company;
+
+  @override
+  String toString() {
+    return 'SupplierDetailsRouteArgs{key: $key, company: $company}';
+  }
 }

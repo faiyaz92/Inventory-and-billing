@@ -1,7 +1,8 @@
 import 'package:requirment_gathering_app/user_module/data/company_settings.dart';
 
-class Company {
+class Partner {
   final String id;
+  final String? companyType; // Added: "Site" or "Supplier"
   final String companyName;
   final String? source;
   final String? businessType;
@@ -22,14 +23,15 @@ class Company {
   final String? linkedInLink;
   final String? clutchLink;
   final String? goodFirmLink;
-  final String? description; // Added back
-  final CompanySettingsUi? settings; // Embed CompanySettingsUi
-  final String createdBy; // Retained
-  final String lastUpdatedBy; // Retained
-  final String? accountLedgerId; // Added Account Ledger ID
+  final String? description;
+  final CompanySettingsUi? settings; // Kept as per original
+  final String createdBy;
+  final String lastUpdatedBy;
+  final String? accountLedgerId;
 
-  Company( {
+  Partner({
     required this.id,
+    this.companyType = "Site", // Default to Site
     required this.companyName,
     this.source,
     this.address,
@@ -47,18 +49,19 @@ class Company {
     this.linkedInLink,
     this.clutchLink,
     this.goodFirmLink,
-    this.description, // Added back
+    this.description,
     this.verifiedOn = const [],
     this.businessType,
     required this.dateCreated,
     this.settings,
-    required this.createdBy, // Retained
+    required this.createdBy,
     required this.lastUpdatedBy,
-    this.accountLedgerId, // Added Account Ledger ID
+    this.accountLedgerId,
   });
 
-  Company copyWith({
+  Partner copyWith({
     String? id,
+    String? companyType,
     String? companyName,
     String? source,
     String? address,
@@ -78,15 +81,16 @@ class Company {
     String? linkedInLink,
     String? clutchLink,
     String? goodFirmLink,
-    String? description, // Added back
+    String? description,
     CompanySettingsUi? settings,
-    String? createdBy, // Retained
-    String? lastUpdatedBy, // Retained
+    String? createdBy,
+    String? lastUpdatedBy,
     String? businessType,
-    String? accountLedgerId, // Added Account Ledger ID
+    String? accountLedgerId,
   }) {
-    return Company(
+    return Partner(
       id: id ?? this.id,
+      companyType: companyType ?? this.companyType,
       companyName: companyName ?? this.companyName,
       source: source ?? this.source,
       address: address ?? this.address,
@@ -106,12 +110,12 @@ class Company {
       linkedInLink: linkedInLink ?? this.linkedInLink,
       clutchLink: clutchLink ?? this.clutchLink,
       goodFirmLink: goodFirmLink ?? this.goodFirmLink,
-      description: description ?? this.description, // Added back
+      description: description ?? this.description,
       settings: settings ?? this.settings,
-      createdBy: createdBy ?? this.createdBy, // Retained
+      createdBy: createdBy ?? this.createdBy,
       lastUpdatedBy: lastUpdatedBy ?? this.lastUpdatedBy,
-      businessType: businessType ?? this.businessType, // Retained
-      accountLedgerId: accountLedgerId ?? this.accountLedgerId, // Added Account Ledger ID
+      businessType: businessType ?? this.businessType,
+      accountLedgerId: accountLedgerId ?? this.accountLedgerId,
     );
   }
 }

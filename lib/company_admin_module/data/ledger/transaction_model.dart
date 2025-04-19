@@ -7,6 +7,9 @@ class TransactionModel {
   final String? billNumber;
   final String? receivedBy;
   final DateTime createdAt;
+  final String? purpose; // New: Material, Labor, etc.
+  final String? typeOfPurpose; // New: Cement, Electrician, etc.
+  final String? remarks; // New: 500-char remarks
 
   TransactionModel({
     this.transactionId,
@@ -15,6 +18,9 @@ class TransactionModel {
     this.billNumber,
     this.receivedBy,
     required this.createdAt,
+    this.purpose,
+    this.typeOfPurpose,
+    this.remarks,
   });
 
   factory TransactionModel.fromDto(TransactionDto dto) {
@@ -25,6 +31,9 @@ class TransactionModel {
       billNumber: dto.billNumber,
       receivedBy: dto.receivedBy,
       createdAt: dto.createdAt,
+      purpose: dto.purpose,
+      typeOfPurpose: dto.typeOfPurpose,
+      remarks: dto.remarks,
     );
   }
 
@@ -36,6 +45,9 @@ class TransactionModel {
       billNumber: billNumber,
       receivedBy: receivedBy,
       createdAt: createdAt,
+      purpose: purpose,
+      typeOfPurpose: typeOfPurpose,
+      remarks: remarks,
     );
   }
 
@@ -46,6 +58,9 @@ class TransactionModel {
     String? billNumber,
     String? receivedBy,
     DateTime? createdAt,
+    String? purpose,
+    String? typeOfPurpose,
+    String? remarks,
   }) {
     return TransactionModel(
       transactionId: transactionId ?? this.transactionId,
@@ -54,6 +69,9 @@ class TransactionModel {
       billNumber: billNumber ?? this.billNumber,
       receivedBy: receivedBy ?? this.receivedBy,
       createdAt: createdAt ?? this.createdAt,
+      purpose: purpose ?? this.purpose,
+      typeOfPurpose: typeOfPurpose ?? this.typeOfPurpose,
+      remarks: remarks ?? this.remarks,
     );
   }
 }

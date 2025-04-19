@@ -2,7 +2,7 @@ import 'package:requirment_gathering_app/company_admin_module/data/ledger/accoun
 import 'package:requirment_gathering_app/company_admin_module/data/ledger/transaction_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/account_ledger_repository.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
-import 'package:requirment_gathering_app/user_module/data/company.dart';
+import 'package:requirment_gathering_app/user_module/data/partner.dart';
 import 'package:requirment_gathering_app/user_module/services/customer_company_service.dart';
 
 abstract class IAccountLedgerService {
@@ -10,7 +10,7 @@ abstract class IAccountLedgerService {
 
   Future<void> addTransaction(String ledgerId, TransactionModel transaction);
 
-  Future<void> createLedger(Company company, AccountLedger ledger);
+  Future<void> createLedger(Partner company, AccountLedger ledger);
 
   Future<void> deleteTransaction(String ledgerId, String transactionId);
   Future<void> updateLedger(String ledgerId, AccountLedger updatedLedger); // ✅ New Method
@@ -43,7 +43,7 @@ class AccountLedgerServiceImpl implements IAccountLedgerService {
   }
 
   @override
-  Future<void> createLedger(Company company, AccountLedger ledger) async {
+  Future<void> createLedger(Partner company, AccountLedger ledger) async {
     final ledgerDto = ledger.toDto();
     final loggedIn = await _accountRepository.getUserInfo();
     final ledgerId = await _accountLedgerRepository.createAccountLedger(

@@ -12,8 +12,8 @@ import 'package:requirment_gathering_app/user_module/presentation/add_company/ad
 import 'package:requirment_gathering_app/user_module/presentation/add_company/customer_company_cubit.dart';
 import 'package:requirment_gathering_app/user_module/presentation/company_list/filter_section.dart';
 
-class CompanyListPage extends StatelessWidget {
-  const CompanyListPage({Key? key}) : super(key: key);
+class SupplierListPage extends StatelessWidget {
+  const SupplierListPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
