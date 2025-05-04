@@ -29,29 +29,17 @@ class CompanySettingPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSection(
-                    title: "Sources",
-                    items: state.settings.sources,
-                    onAdd: (newSource) => cubit.addSource(newSource, context),
-                    onDelete: (source) => cubit.removeSource(source),
-                  ),
-                  const SizedBox(height: 16),
+
                   _buildSection(
                     title: "Priorities",
                     items: state.settings.priorities,
                     onAdd: (newPriority) => cubit.addPriority(newPriority, context),
                     onDelete: (priority) => cubit.removePriority(priority),
                   ),
+
                   const SizedBox(height: 16),
                   _buildSection(
-                    title: "Verified On",
-                    items: state.settings.verifiedOn,
-                    onAdd: (newPlatform) => cubit.addVerifiedOn(newPlatform, context),
-                    onDelete: (platform) => cubit.removeVerifiedOn(platform),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildSection(
-                    title: "Business Types",
+                    title: "Site Types",
                     items: state.settings.businessTypes,
                     onAdd: (newBusinessType) => cubit.addBusinessType(newBusinessType, context),
                     onDelete: (businessType) => cubit.removeBusinessType(businessType),

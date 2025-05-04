@@ -42,7 +42,7 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
       create: (_) => sl<PartnerCubit>(),
       child: Scaffold(
         appBar: CustomAppBar(
-          title: widget.company == null ? "Add Site" : "Edit Site",
+          title: widget.company == null ? "Add Supplier" : "Edit Supplier",
           automaticallyImplyLeading: true,
           actions: [
             IconButton(
@@ -87,13 +87,13 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                 // Company Name
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
-                  current is CompanyDataState &&
+                      current is CompanyDataState &&
                       previous is CompanyDataState &&
                       current.company?.companyName !=
                           previous.company?.companyName,
                   builder: (context, state) {
                     final company =
-                    state is CompanyDataState ? state.company : null;
+                        state is CompanyDataState ? state.company : null;
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: CustomTextField(
@@ -105,7 +105,7 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                         textInputAction: TextInputAction.next,
                         textCapitalization: TextCapitalization.words,
                         onChanged:
-                        context.read<PartnerCubit>().updateCompanyName,
+                            context.read<PartnerCubit>().updateCompanyName,
                       ),
                     );
                   },
@@ -113,12 +113,12 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                 // Address
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
-                  current is CompanyDataState &&
+                      current is CompanyDataState &&
                       previous is CompanyDataState &&
                       current.company?.address != previous.company?.address,
                   builder: (context, state) {
                     final company =
-                    state is CompanyDataState ? state.company : null;
+                        state is CompanyDataState ? state.company : null;
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: CustomTextField(
@@ -137,12 +137,12 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                 // Email
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
-                  current is CompanyDataState &&
+                      current is CompanyDataState &&
                       previous is CompanyDataState &&
                       current.company?.email != previous.company?.email,
                   builder: (context, state) {
                     final company =
-                    state is CompanyDataState ? state.company : null;
+                        state is CompanyDataState ? state.company : null;
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: CustomTextField(
@@ -161,13 +161,13 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                 // Contact Number
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
-                  current is CompanyDataState &&
+                      current is CompanyDataState &&
                       previous is CompanyDataState &&
                       current.company?.contactNumber !=
                           previous.company?.contactNumber,
                   builder: (context, state) {
                     final company =
-                    state is CompanyDataState ? state.company : null;
+                        state is CompanyDataState ? state.company : null;
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: CustomTextField(
@@ -179,7 +179,7 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                         textInputAction: TextInputAction.done,
                         textCapitalization: TextCapitalization.none,
                         onChanged:
-                        context.read<PartnerCubit>().updateContactNumber,
+                            context.read<PartnerCubit>().updateContactNumber,
                       ),
                     );
                   },
@@ -187,13 +187,13 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                 // Contact Persons
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
-                  current is CompanyDataState &&
+                      current is CompanyDataState &&
                       previous is CompanyDataState &&
                       current.company?.contactPersons !=
                           previous.company?.contactPersons,
                   builder: (context, state) {
                     final company =
-                    state is CompanyDataState ? state.company : null;
+                        state is CompanyDataState ? state.company : null;
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: _buildDynamicContactPersonsField(
@@ -206,20 +206,20 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                 // Business Type Dropdown
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
-                  current is CompanyDataState &&
+                      current is CompanyDataState &&
                       (current.settings !=
-                          (previous is CompanyDataState
-                              ? previous.settings
-                              : null) ||
+                              (previous is CompanyDataState
+                                  ? previous.settings
+                                  : null) ||
                           current.company?.businessType !=
                               (previous is CompanyDataState
                                   ? previous.company?.businessType
                                   : null)),
                   builder: (context, state) {
                     final settings =
-                    state is CompanyDataState ? state.settings : null;
+                        state is CompanyDataState ? state.settings : null;
                     final company =
-                    state is CompanyDataState ? state.company : null;
+                        state is CompanyDataState ? state.company : null;
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: _buildBusinessTypeField(
@@ -233,20 +233,20 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                 // Country Dropdown
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
-                  current is CompanyDataState &&
+                      current is CompanyDataState &&
                       (current.settings !=
-                          (previous is CompanyDataState
-                              ? previous.settings
-                              : null) ||
+                              (previous is CompanyDataState
+                                  ? previous.settings
+                                  : null) ||
                           current.company?.country !=
                               (previous is CompanyDataState
                                   ? previous.company?.country
                                   : null)),
                   builder: (context, state) {
                     final settings =
-                    state is CompanyDataState ? state.settings : null;
+                        state is CompanyDataState ? state.settings : null;
                     final company =
-                    state is CompanyDataState ? state.company : null;
+                        state is CompanyDataState ? state.company : null;
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: _buildCountryField(
@@ -260,11 +260,11 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                 // City Dropdown
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
-                  current is CompanyDataState &&
+                      current is CompanyDataState &&
                       (current.settings !=
-                          (previous is CompanyDataState
-                              ? previous.settings
-                              : null) ||
+                              (previous is CompanyDataState
+                                  ? previous.settings
+                                  : null) ||
                           current.company?.country !=
                               (previous is CompanyDataState
                                   ? previous.company?.country
@@ -275,9 +275,9 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                                   : null)),
                   builder: (context, state) {
                     final settings =
-                    state is CompanyDataState ? state.settings : null;
+                        state is CompanyDataState ? state.settings : null;
                     final company =
-                    state is CompanyDataState ? state.company : null;
+                        state is CompanyDataState ? state.company : null;
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: _buildCityField(
@@ -292,20 +292,20 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                 // Source Dropdown
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
-                  current is CompanyDataState &&
+                      current is CompanyDataState &&
                       (current.settings !=
-                          (previous is CompanyDataState
-                              ? previous.settings
-                              : null) ||
+                              (previous is CompanyDataState
+                                  ? previous.settings
+                                  : null) ||
                           current.company?.source !=
                               (previous is CompanyDataState
                                   ? previous.company?.source
                                   : null)),
                   builder: (context, state) {
                     final settings =
-                    state is CompanyDataState ? state.settings : null;
+                        state is CompanyDataState ? state.settings : null;
                     final company =
-                    state is CompanyDataState ? state.company : null;
+                        state is CompanyDataState ? state.company : null;
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: _buildSourceField(
@@ -319,12 +319,12 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                 // Email Sent Radio
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
-                  current is CompanyDataState &&
+                      current is CompanyDataState &&
                       previous is CompanyDataState &&
                       current.company?.emailSent != previous.company?.emailSent,
                   builder: (context, state) {
                     final company =
-                    state is CompanyDataState ? state.company : null;
+                        state is CompanyDataState ? state.company : null;
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: _buildEmailSentField(
@@ -337,13 +337,13 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                 // Replied Radio
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
-                  current is CompanyDataState &&
+                      current is CompanyDataState &&
                       previous is CompanyDataState &&
                       current.company?.theyReplied !=
                           previous.company?.theyReplied,
                   builder: (context, state) {
                     final company =
-                    state is CompanyDataState ? state.company : null;
+                        state is CompanyDataState ? state.company : null;
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: _buildRepliedField(
@@ -356,13 +356,13 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                 // Interest Level Dropdown
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
-                  current is CompanyDataState &&
+                      current is CompanyDataState &&
                       previous is CompanyDataState &&
                       current.company?.interestLevel !=
                           previous.company?.interestLevel,
                   builder: (context, state) {
                     final company =
-                    state is CompanyDataState ? state.company : null;
+                        state is CompanyDataState ? state.company : null;
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: _buildInterestLevelField(
@@ -375,20 +375,20 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                 // Priority Dropdown
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
-                  current is CompanyDataState &&
+                      current is CompanyDataState &&
                       (current.settings !=
-                          (previous is CompanyDataState
-                              ? previous.settings
-                              : null) ||
+                              (previous is CompanyDataState
+                                  ? previous.settings
+                                  : null) ||
                           current.company?.priority !=
                               (previous is CompanyDataState
                                   ? previous.company?.priority
                                   : null)),
                   builder: (context, state) {
                     final settings =
-                    state is CompanyDataState ? state.settings : null;
+                        state is CompanyDataState ? state.settings : null;
                     final company =
-                    state is CompanyDataState ? state.company : null;
+                        state is CompanyDataState ? state.company : null;
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: _buildPriorityField(
@@ -402,11 +402,11 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                 // Assigned To Dropdown
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
-                  current is CompanyDataState &&
+                      current is CompanyDataState &&
                       (current.users !=
-                          (previous is CompanyDataState
-                              ? previous.users
-                              : null) ||
+                              (previous is CompanyDataState
+                                  ? previous.users
+                                  : null) ||
                           current.company?.assignedTo !=
                               (previous is CompanyDataState
                                   ? previous.company?.assignedTo
@@ -414,7 +414,7 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                   builder: (context, state) {
                     final users = state is CompanyDataState ? state.users : [];
                     final company =
-                    state is CompanyDataState ? state.company : null;
+                        state is CompanyDataState ? state.company : null;
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: _buildAssignedToField(
@@ -428,20 +428,20 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                 // Verified On Chips
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
-                  current is CompanyDataState &&
+                      current is CompanyDataState &&
                       (current.settings !=
-                          (previous is CompanyDataState
-                              ? previous.settings
-                              : null) ||
+                              (previous is CompanyDataState
+                                  ? previous.settings
+                                  : null) ||
                           current.company?.verifiedOn !=
                               (previous is CompanyDataState
                                   ? previous.company?.verifiedOn
                                   : null)),
                   builder: (context, state) {
                     final settings =
-                    state is CompanyDataState ? state.settings : null;
+                        state is CompanyDataState ? state.settings : null;
                     final company =
-                    state is CompanyDataState ? state.company : null;
+                        state is CompanyDataState ? state.company : null;
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: _buildVerifiedOnField(
@@ -455,13 +455,13 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                 // Website Link
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
-                  current is CompanyDataState &&
+                      current is CompanyDataState &&
                       previous is CompanyDataState &&
                       current.company?.websiteLink !=
                           previous.company?.websiteLink,
                   builder: (context, state) {
                     final company =
-                    state is CompanyDataState ? state.company : null;
+                        state is CompanyDataState ? state.company : null;
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: CustomTextField(
@@ -473,7 +473,7 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                         textInputAction: TextInputAction.next,
                         textCapitalization: TextCapitalization.none,
                         onChanged:
-                        context.read<PartnerCubit>().updateWebsiteLink,
+                            context.read<PartnerCubit>().updateWebsiteLink,
                       ),
                     );
                   },
@@ -481,13 +481,13 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                 // LinkedIn Link
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
-                  current is CompanyDataState &&
+                      current is CompanyDataState &&
                       previous is CompanyDataState &&
                       current.company?.linkedInLink !=
                           previous.company?.linkedInLink,
                   builder: (context, state) {
                     final company =
-                    state is CompanyDataState ? state.company : null;
+                        state is CompanyDataState ? state.company : null;
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: CustomTextField(
@@ -499,7 +499,7 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                         textInputAction: TextInputAction.next,
                         textCapitalization: TextCapitalization.none,
                         onChanged:
-                        context.read<PartnerCubit>().updateLinkedInLink,
+                            context.read<PartnerCubit>().updateLinkedInLink,
                       ),
                     );
                   },
@@ -507,13 +507,13 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                 // Clutch Link
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
-                  current is CompanyDataState &&
+                      current is CompanyDataState &&
                       previous is CompanyDataState &&
                       current.company?.clutchLink !=
                           previous.company?.clutchLink,
                   builder: (context, state) {
                     final company =
-                    state is CompanyDataState ? state.company : null;
+                        state is CompanyDataState ? state.company : null;
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: CustomTextField(
@@ -525,7 +525,7 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                         textInputAction: TextInputAction.next,
                         textCapitalization: TextCapitalization.none,
                         onChanged:
-                        context.read<PartnerCubit>().updateClutchLink,
+                            context.read<PartnerCubit>().updateClutchLink,
                       ),
                     );
                   },
@@ -533,13 +533,13 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                 // GoodFirm Link
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
-                  current is CompanyDataState &&
+                      current is CompanyDataState &&
                       previous is CompanyDataState &&
                       current.company?.goodFirmLink !=
                           previous.company?.goodFirmLink,
                   builder: (context, state) {
                     final company =
-                    state is CompanyDataState ? state.company : null;
+                        state is CompanyDataState ? state.company : null;
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: CustomTextField(
@@ -551,7 +551,7 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                         textInputAction: TextInputAction.next,
                         textCapitalization: TextCapitalization.none,
                         onChanged:
-                        context.read<PartnerCubit>().updateGoodFirmLink,
+                            context.read<PartnerCubit>().updateGoodFirmLink,
                       ),
                     );
                   },
@@ -559,13 +559,13 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                 // Description
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
-                  current is CompanyDataState &&
+                      current is CompanyDataState &&
                       previous is CompanyDataState &&
                       current.company?.description !=
                           previous.company?.description,
                   builder: (context, state) {
                     final company =
-                    state is CompanyDataState ? state.company : null;
+                        state is CompanyDataState ? state.company : null;
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: CustomTextField(
@@ -576,7 +576,7 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                         textInputAction: TextInputAction.done,
                         textCapitalization: TextCapitalization.sentences,
                         onChanged:
-                        context.read<PartnerCubit>().updateDescription,
+                            context.read<PartnerCubit>().updateDescription,
                       ),
                     );
                   },
@@ -585,13 +585,17 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                 // Save Button
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
-                  current is SavingState || previous is SavingState,
+                      current is SavingState || previous is SavingState,
                   builder: (context, state) {
                     return Center(
                       child: CustomButton(
                         text: AppLabels.saveButtonText,
                         isLoading: state is SavingState,
-                        onPressed: context.read<PartnerCubit>().saveCompany,
+                        onPressed: () async{
+                          await context
+                              .read<PartnerCubit>()
+                              .saveCompany('Site');
+                        },
                       ),
                     );
                   },
@@ -690,7 +694,7 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
       value: countries.contains(selectedValue) ? selectedValue : null,
       items: countries
           .map((country) =>
-          DropdownMenuItem(value: country, child: Text(country)))
+              DropdownMenuItem(value: country, child: Text(country)))
           .toList(),
       onChanged: cubit.updateCountry,
       decoration: const InputDecoration(
@@ -749,7 +753,7 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
       value: value,
       items: List.generate(11, (index) => '${index * 10}%')
           .map((percentage) =>
-          DropdownMenuItem(value: percentage, child: Text(percentage)))
+              DropdownMenuItem(value: percentage, child: Text(percentage)))
           .toList(),
       onChanged: cubit.updateInterestLevel,
       decoration: const InputDecoration(
@@ -766,7 +770,7 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
       value: priorities.contains(selectedValue) ? selectedValue : null,
       items: priorities
           .map((priority) =>
-          DropdownMenuItem(value: priority, child: Text(priority)))
+              DropdownMenuItem(value: priority, child: Text(priority)))
           .toList(),
       onChanged: cubit.updatePriority,
       decoration: const InputDecoration(

@@ -21,13 +21,15 @@ class PartnerCubit extends Cubit<CompanyState> {
   String searchKeyword = '';
   Partner? currentCompany;
 
-  PartnerCubit(this._companyService, this._userServices, this._accountLedgerService)
+  PartnerCubit(
+      this._companyService, this._userServices, this._accountLedgerService)
       : super(CompanyDataState.initial());
 
   // AddCompanyPage Methods
   Future<void> initializeWithCompany(Partner? company) async {
     if (company != null) {
-      currentCompany = company.copyWith(companyType: company.companyType ?? 'Site');
+      currentCompany =
+          company.copyWith(companyType: company.companyType ?? 'Site');
       emit(CompanyDataState(company: currentCompany));
     } else {
       currentCompany = CompanyDataState.initial().company;
@@ -39,11 +41,13 @@ class PartnerCubit extends Cubit<CompanyState> {
     try {
       final result = await _companyService.getSettings();
       result.fold(
-            (error) => emit(ErrorState("Failed to load settings: $error")),
-            (settings) => emit(CompanyDataState(
+        (error) => emit(ErrorState("Failed to load settings: $error")),
+        (settings) => emit(CompanyDataState(
           company: currentCompany,
           settings: settings,
-          users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+          users: state is CompanyDataState
+              ? (state as CompanyDataState).users
+              : [],
         )),
       );
     } catch (e) {
@@ -56,7 +60,9 @@ class PartnerCubit extends Cubit<CompanyState> {
       final result = await _userServices.getUsersFromTenantCompany();
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
         users: result,
       ));
     } catch (e) {
@@ -69,8 +75,11 @@ class PartnerCubit extends Cubit<CompanyState> {
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
@@ -80,8 +89,11 @@ class PartnerCubit extends Cubit<CompanyState> {
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
@@ -91,8 +103,11 @@ class PartnerCubit extends Cubit<CompanyState> {
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
@@ -102,8 +117,11 @@ class PartnerCubit extends Cubit<CompanyState> {
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
@@ -113,8 +131,11 @@ class PartnerCubit extends Cubit<CompanyState> {
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
@@ -124,8 +145,11 @@ class PartnerCubit extends Cubit<CompanyState> {
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
@@ -135,8 +159,11 @@ class PartnerCubit extends Cubit<CompanyState> {
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
@@ -146,8 +173,11 @@ class PartnerCubit extends Cubit<CompanyState> {
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
@@ -157,8 +187,11 @@ class PartnerCubit extends Cubit<CompanyState> {
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
@@ -168,8 +201,11 @@ class PartnerCubit extends Cubit<CompanyState> {
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
@@ -179,8 +215,11 @@ class PartnerCubit extends Cubit<CompanyState> {
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
@@ -190,8 +229,11 @@ class PartnerCubit extends Cubit<CompanyState> {
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
@@ -201,8 +243,11 @@ class PartnerCubit extends Cubit<CompanyState> {
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
@@ -212,8 +257,11 @@ class PartnerCubit extends Cubit<CompanyState> {
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
@@ -223,8 +271,11 @@ class PartnerCubit extends Cubit<CompanyState> {
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
@@ -234,8 +285,11 @@ class PartnerCubit extends Cubit<CompanyState> {
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
@@ -245,8 +299,11 @@ class PartnerCubit extends Cubit<CompanyState> {
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
@@ -256,8 +313,11 @@ class PartnerCubit extends Cubit<CompanyState> {
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
@@ -267,14 +327,18 @@ class PartnerCubit extends Cubit<CompanyState> {
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
 
   void updateVerification(String platform, bool isChecked) {
-    final updatedVerification = List<String>.from(currentCompany?.verifiedOn ?? []);
+    final updatedVerification =
+        List<String>.from(currentCompany?.verifiedOn ?? []);
     if (isChecked) {
       if (!updatedVerification.contains(platform)) {
         updatedVerification.add(platform);
@@ -286,64 +350,82 @@ class PartnerCubit extends Cubit<CompanyState> {
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
 
   void addContactPerson(String name, String email, String phoneNumber) {
-    final updatedContacts = List<ContactPerson>.from(currentCompany?.contactPersons ?? [])
+    final updatedContacts = List<ContactPerson>.from(
+        currentCompany?.contactPersons ?? [])
       ..add(ContactPerson(name: name, email: email, phoneNumber: phoneNumber));
     currentCompany = currentCompany?.copyWith(contactPersons: updatedContacts);
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
 
-  void updateContactPerson(int index, String name, String email, String phoneNumber) {
-    final updatedContacts = List<ContactPerson>.from(currentCompany?.contactPersons ?? []);
-    updatedContacts[index] = ContactPerson(name: name, email: email, phoneNumber: phoneNumber);
+  void updateContactPerson(
+      int index, String name, String email, String phoneNumber) {
+    final updatedContacts =
+        List<ContactPerson>.from(currentCompany?.contactPersons ?? []);
+    updatedContacts[index] =
+        ContactPerson(name: name, email: email, phoneNumber: phoneNumber);
     currentCompany = currentCompany?.copyWith(contactPersons: updatedContacts);
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
 
   void removeContactPerson(int index) {
-    final updatedContacts = List<ContactPerson>.from(currentCompany?.contactPersons ?? [])
-      ..removeAt(index);
+    final updatedContacts =
+        List<ContactPerson>.from(currentCompany?.contactPersons ?? [])
+          ..removeAt(index);
     currentCompany = currentCompany?.copyWith(contactPersons: updatedContacts);
     if (currentCompany != null) {
       emit(CompanyDataState(
         company: currentCompany,
-        settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
-        users: state is CompanyDataState ? (state as CompanyDataState).users : [],
+        settings: state is CompanyDataState
+            ? (state as CompanyDataState).settings
+            : null,
+        users:
+            state is CompanyDataState ? (state as CompanyDataState).users : [],
       ));
     }
   }
 
-  Future<void> saveCompany() async {
-    emit( SavingState());
+  Future<void> saveCompany(String? companyType) async {
+    emit(SavingState());
     try {
       final company = currentCompany!;
       if (company.companyName.isEmpty) {
         emit(const ErrorState("Company name is required"));
         return;
       }
-
-      final isUnique = await _companyService.isCompanyNameUnique(company.companyName);
+      company.copyWith(companyType: companyType);
+      final isUnique =
+          await _companyService.isCompanyNameUnique(company.companyName);
       isUnique.fold(
-            (l) => emit(ErrorState(l.toString())),
-            (r) async {
+        (l) => emit(ErrorState(l.toString())),
+        (r) async {
           if (!r && (company.id.isEmpty)) {
             emit(const ErrorState("Company name already exists"));
             return;
@@ -360,7 +442,7 @@ class PartnerCubit extends Cubit<CompanyState> {
           } else {
             await _companyService.updateCompany(company.id!, company);
           }
-          emit( SavedState());
+          emit(SavedState());
         },
       );
     } catch (e) {
@@ -372,19 +454,21 @@ class PartnerCubit extends Cubit<CompanyState> {
     currentCompany = updatedCompany;
     emit(CompanyDataState(
       company: currentCompany,
-      settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+      settings: state is CompanyDataState
+          ? (state as CompanyDataState).settings
+          : null,
       users: state is CompanyDataState ? (state as CompanyDataState).users : [],
     ));
   }
 
   // CompanyListPage Methods
   Future<void> loadCompanies() async {
-    emit( LoadingState());
+    emit(LoadingState());
     try {
       final result = await _companyService.getAllCompanies();
       result.fold(
-            (error) => emit(ErrorState(error.toString())),
-            (companies) {
+        (error) => emit(ErrorState(error.toString())),
+        (companies) {
           originalCompanies.clear();
           originalCompanies.addAll(companies);
           emit(CompaniesLoadedState(
@@ -400,7 +484,9 @@ class PartnerCubit extends Cubit<CompanyState> {
   }
 
   void filterByCompanyType(String companyType) {
-    final filteredCompanies = originalCompanies.where((company) => company.companyType == companyType).toList();
+    final filteredCompanies = originalCompanies
+        .where((company) => company.companyType == companyType)
+        .toList();
     emit(CompaniesFilteredState(
       companies: filteredCompanies,
       originalCompanies: originalCompanies,
@@ -409,7 +495,9 @@ class PartnerCubit extends Cubit<CompanyState> {
 
   void sortCompaniesByDate({required bool ascending}) {
     final sortedCompanies = List<Partner>.from(originalCompanies);
-    sortedCompanies.sort((a, b) => ascending ? a.dateCreated.compareTo(b.dateCreated) : b.dateCreated.compareTo(a.dateCreated));
+    sortedCompanies.sort((a, b) => ascending
+        ? a.dateCreated.compareTo(b.dateCreated)
+        : b.dateCreated.compareTo(a.dateCreated));
     emit(CompaniesSortedState(
       companies: sortedCompanies,
       originalCompanies: originalCompanies,
@@ -417,10 +505,11 @@ class PartnerCubit extends Cubit<CompanyState> {
   }
 
   Future<void> deleteCompany(String id) async {
-    emit( LoadingState());
+    emit(LoadingState());
     try {
       await _companyService.deleteCompany(id);
-      final updatedCompanies = originalCompanies.where((company) => company.id != id).toList();
+      final updatedCompanies =
+          originalCompanies.where((company) => company.id != id).toList();
       originalCompanies.clear();
       originalCompanies.addAll(updatedCompanies);
       emit(CompanyDeletedState(
@@ -433,7 +522,8 @@ class PartnerCubit extends Cubit<CompanyState> {
   }
 
   void sortCompaniesByName() {
-    final sortedCompanies = List<Partner>.from(originalCompanies)..sort((a, b) => a.companyName.compareTo(b.companyName));
+    final sortedCompanies = List<Partner>.from(originalCompanies)
+      ..sort((a, b) => a.companyName.compareTo(b.companyName));
     emit(CompaniesSortedState(
       companies: sortedCompanies,
       originalCompanies: originalCompanies,
@@ -441,7 +531,8 @@ class PartnerCubit extends Cubit<CompanyState> {
   }
 
   void sortCompaniesByCountry() {
-    final sortedCompanies = List<Partner>.from(originalCompanies)..sort((a, b) => (a.country ?? '').compareTo(b.country ?? ''));
+    final sortedCompanies = List<Partner>.from(originalCompanies)
+      ..sort((a, b) => (a.country ?? '').compareTo(b.country ?? ''));
     emit(CompaniesSortedState(
       companies: sortedCompanies,
       originalCompanies: originalCompanies,
@@ -474,11 +565,14 @@ class PartnerCubit extends Cubit<CompanyState> {
 
     if (searchKeyword.isNotEmpty) {
       filteredCompanies = filteredCompanies.where((company) {
-        return company.companyName.toLowerCase().contains(searchKeyword.toLowerCase());
+        return company.companyName
+            .toLowerCase()
+            .contains(searchKeyword.toLowerCase());
       }).toList();
     }
 
-    if (currentCompany?.country != null && currentCompany!.country!.isNotEmpty) {
+    if (currentCompany?.country != null &&
+        currentCompany!.country!.isNotEmpty) {
       filteredCompanies = filteredCompanies.where((company) {
         return company.country == currentCompany?.country;
       }).toList();
@@ -490,13 +584,15 @@ class PartnerCubit extends Cubit<CompanyState> {
       }).toList();
     }
 
-    if (currentCompany?.businessType != null && currentCompany!.businessType!.isNotEmpty) {
+    if (currentCompany?.businessType != null &&
+        currentCompany!.businessType!.isNotEmpty) {
       filteredCompanies = filteredCompanies.where((company) {
         return company.businessType == currentCompany?.businessType;
       }).toList();
     }
 
-    if (currentCompany?.interestLevel != null && currentCompany!.interestLevel!.isNotEmpty) {
+    if (currentCompany?.interestLevel != null &&
+        currentCompany!.interestLevel!.isNotEmpty) {
       filteredCompanies = filteredCompanies.where((company) {
         return company.interestLevel == currentCompany?.interestLevel;
       }).toList();
@@ -514,7 +610,8 @@ class PartnerCubit extends Cubit<CompanyState> {
       }).toList();
     }
 
-    if (currentCompany?.priority != null && currentCompany!.priority!.isNotEmpty) {
+    if (currentCompany?.priority != null &&
+        currentCompany!.priority!.isNotEmpty) {
       filteredCompanies = filteredCompanies.where((company) {
         return company.priority == currentCompany?.priority;
       }).toList();
@@ -536,9 +633,9 @@ class PartnerCubit extends Cubit<CompanyState> {
     List<Partner> sortedCompanies = List.from(originalCompanies);
     SortType sortType = sortTypeString != null
         ? SortType.values.firstWhere(
-          (e) => e.toString() == 'SortType.$sortTypeString',
-      orElse: () => SortType.latest,
-    )
+            (e) => e.toString() == 'SortType.$sortTypeString',
+            orElse: () => SortType.latest,
+          )
         : SortType.latest;
 
     switch (sortType) {
@@ -550,15 +647,19 @@ class PartnerCubit extends Cubit<CompanyState> {
         break;
       case SortType.highToLowInterest:
         sortedCompanies.sort((a, b) {
-          final interestA = int.tryParse(a.interestLevel?.replaceAll('%', '') ?? '0') ?? 0;
-          final interestB = int.tryParse(b.interestLevel?.replaceAll('%', '') ?? '0') ?? 0;
+          final interestA =
+              int.tryParse(a.interestLevel?.replaceAll('%', '') ?? '0') ?? 0;
+          final interestB =
+              int.tryParse(b.interestLevel?.replaceAll('%', '') ?? '0') ?? 0;
           return interestB.compareTo(interestA);
         });
         break;
       case SortType.lowToHighInterest:
         sortedCompanies.sort((a, b) {
-          final interestA = int.tryParse(a.interestLevel?.replaceAll('%', '') ?? '0') ?? 0;
-          final interestB = int.tryParse(b.interestLevel?.replaceAll('%', '') ?? '0') ?? 0;
+          final interestA =
+              int.tryParse(a.interestLevel?.replaceAll('%', '') ?? '0') ?? 0;
+          final interestB =
+              int.tryParse(b.interestLevel?.replaceAll('%', '') ?? '0') ?? 0;
           return interestA.compareTo(interestB);
         });
         break;
@@ -629,16 +730,28 @@ class PartnerCubit extends Cubit<CompanyState> {
   // Report Page Methods
   Map<String, int> getFollowUpDataForYear(String? year) {
     final followUpData = {
-      AppKeys.totalKey: originalCompanies.where((c) => getYearFromDate(c.dateCreated.toString()) == year).length,
-      AppKeys.sentKey: originalCompanies.where((c) => getYearFromDate(c.dateCreated.toString()) == year && c.emailSent).length,
-      AppKeys.notSentKey: originalCompanies.where((c) => getYearFromDate(c.dateCreated.toString()) == year && !c.emailSent).length,
+      AppKeys.totalKey: originalCompanies
+          .where((c) => getYearFromDate(c.dateCreated.toString()) == year)
+          .length,
+      AppKeys.sentKey: originalCompanies
+          .where((c) =>
+              getYearFromDate(c.dateCreated.toString()) == year && c.emailSent)
+          .length,
+      AppKeys.notSentKey: originalCompanies
+          .where((c) =>
+              getYearFromDate(c.dateCreated.toString()) == year && !c.emailSent)
+          .length,
     };
     emit(FollowUpDataLoadedState(followUpData));
     return followUpData;
   }
 
   ProgressChartData getProgressData(String? selectedYearForProgress) {
-    final companies = originalCompanies.where((c) => getYearFromDate(c.dateCreated.toString()) == selectedYearForProgress).toList();
+    final companies = originalCompanies
+        .where((c) =>
+            getYearFromDate(c.dateCreated.toString()) ==
+            selectedYearForProgress)
+        .toList();
 
     List<int> data = List.generate(12, (index) {
       return companies.where((c) => c.dateCreated.month == index + 1).length;
@@ -700,7 +813,9 @@ class PartnerCubit extends Cubit<CompanyState> {
   void updateSelectedYearForFollowUp(String year) {
     emit(CompanyDataState(
       company: currentCompany,
-      settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+      settings: state is CompanyDataState
+          ? (state as CompanyDataState).settings
+          : null,
       users: state is CompanyDataState ? (state as CompanyDataState).users : [],
       selectedYearForFollowUp: year,
     ));
@@ -709,7 +824,9 @@ class PartnerCubit extends Cubit<CompanyState> {
   void updateSelectedYearForProgress(String year) {
     emit(CompanyDataState(
       company: currentCompany,
-      settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+      settings: state is CompanyDataState
+          ? (state as CompanyDataState).settings
+          : null,
       users: state is CompanyDataState ? (state as CompanyDataState).users : [],
       selectedYearForProgress: year,
     ));
@@ -718,7 +835,9 @@ class PartnerCubit extends Cubit<CompanyState> {
   void updateSelectedPeriod1(String period) {
     emit(CompanyDataState(
       company: currentCompany,
-      settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+      settings: state is CompanyDataState
+          ? (state as CompanyDataState).settings
+          : null,
       users: state is CompanyDataState ? (state as CompanyDataState).users : [],
       selectedPeriod1: period,
     ));
@@ -727,7 +846,9 @@ class PartnerCubit extends Cubit<CompanyState> {
   void updateSelectedPeriod2(String period) {
     emit(CompanyDataState(
       company: currentCompany,
-      settings: state is CompanyDataState ? (state as CompanyDataState).settings : null,
+      settings: state is CompanyDataState
+          ? (state as CompanyDataState).settings
+          : null,
       users: state is CompanyDataState ? (state as CompanyDataState).users : [],
       selectedPeriod2: period,
     ));

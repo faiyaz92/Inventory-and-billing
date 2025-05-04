@@ -21,16 +21,80 @@ class AccountLedgerCubit extends Cubit<AccountLedgerState> {
       final ledger = await _accountLedgerService.getLedger(ledgerId ?? '');
       final sortedTransactions = List<TransactionModel>.from(ledger.transactions ?? [])
         ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+      double baseConstructionCost = 0.0;
+      double baseCredit = 0.0;
+      double serviceChargePercentage = ledger.serviceChargePercentage ?? 25.0;
+      for (var txn in sortedTransactions) {
+        if (txn.type == "Debit") {
+          baseConstructionCost += txn.amount;
+        } else if (txn.type == "Credit") {
+          baseCredit += txn.amount;
+        }
+      }
+      double totalConstructionCost = baseConstructionCost * (1 + serviceChargePercentage / 100);
+      double currentBaseDue = baseConstructionCost - baseCredit;
+      if (currentBaseDue < 0) {
+        currentBaseDue = 0;
+      }
+      double currentTotalDue = totalConstructionCost - baseCredit;
+      double estimatedProfit = totalConstructionCost - baseConstructionCost;
+      double currentProfit = baseCredit - baseConstructionCost;
+      double totalPaymentReceived = baseCredit;
+
       final updatedLedger = AccountLedger(
         ledgerId: ledger.ledgerId,
         totalOutstanding: ledger.totalOutstanding,
         promiseAmount: ledger.promiseAmount,
         promiseDate: ledger.promiseDate,
         transactions: sortedTransactions,
+        baseConstructionCost: baseConstructionCost,
+        totalConstructionCost: totalConstructionCost,
+        currentBaseDue: currentBaseDue,
+        currentTotalDue: currentTotalDue,
+        serviceChargePercentage: serviceChargePercentage,
+        estimatedProfit: estimatedProfit,
+        currentProfit: currentProfit,
+        totalPaymentReceived: totalPaymentReceived,
       );
       emit(AccountLedgerLoaded(updatedLedger));
     } catch (e) {
       emit(AccountLedgerError(e.toString()));
+    }
+  }
+
+  void updateServiceCharge(double percentage) {
+    final currentState = state;
+    if (currentState is AccountLedgerLoaded) {
+      final ledger = currentState.ledger;
+      double baseConstructionCost = ledger.baseConstructionCost ?? 0.0;
+      double baseCredit = ledger.totalPaymentReceived ?? 0.0;
+      double totalConstructionCost = baseConstructionCost * (1 + percentage / 100);
+      double currentBaseDue = baseConstructionCost - baseCredit;
+      if (currentBaseDue < 0) {
+        currentBaseDue = 0;
+      }
+      double currentTotalDue = totalConstructionCost - baseCredit;
+      double estimatedProfit = totalConstructionCost - baseConstructionCost;
+      double currentProfit = baseCredit - baseConstructionCost;
+      double totalPaymentReceived = baseCredit;
+
+      final updatedLedger = AccountLedger(
+        ledgerId: ledger.ledgerId,
+        totalOutstanding: ledger.totalOutstanding,
+        promiseAmount: ledger.promiseAmount,
+        promiseDate: ledger.promiseDate,
+        transactions: ledger.transactions,
+        baseConstructionCost: baseConstructionCost,
+        totalConstructionCost: totalConstructionCost,
+        currentBaseDue: currentBaseDue,
+        currentTotalDue: currentTotalDue,
+        serviceChargePercentage: percentage,
+        estimatedProfit: estimatedProfit,
+        currentProfit: currentProfit,
+        totalPaymentReceived: totalPaymentReceived,
+      );
+      emit(AccountLedgerLoaded(updatedLedger));
     }
   }
 
@@ -45,7 +109,6 @@ class AccountLedgerCubit extends Cubit<AccountLedgerState> {
             if (map.isEmpty) {
               return {'Material': [], 'Labor': []};
             }
-            // Ensure map is Map<String, List<String>>
             final validatedMap = <String, List<String>>{};
             for (var entry in map.entries) {
               final valueList = (entry.value).cast<String>();
@@ -64,7 +127,7 @@ class AccountLedgerCubit extends Cubit<AccountLedgerState> {
           purposeTypeMap: purposeTypeMap,
           selectedPurpose: defaultPurpose,
           selectedType: defaultType,
-          isInitialOpen: true, // Mark as initial open
+          isInitialOpen: true,
         ));
       } catch (e) {
         emit(TransactionPopupOpened(
@@ -74,7 +137,7 @@ class AccountLedgerCubit extends Cubit<AccountLedgerState> {
           selectedPurpose: null,
           selectedType: null,
           errorMessage: "Failed to load purposes: $e",
-          isInitialOpen: true, // Still initial open despite error
+          isInitialOpen: true,
         ));
       }
     } else {
@@ -84,7 +147,7 @@ class AccountLedgerCubit extends Cubit<AccountLedgerState> {
         purposeTypeMap: const {},
         selectedPurpose: null,
         selectedType: null,
-        isInitialOpen: true, // Mark as initial open
+        isInitialOpen: true,
       ));
     }
   }
@@ -104,6 +167,7 @@ class AccountLedgerCubit extends Cubit<AccountLedgerState> {
         emit(TransactionAddFailed("Amount must be greater than 0"));
         return;
       }
+
       if (remarks != null && remarks.length > 500) {
         emit(TransactionAddFailed("Remarks cannot exceed 500 characters"));
         return;
@@ -121,16 +185,39 @@ class AccountLedgerCubit extends Cubit<AccountLedgerState> {
       );
       final currentLedger = await _accountLedgerService.getLedger(ledgerId);
       double updatedOutstanding = currentLedger.totalOutstanding;
+      double updatedBaseConstructionCost = currentLedger.baseConstructionCost ?? 0.0;
+      double updatedBaseCredit = currentLedger.totalPaymentReceived ?? 0.0;
       if (transaction.type == "Debit") {
         updatedOutstanding += transaction.amount;
+        updatedBaseConstructionCost += transaction.amount;
       } else {
         updatedOutstanding -= transaction.amount;
+        updatedBaseCredit += transaction.amount;
       }
+      double updatedTotalConstructionCost = updatedBaseConstructionCost * (1 + (currentLedger.serviceChargePercentage ?? 25.0) / 100);
+      double updatedCurrentBaseDue = updatedBaseConstructionCost - updatedBaseCredit;
+      if (updatedCurrentBaseDue < 0) {
+        updatedCurrentBaseDue = 0;
+      }
+      double updatedCurrentTotalDue = updatedTotalConstructionCost - updatedBaseCredit;
+      double updatedEstimatedProfit = updatedTotalConstructionCost - updatedBaseConstructionCost;
+      double updatedCurrentProfit = updatedBaseCredit - updatedBaseConstructionCost;
+      double updatedTotalPaymentReceived = updatedBaseCredit;
+
       final updatedLedger = AccountLedger(
         ledgerId: currentLedger.ledgerId,
         totalOutstanding: updatedOutstanding,
         promiseAmount: currentLedger.promiseAmount,
         promiseDate: currentLedger.promiseDate,
+        transactions: (currentLedger.transactions ?? []) + [transaction],
+        baseConstructionCost: updatedBaseConstructionCost,
+        totalConstructionCost: updatedTotalConstructionCost,
+        currentBaseDue: updatedCurrentBaseDue,
+        currentTotalDue: updatedCurrentTotalDue,
+        serviceChargePercentage: currentLedger.serviceChargePercentage ?? 25.0,
+        estimatedProfit: updatedEstimatedProfit,
+        currentProfit: updatedCurrentProfit,
+        totalPaymentReceived: updatedTotalPaymentReceived,
       );
       await _accountLedgerService.updateLedger(ledgerId, updatedLedger);
       await _accountLedgerService.addTransaction(ledgerId, transaction);
@@ -149,6 +236,14 @@ class AccountLedgerCubit extends Cubit<AccountLedgerState> {
         promiseAmount: promiseAmount,
         promiseDate: promiseDate,
         transactions: [],
+        baseConstructionCost: 0.0,
+        totalConstructionCost: 0.0,
+        currentBaseDue: totalOutstanding,
+        currentTotalDue: totalOutstanding * (1 + 25.0 / 100),
+        serviceChargePercentage: 25.0,
+        estimatedProfit: 0.0,
+        currentProfit: 0.0,
+        totalPaymentReceived: 0.0,
       );
       await _accountLedgerService.createLedger(company, newLedger);
       emit(AccountLedgerSuccess("Ledger created successfully!"));
@@ -176,7 +271,7 @@ class AccountLedgerCubit extends Cubit<AccountLedgerState> {
       emit(currentState.copyWith(
         selectedPurpose: purpose,
         selectedType: newType,
-        isInitialOpen: false, // Not initial open
+        isInitialOpen: false,
       ));
     }
   }

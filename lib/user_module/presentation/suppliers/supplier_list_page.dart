@@ -20,7 +20,7 @@ class SupplierListPage extends StatelessWidget {
     return BlocProvider(
       create: (_) => sl<PartnerCubit>()
         ..loadCompanies()
-        ..filterByCompanyType("Site"),
+        ..filterByCompanyType("Supplier"),
       child: BlocBuilder<PartnerCubit, CompanyState>(
         buildWhen: (previous, current) =>
         current is LoadingState ||
