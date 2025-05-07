@@ -1,3 +1,4 @@
+import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
@@ -13,6 +14,7 @@ import 'package:requirment_gathering_app/user_module/data/partner.dart';
 import 'package:requirment_gathering_app/user_module/presentation/add_company/add_company_state.dart';
 import 'package:requirment_gathering_app/user_module/presentation/add_company/customer_company_cubit.dart';
 
+@RoutePage()
 class AddSupplierPage extends StatefulWidget {
   final Partner? company;
 
@@ -591,7 +593,7 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                       child: CustomButton(
                         text: AppLabels.saveButtonText,
                         isLoading: state is SavingState,
-                        onPressed: () async{
+                        onPressed: () async {
                           await context
                               .read<PartnerCubit>()
                               .saveCompany('Site');

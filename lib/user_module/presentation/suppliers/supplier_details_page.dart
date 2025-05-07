@@ -1,3 +1,4 @@
+import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
@@ -8,10 +9,12 @@ import 'package:requirment_gathering_app/core_module/utils/text_styles.dart';
 import 'package:requirment_gathering_app/user_module/data/partner.dart';
 import 'package:requirment_gathering_app/user_module/presentation/add_company/customer_company_cubit.dart';
 
+@RoutePage()
 class SupplierDetailsPage extends StatelessWidget {
   final Partner company;
 
-  const SupplierDetailsPage({Key? key, required this.company}) : super(key: key);
+  const SupplierDetailsPage({Key? key, required this.company})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -247,21 +250,20 @@ class SupplierDetailsPage extends StatelessWidget {
             runSpacing: 8.0,
             children: platforms.isNotEmpty
                 ? platforms.map((platform) {
-              return Chip(
-                label: Text(
-                  platform,
-                  style: defaultTextStyle(
-                    fontSize: 14,
-                    color: AppColors.textFieldColor,
-                  ),
-                ),
-                backgroundColor: Colors.grey[300],
-              );
-            }).toList()
+                    return Chip(
+                      label: Text(
+                        platform,
+                        style: defaultTextStyle(
+                          fontSize: 14,
+                          color: AppColors.textFieldColor,
+                        ),
+                      ),
+                      backgroundColor: Colors.grey[300],
+                    );
+                  }).toList()
                 : [
-              Text("Not Available",
-                  style: defaultTextStyle(fontSize: 14))
-            ],
+                    Text("Not Available", style: defaultTextStyle(fontSize: 14))
+                  ],
           ),
         ],
       ),
@@ -269,8 +271,7 @@ class SupplierDetailsPage extends StatelessWidget {
   }
 
   Widget _buildInterestLevelRow(String label, String? interestLevel) {
-    final color =
-    sl<PartnerCubit>().getInterestLevelColor(interestLevel);
+    final color = sl<PartnerCubit>().getInterestLevelColor(interestLevel);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(

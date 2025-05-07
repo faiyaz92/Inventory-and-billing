@@ -1,3 +1,4 @@
+import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart';
@@ -7,6 +8,7 @@ import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dar
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_drop_down_widget.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 
+@RoutePage()
 class AddEditProductPage extends StatefulWidget {
   final Product? product;
 

@@ -37,7 +37,7 @@ void main() {
       MaterialApp(
         home: BlocProvider<SplashCubit>(
           create: (_) => mockSplashCubit,
-          child: const SplashScreen(),
+          child: const SplashScreenPage(),
         ),
       ),
     );
@@ -58,7 +58,7 @@ void main() {
       MaterialApp(
         home: BlocProvider<SplashCubit>(
           create: (_) => mockSplashCubit,
-          child: SplashScreen(
+          child: SplashScreenPage(
             onDelayComplete: () async {
               mockSplashCubit.checkSession();
             },
@@ -81,7 +81,7 @@ void main() {
       MaterialApp(
         home: BlocProvider<SplashCubit>(
           create: (_) => mockSplashCubit,
-          child: SplashScreen(
+          child: SplashScreenPage(
             onDelayComplete: () async {
               mockSplashCubit.checkSession();
             },

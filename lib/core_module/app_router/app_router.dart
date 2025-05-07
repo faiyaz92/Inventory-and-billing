@@ -1,4 +1,9 @@
-import 'package:auto_route/annotations.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter/material.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/product/category.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/product/sub_category.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/task/task_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/account_ledger_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/add_edit_category_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/add_edit_product_page.dart';
@@ -11,15 +16,19 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/tasks
 import 'package:requirment_gathering_app/company_admin_module/presentation/company_admin_dashboard.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/create_account_ledger.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/tasks/task_list_page.dart';
-import 'package:requirment_gathering_app/company_admin_module/presentation/users/user_list_page.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/users/attendance_register_page.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/users/employee_list_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/dashboard/dashboard_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/home_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/dashboard/reports_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/login_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/splash_screen.dart';
 import 'package:requirment_gathering_app/super_admin_module/ai_module/presentation/ai_company_list_page.dart';
+import 'package:requirment_gathering_app/super_admin_module/data/tenant_company.dart';
+import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/presentation/add_tenant_company/add_tenant_company_page.dart';
 import 'package:requirment_gathering_app/super_admin_module/presentation/dashboard/super_admin_page.dart';
+import 'package:requirment_gathering_app/user_module/data/partner.dart';
 import 'package:requirment_gathering_app/user_module/presentation/add_company/add_company_page.dart';
 import 'package:requirment_gathering_app/user_module/presentation/company_list/company_details_page.dart';
 import 'package:requirment_gathering_app/user_module/presentation/company_list/company_list_page.dart';
@@ -28,51 +37,46 @@ import 'package:requirment_gathering_app/user_module/presentation/suppliers/add_
 import 'package:requirment_gathering_app/user_module/presentation/suppliers/supplier_details_page.dart';
 import 'package:requirment_gathering_app/user_module/presentation/suppliers/supplier_list_page.dart';
 
-@MaterialAutoRouter(
-  replaceInRouteName: 'Page,Route',
-  routes: <AutoRoute>[
-    AutoRoute(page: SplashScreen, initial: true),
-    AutoRoute(page: DashboardPage, path: '/dashboard'),
-    AutoRoute(page: LoginPage, path: '/login'),
-    AutoRoute(page: HomePage, path: '/home'),
-    AutoRoute(page: CompanyListPage, path: '/company-list'),
-    AutoRoute(page: ReportPage, path: '/reports'),
-    AutoRoute(page: CompanySettingPage, path: '/settings'),
-    AutoRoute(page: AddCompanyPage, path: '/add-company'),
-    AutoRoute(page: AddSupplierPage, path: '/add-supplier'),
-    // Added AddCompanyPage
-    AutoRoute(page: CompanyDetailsPage, path: '/company-details'),
-    // Added CompanyDetailsPage
-    AutoRoute(page: AiCompanyListPage, path: '/ai-company-list'),
-    // New route for AiCompanyListPage
-    AutoRoute(page: SuperAdminPage, path: '/super-admin'),
-    // ✅ Super Admin Page
-    AutoRoute(page: AddTenantCompanyPage, path: '/add-tenant-company'),
-    AutoRoute(page: AddUserPage, path: '/add-user'),
-    AutoRoute(page: CompanyAdminPage, path: '/company-admin'), // ✅ New Page
-    AutoRoute(page: UserListPage, path: '/user-list'), // ✅ New Page
-    AutoRoute(page: TaskListPage, path: '/task-list'),
-    AutoRoute(page: AddTaskPage, path: '/add-task'),
-    AutoRoute(page: AccountLedgerPage, path: '/account-ledger'), // 🔥 Account Ledger Page
+import '../../company_admin_module/presentation/users/employee_details_view.dart';
+
+part 'app_router.gr.dart';
+
+@AutoRouterConfig(replaceInRouteName: 'Page,Route')
+class AppRouter extends RootStackRouter {
+  @override
+  List<AutoRoute> get routes => [
+    AutoRoute(page: SplashScreenRoute.page, initial: true),
+    AutoRoute(page: DashboardRoute.page, path: '/dashboard'),
+    AutoRoute(page: LoginRoute.page, path: '/login'),
+    AutoRoute(page: HomeRoute.page, path: '/home'),
+    AutoRoute(page: CompanyListRoute.page, path: '/company-list'),
+    // AutoRoute(page: ReportRoute.page, path: '/reports'),
+    AutoRoute(page: CompanySettingRoute.page, path: '/settings'),
+    AutoRoute(page: AddCompanyRoute.page, path: '/add-company'),
+    AutoRoute(page: AddSupplierRoute.page, path: '/add-supplier'),
+    AutoRoute(page: CompanyDetailsRoute.page, path: '/company-details'),
+    AutoRoute(page: AiCompanyListRoute.page, path: '/ai-company-list'),
+    AutoRoute(page: SuperAdminRoute.page, path: '/super-admin'),
+    AutoRoute(page: AddTenantCompanyRoute.page, path: '/add-tenant-company'),
+    AutoRoute(page: AddUserRoute.page, path: '/add-user'),
+    AutoRoute(page: CompanyAdminRoute.page, path: '/company-admin'),
+    AutoRoute(page: EmployeesRoute.page, path: '/user-list'),
+    AutoRoute(page: TaskListRoute.page, path: '/task-list'),
+    AutoRoute(page: AddTaskRoute.page, path: '/add-task'),
+    AutoRoute(page: AccountLedgerRoute.page, path: '/account-ledger'),
     AutoRoute(
-      page: CreateLedgerPage,
+      page: CreateLedgerRoute.page,
       path: '/create-ledger/:companyId/:customerCompanyId',
     ),
-    // ✅ New Product Management Routes
-    AutoRoute(page: ProductListPage, path: '/product-list'),
-    AutoRoute(page: AddEditProductPage, path: '/add-edit-product'),
-    AutoRoute(page: ProductMgtPage, path: '/manage-product'),
-
-    // New Category Management Routes
-    // AutoRoute(page: CategoryListPage, path: '/category-list'),  // Newly Added
-    AutoRoute(page: AddEditCategoryPage, path: '/add-edit-category'),  // Newly Added
-
-    // Add/Edit Subcategory Routes
-    AutoRoute(page: AddEditSubcategoryPage, path: '/add-edit-subcategory'),  // Newly Added
-    AutoRoute(page: CategoriesWithSubcategoriesPage, path: '/categories-with-subcategories'),
-    AutoRoute(page: SupplierListPage, path: '/supplierList'),
-    AutoRoute(page: SupplierDetailsPage, path: '/supplierDetailsPage'),
-
-  ],
-)
-class $AppRouter {}
+    AutoRoute(page: ProductListRoute.page, path: '/product-list'),
+    AutoRoute(page: AddEditProductRoute.page, path: '/add-edit-product'),
+    AutoRoute(page: ProductMgtRoute.page, path: '/manage-product'),
+    AutoRoute(page: AddEditCategoryRoute.page, path: '/add-edit-category'),
+    AutoRoute(page: AddEditSubcategoryRoute.page, path: '/add-edit-subcategory'),
+    AutoRoute(page: CategoriesWithSubcategoriesRoute.page, path: '/categories-with-subcategories'),
+    AutoRoute(page: SupplierListRoute.page, path: '/supplierList'),
+    AutoRoute(page: SupplierDetailsRoute.page, path: '/supplierDetailsPage'),
+    AutoRoute(page: AttendanceRegisterRoute.page),
+    AutoRoute(page: EmployeeDetailsRoute.page),
+  ];
+}

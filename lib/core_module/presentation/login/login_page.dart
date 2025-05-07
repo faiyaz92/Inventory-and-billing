@@ -1,12 +1,14 @@
+import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:requirment_gathering_app/core_module/app_router/app_router.gr.dart';
+import 'package:requirment_gathering_app/core_module/app_router/app_router.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/login_state.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_textfield.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 
 import 'login_cubit.dart';
 
+@RoutePage()
 class LoginPage extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -18,7 +20,7 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    passwordController.text ='Faiyaz@123';
+    passwordController.text = 'Faiyaz@123';
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
@@ -55,7 +57,7 @@ class LoginPage extends StatelessWidget {
                       focusNode: emailFocusNode,
                       labelText: "Email",
                       hintText: "Enter your email",
-                      prefixIcon:  const Icon(Icons.email),
+                      prefixIcon: const Icon(Icons.email),
                       errorText: emailError,
                       textInputAction: TextInputAction.next,
                       onFieldSubmitted: (value) {

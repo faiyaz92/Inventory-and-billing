@@ -1,16 +1,17 @@
+import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
+import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
+import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
 import 'package:requirment_gathering_app/core_module/utils/text_styles.dart';
 import 'package:requirment_gathering_app/super_admin_module/ai_module/presentation/ai_company_list_cubit.dart';
 import 'package:requirment_gathering_app/user_module/data/partner.dart';
-import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/user_module/presentation/add_company/customer_company_cubit.dart';
-import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 
-
+@RoutePage()
 class AiCompanyListPage extends StatefulWidget {
   const AiCompanyListPage({super.key});
 
@@ -44,7 +45,8 @@ class _AiCompanyListPageState extends State<AiCompanyListPage> {
             builder: (context, state) {
               if (state is CompanyListLoading) {
                 return const Center(child: CircularProgressIndicator());
-              } else if (state is CompanyListLoadedWithSettings || state is CompanyListLoaded) {
+              } else if (state is CompanyListLoadedWithSettings ||
+                  state is CompanyListLoaded) {
                 return Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -272,7 +274,7 @@ class _AiCompanyListPageState extends State<AiCompanyListPage> {
     if (value != null) {
       // Check if the value exists in the list, if not, set to null
       bool valueExists = items.any((item) => item.value == value);
-      validValue = valueExists ? value : null;
+      // validValue = valueExists ? value : null;
     }
 
     return Padding(

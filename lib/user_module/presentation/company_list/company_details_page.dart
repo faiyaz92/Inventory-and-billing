@@ -1,3 +1,4 @@
+import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/account_ledger_cubit.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
@@ -11,6 +12,7 @@ import 'package:requirment_gathering_app/user_module/data/partner.dart';
 import 'package:requirment_gathering_app/user_module/presentation/add_company/customer_company_cubit.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+@RoutePage()
 class CompanyDetailsPage extends StatelessWidget {
   final Partner company;
 
@@ -330,8 +332,7 @@ class CompanyDetailsPage extends StatelessWidget {
   }
 
   Widget _buildInterestLevelRow(String label, String? interestLevel) {
-    final color =
-        sl<PartnerCubit>().getInterestLevelColor(interestLevel);
+    final color = sl<PartnerCubit>().getInterestLevelColor(interestLevel);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(

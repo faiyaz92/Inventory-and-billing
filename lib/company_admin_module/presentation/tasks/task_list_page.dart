@@ -1,3 +1,4 @@
+import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/task/task_model.dart';
@@ -9,6 +10,7 @@ import 'package:requirment_gathering_app/core_module/service_locator/service_loc
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 
+@RoutePage()
 class TaskListPage extends StatefulWidget {
   const TaskListPage({super.key});
 
@@ -53,11 +55,11 @@ class _TaskListPageState extends State<TaskListPage>
               _allStatuses = state.taskStatuses;
             }
 
-            final tasks = state is TaskLoaded ? state.tasks:<TaskModel>[];
+            final tasks = state is TaskLoaded ? state.tasks : <TaskModel>[];
             _statuses = _taskCubit
                 .getUniqueStatuses(tasks)
                 .where((status) =>
-                    tasks.any((task) => (task.status ?? 'pending') == status))
+                tasks.any((task) => (task.status ?? 'pending') == status))
                 .toList();
 
             if (_tabController == null ||
@@ -72,38 +74,64 @@ class _TaskListPageState extends State<TaskListPage>
               floatingActionButton: FloatingActionButton(
                 onPressed: () async {
                   final result =
-                      await sl<Coordinator>().navigateToAddTaskPage();
+                  await sl<Coordinator>().navigateToAddTaskPage();
                   if (result) {
-                    _taskCubit = sl<TaskCubit>()
+                    _taskCubit
                       ..fetchTasks()
                       ..loadTaskSettings();
                   }
                 },
-                child: const Icon(Icons.add),
+                backgroundColor: Theme.of(context).primaryColor,
+                child: const Icon(Icons.add, color: Colors.white),
               ),
               body: Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
                     _buildUserFilterDropdown(
                         state is TaskLoaded ? state.users : []),
+                    const SizedBox(height: 12),
                     _buildDateFilter(),
+                    const SizedBox(height: 12),
                     if (_statuses.isNotEmpty)
-                      TabBar(
-                        controller: _tabController,
-                        tabs: _statuses
-                            .map((status) => Tab(text: status))
-                            .toList(),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: TabBar(
+                          controller: _tabController,
+                          isScrollable: true,
+                          labelColor: Theme.of(context).primaryColor,
+                          unselectedLabelColor: Colors.grey[600],
+                          indicatorColor: Theme.of(context).primaryColor,
+                          tabs: _statuses
+                              .map((status) => Tab(text: status))
+                              .toList(),
+                        ),
                       ),
+                    const SizedBox(height: 12),
                     Expanded(
                       child: _statuses.isEmpty
-                          ? const Center(child: Text("No tasks available"))
+                          ? const Center(
+                          child: Text("No tasks available",
+                              style: TextStyle(fontSize: 16)))
                           : TabBarView(
-                              controller: _tabController,
-                              children: _statuses.map((status) {
-                                return _buildTaskList(tasks, status);
-                              }).toList(),
-                            ),
+                        controller: _tabController,
+                        children: _statuses.map((status) {
+                          return RefreshIndicator(
+                            onRefresh: () async {
+                              _taskCubit.allTasks.clear();
+                              _taskCubit.users.clear();
+                              _taskCubit
+                                ..fetchTasks(isNeedToShow: false)
+                                ..loadTaskSettings();
+                              return;
+                            },
+                            child: _buildTaskList(tasks, status),
+                          );
+                        }).toList(),
+                      ),
                     ),
                   ],
                 ),
@@ -112,7 +140,9 @@ class _TaskListPageState extends State<TaskListPage>
           } else {
             return const Scaffold(
               backgroundColor: Colors.white,
-              body: Center(child: Text("Failed to load tasks")),
+              body: Center(
+                  child: Text("Failed to load tasks",
+                      style: TextStyle(fontSize: 16))),
             );
           }
         },
@@ -123,23 +153,27 @@ class _TaskListPageState extends State<TaskListPage>
   /// User Filter Dropdown
   Widget _buildUserFilterDropdown(List<UserInfo> users) {
     List<String> uniqueUsers =
-        users.map((user) => user.userName ?? "Unknown").toSet().toList();
+    users.map((user) => user.userName ?? "Unknown").toSet().toList();
     uniqueUsers.insert(0, "All Users");
 
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey[400]!),
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: DropdownButtonFormField<String>(
+        key: UniqueKey(),
         value: _taskCubit.selectedUserName,
         decoration: const InputDecoration(
           labelText: "Filter by Assigned User",
-          border: OutlineInputBorder(),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         ),
         items: uniqueUsers.map((user) {
           return DropdownMenuItem(value: user, child: Text(user));
         }).toList(),
         onChanged: (newValue) {
-          _taskCubit
-              .filterTasksByUser(newValue); // Updates selectedUserName in Cubit
+          _taskCubit.filterTasksByUser(newValue);
         },
       ),
     );
@@ -147,46 +181,43 @@ class _TaskListPageState extends State<TaskListPage>
 
   /// Due Date Filter UI
   Widget _buildDateFilter() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildDatePicker("Start Date", _taskCubit.selectedStartDate, (date) {
-            if (date != null &&
-                _taskCubit.selectedEndDate != null &&
-                date.isAfter(_taskCubit.selectedEndDate!)) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text("Start Date cannot be after End Date")),
-              );
-            } else {
-              setState(() {
-                _taskCubit.selectedStartDate = date;
-                _taskCubit.filterTasks(
-                    startDate: date, endDate: _taskCubit.selectedEndDate);
-              });
-            }
-          }),
-          const SizedBox(width: 10),
-          _buildDatePicker("End Date", _taskCubit.selectedEndDate, (date) {
-            if (date != null &&
-                _taskCubit.selectedStartDate != null &&
-                date.isBefore(_taskCubit.selectedStartDate!)) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text("End Date cannot be before Start Date")),
-              );
-            } else {
-              setState(() {
-                _taskCubit.selectedEndDate = date;
-                _taskCubit.filterTasks(
-                    startDate: _taskCubit.selectedStartDate, endDate: date);
-              });
-            }
-          }),
-        ],
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildDatePicker("Start Date", _taskCubit.selectedStartDate, (date) {
+          if (date != null &&
+              _taskCubit.selectedEndDate != null &&
+              date.isAfter(_taskCubit.selectedEndDate!)) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text("Start Date cannot be after End Date")),
+            );
+          } else {
+            setState(() {
+              _taskCubit.selectedStartDate = date;
+              _taskCubit.filterTasks(
+                  startDate: date, endDate: _taskCubit.selectedEndDate);
+            });
+          }
+        }),
+        const SizedBox(width: 12),
+        _buildDatePicker("End Date", _taskCubit.selectedEndDate, (date) {
+          if (date != null &&
+              _taskCubit.selectedStartDate != null &&
+              date.isBefore(_taskCubit.selectedStartDate!)) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text("End Date cannot be before Start Date")),
+            );
+          } else {
+            setState(() {
+              _taskCubit.selectedEndDate = date;
+              _taskCubit.filterTasks(
+                  startDate: _taskCubit.selectedStartDate, endDate: date);
+            });
+          }
+        }),
+      ],
     );
   }
 
@@ -209,13 +240,14 @@ class _TaskListPageState extends State<TaskListPage>
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
+            border: Border.all(color: Colors.grey[400]!),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
             selectedDate != null ? _formatDate(selectedDate) : label,
             style: TextStyle(
-              color: selectedDate != null ? Colors.black : Colors.grey,
+              color: selectedDate != null ? Colors.black : Colors.grey[600],
+              fontSize: 14,
             ),
           ),
         ),
@@ -223,7 +255,7 @@ class _TaskListPageState extends State<TaskListPage>
     );
   }
 
-  /// Format Date to Readable String (with optional time)
+  /// Format Date to Readable String
   String _formatDate(DateTime date, {bool includeTime = false}) {
     final baseDate =
         "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}";
@@ -233,13 +265,14 @@ class _TaskListPageState extends State<TaskListPage>
     return baseDate;
   }
 
+  /// Task List with Tabular Form (3 Cells per Row, First Row Combines Title and Menu in Second Cell, Highlighted Due Date and Last Updated)
   Widget _buildTaskList(List<TaskModel> allTasks, String statusFilter) {
     List<TaskModel> filteredTasks = allTasks
         .where((task) =>
-            (task.status ?? 'pending') == statusFilter &&
-            (_taskCubit.selectedUserName == null ||
-                _taskCubit.selectedUserName == "All Users" ||
-                task.assignedToUserName == _taskCubit.selectedUserName))
+    (task.status ?? 'pending') == statusFilter &&
+        (_taskCubit.selectedUserName == null ||
+            _taskCubit.selectedUserName == "All Users" ||
+            task.assignedToUserName == _taskCubit.selectedUserName))
         .toList()
       ..sort((a, b) {
         final statusA = a.status ?? 'pending';
@@ -254,7 +287,9 @@ class _TaskListPageState extends State<TaskListPage>
       });
 
     if (filteredTasks.isEmpty) {
-      return const Center(child: Text("No tasks for this filter."));
+      return const Center(
+          child: Text("No tasks for this filter.",
+              style: TextStyle(fontSize: 16)));
     }
 
     Map<String, List<TaskModel>> groupedTasks = {};
@@ -267,6 +302,7 @@ class _TaskListPageState extends State<TaskListPage>
     }
 
     return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
       itemCount: groupedTasks.length,
       itemBuilder: (context, index) {
         String dateKey = groupedTasks.keys.elementAt(index);
@@ -274,88 +310,236 @@ class _TaskListPageState extends State<TaskListPage>
         return StickyHeader(
           header: Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: Colors.blueGrey[700]),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.blueGrey[700],
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: Text(
               dateKey,
               style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
-          content: Column(
-            children: tasksForDate.map((task) {
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                child: ListTile(
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  title: Text(
-                    task.title ?? "Untitled Task",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+          content: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Column(
+              children: tasksForDate.map((task) {
+                return Container(
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey[300]!),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                          "Assigned to: ${task.assignedToUserName ?? 'Unknown'}"),
-                      Text(
-                        "Due Date: ${_formatDate(task.deadline ?? DateTime.now())}",
-                        style: const TextStyle(color: Colors.redAccent),
-                      ),
-                      Text(
-                          "Created At: ${_formatDate(task.createdAt ?? DateTime.now())}"),
-                      Text(
-                        "Last Updated: ${_formatDate(task.lastUpdateTime ?? DateTime.now(), includeTime: true)} by ${task.lastUpdatedByUserName ?? 'Unknown'}",
-                      ),
-                    ],
-                  ),
-                  onTap: () async {
-                    final result = await sl<Coordinator>()
-                        .navigateToAddTaskPage(task: task);
-                    if (result) {
-                      // refresh
-                      _taskCubit = sl<TaskCubit>()
-                        ..fetchTasks()
-                        ..loadTaskSettings();
-                    }
-                  },
-                  trailing: PopupMenuButton<String>(
-                    onSelected: (value) {
-                      if (value == "delete") {
-                        _showDeleteConfirmation(context, task.taskId ?? '');
-                      } else {
-                        final updatedTask = task.copyWith(status: value);
-                        _taskCubit.updateTask(updatedTask.taskId, updatedTask);
+                  child: InkWell(
+                    onTap: () async {
+                      final result = await sl<Coordinator>()
+                          .navigateToAddTaskPage(task: task);
+                      if (result) {
+                        _taskCubit
+                          ..fetchTasks()
+                          ..loadTaskSettings();
                       }
                     },
-                    itemBuilder: (context) => [
-                      ..._allStatuses.map((status) {
-                        return PopupMenuItem(
-                            value: status, child: Text(status));
-                      }).toList(),
-                      const PopupMenuDivider(),
-                      const PopupMenuItem(
-                        value: "delete",
-                        child: Text("🗑 Delete Task",
-                            style: TextStyle(color: Colors.red)),
-                      ),
-                    ],
+                    child: Table(
+                      border: TableBorder.all(
+                          color: Colors.grey[300]!, width: 1),
+                      columnWidths: const {
+                        0: FixedColumnWidth(120),
+                        1: FlexColumnWidth(),
+                        2: FixedColumnWidth(48),
+                      },
+                      children: [
+                        TableRow(
+                          children: [
+                            const TableCell(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 25, vertical: 25),
+                                child: Text(
+                                  "Title",
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                            TableCell(
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Row(
+                                  mainAxisAlignment:
+                                  MainAxisAlignment.start,
+                                  crossAxisAlignment:
+                                  CrossAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        task.title ?? "Untitled Task",
+                                        style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    PopupMenuButton<String>(
+                                      onSelected: (value) {
+                                        if (value == "delete") {
+                                          _showDeleteConfirmation(
+                                              context, task.taskId ?? '');
+                                        } else {
+                                          final updatedTask = task.copyWith(
+                                              status: value);
+                                          _taskCubit.updateTask(
+                                              updatedTask.taskId,
+                                              updatedTask);
+                                        }
+                                      },
+                                      itemBuilder: (context) => [
+                                        ..._allStatuses.map((status) {
+                                          return PopupMenuItem(
+                                              value: status,
+                                              child: Text(status));
+                                        }).toList(),
+                                        const PopupMenuDivider(),
+                                        const PopupMenuItem(
+                                          value: "delete",
+                                          child: Text("🗑 Delete Task",
+                                              style: TextStyle(
+                                                  color: Colors.red)),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          children: [
+                            const TableCell(
+                              child: Padding(
+                                padding: EdgeInsets.all(12),
+                                child: Text(
+                                  "Assigned to",
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                              ),
+                            ),
+                            TableCell(
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Text(
+                                  task.assignedToUserName ?? "Unknown",
+                                  style: const TextStyle(fontSize: 14),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          decoration: const BoxDecoration(
+                              color: Color(0xFFFFE6E6)),
+                          children: [
+                            const TableCell(
+                              child: Padding(
+                                padding: EdgeInsets.all(12),
+                                child: Text(
+                                  "Due Date",
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                            TableCell(
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Text(
+                                  _formatDate(
+                                      task.deadline ?? DateTime.now()),
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.redAccent,
+                                      fontWeight: FontWeight.bold),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          decoration: const BoxDecoration(
+                              color: Color(0xFFE6FFE6)),
+                          children: [
+                            const TableCell(
+                              child: Padding(
+                                padding: EdgeInsets.all(12),
+                                child: Text(
+                                  "Created At",
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                            TableCell(
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Text(
+                                  _formatDate(
+                                      task.createdAt ?? DateTime.now()),
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          decoration: const BoxDecoration(
+                              color: Color(0xFFF5F5F5)),
+                          children: [
+                            const TableCell(
+                              child: Padding(
+                                padding: EdgeInsets.all(12),
+                                child: Text(
+                                  "Last Updated",
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                              ),
+                            ),
+                            TableCell(
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Text(
+                                  "${_formatDate(task.lastUpdateTime ?? DateTime.now(), includeTime: true)} by ${task.lastUpdatedByUserName ?? 'Unknown'}",
+                                  style: const TextStyle(fontSize: 14),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            }).toList(),
+                );
+              }).toList(),
+            ),
           ),
         );
       },
     );
   }
 
-  /// Delete Confirmation Dialog
   void _showDeleteConfirmation(BuildContext context, String taskId) {
     showDialog(
       context: context,
@@ -365,8 +549,9 @@ class _TaskListPageState extends State<TaskListPage>
           content: const Text("Are you sure you want to delete this task?"),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("Cancel")),
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
             TextButton(
               onPressed: () {
                 _taskCubit.deleteTask(taskId);

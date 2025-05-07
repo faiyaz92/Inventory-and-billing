@@ -1,3 +1,4 @@
+import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/product_cubit.dart';
@@ -5,6 +6,7 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/produ
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart'; // For GetIt injection
 
+@RoutePage()
 class ProductListPage extends StatelessWidget {
   ProductListPage({super.key});
 
@@ -38,15 +40,14 @@ class ProductListPage extends StatelessWidget {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.edit, color: Colors.blue),
-                          onPressed: ()  {
-                              _coordinator
-                                .navigateToAddEditProductPage(product: product).then((value) {
-                                  if(value){
-                                    context
-                                        .read<ProductCubit>().loadProducts();
-                                  }
+                          onPressed: () {
+                            _coordinator
+                                .navigateToAddEditProductPage(product: product)
+                                .then((value) {
+                              if (value) {
+                                context.read<ProductCubit>().loadProducts();
+                              }
                             });
-
                           },
                         ),
                         IconButton(

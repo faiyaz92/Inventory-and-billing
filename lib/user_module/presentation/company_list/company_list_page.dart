@@ -1,3 +1,4 @@
+import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
@@ -12,6 +13,7 @@ import 'package:requirment_gathering_app/user_module/presentation/add_company/ad
 import 'package:requirment_gathering_app/user_module/presentation/add_company/customer_company_cubit.dart';
 import 'package:requirment_gathering_app/user_module/presentation/company_list/filter_section.dart';
 
+@RoutePage()
 class CompanyListPage extends StatelessWidget {
   const CompanyListPage({Key? key}) : super(key: key);
 
@@ -23,7 +25,7 @@ class CompanyListPage extends StatelessWidget {
         ..filterByCompanyType("Site"),
       child: BlocBuilder<PartnerCubit, CompanyState>(
         buildWhen: (previous, current) =>
-        current is LoadingState ||
+            current is LoadingState ||
             current is CompaniesLoadedState ||
             current is CompaniesFilteredState ||
             current is CompaniesSortedState ||
@@ -89,14 +91,16 @@ class CompanyListPage extends StatelessWidget {
                                 ),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.filter_alt, color: Colors.blue),
+                                icon: const Icon(Icons.filter_alt,
+                                    color: Colors.blue),
                                 tooltip: AppLabels.filterTooltip,
                                 onPressed: () => cubit.toggleFilterVisibility(),
                               ),
                               TextButton(
                                 onPressed: () => cubit.clearFilters(),
                                 style: TextButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12.0, vertical: 6.0),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(20.0),
                                     side: const BorderSide(color: Colors.grey),
@@ -104,7 +108,8 @@ class CompanyListPage extends StatelessWidget {
                                 ),
                                 child: const Text(
                                   'Clear',
-                                  style: TextStyle(fontSize: 14.0, color: Colors.blue),
+                                  style: TextStyle(
+                                      fontSize: 14.0, color: Colors.blue),
                                 ),
                               ),
                             ],
@@ -145,9 +150,13 @@ class CompanyListPage extends StatelessWidget {
                                   cubit.sortCompaniesBy(value);
                                 },
                                 onClearFilters: cubit.clearFilters,
-                                countries: settings?.countryCityMap.keys.toList() ?? [],
-                                cities: cubit.getCitiesForCountry(currentCompany?.country),
-                                interestLevels: List.generate(11, (index) => '${index * 10}%'),
+                                countries:
+                                    settings?.countryCityMap.keys.toList() ??
+                                        [],
+                                cities: cubit.getCitiesForCountry(
+                                    currentCompany?.country),
+                                interestLevels: List.generate(
+                                    11, (index) => '${index * 10}%'),
                                 priorities: settings?.priorities ?? [],
                                 sources: settings?.sources ?? [],
                                 company: currentCompany,
@@ -190,7 +199,7 @@ class CompanyListPage extends StatelessWidget {
                 else
                   SliverList(
                     delegate: SliverChildBuilderDelegate(
-                          (context, index) {
+                      (context, index) {
                         final company = companies[index];
                         return _buildCompanyListTile(context, cubit, company);
                       },
@@ -205,7 +214,8 @@ class CompanyListPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCompanyListTile(BuildContext context, PartnerCubit cubit, Partner company) {
+  Widget _buildCompanyListTile(
+      BuildContext context, PartnerCubit cubit, Partner company) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       elevation: 4.0,
@@ -225,9 +235,12 @@ class CompanyListPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildDetailedBox(AppLabels.companyNameLabel, company.companyName),
-                      _buildDetailedBox(AppLabels.addressLabel, company.address ?? AppLabels.noAddress),
-                      _buildDetailedBox(AppLabels.emailLabel, company.email ?? AppLabels.noEmail),
+                      _buildDetailedBox(
+                          AppLabels.companyNameLabel, company.companyName),
+                      _buildDetailedBox(AppLabels.addressLabel,
+                          company.address ?? AppLabels.noAddress),
+                      _buildDetailedBox(AppLabels.emailLabel,
+                          company.email ?? AppLabels.noEmail),
                       _buildDetailedBox(AppLabels.contactNumberLabel,
                           company.contactNumber ?? AppLabels.noContactNumber),
                     ],
@@ -241,21 +254,24 @@ class CompanyListPage extends StatelessWidget {
                       icon: Icons.remove_red_eye,
                       color: AppColors.viewButtonColor,
                       tooltip: AppLabels.viewCompanyTooltip,
-                      onPressed: () => sl<Coordinator>().navigateToCompanyDetailsPage(company),
+                      onPressed: () => sl<Coordinator>()
+                          .navigateToCompanyDetailsPage(company),
                     ),
                     const SizedBox(height: 8),
                     _buildIconButton(
                       icon: Icons.edit,
                       color: AppColors.editButtonColor,
                       tooltip: AppLabels.editCompanyTooltip,
-                      onPressed: () => sl<Coordinator>().navigateToEditCompanyPage(company),
+                      onPressed: () =>
+                          sl<Coordinator>().navigateToEditCompanyPage(company),
                     ),
                     const SizedBox(height: 8),
                     _buildIconButton(
                       icon: Icons.delete,
                       color: AppColors.deleteButtonColor,
                       tooltip: AppLabels.deleteCompanyTooltip,
-                      onPressed: () => _showDeleteConfirmation(context, cubit, company),
+                      onPressed: () =>
+                          _showDeleteConfirmation(context, cubit, company),
                     ),
                   ],
                 ),
@@ -289,23 +305,29 @@ class CompanyListPage extends StatelessWidget {
           Expanded(
             flex: 3,
             child: GestureDetector(
-              onTap: (label == AppLabels.emailLabel && value != null && value.trim().isNotEmpty)
+              onTap: (label == AppLabels.emailLabel &&
+                      value != null &&
+                      value.trim().isNotEmpty)
                   ? () async {
-                await sl<PartnerCubit>().launchUrl("mailto:$value");
-              }
-                  : (label == AppLabels.contactNumberLabel && value != null && value.trim().isNotEmpty)
-                  ? () async {
-                await sl<PartnerCubit>().launchUrl("tel:$value");
-              }
-                  : null,
+                      await sl<PartnerCubit>().launchUrl("mailto:$value");
+                    }
+                  : (label == AppLabels.contactNumberLabel &&
+                          value != null &&
+                          value.trim().isNotEmpty)
+                      ? () async {
+                          await sl<PartnerCubit>().launchUrl("tel:$value");
+                        }
+                      : null,
               child: Text(
                 displayValue,
                 style: defaultTextStyle(
                   fontSize: 14,
-                  color: (label == AppLabels.emailLabel || label == AppLabels.contactNumberLabel)
+                  color: (label == AppLabels.emailLabel ||
+                          label == AppLabels.contactNumberLabel)
                       ? Colors.blue
                       : AppColors.textFieldColor,
-                  decoration: (label == AppLabels.emailLabel || label == AppLabels.contactNumberLabel)
+                  decoration: (label == AppLabels.emailLabel ||
+                          label == AppLabels.contactNumberLabel)
                       ? TextDecoration.underline
                       : null,
                 ),
@@ -336,13 +358,15 @@ class CompanyListPage extends StatelessWidget {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, PartnerCubit cubit, Partner company) {
+  void _showDeleteConfirmation(
+      BuildContext context, PartnerCubit cubit, Partner company) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text(AppLabels.deleteConfirmationTitle),
-          content: Text("${AppLabels.deleteConfirmationMessage} '${company.companyName}'?"),
+          content: Text(
+              "${AppLabels.deleteConfirmationMessage} '${company.companyName}'?"),
           actions: [
             TextButton(
               onPressed: () {
@@ -375,18 +399,21 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   double get minExtent => 25;
+
   @override
   double get maxExtent => 25;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       color: Colors.blue,
       padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
       alignment: Alignment.centerLeft,
       child: Text(
         'Total Companies: $companyCount/$totalCompanyCount',
-        style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
+        style: const TextStyle(
+            fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
       ),
     );
   }

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_ledger_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/account_ledger_service.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/employee_services.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppKeys.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
@@ -16,7 +16,7 @@ import 'package:url_launcher/url_launcher.dart';
 class PartnerCubit extends Cubit<CompanyState> {
   final CustomerCompanyService _companyService;
   final IAccountLedgerService _accountLedgerService;
-  final UserServices _userServices;
+  final EmployeeServices _userServices;
   final List<Partner> originalCompanies = [];
   String searchKeyword = '';
   Partner? currentCompany;
@@ -746,38 +746,38 @@ class PartnerCubit extends Cubit<CompanyState> {
     return followUpData;
   }
 
-  ProgressChartData getProgressData(String? selectedYearForProgress) {
-    final companies = originalCompanies
-        .where((c) =>
-            getYearFromDate(c.dateCreated.toString()) ==
-            selectedYearForProgress)
-        .toList();
-
-    List<int> data = List.generate(12, (index) {
-      return companies.where((c) => c.dateCreated.month == index + 1).length;
-    });
-
-    final progressData = ProgressChartData(
-      bars: List.generate(data.length, (index) {
-        return BarChartGroupData(
-          x: index,
-          barRods: [
-            BarChartRodData(
-              colors: [AppColors.blue],
-              width: 20,
-              borderRadius: BorderRadius.circular(6),
-              y: data[index].toDouble(),
-            ),
-          ],
-        );
-      }),
-      labels: AppKeys.monthLabels,
-      maxValue: data.isNotEmpty ? data.reduce((a, b) => a > b ? a : b) : 1,
-    );
-
-    emit(ProgressDataLoadedState(progressData));
-    return progressData;
-  }
+  // ProgressChartData getProgressData(String? selectedYearForProgress) {
+  //   final companies = originalCompanies
+  //       .where((c) =>
+  //           getYearFromDate(c.dateCreated.toString()) ==
+  //           selectedYearForProgress)
+  //       .toList();
+  //
+  //   List<int> data = List.generate(12, (index) {
+  //     return companies.where((c) => c.dateCreated.month == index + 1).length;
+  //   });
+  //
+  //   final progressData = ProgressChartData(
+  //     bars: List.generate(data.length, (index) {
+  //       return BarChartGroupData(
+  //         x: index,
+  //         barRods: [
+  //           BarChartRodData(
+  //             colors: [AppColors.blue],
+  //             width: 20,
+  //             borderRadius: BorderRadius.circular(6),
+  //             y: data[index].toDouble(), toY: 1,
+  //           ),
+  //         ],
+  //       );
+  //     }),
+  //     labels: AppKeys.monthLabels,
+  //     maxValue: data.isNotEmpty ? data.reduce((a, b) => a > b ? a : b) : 1,
+  //   );
+  //
+  //   emit(ProgressDataLoadedState(progressData));
+  //   return progressData;
+  // }
 
   Map<String, int> getComparisonData(String? period1, String? period2) {
     final comparisonData = {

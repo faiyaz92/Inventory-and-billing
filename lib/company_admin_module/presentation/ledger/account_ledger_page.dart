@@ -1,3 +1,4 @@
+import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_ledger_model.dart';
@@ -8,6 +9,7 @@ import 'package:requirment_gathering_app/core_module/service_locator/service_loc
 import 'package:requirment_gathering_app/core_module/utils/text_styles.dart';
 import 'package:requirment_gathering_app/user_module/data/partner.dart';
 
+@RoutePage()
 class AccountLedgerPage extends StatefulWidget {
   final Partner company;
 
@@ -42,7 +44,9 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
           children: [
             BlocListener<AccountLedgerCubit, AccountLedgerState>(
               listenWhen: (previous, current) =>
-              (current is TransactionPopupOpened && current.isInitialOpen && !_isPopupOpen) ||
+                  (current is TransactionPopupOpened &&
+                      current.isInitialOpen &&
+                      !_isPopupOpen) ||
                   current is TransactionAddSuccess ||
                   current is TransactionAddFailed,
               listener: (context, state) {
@@ -56,7 +60,9 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
                     SnackBar(content: Text(state.message ?? '')),
                   );
                 }
-                if (state is TransactionPopupOpened && state.isInitialOpen && !_isPopupOpen) {
+                if (state is TransactionPopupOpened &&
+                    state.isInitialOpen &&
+                    !_isPopupOpen) {
                   _isPopupOpen = true;
                   _showTransactionPopup(context, state);
                 }
@@ -66,7 +72,7 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
             Expanded(
               child: BlocBuilder<AccountLedgerCubit, AccountLedgerState>(
                 buildWhen: (previous, current) =>
-                current is AccountLedgerLoading ||
+                    current is AccountLedgerLoading ||
                     current is AccountLedgerLoaded ||
                     current is AccountLedgerError,
                 builder: (context, state) {
@@ -78,7 +84,8 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
                   }
                   if (state is AccountLedgerLoaded) {
                     final ledger = state.ledger;
-                    serviceChargeController.text = (ledger.serviceChargePercentage ?? 25.0).toString();
+                    serviceChargeController.text =
+                        (ledger.serviceChargePercentage ?? 25.0).toString();
                     return CustomScrollView(
                       slivers: [
                         SliverToBoxAdapter(
@@ -149,14 +156,16 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 "Site Details",
-                style: defaultTextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style:
+                    defaultTextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 "",
-                style: defaultTextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style:
+                    defaultTextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -167,7 +176,8 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 "Site Owner Name",
-                style: defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                style:
+                    defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
             ),
             Padding(
@@ -185,7 +195,8 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 "Contact Number",
-                style: defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                style:
+                    defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
             ),
             Padding(
@@ -203,13 +214,16 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 "Address",
-                style: defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                style:
+                    defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                widget.company.address?.isEmpty ?? true ? "N/A" : widget.company.address!,
+                widget.company.address?.isEmpty ?? true
+                    ? "N/A"
+                    : widget.company.address!,
                 style: defaultTextStyle(fontSize: 14),
               ),
             ),
@@ -234,14 +248,16 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 "Description",
-                style: defaultTextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style:
+                    defaultTextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 "Amount (₹)",
-                style: defaultTextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style:
+                    defaultTextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.right,
               ),
             ),
@@ -253,7 +269,8 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 "Base Construction Cost",
-                style: defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                style:
+                    defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
             ),
             Padding(
@@ -272,7 +289,8 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 "Total Construction Cost",
-                style: defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                style:
+                    defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
             ),
             Padding(
@@ -291,7 +309,10 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 "Current Base Due",
-                style: defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.red),
+                style: defaultTextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.red),
               ),
             ),
             Padding(
@@ -310,7 +331,10 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 "Current Total Due",
-                style: defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.red),
+                style: defaultTextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.red),
               ),
             ),
             Padding(
@@ -329,7 +353,8 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 "Estimated Profit",
-                style: defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                style:
+                    defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
             ),
             Padding(
@@ -348,7 +373,8 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 "Current Profit",
-                style: defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                style:
+                    defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
             ),
             Padding(
@@ -380,14 +406,20 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 "Total Payment Received",
-                style: defaultTextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green),
+                style: defaultTextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 (ledger.totalPaymentReceived ?? 0.0).toStringAsFixed(2),
-                style: defaultTextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green),
+                style: defaultTextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green),
                 textAlign: TextAlign.right,
               ),
             ),
@@ -411,7 +443,8 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
         const SizedBox(height: 10),
         ElevatedButton(
           onPressed: () {
-            final percentage = double.tryParse(serviceChargeController.text) ?? 25.0;
+            final percentage =
+                double.tryParse(serviceChargeController.text) ?? 25.0;
             context.read<AccountLedgerCubit>().updateServiceCharge(percentage);
           },
           child: const Text("Calculate"),
@@ -448,18 +481,24 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         ElevatedButton(
-          onPressed: () => context.read<AccountLedgerCubit>().openTransactionPopup(false, widget.company.companyType ?? ''),
+          onPressed: () => context
+              .read<AccountLedgerCubit>()
+              .openTransactionPopup(false, widget.company.companyType ?? ''),
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
           child: const Text("Credit (Jama)"),
         ),
         ElevatedButton(
-          onPressed: () => context.read<AccountLedgerCubit>().openTransactionPopup(true, widget.company.companyType ?? ''),
+          onPressed: () => context
+              .read<AccountLedgerCubit>()
+              .openTransactionPopup(true, widget.company.companyType ?? ''),
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
           child: const Text("Debit (Udhar)"),
         ),
@@ -470,7 +509,7 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
   SliverList _buildTransactionList(AccountLedger ledger) {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
-            (context, index) {
+        (context, index) {
           final txn = ledger.transactions?[index];
           return Card(
             elevation: 2,
@@ -503,32 +542,42 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            txn?.type == "Debit" ? "Udhar: ₹${txn?.amount}" : "Jama: ₹${txn?.amount}",
+                            txn?.type == "Debit"
+                                ? "Udhar: ₹${txn?.amount}"
+                                : "Jama: ₹${txn?.amount}",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: txn?.type == "Debit" ? Colors.red : Colors.green,
+                              color: txn?.type == "Debit"
+                                  ? Colors.red
+                                  : Colors.green,
                             ),
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            txn?.billNumber != null ? "Bill: ${txn?.billNumber}" : "No Bill Number",
-                            style: defaultTextStyle(fontSize: 14, color: Colors.grey.shade600),
+                            txn?.billNumber != null
+                                ? "Bill: ${txn?.billNumber}"
+                                : "No Bill Number",
+                            style: defaultTextStyle(
+                                fontSize: 14, color: Colors.grey.shade600),
                           ),
                           if (txn?.purpose != null)
                             Text(
                               "Purpose: ${txn?.purpose}",
-                              style: defaultTextStyle(fontSize: 14, color: Colors.grey.shade600),
+                              style: defaultTextStyle(
+                                  fontSize: 14, color: Colors.grey.shade600),
                             ),
                           if (txn?.typeOfPurpose != null)
                             Text(
                               "Type: ${txn?.typeOfPurpose}",
-                              style: defaultTextStyle(fontSize: 14, color: Colors.grey.shade600),
+                              style: defaultTextStyle(
+                                  fontSize: 14, color: Colors.grey.shade600),
                             ),
                           if (txn?.remarks != null)
                             Text(
                               "Remarks: ${txn?.remarks}",
-                              style: defaultTextStyle(fontSize: 14, color: Colors.grey.shade600),
+                              style: defaultTextStyle(
+                                  fontSize: 14, color: Colors.grey.shade600),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -536,14 +585,16 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         txn?.createdAt.toString().split(' ')[0] ?? '',
-                        style: defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                        style: defaultTextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w500),
                       ),
                     ),
                   ],
@@ -557,14 +608,16 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
     );
   }
 
-  void _showTransactionPopup(BuildContext context, TransactionPopupOpened state) {
+  void _showTransactionPopup(
+      BuildContext context, TransactionPopupOpened state) {
     showDialog(
       context: context,
       builder: (dialogContext) {
         return BlocProvider.value(
           value: _ledgerCubit,
           child: AlertDialog(
-            title: Text(state.isDebit ? "Add Debit (Udhar)" : "Add Credit (Jama)"),
+            title:
+                Text(state.isDebit ? "Add Debit (Udhar)" : "Add Credit (Jama)"),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -576,34 +629,40 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
                   ),
                   TextField(
                     controller: billNumberController,
-                    decoration: const InputDecoration(labelText: "Bill Number (Optional)"),
+                    decoration: const InputDecoration(
+                        labelText: "Bill Number (Optional)"),
                   ),
                   if (state.isDebit && state.companyType == "Site") ...[
                     BlocBuilder<AccountLedgerCubit, AccountLedgerState>(
                       key: const ValueKey('purpose_dropdown'),
                       buildWhen: (previous, current) =>
-                      current is TransactionPopupOpened &&
+                          current is TransactionPopupOpened &&
                           previous is TransactionPopupOpened &&
                           current.selectedPurpose != previous.selectedPurpose,
                       builder: (context, popupState) {
                         if (popupState is TransactionPopupOpened) {
                           final items = (popupState.purposeTypeMap.isNotEmpty
                               ? popupState.purposeTypeMap.keys.map((purpose) {
-                            return DropdownMenuItem(
-                              value: purpose,
-                              child: Text(purpose),
-                            );
-                          }).toList()
+                                  return DropdownMenuItem(
+                                    value: purpose,
+                                    child: Text(purpose),
+                                  );
+                                }).toList()
                               : <DropdownMenuItem<String>>[]);
                           return DropdownButtonFormField<String>(
                             key: const ValueKey('purpose_dropdown_field'),
                             value: popupState.selectedPurpose,
-                            decoration: const InputDecoration(labelText: "Purpose"),
+                            decoration:
+                                const InputDecoration(labelText: "Purpose"),
                             items: items,
                             onChanged: items.isNotEmpty
-                                ? (value) => context.read<AccountLedgerCubit>().updatePurposeSelection(value)
+                                ? (value) => context
+                                    .read<AccountLedgerCubit>()
+                                    .updatePurposeSelection(value)
                                 : null,
-                            hint: items.isEmpty ? const Text("No purposes available") : null,
+                            hint: items.isEmpty
+                                ? const Text("No purposes available")
+                                : null,
                           );
                         }
                         return const SizedBox.shrink();
@@ -612,31 +671,43 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
                     BlocBuilder<AccountLedgerCubit, AccountLedgerState>(
                       key: const ValueKey('type_dropdown'),
                       buildWhen: (previous, current) =>
-                      current is TransactionPopupOpened &&
+                          current is TransactionPopupOpened &&
                           previous is TransactionPopupOpened &&
                           (current.selectedType != previous.selectedType ||
-                              current.selectedPurpose != previous.selectedPurpose),
+                              current.selectedPurpose !=
+                                  previous.selectedPurpose),
                       builder: (context, popupState) {
                         if (popupState is TransactionPopupOpened) {
                           final items = (popupState.selectedPurpose != null &&
-                              popupState.purposeTypeMap.containsKey(popupState.selectedPurpose) &&
-                              popupState.purposeTypeMap[popupState.selectedPurpose]!.isNotEmpty
-                              ? popupState.purposeTypeMap[popupState.selectedPurpose]!.map((type) {
-                            return DropdownMenuItem(
-                              value: type,
-                              child: Text(type),
-                            );
-                          }).toList()
+                                  popupState.purposeTypeMap.containsKey(
+                                      popupState.selectedPurpose) &&
+                                  popupState
+                                      .purposeTypeMap[
+                                          popupState.selectedPurpose]!
+                                      .isNotEmpty
+                              ? popupState
+                                  .purposeTypeMap[popupState.selectedPurpose]!
+                                  .map((type) {
+                                  return DropdownMenuItem(
+                                    value: type,
+                                    child: Text(type),
+                                  );
+                                }).toList()
                               : <DropdownMenuItem<String>>[]);
                           return DropdownButtonFormField<String>(
                             key: const ValueKey('type_dropdown_field'),
                             value: popupState.selectedType,
-                            decoration: const InputDecoration(labelText: "Type"),
+                            decoration:
+                                const InputDecoration(labelText: "Type"),
                             items: items,
                             onChanged: items.isNotEmpty
-                                ? (value) => context.read<AccountLedgerCubit>().updateTypeSelection(value)
+                                ? (value) => context
+                                    .read<AccountLedgerCubit>()
+                                    .updateTypeSelection(value)
                                 : null,
-                            hint: items.isEmpty ? const Text("No types available") : null,
+                            hint: items.isEmpty
+                                ? const Text("No types available")
+                                : null,
                           );
                         }
                         return const SizedBox.shrink();
@@ -647,21 +718,25 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
                     controller: remarksController,
                     maxLength: 500,
                     decoration: InputDecoration(
-                      labelText: state.isDebit ? "Remarks (Optional)" : "Remarks (Required)",
+                      labelText: state.isDebit
+                          ? "Remarks (Optional)"
+                          : "Remarks (Required)",
                     ),
                   ),
                   BlocBuilder<AccountLedgerCubit, AccountLedgerState>(
                     buildWhen: (previous, current) =>
-                    current is TransactionPopupOpened &&
+                        current is TransactionPopupOpened &&
                         previous is TransactionPopupOpened &&
                         current.errorMessage != previous.errorMessage,
                     builder: (context, popupState) {
-                      if (popupState is TransactionPopupOpened && popupState.errorMessage != null) {
+                      if (popupState is TransactionPopupOpened &&
+                          popupState.errorMessage != null) {
                         return Padding(
                           padding: const EdgeInsets.only(top: 8.0),
                           child: Text(
                             popupState.errorMessage!,
-                            style: const TextStyle(color: Colors.red, fontSize: 12),
+                            style: const TextStyle(
+                                color: Colors.red, fontSize: 12),
                           ),
                         );
                       }
@@ -692,14 +767,19 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
                     selectedPurpose = currentState.selectedPurpose;
                   }
                   context.read<AccountLedgerCubit>().addTransaction(
-                    ledgerId: widget.company.accountLedgerId!,
-                    amount: double.tryParse(amountController.text) ?? 0.0,
-                    type: state.isDebit ? "Debit" : "Credit",
-                    billNumber: billNumberController.text,
-                    purpose: state.isDebit && state.companyType == "Site" ? selectedPurpose : null,
-                    typeOfPurpose: state.isDebit && state.companyType == "Site" ? selectedType : null,
-                    remarks: remarksController.text,
-                  );
+                        ledgerId: widget.company.accountLedgerId!,
+                        amount: double.tryParse(amountController.text) ?? 0.0,
+                        type: state.isDebit ? "Debit" : "Credit",
+                        billNumber: billNumberController.text,
+                        purpose: state.isDebit && state.companyType == "Site"
+                            ? selectedPurpose
+                            : null,
+                        typeOfPurpose:
+                            state.isDebit && state.companyType == "Site"
+                                ? selectedType
+                                : null,
+                        remarks: remarksController.text,
+                      );
                   amountController.clear();
                   billNumberController.clear();
                   remarksController.clear();

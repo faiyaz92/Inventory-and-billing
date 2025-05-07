@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/task/task_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/tasks/task_state.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/task_service.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/employee_services.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/user_module/data/company_settings.dart';
@@ -10,7 +10,7 @@ import 'package:requirment_gathering_app/user_module/services/customer_company_s
 
 class TaskCubit extends Cubit<TaskState> {
   final TaskService _taskService;
-  final UserServices _companyOperationsService;
+  final EmployeeServices _companyOperationsService;
   final CustomerCompanyService _companyService;
   final AccountRepository accountRepository;
 
@@ -45,9 +45,12 @@ class TaskCubit extends Cubit<TaskState> {
   }
 
   /// Fetch Tasks & Set Logged-in User as Default Filter (only on first load)
-  Future<void> fetchTasks() async {
+  Future<void> fetchTasks({bool isNeedToShow=true}) async {
     try {
-      emit(TaskLoading());
+      selectedUserName =null;
+      if(isNeedToShow) {
+        emit(TaskLoading());
+      }
       final userInfo = await accountRepository.getUserInfo();
       allTasks = await _taskService.getAllTasks();
       users = await _companyOperationsService.getUsersFromTenantCompany();
@@ -59,8 +62,8 @@ class TaskCubit extends Cubit<TaskState> {
           orElse: () => UserInfo(userName: "All Users"),
         );
         selectedUserName = currentUser.userName;
-      } else if (selectedUserName == null) {
-        selectedUserName = "All Users";
+      } else {
+        selectedUserName ??= "All Users";
       }
 
       allTasks.sort(_sortTasks);

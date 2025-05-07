@@ -1,14 +1,15 @@
+import 'package:auto_route/annotations.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/add_user_cubit.dart';
+import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
-import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 
-
+@RoutePage()
 class AddUserPage extends StatelessWidget {
   final UserInfo? user; // Nullable: Used for editing
 
@@ -89,11 +90,15 @@ class _AddUserViewState extends State<_AddUserView> {
     final coordinator = GetIt.I<Coordinator>();
 
     return Scaffold(
-      appBar: CustomAppBar(title: isEditing ? "Edit User" : "Add User",),
+      appBar: CustomAppBar(
+        title: isEditing ? "Edit User" : "Add User",
+      ),
       body: BlocConsumer<AddUserCubit, AddUserState>(
         listener: (context, state) {
           if (state is AddUserSuccess) {
-            _showSuccessDialog(isEditing ? "User updated successfully!" : "User added successfully!");
+            _showSuccessDialog(isEditing
+                ? "User updated successfully!"
+                : "User added successfully!");
           } else if (state is AddUserFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -116,22 +121,26 @@ class _AddUserViewState extends State<_AddUserView> {
                     TextFormField(
                       controller: nameController,
                       decoration: const InputDecoration(labelText: "Full Name"),
-                      validator: (value) => value!.isEmpty ? "Name is required" : null,
+                      validator: (value) =>
+                          value!.isEmpty ? "Name is required" : null,
                     ),
                     TextFormField(
                       controller: emailController,
                       decoration: const InputDecoration(labelText: "Email"),
                       keyboardType: TextInputType.emailAddress,
-                      validator: (value) => value!.isEmpty ? "Email is required" : null,
+                      validator: (value) =>
+                          value!.isEmpty ? "Email is required" : null,
                     ),
                     TextFormField(
                       controller: userNameController,
                       decoration: const InputDecoration(labelText: "Username"),
-                      validator: (value) => value!.isEmpty ? "Username is required" : null,
+                      validator: (value) =>
+                          value!.isEmpty ? "Username is required" : null,
                     ),
                     DropdownButtonFormField<Role>(
                       value: _selectedRole,
-                      decoration: const InputDecoration(labelText: "Select Role"),
+                      decoration:
+                          const InputDecoration(labelText: "Select Role"),
                       items: Role.values.map((role) {
                         return DropdownMenuItem(
                           value: role,
@@ -143,41 +152,46 @@ class _AddUserViewState extends State<_AddUserView> {
                           _selectedRole = value;
                         });
                       },
-                      validator: (value) => value == null ? "Role is required" : null,
+                      validator: (value) =>
+                          value == null ? "Role is required" : null,
                     ),
-
                     if (!isEditing) // Show password field only for new user creation
                       TextFormField(
                         controller: passwordController,
-                        decoration: const InputDecoration(labelText: "Password"),
+                        decoration:
+                            const InputDecoration(labelText: "Password"),
                         obscureText: true,
-                        validator: (value) => value!.length < 6 ? "Password must be at least 6 characters" : null,
+                        validator: (value) => value!.length < 6
+                            ? "Password must be at least 6 characters"
+                            : null,
                       ),
-
                     const SizedBox(height: 20),
-
                     state is AddUserLoading
                         ? const CircularProgressIndicator()
                         : ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          final userInfo = UserInfo(
-                            userId: widget.user?.userId, // Keep userId if editing
-                            email: emailController.text.trim(),
-                            role: _selectedRole,
-                            name: nameController.text.trim(),
-                            userName: userNameController.text.trim(),
-                          );
+                            onPressed: () {
+                              if (_formKey.currentState!.validate()) {
+                                final userInfo = UserInfo(
+                                  userId: widget.user?.userId,
+                                  // Keep userId if editing
+                                  email: emailController.text.trim(),
+                                  role: _selectedRole,
+                                  name: nameController.text.trim(),
+                                  userName: userNameController.text.trim(),
+                                );
 
-                          if (isEditing) {
-                            addUserCubit.addUser(userInfo, ""); // Password not needed for updates
-                          } else {
-                            addUserCubit.addUser(userInfo, passwordController.text.trim());
-                          }
-                        }
-                      },
-                      child: Text(isEditing ? "Update User" : "Create User"),
-                    ),
+                                if (isEditing) {
+                                  addUserCubit.addUser(userInfo,
+                                      ""); // Password not needed for updates
+                                } else {
+                                  addUserCubit.addUser(
+                                      userInfo, passwordController.text.trim());
+                                }
+                              }
+                            },
+                            child:
+                                Text(isEditing ? "Update User" : "Create User"),
+                          ),
                   ],
                 ),
               ),

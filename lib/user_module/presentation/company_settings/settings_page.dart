@@ -1,11 +1,13 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:requirment_gathering_app/core_module/presentation/widget/custom_button.dart';
-import 'package:requirment_gathering_app/user_module/presentation/company_settings/compaby_setting_state.dart';
-import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
-import 'package:requirment_gathering_app/user_module/presentation/company_settings/company_settings_cubit.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
+import 'package:requirment_gathering_app/core_module/presentation/widget/custom_button.dart';
+import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
+import 'package:requirment_gathering_app/user_module/presentation/company_settings/compaby_setting_state.dart';
+import 'package:requirment_gathering_app/user_module/presentation/company_settings/company_settings_cubit.dart';
 
+@RoutePage()
 class CompanySettingPage extends StatelessWidget {
   const CompanySettingPage({Key? key}) : super(key: key);
 
@@ -25,39 +27,44 @@ class CompanySettingPage extends StatelessWidget {
             body: state.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSection(
+                          title: "Priorities",
+                          items: state.settings.priorities,
+                          onAdd: (newPriority) =>
+                              cubit.addPriority(newPriority, context),
+                          onDelete: (priority) =>
+                              cubit.removePriority(priority),
+                        ),
 
-                  _buildSection(
-                    title: "Priorities",
-                    items: state.settings.priorities,
-                    onAdd: (newPriority) => cubit.addPriority(newPriority, context),
-                    onDelete: (priority) => cubit.removePriority(priority),
+                        const SizedBox(height: 16),
+                        _buildSection(
+                          title: "Site Types",
+                          items: state.settings.businessTypes,
+                          onAdd: (newBusinessType) =>
+                              cubit.addBusinessType(newBusinessType, context),
+                          onDelete: (businessType) =>
+                              cubit.removeBusinessType(businessType),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildSection(
+                          title: "Task Statuses",
+                          items: state.settings.taskStatuses,
+                          onAdd: (newStatus) =>
+                              cubit.addTaskStatus(newStatus, context),
+                          onDelete: (status) => cubit.removeTaskStatus(status),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildCountrySection(context, cubit, state),
+                        const SizedBox(height: 16),
+                        _buildPurposeSection(
+                            context, cubit, state), // New section
+                      ],
+                    ),
                   ),
-
-                  const SizedBox(height: 16),
-                  _buildSection(
-                    title: "Site Types",
-                    items: state.settings.businessTypes,
-                    onAdd: (newBusinessType) => cubit.addBusinessType(newBusinessType, context),
-                    onDelete: (businessType) => cubit.removeBusinessType(businessType),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildSection(
-                    title: "Task Statuses",
-                    items: state.settings.taskStatuses,
-                    onAdd: (newStatus) => cubit.addTaskStatus(newStatus, context),
-                    onDelete: (status) => cubit.removeTaskStatus(status),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildCountrySection(context, cubit, state),
-                  const SizedBox(height: 16),
-                  _buildPurposeSection(context, cubit, state), // New section
-                ],
-              ),
-            ),
           );
         },
       ),
@@ -79,13 +86,16 @@ class CompanySettingPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(title,
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             Wrap(
               spacing: 8.0,
               runSpacing: 4.0,
               children: items.map((item) {
                 return Chip(
-                  label: Text("${item[0].toUpperCase()}${item.substring(1)}", style: const TextStyle(fontSize: 14)),
+                  label: Text("${item[0].toUpperCase()}${item.substring(1)}",
+                      style: const TextStyle(fontSize: 14)),
                   onDeleted: () => onDelete(item),
                 );
               }).toList(),
@@ -129,7 +139,8 @@ class CompanySettingPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCountrySection(BuildContext context, CompanySettingCubit cubit, CompanySettingState state) {
+  Widget _buildCountrySection(BuildContext context, CompanySettingCubit cubit,
+      CompanySettingState state) {
     final TextEditingController countryController = TextEditingController();
     final TextEditingController cityController = TextEditingController();
 
@@ -141,7 +152,8 @@ class CompanySettingPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Countries & Cities", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text("Countries & Cities",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             ...state.settings.countryCityMap.keys.map((country) {
               return ExpansionTile(
                 title: Row(
@@ -155,10 +167,12 @@ class CompanySettingPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         padding: const EdgeInsets.all(4.0),
-                        child: const Icon(Icons.edit, color: Colors.white, size: 24),
+                        child: const Icon(Icons.edit,
+                            color: Colors.white, size: 24),
                       ),
                       onPressed: () {
-                        final TextEditingController editController = TextEditingController(text: country);
+                        final TextEditingController editController =
+                            TextEditingController(text: country);
                         showDialog(
                           context: context,
                           builder: (context) {
@@ -166,7 +180,8 @@ class CompanySettingPage extends StatelessWidget {
                               title: const Text("Edit Country"),
                               content: TextField(
                                 controller: editController,
-                                decoration: const InputDecoration(labelText: "New Country Name"),
+                                decoration: const InputDecoration(
+                                    labelText: "New Country Name"),
                               ),
                               actions: [
                                 TextButton(
@@ -176,7 +191,8 @@ class CompanySettingPage extends StatelessWidget {
                                 TextButton(
                                   onPressed: () {
                                     if (editController.text.isNotEmpty) {
-                                      cubit.editCountry(country, editController.text, context);
+                                      cubit.editCountry(country,
+                                          editController.text, context);
                                       Navigator.of(context).pop();
                                     }
                                   },
@@ -196,7 +212,8 @@ class CompanySettingPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         padding: const EdgeInsets.all(4.0),
-                        child: const Icon(Icons.delete, color: Colors.white, size: 24),
+                        child: const Icon(Icons.delete,
+                            color: Colors.white, size: 24),
                       ),
                       onPressed: () {
                         showDialog(
@@ -230,10 +247,13 @@ class CompanySettingPage extends StatelessWidget {
                     alignment: Alignment.centerLeft,
                     child: Wrap(
                       spacing: 8.0,
-                      children: state.settings.countryCityMap[country]!.map((city) => Chip(
-                        label: Text(city),
-                        onDeleted: () => cubit.removeCity(country, city),
-                      )).toList(),
+                      children: state.settings.countryCityMap[country]!
+                          .map((city) => Chip(
+                                label: Text(city),
+                                onDeleted: () =>
+                                    cubit.removeCity(country, city),
+                              ))
+                          .toList(),
                     ),
                   ),
                   Padding(
@@ -262,7 +282,8 @@ class CompanySettingPage extends StatelessWidget {
                             isLoading: false,
                             onPressed: () {
                               if (cityController.text.isNotEmpty) {
-                                cubit.addCity(country, cityController.text, context);
+                                cubit.addCity(
+                                    country, cityController.text, context);
                                 cityController.clear();
                               }
                             },
@@ -313,7 +334,8 @@ class CompanySettingPage extends StatelessWidget {
     );
   }
 
-  Widget _buildPurposeSection(BuildContext context, CompanySettingCubit cubit, CompanySettingState state) {
+  Widget _buildPurposeSection(BuildContext context, CompanySettingCubit cubit,
+      CompanySettingState state) {
     final TextEditingController purposeController = TextEditingController();
     final TextEditingController typeController = TextEditingController();
 
@@ -325,7 +347,8 @@ class CompanySettingPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Transaction Purposes & Types", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text("Transaction Purposes & Types",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             ...state.settings.purposeTypeMap.keys.map((purpose) {
               return ExpansionTile(
                 title: Row(
@@ -339,10 +362,12 @@ class CompanySettingPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         padding: const EdgeInsets.all(4.0),
-                        child: const Icon(Icons.edit, color: Colors.white, size: 24),
+                        child: const Icon(Icons.edit,
+                            color: Colors.white, size: 24),
                       ),
                       onPressed: () {
-                        final TextEditingController editController = TextEditingController(text: purpose);
+                        final TextEditingController editController =
+                            TextEditingController(text: purpose);
                         showDialog(
                           context: context,
                           builder: (context) {
@@ -350,7 +375,8 @@ class CompanySettingPage extends StatelessWidget {
                               title: const Text("Edit Purpose"),
                               content: TextField(
                                 controller: editController,
-                                decoration: const InputDecoration(labelText: "New Purpose Name"),
+                                decoration: const InputDecoration(
+                                    labelText: "New Purpose Name"),
                               ),
                               actions: [
                                 TextButton(
@@ -360,7 +386,8 @@ class CompanySettingPage extends StatelessWidget {
                                 TextButton(
                                   onPressed: () {
                                     if (editController.text.isNotEmpty) {
-                                      cubit.editPurpose(purpose, editController.text, context);
+                                      cubit.editPurpose(purpose,
+                                          editController.text, context);
                                       Navigator.of(context).pop();
                                     }
                                   },
@@ -380,7 +407,8 @@ class CompanySettingPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         padding: const EdgeInsets.all(4.0),
-                        child: const Icon(Icons.delete, color: Colors.white, size: 24),
+                        child: const Icon(Icons.delete,
+                            color: Colors.white, size: 24),
                       ),
                       onPressed: () {
                         showDialog(
@@ -414,10 +442,13 @@ class CompanySettingPage extends StatelessWidget {
                     alignment: Alignment.centerLeft,
                     child: Wrap(
                       spacing: 8.0,
-                      children: state.settings.purposeTypeMap[purpose]!.map((type) => Chip(
-                        label: Text(type),
-                        onDeleted: () => cubit.removeType(purpose, type),
-                      )).toList(),
+                      children: state.settings.purposeTypeMap[purpose]!
+                          .map((type) => Chip(
+                                label: Text(type),
+                                onDeleted: () =>
+                                    cubit.removeType(purpose, type),
+                              ))
+                          .toList(),
                     ),
                   ),
                   Padding(
@@ -446,7 +477,8 @@ class CompanySettingPage extends StatelessWidget {
                             isLoading: false,
                             onPressed: () {
                               if (typeController.text.isNotEmpty) {
-                                cubit.addType(purpose, typeController.text, context);
+                                cubit.addType(
+                                    purpose, typeController.text, context);
                                 typeController.clear();
                               }
                             },
