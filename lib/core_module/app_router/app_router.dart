@@ -21,6 +21,7 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/users
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/dashboard/dashboard_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/home_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/dashboard/reports_page.dart';
+import 'package:requirment_gathering_app/core_module/presentation/login/forgot_password_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/login_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/splash_screen.dart';
 import 'package:requirment_gathering_app/super_admin_module/ai_module/presentation/ai_company_list_page.dart';
@@ -48,6 +49,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: SplashScreenRoute.page, initial: true),
     AutoRoute(page: DashboardRoute.page, path: '/dashboard'),
     AutoRoute(page: LoginRoute.page, path: '/login'),
+    AutoRoute(path: '/forgot-password', page: ForgotPasswordRoute.page),
     AutoRoute(page: HomeRoute.page, path: '/home'),
     AutoRoute(page: CompanyListRoute.page, path: '/company-list'),
     // AutoRoute(page: ReportRoute.page, path: '/reports'),

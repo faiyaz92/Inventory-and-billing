@@ -127,6 +127,16 @@ class MockAccountRepository extends _i1.Mock implements _i4.AccountRepository {
         ),
         returnValue: _i5.Future<_i6.UserInfo?>.value(),
       ) as _i5.Future<_i6.UserInfo?>);
+
+  @override
+  _i5.Future<void> resetPassword(String? email) => (super.noSuchMethod(
+        Invocation.method(
+          #resetPassword,
+          [email],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }
 
 /// A class which mocks [SplashCubit].
@@ -536,6 +546,26 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
         ),
         returnValueForMissingStub: null,
       );
+
+  @override
+  _i5.Future<dynamic> navigateToAttendancePage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToAttendancePage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToEmployeeDetailsPage({String? userId}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #navigateToEmployeeDetailsPage,
+          [],
+          {#userId: userId},
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 }
 
 /// A class which mocks [AuthService].
@@ -581,6 +611,16 @@ class MockAuthService extends _i1.Mock implements _i15.AuthService {
         ),
         returnValue: false,
       ) as bool);
+
+  @override
+  _i5.Future<void> resetPassword(String? email) => (super.noSuchMethod(
+        Invocation.method(
+          #resetPassword,
+          [email],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }
 
 /// A class which mocks [TenantCompanyService].

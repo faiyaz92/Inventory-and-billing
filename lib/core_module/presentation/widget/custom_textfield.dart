@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:requirment_gathering_app/core_module/utils/text_styles.dart';
+
 class CustomTextField extends StatelessWidget {
-  final TextEditingController? controller; // Restored for compatibility
-  final String? initialValue; // Optional for controller-less cases
+  final TextEditingController? controller;
+  final String? initialValue;
   final FocusNode? focusNode;
   final String labelText;
   final String hintText;
@@ -12,15 +13,16 @@ class CustomTextField extends StatelessWidget {
   final Widget? suffixIcon;
   final TextInputAction? textInputAction;
   final int? maxLength;
-  final int? maxLines; // Optional multiline support
+  final int? maxLines;
   final void Function(String)? onChanged;
   final void Function(String)? onFieldSubmitted;
   final TextCapitalization textCapitalization;
   final TextStyle? labelStyle;
   final TextStyle? hintStyle;
-  final TextInputType? keyboardType; // Optional input control
-  final bool enabled; // Optional enable/disable
-  final EdgeInsets? contentPadding; // Optional padding
+  final TextInputType? keyboardType;
+  final bool enabled;
+  final EdgeInsets? contentPadding;
+  final InputDecoration? decoration; // New parameter for custom decoration
 
   const CustomTextField({
     super.key,
@@ -44,13 +46,14 @@ class CustomTextField extends StatelessWidget {
     this.keyboardType,
     this.enabled = true,
     this.contentPadding,
+    this.decoration, // Add to constructor
   });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      controller: controller, // Use controller if provided
-      initialValue: controller == null ? initialValue : null, // Fallback to initialValue if no controller
+      controller: controller,
+      initialValue: controller == null ? initialValue : null,
       focusNode: focusNode,
       obscureText: obscureText,
       textInputAction: textInputAction,
@@ -62,7 +65,7 @@ class CustomTextField extends StatelessWidget {
       keyboardType: keyboardType,
       enabled: enabled,
       style: defaultTextStyle(fontSize: 14),
-      decoration: InputDecoration(
+      decoration: decoration ?? InputDecoration(
         labelText: labelText,
         hintText: hintText,
         labelStyle: labelStyle ??
@@ -74,7 +77,7 @@ class CustomTextField extends StatelessWidget {
         hintStyle: hintStyle ??
             defaultTextStyle(
               fontSize: 14,
-              color: Colors.grey, // Subtle hint color
+              color: Colors.grey,
             ),
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,

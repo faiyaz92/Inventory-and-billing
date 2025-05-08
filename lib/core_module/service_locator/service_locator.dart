@@ -6,6 +6,8 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/produ
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/product_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/tasks/task_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/add_user_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/users/attendance_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/users/employee_details_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/employess_list_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/account_ledger_repository.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/category_repository.dart';
@@ -27,6 +29,7 @@ import 'package:requirment_gathering_app/core_module/coordinator/app_cordinator.
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/dashboard/dashboard_cubit.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/home_cubit.dart';
+import 'package:requirment_gathering_app/core_module/presentation/login/forgot_password_cubit.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/login_cubit.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/splash_cubit.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
@@ -173,11 +176,12 @@ void _initServices() {
 void _initCubits() {
   sl.registerFactory(
       () => LoginCubit(sl<AuthService>(), sl<TenantCompanyService>()));
+  sl.registerLazySingleton(() => ForgotPasswordCubit(sl<AuthService>()));
   sl.registerFactory(() => SplashCubit(sl<AccountRepository>()));
 
   sl.registerFactory(() => PartnerCubit(sl<CustomerCompanyService>(),
       sl<EmployeeServices>(), sl<IAccountLedgerService>()));
-  sl.registerFactory(() => DashboardCubit());
+  sl.registerFactory(() => DashboardCubit(sl<AuthService>()));
   sl.registerFactory(() => CompanySettingCubit(sl<CustomerCompanyService>()));
 
   sl.registerFactory(() => AiCompanyListCubit(
@@ -211,6 +215,8 @@ void _initCubits() {
   sl.registerFactory(() => CategoryCubit(
         categoryService: sl<CategoryService>(),
       ));
+  sl.registerFactory(() => EmployeeDetailsCubit(sl<EmployeeServices>()));
+  sl.registerFactory(() => AttendanceCubit(sl<EmployeeServices>()));
 }
 
 /// **5. Initialize App Navigation & Coordinator**

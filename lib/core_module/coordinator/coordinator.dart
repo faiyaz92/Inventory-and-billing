@@ -70,5 +70,6 @@ abstract class Coordinator {
   void navigateToAddEditSupplierPage({Partner? company});
   Future<dynamic> navigateToAttendancePage();
   Future<dynamic> navigateToEmployeeDetailsPage({String? userId});
+  Future<dynamic> navigateToForgotPasswordPage();
 
 }

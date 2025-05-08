@@ -188,4 +188,10 @@ class AppCoordinator implements Coordinator {
     // TODO: implement navigateToEmployeeDetailsPage
     return _router.push(EmployeeDetailsRoute(userId: userId ?? ''));
   }
+
+  @override
+  Future navigateToForgotPasswordPage() {
+    // TODO: implement navigateToForgotPasswordPage
+    return _router.push(ForgotPasswordRoute());
+  }
 }
