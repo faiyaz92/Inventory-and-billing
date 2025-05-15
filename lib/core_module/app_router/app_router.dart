@@ -9,6 +9,7 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/inven
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/add_store_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/billing_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/inventory_dashboard_page.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/over_stock_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/sales_report_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/stock_list_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/store_details_page.dart';
@@ -26,6 +27,7 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/tasks
 import 'package:requirment_gathering_app/company_admin_module/presentation/tasks/task_list_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/add_company_user_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/attendance_register_page.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/users/employee_details_view.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/employee_list_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/dashboard/dashboard_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/home_page.dart';
@@ -37,6 +39,7 @@ import 'package:requirment_gathering_app/super_admin_module/data/tenant_company.
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/presentation/add_tenant_company/add_tenant_company_page.dart';
 import 'package:requirment_gathering_app/super_admin_module/presentation/dashboard/super_admin_page.dart';
+import 'package:requirment_gathering_app/user_module/cart/cart_home_page.dart';
 import 'package:requirment_gathering_app/user_module/data/partner.dart';
 import 'package:requirment_gathering_app/user_module/presentation/add_company/add_company_page.dart';
 import 'package:requirment_gathering_app/user_module/presentation/company_list/company_details_page.dart';
@@ -45,8 +48,6 @@ import 'package:requirment_gathering_app/user_module/presentation/company_settin
 import 'package:requirment_gathering_app/user_module/presentation/suppliers/add_supplier_page.dart';
 import 'package:requirment_gathering_app/user_module/presentation/suppliers/supplier_details_page.dart';
 import 'package:requirment_gathering_app/user_module/presentation/suppliers/supplier_list_page.dart';
-
-import '../../company_admin_module/presentation/users/employee_details_view.dart';
 
 part 'app_router.gr.dart';
 
@@ -104,8 +105,25 @@ class AppRouter extends RootStackRouter {
         ),
         AutoRoute(
           page: StoreDetailsRoute.page,
-        ),AutoRoute(
+        ),
+        AutoRoute(
           page: StockListRoute.page,
         ),
+        AutoRoute(
+          page: OverallStockRoute.page,
+        ),
+
+        // Shopping Cart Routes
+        // AutoRoute(page: ShoppingCartEntryRoute.page, path: '/shopping-cart-entry'),
+        // AutoRoute(page: CartHomeRoute.page, path: '/cart-home'),
+        // AutoRoute(page: CartRoute.page, path: '/cart'),
+        // AutoRoute(page: WishlistRoute.page, path: '/wishlist'),
+        // AutoRoute(page: OrderListRoute.page, path: '/order-list'),
+        // AutoRoute(page: OrderDetailsRoute.page, path: '/order-details'),
+        // AutoRoute(page: CheckoutRoute.page, path: '/checkout'),
+        // AutoRoute(page: PreviewOrderRoute.page, path: '/preview-order'),
+        // AutoRoute(page: PlaceOrderRoute.page, path: '/place-order'),
+        // AutoRoute(page: AdminPanelRoute.page, path: '/admin-panel'),
+        // AutoRoute(page: AdminOrderDetailsRoute.page, path: '/admin-order-details'),
       ];
 }

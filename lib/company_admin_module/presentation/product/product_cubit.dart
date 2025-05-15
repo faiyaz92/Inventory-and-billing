@@ -6,7 +6,7 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/produ
 import 'package:requirment_gathering_app/company_admin_module/service/category_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/product_service.dart';
 
-class ProductCubit extends Cubit<ProductState> {
+class AdminProductCubit extends Cubit<ProductState> {
   final ProductService productService;
   final CategoryService categoryService;
 
@@ -18,7 +18,7 @@ class ProductCubit extends Cubit<ProductState> {
   String? selectedCategoryName;
   String? selectedSubcategoryName;
 
-  ProductCubit({
+  AdminProductCubit({
     required this.productService,
     required this.categoryService,
   }) : super(ProductInitial());

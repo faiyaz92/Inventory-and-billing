@@ -142,5 +142,34 @@ class AppLabels {
   // Dropdown Labels
   static const String selectYear = "Select Year";
   static const String noDataMessage = "No data available";
+// AppBar Titles
+  static const String overallStockTitle = 'Overall Stock';
+  static const String stockListTitle = 'Stock List';
+  static const String cartHomeTitle = 'Shopping Cart';
+  static const String wishlistTitle = 'Wishlist';
+  static const String orderListTitle = 'Orders';
+  static const String settingsTitle = 'Settings';
+  static const String adminPanelTitle = 'Admin Panel';
 
+  // General Labels
+  static const String searchProducts = 'Search Products';
+  static const String totalStock = 'Total Stock';
+  static const String store = 'Store';
+  static const String stock = 'Stock';
+  static const String noStockAvailable = 'No stock available';
+  static const String noProductsFound = 'No products found';
+  static const String error = 'Error';
+  static const String selectStore = 'Select Store';
+  static const String addStock = 'Add Stock';
+  static const String transferStock = 'Transfer Stock';
+  static const String quantityToAdd = 'Quantity to Add';
+  static const String quantityToTransfer = 'Quantity to Transfer';
+  static const String transferToStore = 'Transfer to Store';
+  static const String invalidSelection = 'Invalid quantity or store selection';
+
+  // Shopping Cart Specific Labels
+  static const String checkout = 'Checkout';
+  static const String previewOrder = 'Preview Order';
+  static const String placeOrder = 'Place Order';
+  static const String yourCartIsEmpty = 'Your cart is empty';
 }

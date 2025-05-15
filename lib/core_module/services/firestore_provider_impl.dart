@@ -142,14 +142,31 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
 
   @override
   // New paths for Stock and Inventory
-  String getStoresCollectionRef(String companyId) =>
-      'Easy2Solutions/companyDirectory/tenantCompanies/$companyId/stores';
+  CollectionReference getStoresCollectionRef(String companyId) => _firestore
+      .collection(rootPath)
+      .doc(companyDirectory)
+      .collection(tenantCompanies)
+      .doc(companyId)
+      .collection('stores');
 
   @override
-  String getStockCollectionRef(String companyId, String storeId) =>
-      '${getStoresCollectionRef(companyId)}/$storeId/stock';
+  CollectionReference getStockCollectionRef(String companyId, String storeId) =>
+      getStoresCollectionRef(companyId).doc(storeId).collection('stock');
+      // '${getStoresCollectionRef(companyId)}/$storeId/stock';
 
   @override
-  String getTransactionsCollectionRef(String companyId, String storeId) =>
-      '${getStoresCollectionRef(companyId)}/$storeId/transactions';
+  CollectionReference getTransactionsCollectionRef(String companyId, String storeId) =>
+      getStoresCollectionRef(companyId).doc(storeId).collection('transactions');
+      // '${getStoresCollectionRef(companyId)}/$storeId/transactions';
+
+  @override
+  CollectionReference getOrdersCollectionRef(String companyId) {
+    return _firestore
+        .collection(rootPath) // Root path
+        .doc(companyDirectory) // Company directory
+        .collection(tenantCompanies) // Tenant companies collection
+        .doc(companyId) // Specific company document
+        .collection('orders');
+    // return '/tenantCompanies/$companyId/orders';
+  }
 }

@@ -53,5 +53,38 @@ class AppColors {
 
   // Line Chart (Comparison Chart)
   static const Color lineChartColor = Colors.blueAccent; // Line color for the comparison chart
+// Primary Colors
+  static const Color primary = Color(0xFF1976D2); // A deep blue shade used in StockListPage
+  static const Color primaryLight = Color(0xFF42A5F5); // Lighter shade for gradients
+  static const Color primaryDark = Color(0xFF0D47A1); // Darker shade for contrast
 
+  // Secondary Colors
+  static const Color secondary = Color(0xFFFFA726); // Orange shade for buttons or highlights
+  static const Color secondaryLight = Color(0xFFFFD95A); // Lighter orange for hover effects
+
+  // Background Colors
+  static const Color background = Color(0xFFF5F5F5); // Light grey background
+  static const Color black87 = Colors.black87; // For text (used in StockListPage)
+
+  // Text Colors
+  static const Color grey = Colors.grey; // For labels and subtitles (used in StockListPage)
+  static const Color textPrimary = Colors.black87; // Primary text color
+  static const Color textSecondary = Colors.grey; // Secondary text color
+
+  // Error and Success Colors
+
+  // Card and Border Colors
+  static const Color cardBorder = Colors.grey; // For table borders and outlines (used in StockListPage)
+
+  // Gradient for Background (Inspired by StockListPage)
+  static LinearGradient backgroundGradient(BuildContext context) {
+    return LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        Theme.of(context).primaryColor.withOpacity(0.1),
+        Theme.of(context).primaryColor.withOpacity(0.3),
+      ],
+    );
+  }
 }

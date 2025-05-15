@@ -231,8 +231,6 @@ class AppCoordinator implements Coordinator {
     return _router.push(const TransactionsRoute());
   }
 
-
-
   @override
   Future navigateToInventoryDashBoard() {
     // TODO: implement navigateToInventoryDashBoard
@@ -254,6 +252,72 @@ class AppCoordinator implements Coordinator {
   @override
   Future navigateToStoreDetailsPage(String? storeId) {
     // TODO: implement navigateToStoreDetailsPage
-    return _router.push( StoreDetailsRoute(storeId: storeId??''));
+    return _router.push(StoreDetailsRoute(storeId: storeId ?? ''));
   }
+
+  @override
+  Future navigateToOverAllStockPage() {
+    // TODO: implement navigateToOverAllStockPage
+    return _router.push(const OverallStockRoute());
+  }
+
+/* @override
+  void navigateToWishlistPage() {
+    _router.push(const WishlistRoute());
+  }
+
+  @override
+  void navigateToCartPage() {
+    _router.push(const CartRoute());
+  }
+
+  @override
+  void navigateToOrderListPage() {
+    _router.push(const OrderListRoute());
+  }
+
+  @override
+  void navigateToSettingsPage() {
+    _router.push(const SettingsRoute());
+  }
+
+  @override
+  void navigateToShoppingCartEntryPage() {
+    _router.push(const ShoppingCartEntryRoute());
+  }
+
+  @override
+  void navigateToCartHomePage() {
+    _router.push(const CartHomeRoute());
+  }
+
+  @override
+  void navigateToCheckoutPage() {
+    _router.push(const CheckoutRoute());
+  }
+
+  @override
+  void navigateToPreviewOrderPage() {
+    _router.push(const PreviewOrderRoute());
+  }
+
+  @override
+  void navigateToPlaceOrderPage() {
+    _router.push(const PlaceOrderRoute());
+  }
+
+  @override
+  void navigateToAdminPanelPage() {
+    _router.push(const AdminPanelRoute());
+  }
+
+  @override
+  void navigateToAdminOrderDetailsPage() {
+    _router.push(const AdminOrderDetailsRoute());
+  }
+
+  @override
+  void navigateToOrderDetailsPage() {
+    _router.push(const OrderDetailsRoute());
+  }*/
 }

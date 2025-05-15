@@ -24,12 +24,12 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _stockController = TextEditingController();
 
-  late ProductCubit _cubit;
+  late AdminProductCubit _cubit;
 
   @override
   void initState() {
     super.initState();
-    _cubit = sl<ProductCubit>();
+    _cubit = sl<AdminProductCubit>();
     // Load categories
     if (widget.product != null) {
       _cubit.loadCategories(
@@ -99,7 +99,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                   keyboardType: TextInputType.number,
                   validator: (value) => value!.isEmpty ? 'Enter stock' : null,
                 ),
-                BlocBuilder<ProductCubit, ProductState>(
+                BlocBuilder<AdminProductCubit, ProductState>(
                   buildWhen: (previous, current) => current is CategoriesLoaded,
                   builder: (context, state) {
                     if (state is CategoriesLoaded) {
@@ -137,7 +137,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                         .shrink(); // Return an empty widget if the state isn't CategoriesLoaded
                   },
                 ),
-                BlocBuilder<ProductCubit, ProductState>(
+                BlocBuilder<AdminProductCubit, ProductState>(
                   buildWhen: (previous, current) =>
                       current is SubcategoriesLoaded,
                   builder: (context, state) {

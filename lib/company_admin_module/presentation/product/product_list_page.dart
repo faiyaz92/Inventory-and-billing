@@ -14,12 +14,12 @@ class ProductListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<ProductCubit>(
+    return BlocProvider<AdminProductCubit>(
       create: (_) =>
-          sl<ProductCubit>()..loadProducts(), // Use GetIt for ProductCubit
+          sl<AdminProductCubit>()..loadProducts(), // Use GetIt for ProductCubit
       child: Scaffold(
         appBar: AppBar(title: const Text('Product List')),
-        body: BlocBuilder<ProductCubit, ProductState>(
+        body: BlocBuilder<AdminProductCubit, ProductState>(
           builder: (context, state) {
             if (state is ProductLoading) {
               return const Center(child: CircularProgressIndicator());
@@ -45,7 +45,7 @@ class ProductListPage extends StatelessWidget {
                                 .navigateToAddEditProductPage(product: product)
                                 .then((value) {
                               if (value) {
-                                context.read<ProductCubit>().loadProducts();
+                                context.read<AdminProductCubit>().loadProducts();
                               }
                             });
                           },
@@ -53,7 +53,7 @@ class ProductListPage extends StatelessWidget {
                         IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
                           onPressed: () => context
-                              .read<ProductCubit>()
+                              .read<AdminProductCubit>()
                               .deleteProduct(product.id),
                         ),
                       ],

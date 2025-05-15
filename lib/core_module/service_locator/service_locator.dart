@@ -56,6 +56,14 @@ import 'package:requirment_gathering_app/super_admin_module/repository/tenant_co
 import 'package:requirment_gathering_app/super_admin_module/repository/tenant_company_repository_impl.dart';
 import 'package:requirment_gathering_app/super_admin_module/services/tenant_company_service.dart';
 import 'package:requirment_gathering_app/super_admin_module/services/tenant_company_service_impl.dart';
+import 'package:requirment_gathering_app/user_module/cart/admin_order_cubit.dart';
+import 'package:requirment_gathering_app/user_module/cart/cart_cubit.dart';
+import 'package:requirment_gathering_app/user_module/cart/order_cubit.dart';
+import 'package:requirment_gathering_app/user_module/cart/order_repository.dart';
+import 'package:requirment_gathering_app/user_module/cart/order_service.dart';
+import 'package:requirment_gathering_app/user_module/cart/product_cubit.dart';
+import 'package:requirment_gathering_app/user_module/cart/user_product_service.dart';
+import 'package:requirment_gathering_app/user_module/cart/wish_list_cubit.dart';
 import 'package:requirment_gathering_app/user_module/presentation/add_company/customer_company_cubit.dart';
 import 'package:requirment_gathering_app/user_module/presentation/company_settings/company_settings_cubit.dart';
 import 'package:requirment_gathering_app/user_module/repo/company_settings_repository.dart';
@@ -130,14 +138,16 @@ void _initRepositories() {
 
   // ✅ Register Stock and Transaction Repositories
   sl.registerLazySingleton<StockRepository>(() => StockRepositoryImpl(
-        firestore: sl<FirebaseFirestore>(),
-        firestorePathProvider: sl<IFirestorePathProvider>(), accountRepository: sl<AccountRepository>(),
+        firestorePathProvider: sl<IFirestorePathProvider>(),
+        accountRepository: sl<AccountRepository>(),
       ));
   sl.registerLazySingleton<TransactionRepository>(
       () => TransactionRepositoryImpl(
-            firestore: sl<FirebaseFirestore>(),
             firestorePathProvider: sl<IFirestorePathProvider>(),
           ));
+  sl.registerLazySingleton<IOrderRepository>(() => OrderRepositoryImpl(
+        firestorePathProvider: sl<IFirestorePathProvider>(),
+      ));
 }
 
 /// **3. Initialize Services**
@@ -196,6 +206,11 @@ void _initServices() {
         transactionRepository: sl<TransactionRepository>(),
         accountRepository: sl<AccountRepository>(),
       ));
+
+  sl.registerLazySingleton<UserProductService>(
+      () => UserProductService(stockService: sl<StockService>()));
+  sl.registerLazySingleton<OrderService>(
+      () => OrderService(orderRepository: sl<IOrderRepository>()));
 }
 
 /// **4. Initialize Cubits (State Management)**
@@ -234,7 +249,7 @@ void _initCubits() {
       ));
   sl.registerFactory(() => HomeCubit(sl<IUserService>()));
   sl.registerFactory(() => EmployeeCubit(sl<EmployeeServices>()));
-  sl.registerFactory(() => ProductCubit(
+  sl.registerFactory(() => AdminProductCubit(
         productService: sl<ProductService>(),
         categoryService: sl<CategoryService>(),
       ));
@@ -245,14 +260,23 @@ void _initCubits() {
   sl.registerFactory(() => AttendanceCubit(sl<EmployeeServices>()));
 
   sl.registerFactory<StockCubit>(() => StockCubit(
-    stockService: sl<StockService>(),
-    employeeServices: sl<EmployeeServices>(),
-    transactionService: sl<TransactionService>(),
-    accountRepository: sl<AccountRepository>(),
-  ));
+        stockService: sl<StockService>(),
+        employeeServices: sl<EmployeeServices>(),
+        transactionService: sl<TransactionService>(),
+        accountRepository: sl<AccountRepository>(),
+      ));
   sl.registerFactory(() => TransactionCubit(
-    transactionService: sl<TransactionService>(),
-  ));
+        transactionService: sl<TransactionService>(),
+      ));
+
+  sl.registerFactory(
+      () => ProductCubit(productService: sl<UserProductService>()));
+  sl.registerFactory(() => CartCubit());
+  sl.registerFactory(() => WishlistCubit());
+  sl.registerFactory(() => OrderCubit(
+      orderService: sl<OrderService>(),
+      accountRepository: sl<AccountRepository>()));
+  sl.registerFactory(() => AdminOrderCubit(orderService: sl<OrderService>()));
 }
 
 /// **5. Initialize App Navigation & Coordinator**

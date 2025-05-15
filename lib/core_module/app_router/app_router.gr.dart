@@ -442,6 +442,22 @@ class BillingRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [CartHomePage]
+class CartHomeRoute extends PageRouteInfo<void> {
+  const CartHomeRoute({List<PageRouteInfo>? children})
+    : super(CartHomeRoute.name, initialChildren: children);
+
+  static const String name = 'CartHomeRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const CartHomePage();
+    },
+  );
+}
+
+/// generated route for
 /// [CategoriesWithSubcategoriesPage]
 class CategoriesWithSubcategoriesRoute extends PageRouteInfo<void> {
   const CategoriesWithSubcategoriesRoute({List<PageRouteInfo>? children})
@@ -764,6 +780,22 @@ class LoginRouteArgs {
 }
 
 /// generated route for
+/// [OverallStockPage]
+class OverallStockRoute extends PageRouteInfo<void> {
+  const OverallStockRoute({List<PageRouteInfo>? children})
+    : super(OverallStockRoute.name, initialChildren: children);
+
+  static const String name = 'OverallStockRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const OverallStockPage();
+    },
+  );
+}
+
+/// generated route for
 /// [ProductListPage]
 class ProductListRoute extends PageRouteInfo<ProductListRouteArgs> {
   ProductListRoute({Key? key, List<PageRouteInfo>? children})
@@ -1043,4 +1075,3 @@ class TransactionsRoute extends PageRouteInfo<void> {
     },
   );
 }
-

@@ -586,15 +586,6 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
       ) as _i5.Future<dynamic>);
 
   @override
-  _i5.Future<dynamic> navigateToTransferStockPage() => (super.noSuchMethod(
-        Invocation.method(
-          #navigateToTransferStockPage,
-          [],
-        ),
-        returnValue: _i5.Future<dynamic>.value(),
-      ) as _i5.Future<dynamic>);
-
-  @override
   _i5.Future<dynamic> navigateToBillingPage() => (super.noSuchMethod(
         Invocation.method(
           #navigateToBillingPage,
@@ -662,6 +653,16 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
         Invocation.method(
           #navigateToAddStorePage,
           [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToStoreDetailsPage(String? storeId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #navigateToStoreDetailsPage,
+          [storeId],
         ),
         returnValue: _i5.Future<dynamic>.value(),
       ) as _i5.Future<dynamic>);

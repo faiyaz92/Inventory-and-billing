@@ -26,12 +26,12 @@ class _AddStockPageState extends State<AddStockPage> {
   String? _selectedProductId;
   int _quantity = 0;
   late StockCubit _stockCubit;
-  late ProductCubit _productCubit;
+  late AdminProductCubit _productCubit;
 
   @override
   void initState() {
     _stockCubit = sl<StockCubit>()..fetchStock('');
-    _productCubit = sl<ProductCubit>()..loadProducts();
+    _productCubit = sl<AdminProductCubit>()..loadProducts();
     super.initState();
   }
 
@@ -96,8 +96,8 @@ class _AddStockPageState extends State<AddStockPage> {
                     }
 
                     final stores = (state is StockLoaded) ? state.stores : [];
-                    final products = context.read<ProductCubit>().state is ProductLoaded
-                        ? (context.read<ProductCubit>().state as ProductLoaded).products
+                    final products = context.read<AdminProductCubit>().state is ProductLoaded
+                        ? (context.read<AdminProductCubit>().state as ProductLoaded).products
                         : [];
 
                     return Column(

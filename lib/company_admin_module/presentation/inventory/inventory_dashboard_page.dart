@@ -96,6 +96,12 @@ class InventoryDashboardPage extends StatelessWidget {
                         Icons.add_business,
                         Colors.amber,
                             () => sl<Coordinator>().navigateToAddStorePage(),
+                      ),_buildDashboardCard(
+                        context,
+                        'Over all stock',
+                        Icons.food_bank,
+                        Colors.green,
+                            () => sl<Coordinator>().navigateToOverAllStockPage(),
                       ),
                     ],
                   ),

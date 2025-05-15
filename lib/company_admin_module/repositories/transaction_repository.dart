@@ -22,11 +22,9 @@ abstract class TransactionRepository {
 
 /// Implementation of TransactionRepository using Firestore.
 class TransactionRepositoryImpl implements TransactionRepository {
-  final FirebaseFirestore firestore;
   final IFirestorePathProvider firestorePathProvider;
 
   TransactionRepositoryImpl({
-    required this.firestore,
     required this.firestorePathProvider,
   });
 
@@ -34,8 +32,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
   Future<List<TransactionDto>> getTransactions(
       String companyId, String storeId) async {
     try {
-      final ref = firestore.collection(firestorePathProvider
-          .getTransactionsCollectionRef(companyId, storeId));
+      final ref = firestorePathProvider
+          .getTransactionsCollectionRef(companyId, storeId);
       final snapshot = await ref.get();
       return snapshot.docs
           .map((doc) => TransactionDto.fromFirestore(doc))
@@ -49,12 +47,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
   Future<void> addTransaction(
       String companyId, TransactionDto transaction) async {
     try {
-      final ref = firestore.collection(
-          firestorePathProvider.getTransactionsCollectionRef(
-              companyId,
-              transaction.type == 'received'
-                  ? transaction.toStoreId??''
-                  : transaction.fromStoreId));
+      final ref =  firestorePathProvider.getTransactionsCollectionRef(
+          companyId,
+          transaction.type == 'received'
+              ? transaction.toStoreId??''
+              : transaction.fromStoreId);
       await ref.doc(transaction.id).set(transaction.toFirestore());
     } catch (e) {
       throw Exception('Failed to add transaction: $e');
@@ -65,8 +62,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
   Future<void> updateTransaction(
       String companyId, TransactionDto transaction) async {
     try {
-      final ref = firestore.collection(firestorePathProvider
-          .getTransactionsCollectionRef(companyId, transaction.fromStoreId));
+      final ref = firestorePathProvider
+          .getTransactionsCollectionRef(companyId, transaction.fromStoreId);
       await ref.doc(transaction.id).update(transaction.toFirestore());
     } catch (e) {
       throw Exception('Failed to update transaction: $e');
@@ -77,8 +74,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
   Future<void> deleteTransaction(
       String companyId, String storeId, String transactionId) async {
     try {
-      final ref = firestore.collection(firestorePathProvider
-          .getTransactionsCollectionRef(companyId, storeId));
+      final ref = firestorePathProvider
+          .getTransactionsCollectionRef(companyId, storeId);
       await ref.doc(transactionId).delete();
     } catch (e) {
       throw Exception('Failed to delete transaction: $e');
