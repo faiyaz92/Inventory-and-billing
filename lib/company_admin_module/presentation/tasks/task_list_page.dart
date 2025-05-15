@@ -344,191 +344,195 @@ class _TaskListPageState extends State<TaskListPage>
                           ..loadTaskSettings();
                       }
                     },
-                    child: Table(
-                      border: TableBorder.all(
-                          color: Colors.grey[300]!, width: 1),
-                      columnWidths: const {
-                        0: FixedColumnWidth(120),
-                        1: FlexColumnWidth(),
-                        2: FixedColumnWidth(48),
-                      },
-                      children: [
-                        TableRow(
-                          children: [
-                            const TableCell(
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 25, vertical: 25),
-                                child: Text(
-                                  "Title",
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+
+                      child: Table(
+                        border: TableBorder.all(
+                            color: Colors.grey[300]!, width: 1),
+                        columnWidths: const {
+                          0: FixedColumnWidth(120),
+                          1: FlexColumnWidth(),
+                          2: FixedColumnWidth(48),
+                        },
+                        children: [
+                          TableRow(
+                            children: [
+                              const TableCell(
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 25, vertical: 25),
+                                  child: Text(
+                                    "Title",
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
+                                  ),
                                 ),
                               ),
-                            ),
-                            TableCell(
-                              child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Row(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment.start,
-                                  crossAxisAlignment:
-                                  CrossAxisAlignment.center,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        task.title ?? "Untitled Task",
-                                        style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    PopupMenuButton<String>(
-                                      onSelected: (value) {
-                                        if (value == "delete") {
-                                          _showDeleteConfirmation(
-                                              context, task.taskId ?? '');
-                                        } else {
-                                          final updatedTask = task.copyWith(
-                                              status: value);
-                                          _taskCubit.updateTask(
-                                              updatedTask.taskId,
-                                              updatedTask);
-                                        }
-                                      },
-                                      itemBuilder: (context) => [
-                                        ..._allStatuses.map((status) {
-                                          return PopupMenuItem(
-                                              value: status,
-                                              child: Text(status));
-                                        }).toList(),
-                                        const PopupMenuDivider(),
-                                        const PopupMenuItem(
-                                          value: "delete",
-                                          child: Text("🗑 Delete Task",
-                                              style: TextStyle(
-                                                  color: Colors.red)),
+                              TableCell(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                    MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.center,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          task.title ?? "Untitled Task",
+                                          style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold),
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                      ],
-                                    ),
-                                  ],
+                                      ),
+                                      PopupMenuButton<String>(
+                                        onSelected: (value) {
+                                          if (value == "delete") {
+                                            _showDeleteConfirmation(
+                                                context, task.taskId ?? '');
+                                          } else {
+                                            final updatedTask = task.copyWith(
+                                                status: value);
+                                            _taskCubit.updateTask(
+                                                updatedTask.taskId,
+                                                updatedTask);
+                                          }
+                                        },
+                                        itemBuilder: (context) => [
+                                          ..._allStatuses.map((status) {
+                                            return PopupMenuItem(
+                                                value: status,
+                                                child: Text(status));
+                                          }).toList(),
+                                          const PopupMenuDivider(),
+                                          const PopupMenuItem(
+                                            value: "delete",
+                                            child: Text("🗑 Delete Task",
+                                                style: TextStyle(
+                                                    color: Colors.red)),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        TableRow(
-                          children: [
-                            const TableCell(
-                              child: Padding(
-                                padding: EdgeInsets.all(12),
-                                child: Text(
-                                  "Assigned to",
-                                  style: TextStyle(fontSize: 14),
+                            ],
+                          ),
+                          TableRow(
+                            children: [
+                              const TableCell(
+                                child: Padding(
+                                  padding: EdgeInsets.all(12),
+                                  child: Text(
+                                    "Assigned to",
+                                    style: TextStyle(fontSize: 14),
+                                  ),
                                 ),
                               ),
-                            ),
-                            TableCell(
-                              child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Text(
-                                  task.assignedToUserName ?? "Unknown",
-                                  style: const TextStyle(fontSize: 14),
-                                  overflow: TextOverflow.ellipsis,
+                              TableCell(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Text(
+                                    task.assignedToUserName ?? "Unknown",
+                                    style: const TextStyle(fontSize: 14),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        TableRow(
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFFFE6E6)),
-                          children: [
-                            const TableCell(
-                              child: Padding(
-                                padding: EdgeInsets.all(12),
-                                child: Text(
-                                  "Due Date",
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold),
+                            ],
+                          ),
+                          TableRow(
+                            decoration: const BoxDecoration(
+                                color: Color(0xFFFFE6E6)),
+                            children: [
+                              const TableCell(
+                                child: Padding(
+                                  padding: EdgeInsets.all(12),
+                                  child: Text(
+                                    "Due Date",
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold),
+                                  ),
                                 ),
                               ),
-                            ),
-                            TableCell(
-                              child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Text(
-                                  _formatDate(
-                                      task.deadline ?? DateTime.now()),
-                                  style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.redAccent,
-                                      fontWeight: FontWeight.bold),
-                                  overflow: TextOverflow.ellipsis,
+                              TableCell(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Text(
+                                    _formatDate(
+                                        task.deadline ?? DateTime.now()),
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.redAccent,
+                                        fontWeight: FontWeight.bold),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        TableRow(
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFE6FFE6)),
-                          children: [
-                            const TableCell(
-                              child: Padding(
-                                padding: EdgeInsets.all(12),
-                                child: Text(
-                                  "Created At",
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold),
+                            ],
+                          ),
+                          TableRow(
+                            decoration: const BoxDecoration(
+                                color: Color(0xFFE6FFE6)),
+                            children: [
+                              const TableCell(
+                                child: Padding(
+                                  padding: EdgeInsets.all(12),
+                                  child: Text(
+                                    "Created At",
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold),
+                                  ),
                                 ),
                               ),
-                            ),
-                            TableCell(
-                              child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Text(
-                                  _formatDate(
-                                      task.createdAt ?? DateTime.now()),
-                                  style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold),
-                                  overflow: TextOverflow.ellipsis,
+                              TableCell(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Text(
+                                    _formatDate(
+                                        task.createdAt ?? DateTime.now()),
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        TableRow(
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFF5F5F5)),
-                          children: [
-                            const TableCell(
-                              child: Padding(
-                                padding: EdgeInsets.all(12),
-                                child: Text(
-                                  "Last Updated",
-                                  style: TextStyle(fontSize: 14),
+                            ],
+                          ),
+                          TableRow(
+                            decoration: const BoxDecoration(
+                                color: Color(0xFFF5F5F5)),
+                            children: [
+                              const TableCell(
+                                child: Padding(
+                                  padding: EdgeInsets.all(12),
+                                  child: Text(
+                                    "Last Updated",
+                                    style: TextStyle(fontSize: 14),
+                                  ),
                                 ),
                               ),
-                            ),
-                            TableCell(
-                              child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Text(
-                                  "${_formatDate(task.lastUpdateTime ?? DateTime.now(), includeTime: true)} by ${task.lastUpdatedByUserName ?? 'Unknown'}",
-                                  style: const TextStyle(fontSize: 14),
-                                  overflow: TextOverflow.ellipsis,
+                              TableCell(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Text(
+                                    "${_formatDate(task.lastUpdateTime ?? DateTime.now(), includeTime: true)} by ${task.lastUpdatedByUserName ?? 'Unknown'}",
+                                    style: const TextStyle(fontSize: 14),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );

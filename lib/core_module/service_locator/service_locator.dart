@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/stock_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/transaction_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/account_ledger_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/add_edit_category_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/product_cubit.dart';
@@ -13,18 +15,23 @@ import 'package:requirment_gathering_app/company_admin_module/repositories/accou
 import 'package:requirment_gathering_app/company_admin_module/repositories/category_repository.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/product_repository.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/product_repository_impl.dart';
+import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/task_repository.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/task_repository_impl.dart';
+import 'package:requirment_gathering_app/company_admin_module/repositories/transaction_repository.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/account_ledger_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/category_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/category_service_impl.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/product_service.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/product_service_impl.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/task_service.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/task_service_impl.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/employee_services.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/employee_services_impl.dart';
-import 'package:requirment_gathering_app/core_module/app_router/app_router.dart' show AppRouter;
+import 'package:requirment_gathering_app/company_admin_module/service/product_service.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/product_service_impl.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/stock_service.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/task_service.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/task_service_impl.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/transaction_service.dart';
+import 'package:requirment_gathering_app/core_module/app_router/app_router.dart'
+    show AppRouter;
 import 'package:requirment_gathering_app/core_module/coordinator/app_cordinator.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/dashboard/dashboard_cubit.dart';
@@ -120,6 +127,17 @@ void _initRepositories() {
   sl.registerLazySingleton<CategoryRepository>(() => CategoryRepositoryImpl(
         firestorePathProvider: sl<IFirestorePathProvider>(),
       ));
+
+  // ✅ Register Stock and Transaction Repositories
+  sl.registerLazySingleton<StockRepository>(() => StockRepositoryImpl(
+        firestore: sl<FirebaseFirestore>(),
+        firestorePathProvider: sl<IFirestorePathProvider>(), accountRepository: sl<AccountRepository>(),
+      ));
+  sl.registerLazySingleton<TransactionRepository>(
+      () => TransactionRepositoryImpl(
+            firestore: sl<FirebaseFirestore>(),
+            firestorePathProvider: sl<IFirestorePathProvider>(),
+          ));
 }
 
 /// **3. Initialize Services**
@@ -169,7 +187,15 @@ void _initServices() {
   sl.registerSingleton<LocationUpdateService>(
       LocationUpdateService(sl<EmployeeServices>()));
   sl.registerSingleton<PermissionHandler>(PermissionHandler());
-
+  sl.registerLazySingleton<StockService>(() => StockServiceImpl(
+        stockRepository: sl<StockRepository>(),
+        accountRepository: sl<AccountRepository>(),
+      ));
+  sl.registerLazySingleton<TransactionService>(() => TransactionServiceImpl(
+        stockRepository: sl<StockRepository>(),
+        transactionRepository: sl<TransactionRepository>(),
+        accountRepository: sl<AccountRepository>(),
+      ));
 }
 
 /// **4. Initialize Cubits (State Management)**
@@ -217,6 +243,16 @@ void _initCubits() {
       ));
   sl.registerFactory(() => EmployeeDetailsCubit(sl<EmployeeServices>()));
   sl.registerFactory(() => AttendanceCubit(sl<EmployeeServices>()));
+
+  sl.registerFactory<StockCubit>(() => StockCubit(
+    stockService: sl<StockService>(),
+    employeeServices: sl<EmployeeServices>(),
+    transactionService: sl<TransactionService>(),
+    accountRepository: sl<AccountRepository>(),
+  ));
+  sl.registerFactory(() => TransactionCubit(
+    transactionService: sl<TransactionService>(),
+  ));
 }
 
 /// **5. Initialize App Navigation & Coordinator**

@@ -41,4 +41,7 @@ abstract class IFirestorePathProvider {
   CollectionReference getSubcategoryCollectionRef(
     String companyId,
   );
+  String getStoresCollectionRef(String companyId);
+  String getStockCollectionRef(String companyId, String storeId);
+  String getTransactionsCollectionRef(String companyId, String storeId);
 }

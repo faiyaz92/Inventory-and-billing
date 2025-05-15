@@ -2,6 +2,7 @@ enum Role {
   SUPER_ADMIN,
   COMPANY_ADMIN,
   USER,
+  STORE_ADMIN, // Added for store admin role
 }
 
 extension RoleExtension on Role {
@@ -13,6 +14,8 @@ extension RoleExtension on Role {
         return 'company_admin';
       case Role.USER:
         return 'user';
+      case Role.STORE_ADMIN:
+        return 'store_admin';
     }
   }
 
@@ -24,6 +27,8 @@ extension RoleExtension on Role {
         return Role.COMPANY_ADMIN;
       case 'user':
         return Role.USER;
+      case 'store_admin':
+        return Role.STORE_ADMIN;
       default:
         throw Exception('Invalid role: $role');
     }

@@ -17,7 +17,7 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<void> addProduct(String companyId, ProductDTO product) {
-    return firestorePathProvider.getProductCollectionRef(companyId).add(product.toFirestore());
+    return firestorePathProvider.getProductCollectionRef(companyId).doc(product.name).set(product.toFirestore());
   }
 
   @override

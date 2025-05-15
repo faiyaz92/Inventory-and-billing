@@ -566,6 +566,105 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
         ),
         returnValue: _i5.Future<dynamic>.value(),
       ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToForgotPasswordPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToForgotPasswordPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToStockListPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToStockListPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToTransferStockPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToTransferStockPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToBillingPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToBillingPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToSalesReportPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToSalesReportPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToTransactionsPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToTransactionsPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToAddCustomerPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToAddCustomerPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToAddStockPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToAddStockPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToInventoryDashBoard() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToInventoryDashBoard,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToStoresListPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToStoresListPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToAddStorePage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToAddStorePage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 }
 
 /// A class which mocks [AuthService].

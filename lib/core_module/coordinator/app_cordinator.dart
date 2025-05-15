@@ -194,4 +194,66 @@ class AppCoordinator implements Coordinator {
     // TODO: implement navigateToForgotPasswordPage
     return _router.push(ForgotPasswordRoute());
   }
+
+  @override
+  Future navigateToAddCustomerPage() {
+    // TODO: implement navigateToAddCustomerPage
+    throw UnimplementedError();
+  }
+
+  @override
+  Future navigateToAddStockPage() {
+    // TODO: implement navigateToAddStockPage
+    return _router.push(const AddStockRoute());
+  }
+
+  @override
+  Future navigateToBillingPage() {
+    // TODO: implement navigateToBillingPage
+    return _router.push(const BillingRoute());
+  }
+
+  @override
+  Future navigateToSalesReportPage() {
+    // TODO: implement navigateToSalesReportPage
+    return _router.push(const SalesReportRoute());
+  }
+
+  @override
+  Future navigateToStockListPage() {
+    // TODO: implement navigateToStockListPage
+    return _router.push(const StockListRoute());
+  }
+
+  @override
+  Future navigateToTransactionsPage() {
+    // TODO: implement navigateToTransactionsPage
+    return _router.push(const TransactionsRoute());
+  }
+
+
+
+  @override
+  Future navigateToInventoryDashBoard() {
+    // TODO: implement navigateToInventoryDashBoard
+    return _router.push(const InventoryDashboardRoute());
+  }
+
+  @override
+  Future navigateToStoresListPage() {
+    // TODO: implement navigateToStoresListPage
+    return _router.push(const StoresListRoute());
+  }
+
+  @override
+  Future navigateToAddStorePage() {
+    // TODO: implement navigateToAddStorePagr
+    return _router.push(const AddStoreRoute());
+  }
+
+  @override
+  Future navigateToStoreDetailsPage(String? storeId) {
+    // TODO: implement navigateToStoreDetailsPage
+    return _router.push( StoreDetailsRoute(storeId: storeId??''));
+  }
 }

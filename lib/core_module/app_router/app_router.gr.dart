@@ -215,6 +215,38 @@ class AddEditSubcategoryRouteArgs {
 }
 
 /// generated route for
+/// [AddStockPage]
+class AddStockRoute extends PageRouteInfo<void> {
+  const AddStockRoute({List<PageRouteInfo>? children})
+    : super(AddStockRoute.name, initialChildren: children);
+
+  static const String name = 'AddStockRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AddStockPage();
+    },
+  );
+}
+
+/// generated route for
+/// [AddStorePage]
+class AddStoreRoute extends PageRouteInfo<void> {
+  const AddStoreRoute({List<PageRouteInfo>? children})
+    : super(AddStoreRoute.name, initialChildren: children);
+
+  static const String name = 'AddStoreRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AddStorePage();
+    },
+  );
+}
+
+/// generated route for
 /// [AddSupplierPage]
 class AddSupplierRoute extends PageRouteInfo<AddSupplierRouteArgs> {
   AddSupplierRoute({Key? key, Partner? company, List<PageRouteInfo>? children})
@@ -389,6 +421,22 @@ class AttendanceRegisterRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const AttendanceRegisterPage();
+    },
+  );
+}
+
+/// generated route for
+/// [BillingPage]
+class BillingRoute extends PageRouteInfo<void> {
+  const BillingRoute({List<PageRouteInfo>? children})
+    : super(BillingRoute.name, initialChildren: children);
+
+  static const String name = 'BillingRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const BillingPage();
     },
   );
 }
@@ -666,6 +714,22 @@ class HomeRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [InventoryDashboardPage]
+class InventoryDashboardRoute extends PageRouteInfo<void> {
+  const InventoryDashboardRoute({List<PageRouteInfo>? children})
+    : super(InventoryDashboardRoute.name, initialChildren: children);
+
+  static const String name = 'InventoryDashboardRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const InventoryDashboardPage();
+    },
+  );
+}
+
+/// generated route for
 /// [LoginPage]
 class LoginRoute extends PageRouteInfo<LoginRouteArgs> {
   LoginRoute({Key? key, List<PageRouteInfo>? children})
@@ -750,6 +814,22 @@ class ProductMgtRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [SalesReportPage]
+class SalesReportRoute extends PageRouteInfo<void> {
+  const SalesReportRoute({List<PageRouteInfo>? children})
+    : super(SalesReportRoute.name, initialChildren: children);
+
+  static const String name = 'SalesReportRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const SalesReportPage();
+    },
+  );
+}
+
+/// generated route for
 /// [SplashScreenPage]
 class SplashScreenRoute extends PageRouteInfo<SplashScreenRouteArgs> {
   SplashScreenRoute({
@@ -792,6 +872,75 @@ class SplashScreenRouteArgs {
   String toString() {
     return 'SplashScreenRouteArgs{key: $key, onDelayComplete: $onDelayComplete}';
   }
+}
+
+/// generated route for
+/// [StockListPage]
+class StockListRoute extends PageRouteInfo<void> {
+  const StockListRoute({List<PageRouteInfo>? children})
+    : super(StockListRoute.name, initialChildren: children);
+
+  static const String name = 'StockListRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const StockListPage();
+    },
+  );
+}
+
+/// generated route for
+/// [StoreDetailsPage]
+class StoreDetailsRoute extends PageRouteInfo<StoreDetailsRouteArgs> {
+  StoreDetailsRoute({
+    Key? key,
+    required String storeId,
+    List<PageRouteInfo>? children,
+  }) : super(
+         StoreDetailsRoute.name,
+         args: StoreDetailsRouteArgs(key: key, storeId: storeId),
+         initialChildren: children,
+       );
+
+  static const String name = 'StoreDetailsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<StoreDetailsRouteArgs>();
+      return StoreDetailsPage(key: args.key, storeId: args.storeId);
+    },
+  );
+}
+
+class StoreDetailsRouteArgs {
+  const StoreDetailsRouteArgs({this.key, required this.storeId});
+
+  final Key? key;
+
+  final String storeId;
+
+  @override
+  String toString() {
+    return 'StoreDetailsRouteArgs{key: $key, storeId: $storeId}';
+  }
+}
+
+/// generated route for
+/// [StoresListPage]
+class StoresListRoute extends PageRouteInfo<void> {
+  const StoresListRoute({List<PageRouteInfo>? children})
+    : super(StoresListRoute.name, initialChildren: children);
+
+  static const String name = 'StoresListRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const StoresListPage();
+    },
+  );
 }
 
 /// generated route for
@@ -878,3 +1027,20 @@ class TaskListRoute extends PageRouteInfo<void> {
     },
   );
 }
+
+/// generated route for
+/// [TransactionsPage]
+class TransactionsRoute extends PageRouteInfo<void> {
+  const TransactionsRoute({List<PageRouteInfo>? children})
+    : super(TransactionsRoute.name, initialChildren: children);
+
+  static const String name = 'TransactionsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const TransactionsPage();
+    },
+  );
+}
+

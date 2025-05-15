@@ -20,6 +20,7 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
   static const String subcategoriesCollection = 'subcategories';
   static const String accountLedgers = 'accountLedgers';
   static const String transactions = 'transactions';
+
   FirestorePathProviderImpl(this._firestore);
 
   @override
@@ -135,6 +136,20 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
         .doc(companyDirectory)
         .collection(tenantCompanies)
         .doc(companyId)
-        .collection(subcategoriesCollection);  // Top-level subcategories collection
+        .collection(
+            subcategoriesCollection); // Top-level subcategories collection
   }
+
+  @override
+  // New paths for Stock and Inventory
+  String getStoresCollectionRef(String companyId) =>
+      'Easy2Solutions/companyDirectory/tenantCompanies/$companyId/stores';
+
+  @override
+  String getStockCollectionRef(String companyId, String storeId) =>
+      '${getStoresCollectionRef(companyId)}/$storeId/stock';
+
+  @override
+  String getTransactionsCollectionRef(String companyId, String storeId) =>
+      '${getStoresCollectionRef(companyId)}/$storeId/transactions';
 }
