@@ -15,19 +15,14 @@ class AdminOrderLoaded extends AdminOrderState {
   final List<UserInfo> users;
   final DateTime? startDate;
   final DateTime? endDate;
-  final String? status;
   final DateTime? expectedDeliveryStartDate;
   final DateTime? expectedDeliveryEndDate;
-
-  AdminOrderLoaded(
-      this.orders,
-      this.users, {
-        this.startDate,
-        this.endDate,
-        this.status,
-        this.expectedDeliveryStartDate,
-        this.expectedDeliveryEndDate,
-      });
+  AdminOrderLoaded(this.orders, this.users, {
+    this.startDate,
+    this.endDate,
+    this.expectedDeliveryStartDate,
+    this.expectedDeliveryEndDate,
+  });
 }
 
 class AdminOrderError extends AdminOrderState {
@@ -53,12 +48,10 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
   }) async {
     emit(AdminOrderLoading());
     try {
-      // Fetch orders
       final orders = await orderService.getAllOrders();
       orders.sort((a, b) => b.orderDate.compareTo(a.orderDate));
       List<Order> filteredOrders = orders;
 
-      // Apply date range filter for orderDate if provided
       if (startDate != null && endDate != null) {
         filteredOrders = filteredOrders.where((order) {
           return order.orderDate
@@ -67,14 +60,12 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
         }).toList();
       }
 
-      // Apply status filter if provided
       if (status != null) {
         filteredOrders = filteredOrders
             .where((order) => order.status.toLowerCase() == status.toLowerCase())
             .toList();
       }
 
-      // Apply expected delivery date filter if provided
       if (expectedDeliveryStartDate != null && expectedDeliveryEndDate != null) {
         filteredOrders = filteredOrders.where((order) {
           if (order.expectedDeliveryDate == null) return false;
@@ -85,18 +76,13 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
         }).toList();
       }
 
-      // Fetch users for dropdowns
       final users = await employeeServices.getUsersFromTenantCompany();
 
-      emit(AdminOrderLoaded(
-        filteredOrders,
-        users,
-        startDate: startDate,
-        endDate: endDate,
-        status: status,
-        expectedDeliveryStartDate: expectedDeliveryStartDate,
-        expectedDeliveryEndDate: expectedDeliveryEndDate,
-      ));
+      emit(AdminOrderLoaded(filteredOrders, users,
+          startDate: startDate,
+          endDate: endDate,
+          expectedDeliveryStartDate: expectedDeliveryStartDate,
+          expectedDeliveryEndDate: expectedDeliveryEndDate));
     } catch (e) {
       emit(AdminOrderError('Failed to fetch orders: ${e.toString()}'));
     }

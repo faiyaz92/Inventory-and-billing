@@ -754,30 +754,21 @@ class AdminPanelPage extends StatelessWidget {
                                             color: AppColors.textPrimary,
                                           ),
                                         ),
-                                        Container(
-                                          decoration: BoxDecoration(
-                                            border: Border.all(
-                                              color: AppColors.textSecondary.withOpacity(0.5),
-                                              width: 1,
+                                        ElevatedButton(
+                                          onPressed: () => _showStatsDialog(context, state),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppColors.primary,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(8),
                                             ),
-                                            borderRadius: BorderRadius.circular(8),
+                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                            minimumSize: const Size(40, 40),
                                           ),
-                                          child: ElevatedButton(
-                                            onPressed: () => _showStatsDialog(context, state),
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: AppColors.primary,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(8),
-                                              ),
-                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                              minimumSize: const Size(40, 40),
-                                            ),
-                                            child: const Text(
-                                              'View',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: AppColors.white,
-                                              ),
+                                          child: const Text(
+                                            'View',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: AppColors.white,
                                             ),
                                           ),
                                         ),
