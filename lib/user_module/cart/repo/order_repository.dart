@@ -10,8 +10,9 @@ abstract class IOrderRepository {
   Future<void> updateOrderStatus(String companyId, String orderId, String status);
   Future<void> setExpectedDeliveryDate(String companyId, String orderId, DateTime date);
   Future<OrderDto> getOrderById(String companyId, String orderId);
-  Future<void> setOrderDeliveryDate(String companyId, String orderId, DateTime date); // New method
-  Future<void> setOrderDeliveredBy(String companyId, String orderId, String deliveredBy); // New method
+  Future<void> setOrderDeliveryDate(String companyId, String orderId, DateTime date);
+  Future<void> setOrderDeliveredBy(String companyId, String orderId, String deliveredBy);
+  Future<void> setResponsibleForDelivery(String companyId, String orderId, String responsibleForDelivery); // New method
 }
 
 
@@ -111,6 +112,18 @@ class OrderRepositoryImpl implements IOrderRepository {
       });
     } catch (e) {
       throw Exception('Failed to set order delivered by: $e');
+    }
+  }
+
+  @override
+  Future<void> setResponsibleForDelivery(String companyId, String orderId, String responsibleForDelivery) async {
+    try {
+      final ref = firestorePathProvider.getOrdersCollectionRef(companyId);
+      await ref.doc(orderId).update({
+        'responsibleForDelivery': responsibleForDelivery,
+      });
+    } catch (e) {
+      throw Exception('Failed to set responsible for delivery: $e');
     }
   }
 }

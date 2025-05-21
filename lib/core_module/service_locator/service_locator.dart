@@ -306,7 +306,9 @@ void _initCubits() {
   sl.registerFactory(() => OrderCubit(
       orderService: sl<IOrderService>(),
       accountRepository: sl<AccountRepository>()));
-  sl.registerFactory(() => AdminOrderCubit(orderService: sl<IOrderService>()));
+  sl.registerFactory(() => AdminOrderCubit(
+      orderService: sl<IOrderService>(),
+      employeeServices: sl<EmployeeServices>()));
   sl.registerFactory(() => SalesmanOrderCubit(
         employeeServices: sl<EmployeeServices>(),
         productService: sl<IUserProductService>(),

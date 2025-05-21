@@ -91,9 +91,25 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
   }
 
   @override
+  Future<void> updateUser(String userId, String companyId, UserInfoDto userInfoDto) async {
+    try {
+      await _firestoreProvider
+          .getTenantUsersRef(companyId)
+          .doc(userId)
+          .update(userInfoDto.toMap());
+      await _firestoreProvider
+          .getCommonUsersPath()
+          .doc(userId)
+          .update(userInfoDto.toMap());
+    } catch (e) {
+      throw Exception("Error updating user: $e");
+    }
+  }
+
+  @override
   Future<List<TenantCompanyDto>> getTenantCompanies() async {
     final snapshot =
-        await _firestoreProvider.basePath.collection('tenantCompanies').get();
+    await _firestoreProvider.basePath.collection('tenantCompanies').get();
     return snapshot.docs
         .map((doc) => TenantCompanyDto.fromMap(doc.data()))
         .toList();
@@ -145,7 +161,7 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
   Future<List<UserInfoDto>> getUsersFromTenantCompany(String companyId) async {
     try {
       CollectionReference usersRef =
-          _firestoreProvider.getTenantUsersRef(companyId);
+      _firestoreProvider.getTenantUsersRef(companyId);
       QuerySnapshot querySnapshot = await usersRef.get();
       return querySnapshot.docs
           .map((doc) => UserInfoDto.fromMap(doc.data() as Map<String, dynamic>))
@@ -305,7 +321,7 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
     }).toList();
 
     final userSnapshot =
-        await _firestoreProvider.getTenantUserRef(companyId, userId).get();
+    await _firestoreProvider.getTenantUserRef(companyId, userId).get();
     final userData = userSnapshot.data() as Map<String, dynamic>;
     final dailyWage = (userData['dailyWage'] as num?)?.toDouble() ?? 500.0;
     int presentDays = models.where((model) => model.status == 'present').length;

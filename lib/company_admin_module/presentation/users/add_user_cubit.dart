@@ -10,9 +10,17 @@ class AddUserCubit extends Cubit<AddUserState> {
   Future<void> addUser(UserInfo userInfo, String password) async {
     try {
       emit(AddUserLoading());
-
       await _companyOperationsService.addUserToCompany(userInfo, password);
+      emit(AddUserSuccess());
+    } catch (e) {
+      emit(AddUserFailure(e.toString()));
+    }
+  }
 
+  Future<void> updateUser(UserInfo userInfo) async {
+    try {
+      emit(AddUserLoading());
+      await _companyOperationsService.updateUser(userInfo);
       emit(AddUserSuccess());
     } catch (e) {
       emit(AddUserFailure(e.toString()));

@@ -13,6 +13,7 @@ class OrderDto {
   final DateTime? orderDeliveryDate; // Added for actual delivery date
   final String? orderTakenBy; // Added for salesman who took the order
   final String? orderDeliveredBy; // Added for salesman who delivered the order
+  final String? responsibleForDelivery; // Added for person responsible for delivery
 
   OrderDto({
     required this.id,
@@ -26,6 +27,7 @@ class OrderDto {
     this.orderDeliveryDate,
     this.orderTakenBy,
     this.orderDeliveredBy,
+    this.responsibleForDelivery,
   });
 
   factory OrderDto.fromFirestore(Map<String, dynamic> data) {
@@ -45,6 +47,7 @@ class OrderDto {
           : null,
       orderTakenBy: data['orderTakenBy'],
       orderDeliveredBy: data['orderDeliveredBy'],
+      responsibleForDelivery: data['responsibleForDelivery'],
     );
   }
 
@@ -65,6 +68,7 @@ class OrderDto {
           : null,
       'orderTakenBy': orderTakenBy,
       'orderDeliveredBy': orderDeliveredBy,
+      'responsibleForDelivery': responsibleForDelivery,
     };
   }
 
@@ -81,6 +85,7 @@ class OrderDto {
       orderDeliveryDate: order.orderDeliveryDate,
       orderTakenBy: order.orderTakenBy,
       orderDeliveredBy: order.orderDeliveredBy,
+      responsibleForDelivery: order.responsibleForDelivery,
     );
   }
 }

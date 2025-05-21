@@ -26,6 +26,16 @@ class EmployeesServiceImpl implements EmployeeServices {
   }
 
   @override
+  Future<void> updateUser(UserInfo userInfo) async {
+    final loggedInUserInfo = await _accountRepository.getUserInfo();
+    final companyId = loggedInUserInfo?.companyId ?? '';
+    if (userInfo.userId == null || userInfo.userId!.isEmpty) {
+      throw Exception("User ID is missing. Cannot update user.");
+    }
+    await _tenantCompanyRepository.updateUser(userInfo.userId!, companyId, userInfo.toDto());
+  }
+
+  @override
   Future<void> updateUserLocation(double latitude, double longitude) async {
     final userInfo = await _accountRepository.getUserInfo();
     final companyId = userInfo?.companyId ?? '';

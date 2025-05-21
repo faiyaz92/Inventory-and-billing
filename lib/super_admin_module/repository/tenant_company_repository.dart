@@ -1,4 +1,3 @@
-
 import 'package:requirment_gathering_app/company_admin_module/data/attendance/attendance_dto.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/tenant_company_dto.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.dart';
@@ -7,6 +6,7 @@ abstract class ITenantCompanyRepository {
   Future<String> generateTenantCompanyId(String companyName);
   Future<void> createTenantCompany(TenantCompanyDto dto, String password);
   Future<void> addUserToCompany(UserInfoDto userInfoDto, String password);
+  Future<void> updateUser(String userId, String companyId, UserInfoDto userInfoDto);
   Future<List<TenantCompanyDto>> getTenantCompanies();
   Future<void> updateTenantCompany(TenantCompanyDto updatedDto);
   Future<void> deleteTenantCompany(String companyId);

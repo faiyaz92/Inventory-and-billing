@@ -70,4 +70,10 @@ class OrderService implements IOrderService {
     await orderRepository.setOrderDeliveredBy(
         userInfo?.companyId ?? '', orderId, deliveredBy);
   }
+  @override
+  Future<void> setResponsibleForDelivery(String orderId, String responsibleForDelivery) async {
+    final userInfo = await accountRepository.getUserInfo();
+    await orderRepository.setResponsibleForDelivery(
+        userInfo?.companyId ?? '', orderId, responsibleForDelivery);
+  }
 }

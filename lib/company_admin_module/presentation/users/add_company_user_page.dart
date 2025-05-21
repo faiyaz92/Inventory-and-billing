@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/add_user_cubit.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
+import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
@@ -77,6 +78,9 @@ class _AddUserViewState extends State<_AddUserView> {
               onPressed: () {
                 Navigator.of(context).pop();
                 _resetForm();
+                if (!isEditing) {
+                  sl<Coordinator>().navigateBack();
+                }
               },
               child: const Text("OK"),
             ),
@@ -347,7 +351,7 @@ class _AddUserViewState extends State<_AddUserView> {
                                   );
 
                                   if (isEditing) {
-                                    addUserCubit.addUser(userInfo, "");
+                                    addUserCubit.updateUser(userInfo);
                                   } else {
                                     addUserCubit.addUser(
                                         userInfo, passwordController.text.trim());

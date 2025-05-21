@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:requirment_gathering_app/core_module/app_router/app_router.dart' show AppRouter;
+import 'package:requirment_gathering_app/core_module/app_router/app_router.dart'
+    show AppRouter;
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 
 void main() async {
@@ -8,7 +9,6 @@ void main() async {
   await Firebase.initializeApp();
   setupServiceLocator();
   runApp(const MyApp());
-
 }
 
 class MyApp extends StatelessWidget {
@@ -18,6 +18,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final appRouter = sl.get<AppRouter>();
     return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primaryColor: Colors.blue,
         // fontFamily: 'Roboto', // Default font for the app

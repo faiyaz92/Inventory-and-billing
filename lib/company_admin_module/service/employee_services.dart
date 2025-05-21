@@ -1,10 +1,9 @@
 import 'package:requirment_gathering_app/company_admin_module/data/attendance/attendance_model.dart';
-import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
-import 'package:requirment_gathering_app/super_admin_module/repository/tenant_company_repository.dart';
 
 abstract class EmployeeServices {
   Future<void> addUserToCompany(UserInfo userInfo, String password);
+  Future<void> updateUser(UserInfo userInfo);
   Future<List<UserInfo>> getUsersFromTenantCompany();
   Future<void> deleteUser(String userId);
   Future<void> updateUserLocation(double latitude, double longitude);
