@@ -59,6 +59,12 @@ class CartDashboardPage extends StatelessWidget {
                         Icons.receipt,
                         Colors.orange,
                         () => sl<Coordinator>().navigateToAdminPanelPage(),
+                      ), _buildDashboardCard(
+                        context,
+                        'Sales man order',
+                        Icons.receipt,
+                        Colors.orange,
+                        () => sl<Coordinator>().navigateToSalesManOrderPage(),
                       ),
                     ],
                   ),

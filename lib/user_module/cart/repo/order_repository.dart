@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:requirment_gathering_app/core_module/services/firestore_provider.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_dto.dart';
 
+
 abstract class IOrderRepository {
   Future<void> addOrder(String companyId, OrderDto order);
   Future<List<OrderDto>> getOrdersByUser(String companyId, String userId);
@@ -9,7 +10,10 @@ abstract class IOrderRepository {
   Future<void> updateOrderStatus(String companyId, String orderId, String status);
   Future<void> setExpectedDeliveryDate(String companyId, String orderId, DateTime date);
   Future<OrderDto> getOrderById(String companyId, String orderId);
+  Future<void> setOrderDeliveryDate(String companyId, String orderId, DateTime date); // New method
+  Future<void> setOrderDeliveredBy(String companyId, String orderId, String deliveredBy); // New method
 }
+
 
 class OrderRepositoryImpl implements IOrderRepository {
   final IFirestorePathProvider firestorePathProvider;
@@ -33,7 +37,7 @@ class OrderRepositoryImpl implements IOrderRepository {
     try {
       final ref = firestorePathProvider.getOrdersCollectionRef(companyId);
       final snapshot = await ref.where('userId', isEqualTo: userId).get();
-      return snapshot.docs.map((doc) => OrderDto.fromFirestore(doc.data() as Map<String,dynamic>)).toList();
+      return snapshot.docs.map((doc) => OrderDto.fromFirestore(doc.data() as Map<String, dynamic>)).toList();
     } catch (e) {
       throw Exception('Failed to fetch orders: $e');
     }
@@ -44,7 +48,7 @@ class OrderRepositoryImpl implements IOrderRepository {
     try {
       final ref = firestorePathProvider.getOrdersCollectionRef(companyId);
       final snapshot = await ref.get();
-      return snapshot.docs.map((doc) => OrderDto.fromFirestore(doc.data() as Map<String,dynamic>)).toList();
+      return snapshot.docs.map((doc) => OrderDto.fromFirestore(doc.data() as Map<String, dynamic>)).toList();
     } catch (e) {
       throw Exception('Failed to fetch orders: $e');
     }
@@ -83,6 +87,30 @@ class OrderRepositoryImpl implements IOrderRepository {
       return OrderDto.fromFirestore(doc.data() as Map<String, dynamic>);
     } catch (e) {
       throw Exception('Failed to fetch order: $e');
+    }
+  }
+
+  @override
+  Future<void> setOrderDeliveryDate(String companyId, String orderId, DateTime date) async {
+    try {
+      final ref = firestorePathProvider.getOrdersCollectionRef(companyId);
+      await ref.doc(orderId).update({
+        'orderDeliveryDate': Timestamp.fromDate(date),
+      });
+    } catch (e) {
+      throw Exception('Failed to set order delivery date: $e');
+    }
+  }
+
+  @override
+  Future<void> setOrderDeliveredBy(String companyId, String orderId, String deliveredBy) async {
+    try {
+      final ref = firestorePathProvider.getOrdersCollectionRef(companyId);
+      await ref.doc(orderId).update({
+        'orderDeliveredBy': deliveredBy,
+      });
+    } catch (e) {
+      throw Exception('Failed to set order delivered by: $e');
     }
   }
 }

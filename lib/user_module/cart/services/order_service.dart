@@ -1,4 +1,3 @@
-
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/user_module/cart/services/iorder_service.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_dto.dart';
@@ -56,5 +55,19 @@ class OrderService implements IOrderService {
     final userInfo = await accountRepository.getUserInfo();
     final orderDto = await orderRepository.getOrderById(userInfo?.companyId ?? '', orderId);
     return Order.fromDto(orderDto);
+  }
+
+  @override
+  Future<void> setOrderDeliveryDate(String orderId, DateTime date) async {
+    final userInfo = await accountRepository.getUserInfo();
+    await orderRepository.setOrderDeliveryDate(
+        userInfo?.companyId ?? '', orderId, date);
+  }
+
+  @override
+  Future<void> setOrderDeliveredBy(String orderId, String deliveredBy) async {
+    final userInfo = await accountRepository.getUserInfo();
+    await orderRepository.setOrderDeliveredBy(
+        userInfo?.companyId ?? '', orderId, deliveredBy);
   }
 }

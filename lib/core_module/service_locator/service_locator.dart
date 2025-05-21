@@ -60,6 +60,7 @@ import 'package:requirment_gathering_app/user_module/cart/presentation/admin_ord
 import 'package:requirment_gathering_app/user_module/cart/presentation/cart_cubit.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/order_cubit.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/product_cubit.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/sales_man_order_cubit.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/wish_list_cubit.dart';
 import 'package:requirment_gathering_app/user_module/cart/repo/cart_repository_impl.dart';
 import 'package:requirment_gathering_app/user_module/cart/repo/i_cart_repository.dart';
@@ -306,6 +307,13 @@ void _initCubits() {
       orderService: sl<IOrderService>(),
       accountRepository: sl<AccountRepository>()));
   sl.registerFactory(() => AdminOrderCubit(orderService: sl<IOrderService>()));
+  sl.registerFactory(() => SalesmanOrderCubit(
+        employeeServices: sl<EmployeeServices>(),
+        productService: sl<IUserProductService>(),
+        accountRepository: sl<AccountRepository>(),
+        cartCubit: sl<CartCubit>(),
+        orderCubit: sl<OrderCubit>(),
+      ));
 }
 
 /// **5. Initialize App Navigation & Coordinator**

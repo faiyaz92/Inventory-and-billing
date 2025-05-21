@@ -12,6 +12,13 @@ import 'package:requirment_gathering_app/user_module/cart/presentation/admin_ord
 class AdminPanelPage extends StatelessWidget {
   const AdminPanelPage({Key? key}) : super(key: key);
 
+  // Utility to check if a date is today
+  bool _isToday(DateTime? date) {
+    if (date == null) return false;
+    final today = DateTime.now();
+    return date.year == today.year && date.month == today.month && date.day == today.day;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -219,6 +226,15 @@ class AdminPanelPage extends StatelessWidget {
                               state.orders.where((order) => order.status.toLowerCase() == 'shipped').length;
                           final completedOrders =
                               state.orders.where((order) => order.status.toLowerCase() == 'completed').length;
+                          // Today's expected delivery count (based on expectedDeliveryDate)
+                          final todayExpectedDeliveryCount = state.orders
+                              .where((order) => _isToday(order.expectedDeliveryDate))
+                              .length;
+                          // Today's completed delivery count (based on orderDeliveryDate and status 'completed')
+                          final todayCompletedDeliveryCount = state.orders
+                              .where((order) =>
+                          order.status.toLowerCase() == 'completed' && _isToday(order.orderDeliveryDate))
+                              .length;
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -382,13 +398,6 @@ class AdminPanelPage extends StatelessWidget {
                                               ],
                                             ),
                                             TableRow(
-                                              decoration: BoxDecoration(
-                                                color: AppColors.primary.withOpacity(0.1),
-                                                borderRadius: const BorderRadius.only(
-                                                  bottomLeft: Radius.circular(12),
-                                                  bottomRight: Radius.circular(12),
-                                                ),
-                                              ),
                                               children: [
                                                 const Padding(
                                                   padding: EdgeInsets.symmetric(
@@ -415,6 +424,85 @@ class AdminPanelPage extends StatelessWidget {
                                                     alignment: Alignment.centerRight,
                                                     child: Text(
                                                       completedOrders.toString(),
+                                                      style: const TextStyle(
+                                                        fontSize: 14,
+                                                        color: AppColors.textSecondary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            TableRow(
+                                              children: [
+                                                const Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                    vertical: 4.0,
+                                                    horizontal: 8.0,
+                                                  ),
+                                                  child: Align(
+                                                    alignment: Alignment.centerLeft,
+                                                    child: Text(
+                                                      "Today's Expected",
+                                                      style: TextStyle(
+                                                        fontSize: 14,
+                                                        color: AppColors.textSecondary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    vertical: 4.0,
+                                                    horizontal: 8.0,
+                                                  ),
+                                                  child: Align(
+                                                    alignment: Alignment.centerRight,
+                                                    child: Text(
+                                                      todayExpectedDeliveryCount.toString(),
+                                                      style: const TextStyle(
+                                                        fontSize: 14,
+                                                        color: AppColors.textSecondary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            TableRow(
+                                              decoration: BoxDecoration(
+                                                color: AppColors.primary.withOpacity(0.1),
+                                                borderRadius: const BorderRadius.only(
+                                                  bottomLeft: Radius.circular(12),
+                                                  bottomRight: Radius.circular(12),
+                                                ),
+                                              ),
+                                              children: [
+                                                const Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                    vertical: 4.0,
+                                                    horizontal: 8.0,
+                                                  ),
+                                                  child: Align(
+                                                    alignment: Alignment.centerLeft,
+                                                    child: Text(
+                                                      "Today's Completed",
+                                                      style: TextStyle(
+                                                        fontSize: 14,
+                                                        color: AppColors.textSecondary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    vertical: 4.0,
+                                                    horizontal: 8.0,
+                                                  ),
+                                                  child: Align(
+                                                    alignment: Alignment.centerRight,
+                                                    child: Text(
+                                                      todayCompletedDeliveryCount.toString(),
                                                       style: const TextStyle(
                                                         fontSize: 14,
                                                         color: AppColors.textSecondary,

@@ -63,9 +63,13 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
     }
   }
 
-  Future<void> updateOrderStatus(String orderId, String status) async {
+  Future<void> updateOrderStatus(String orderId, String status, {String? deliveredBy}) async {
     try {
       await orderService.updateOrderStatus(orderId, status);
+      if (status.toLowerCase() == 'completed' /*&& deliveredBy != null*/) {
+        await orderService.setOrderDeliveryDate(orderId, DateTime.now());
+        // await orderService.setOrderDeliveredBy(orderId, deliveredBy);
+      }
       fetchOrders();
     } catch (e) {
       emit(AdminOrderError(e.toString()));

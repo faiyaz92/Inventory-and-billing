@@ -47,6 +47,7 @@ import 'package:requirment_gathering_app/user_module/cart/presentation/cart_page
 import 'package:requirment_gathering_app/user_module/cart/presentation/check_out_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/order_list_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/place_order_page.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/sales_man_order_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/user_order_details.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/wish_list_page.dart';
 import 'package:requirment_gathering_app/user_module/data/partner.dart';
@@ -135,5 +136,6 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: AdminOrderDetailsRoute.page, path: '/admin-order-details'),
         AutoRoute(page: CartDashboardRoute.page, ),
         AutoRoute(page: UserOrderDetailsRoute.page, ),
+        AutoRoute(page: SalesmanOrderRoute.page, ),
       ];
 }

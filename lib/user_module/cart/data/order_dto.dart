@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
-import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
 
 class OrderDto {
   final String id;
@@ -11,6 +10,9 @@ class OrderDto {
   final String status;
   final DateTime orderDate;
   final DateTime? expectedDeliveryDate;
+  final DateTime? orderDeliveryDate; // Added for actual delivery date
+  final String? orderTakenBy; // Added for salesman who took the order
+  final String? orderDeliveredBy; // Added for salesman who delivered the order
 
   OrderDto({
     required this.id,
@@ -21,6 +23,9 @@ class OrderDto {
     required this.status,
     required this.orderDate,
     this.expectedDeliveryDate,
+    this.orderDeliveryDate,
+    this.orderTakenBy,
+    this.orderDeliveredBy,
   });
 
   factory OrderDto.fromFirestore(Map<String, dynamic> data) {
@@ -35,6 +40,11 @@ class OrderDto {
       expectedDeliveryDate: data['expectedDeliveryDate'] != null
           ? (data['expectedDeliveryDate'] as Timestamp).toDate()
           : null,
+      orderDeliveryDate: data['orderDeliveryDate'] != null
+          ? (data['orderDeliveryDate'] as Timestamp).toDate()
+          : null,
+      orderTakenBy: data['orderTakenBy'],
+      orderDeliveredBy: data['orderDeliveredBy'],
     );
   }
 
@@ -50,6 +60,11 @@ class OrderDto {
       'expectedDeliveryDate': expectedDeliveryDate != null
           ? Timestamp.fromDate(expectedDeliveryDate!)
           : null,
+      'orderDeliveryDate': orderDeliveryDate != null
+          ? Timestamp.fromDate(orderDeliveryDate!)
+          : null,
+      'orderTakenBy': orderTakenBy,
+      'orderDeliveredBy': orderDeliveredBy,
     };
   }
 
@@ -63,6 +78,9 @@ class OrderDto {
       status: order.status,
       orderDate: order.orderDate,
       expectedDeliveryDate: order.expectedDeliveryDate,
+      orderDeliveryDate: order.orderDeliveryDate,
+      orderTakenBy: order.orderTakenBy,
+      orderDeliveredBy: order.orderDeliveredBy,
     );
   }
 }

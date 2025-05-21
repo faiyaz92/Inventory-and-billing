@@ -2,13 +2,16 @@ import 'package:requirment_gathering_app/user_module/cart/data/order_dto.dart';
 
 class Order {
   final String id;
-  final String userId;
+  final String userId;  //customer id
   final String userName;
   final List<CartItem> items;
   final double totalAmount;
   final String status;
   final DateTime orderDate;
   final DateTime? expectedDeliveryDate;
+  final DateTime? orderDeliveryDate; // Added for actual delivery date
+  final String? orderTakenBy; // Added for salesman who took the order
+  final String? orderDeliveredBy; // Added for salesman who delivered the order
 
   Order({
     required this.id,
@@ -19,6 +22,9 @@ class Order {
     required this.status,
     required this.orderDate,
     this.expectedDeliveryDate,
+    this.orderDeliveryDate,
+    this.orderTakenBy,
+    this.orderDeliveredBy,
   });
 
   factory Order.fromDto(OrderDto dto) {
@@ -31,6 +37,9 @@ class Order {
       status: dto.status,
       orderDate: dto.orderDate,
       expectedDeliveryDate: dto.expectedDeliveryDate,
+      orderDeliveryDate: dto.orderDeliveryDate,
+      orderTakenBy: dto.orderTakenBy,
+      orderDeliveredBy: dto.orderDeliveredBy,
     );
   }
 }
@@ -63,5 +72,3 @@ class CartItem {
     );
   }
 }
-
-

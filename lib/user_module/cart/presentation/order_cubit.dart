@@ -73,6 +73,17 @@ class OrderCubit extends Cubit<OrderState> {
       emit(OrderError(e.toString()));
     }
   }
+  Future<void> placeOrderBySalesMan(Order order) async {
+    emit(OrderLoading());
+    try {
+      final userInfo = await accountRepository.getUserInfo();
+      if (userInfo == null) throw Exception('User not logged in');
+      await orderService.placeOrder(order);
+      emit(OrderPlaced());
+    } catch (e) {
+      emit(OrderError(e.toString()));
+    }
+  }
 
   Future<void> fetchOrderById(String orderId) async {
     emit(OrderLoading());

@@ -328,4 +328,10 @@ class AppCoordinator implements Coordinator {
     // TODO: implement navigateToCartDashboard
     return _router.push(const CartDashboardRoute());
   }
+
+  @override
+  Future navigateToSalesManOrderPage() {
+    // TODO: implement navigateToSalesManOrderPage
+    return _router.push(const SalesmanOrderRoute());
+  }
 }
