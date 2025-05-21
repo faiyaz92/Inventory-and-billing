@@ -39,7 +39,16 @@ import 'package:requirment_gathering_app/super_admin_module/data/tenant_company.
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/presentation/add_tenant_company/add_tenant_company_page.dart';
 import 'package:requirment_gathering_app/super_admin_module/presentation/dashboard/super_admin_page.dart';
-import 'package:requirment_gathering_app/user_module/cart/cart_home_page.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_details_page.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/admin_panel_page.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/cart_dashboard_page.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/cart_home_page.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/cart_page.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/check_out_page.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/order_list_page.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/place_order_page.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/user_order_details.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/wish_list_page.dart';
 import 'package:requirment_gathering_app/user_module/data/partner.dart';
 import 'package:requirment_gathering_app/user_module/presentation/add_company/add_company_page.dart';
 import 'package:requirment_gathering_app/user_module/presentation/company_list/company_details_page.dart';
@@ -95,7 +104,7 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: AttendanceRegisterRoute.page),
         AutoRoute(page: EmployeeDetailsRoute.page),
         AutoRoute(page: AddStockRoute.page),
-        AutoRoute(page: BillingRoute.page),
+        // AutoRoute(page: BillingRoute.page),
         AutoRoute(page: SalesReportRoute.page),
         AutoRoute(page: TransactionsRoute.page),
         AutoRoute(page: InventoryDashboardRoute.page),
@@ -115,15 +124,16 @@ class AppRouter extends RootStackRouter {
 
         // Shopping Cart Routes
         // AutoRoute(page: ShoppingCartEntryRoute.page, path: '/shopping-cart-entry'),
-        // AutoRoute(page: CartHomeRoute.page, path: '/cart-home'),
-        // AutoRoute(page: CartRoute.page, path: '/cart'),
-        // AutoRoute(page: WishlistRoute.page, path: '/wishlist'),
-        // AutoRoute(page: OrderListRoute.page, path: '/order-list'),
+        AutoRoute(page: CartHomeRoute.page, path: '/cart-home'),
+        AutoRoute(page: CartRoute.page, path: '/cart'),
+        AutoRoute(page: WishlistRoute.page, path: '/wishlist'),
+        AutoRoute(page: OrderListRoute.page, path: '/order-list'),
         // AutoRoute(page: OrderDetailsRoute.page, path: '/order-details'),
-        // AutoRoute(page: CheckoutRoute.page, path: '/checkout'),
-        // AutoRoute(page: PreviewOrderRoute.page, path: '/preview-order'),
-        // AutoRoute(page: PlaceOrderRoute.page, path: '/place-order'),
-        // AutoRoute(page: AdminPanelRoute.page, path: '/admin-panel'),
-        // AutoRoute(page: AdminOrderDetailsRoute.page, path: '/admin-order-details'),
+        AutoRoute(page: CheckoutRoute.page, path: '/checkout'),
+        AutoRoute(page: PreviewOrderRoute.page, path: '/preview-order'),
+        AutoRoute(page: AdminPanelRoute.page, path: '/admin-panel'),
+        AutoRoute(page: AdminOrderDetailsRoute.page, path: '/admin-order-details'),
+        AutoRoute(page: CartDashboardRoute.page, ),
+        AutoRoute(page: UserOrderDetailsRoute.page, ),
       ];
 }

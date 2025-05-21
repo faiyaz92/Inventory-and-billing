@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:requirment_gathering_app/company_admin_module/data/inventory/transaction_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/stock_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/transaction_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
@@ -190,6 +189,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                         ),
                       )
                           : ListView.separated(
+                        padding: EdgeInsets.symmetric(horizontal: 12),
                         itemCount: transactions.length,
                         separatorBuilder: (context, index) => const SizedBox(height: 12),
                         itemBuilder: (context, index) {
@@ -222,254 +222,251 @@ class _TransactionsPageState extends State<TransactionsPage> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(6.0),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(6),
-                                child: Table(
-                                  columnWidths: const {
-                                    0: FixedColumnWidth(120),
-                                    1: FlexColumnWidth(),
-                                  },
-                                  defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                                  border: TableBorder(
-                                    verticalInside: BorderSide(
-                                      color: Colors.grey[400]!,
-                                      width: 1.0,
-                                    ),
-                                    horizontalInside: BorderSide(
-                                      color: Colors.grey[300]!,
-                                      width: 0.5,
-                                    ),
-                                    top: BorderSide.none,
-                                    bottom: BorderSide.none,
-                                    left: BorderSide.none,
-                                    right: BorderSide.none,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(6),
+                              child: Table(
+                                columnWidths: const {
+                                  0: FixedColumnWidth(120),
+                                  1: FlexColumnWidth(),
+                                },
+                                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                                border: TableBorder(
+                                  verticalInside: BorderSide(
+                                    color: Colors.grey[400]!,
+                                    width: 1.0,
                                   ),
-                                  children: [
-                                    TableRow(
-                                      decoration: BoxDecoration(
-                                        color: Colors.blue[50], // Highlight Type
-                                      ),
-                                      children: [
-                                        const Padding(
-                                          padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
-                                          child: Text(
-                                            'Type',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black87,
-                                            ),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
-                                          child: Text(
-                                            transaction.type == 'billing'
-                                                ? 'OUT'
-                                                : transaction.type.toUpperCase(),
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black87,
-                                            ),
-                                            softWrap: true,
-                                            overflow: TextOverflow.clip,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    TableRow(
-                                      decoration: BoxDecoration(
-                                        color: Colors.green[50], // Highlight Product ID
-                                      ),
-                                      children: [
-                                        const Padding(
-                                          padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
-                                          child: Text(
-                                            'Product ID',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black87,
-                                            ),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
-                                          child: Text(
-                                            transaction.productId,
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black87,
-                                            ),
-                                            softWrap: true,
-                                            overflow: TextOverflow.clip,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    TableRow(
-                                      decoration: BoxDecoration(
-                                        color: Colors.orange[50], // Highlight Quantity
-                                      ),
-                                      children: [
-                                        const Padding(
-                                          padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
-                                          child: Text(
-                                            'Quantity',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black87,
-                                            ),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
-                                          child: Text(
-                                            transaction.quantity.toString(),
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black87,
-                                            ),
-                                            softWrap: true,
-                                            overflow: TextOverflow.clip,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    TableRow(
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white, // Normal
-                                      ),
-                                      children: [
-                                        const Padding(
-                                          padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
-                                          child: Text(
-                                            'From Store',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black87,
-                                            ),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
-                                          child: Text(
-                                            transaction.type == 'add' || transaction.type == 'out'
-                                                ? '-'
-                                                : fromStore?.name ?? 'N/A',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.grey[600],
-                                            ),
-                                            softWrap: true,
-                                            overflow: TextOverflow.clip,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    TableRow(
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white, // Normal
-                                      ),
-                                      children: [
-                                        const Padding(
-                                          padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
-                                          child: Text(
-                                            'To Store/Customer',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black87,
-                                            ),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
-                                          child: Text(
-                                            transaction.type == 'add'
-                                                ? '-'
-                                                : transaction.type == 'transfer' || transaction.type == 'out'
-                                                ? toStore?.name ?? 'N/A'
-                                                : transaction.customerId ?? 'N/A',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.grey[600],
-                                            ),
-                                            softWrap: true,
-                                            overflow: TextOverflow.clip,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    TableRow(
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white, // Normal
-                                      ),
-                                      children: [
-                                        const Padding(
-                                          padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
-                                          child: Text(
-                                            'User',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black87,
-                                            ),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
-                                          child: Text(
-                                            '${transaction.userName} (ID: ${transaction.userId})',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.grey[600],
-                                            ),
-                                            softWrap: true,
-                                            overflow: TextOverflow.clip,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    TableRow(
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white, // Normal
-                                      ),
-                                      children: [
-                                        const Padding(
-                                          padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
-                                          child: Text(
-                                            'Timestamp',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black87,
-                                            ),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
-                                          child: Text(
-                                            DateFormat('MMM dd, yyyy HH:mm').format(transaction.timestamp),
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.grey[600],
-                                            ),
-                                            softWrap: true,
-                                            overflow: TextOverflow.clip,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                  horizontalInside: BorderSide(
+                                    color: Colors.grey[300]!,
+                                    width: 0.5,
+                                  ),
+                                  top: BorderSide.none,
+                                  bottom: BorderSide.none,
+                                  left: BorderSide.none,
+                                  right: BorderSide.none,
                                 ),
+                                children: [
+                                  TableRow(
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue[50], // Highlight Type
+                                    ),
+                                    children: [
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+                                        child: Text(
+                                          'Type',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+                                        child: Text(
+                                          transaction.type == 'billing'
+                                              ? 'OUT'
+                                              : transaction.type.toUpperCase(),
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                          softWrap: true,
+                                          overflow: TextOverflow.clip,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  TableRow(
+                                    decoration: BoxDecoration(
+                                      color: Colors.green[50], // Highlight Product ID
+                                    ),
+                                    children: [
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+                                        child: Text(
+                                          'Product ID',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+                                        child: Text(
+                                          transaction.productId,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                          softWrap: true,
+                                          overflow: TextOverflow.clip,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  TableRow(
+                                    decoration: BoxDecoration(
+                                      color: Colors.orange[50], // Highlight Quantity
+                                    ),
+                                    children: [
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+                                        child: Text(
+                                          'Quantity',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+                                        child: Text(
+                                          transaction.quantity.toString(),
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                          softWrap: true,
+                                          overflow: TextOverflow.clip,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  TableRow(
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white, // Normal
+                                    ),
+                                    children: [
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+                                        child: Text(
+                                          'From Store',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+                                        child: Text(
+                                          transaction.type == 'add' || transaction.type == 'out'
+                                              ? '-'
+                                              : fromStore?.name ?? 'N/A',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey[600],
+                                          ),
+                                          softWrap: true,
+                                          overflow: TextOverflow.clip,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  TableRow(
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white, // Normal
+                                    ),
+                                    children: [
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+                                        child: Text(
+                                          'To Store/Customer',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+                                        child: Text(
+                                          transaction.type == 'add'
+                                              ? '-'
+                                              : transaction.type == 'transfer' || transaction.type == 'out'
+                                              ? toStore?.name ?? 'N/A'
+                                              : transaction.customerId ?? 'N/A',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey[600],
+                                          ),
+                                          softWrap: true,
+                                          overflow: TextOverflow.clip,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  TableRow(
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white, // Normal
+                                    ),
+                                    children: [
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+                                        child: Text(
+                                          'User',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+                                        child: Text(
+                                          '${transaction.userName} (ID: ${transaction.userId})',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey[600],
+                                          ),
+                                          softWrap: true,
+                                          overflow: TextOverflow.clip,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  TableRow(
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white, // Normal
+                                    ),
+                                    children: [
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+                                        child: Text(
+                                          'Timestamp',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+                                        child: Text(
+                                          DateFormat('MMM dd, yyyy HH:mm').format(transaction.timestamp),
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey[600],
+                                          ),
+                                          softWrap: true,
+                                          overflow: TextOverflow.clip,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
                           );

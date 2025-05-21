@@ -172,4 +172,36 @@ class AppLabels {
   static const String previewOrder = 'Preview Order';
   static const String placeOrder = 'Place Order';
   static const String yourCartIsEmpty = 'Your cart is empty';
+
+  static const String orderDetailsTitle = 'Order Details';
+  static const String checkoutTitle = 'Checkout';
+  static const String previewOrderTitle = 'Preview Order';
+  static const String placeOrderTitle = 'Place Order';
+  static const String adminOrderDetailsTitle = 'Admin Order Details';
+
+  // General Labels
+
+  static const String yourWishlistIsEmpty = 'Your wishlist is empty';
+  static const String noOrdersFound = 'No orders found';
+
+  // Shopping Cart Specific Labels
+  static const String confirmOrder = 'Confirm Order';
+  static const String orderSummary = 'Order Summary';
+  static const String orderStatistics = 'Order Statistics';
+  static const String allOrders = 'All Orders';
+  static const String pendingOrders = 'Pending Orders';
+  static const String completedOrders = 'Completed Orders';
+  static const String itemsLabel = 'Items';
+  static const String updateStatusLabel = 'Update Status';
+  static const String setDeliveryDateLabel = 'Set Delivery Date';
+  static const String orderPlacedSuccessfully = 'Order placed successfully!';
+  static const String status = "Status";
+  static const String total = "Total";
+  static const String placedOn = "Placed On";
+  static const String items = "Items";
+  static const String updateStatus = "Update Status";
+  static const String setDeliveryDate = "Set Delivery Date";
+  static const String red = "Red";
+  static const String white = "White";
+  static const String black87 = "Black87";
 }

@@ -20,7 +20,7 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
   static const String subcategoriesCollection = 'subcategories';
   static const String accountLedgers = 'accountLedgers';
   static const String transactions = 'transactions';
-
+  static const String cartsCollection = 'carts'; // New Cart Collection Constant
   FirestorePathProviderImpl(this._firestore);
 
   @override
@@ -168,5 +168,37 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
         .doc(companyId) // Specific company document
         .collection('orders');
     // return '/tenantCompanies/$companyId/orders';
+  }
+
+  @override
+  CollectionReference getCartsCollectionRef(String companyId) {
+    return _firestore
+        .collection(rootPath)
+        .doc(companyDirectory)
+        .collection(tenantCompanies)
+        .doc(companyId)
+        .collection(cartsCollection);
+  }
+
+  // Get a specific user's cart
+  @override
+  DocumentReference getUserCartRef(String companyId, String userId) {
+    return getCartsCollectionRef(companyId).doc(userId);
+  }
+  static const String wishlistCollection = 'wishlists';
+
+  @override
+  CollectionReference getWishlistCollectionRef(String companyId) {
+    return _firestore
+        .collection(rootPath)
+        .doc(companyDirectory)
+        .collection(tenantCompanies)
+        .doc(companyId)
+        .collection(wishlistCollection);
+  }
+
+  @override
+  DocumentReference getUserWishlistRef(String companyId, String userId) {
+    return getWishlistCollectionRef(companyId).doc(userId);
   }
 }

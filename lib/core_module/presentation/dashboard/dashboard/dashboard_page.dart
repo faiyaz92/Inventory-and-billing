@@ -60,9 +60,9 @@ class _DashboardPageState extends State<DashboardPage> {
             builder: (context, state) {
               final index = state is DashboardTabState ? state.index : 0;
               return BottomNavigationBar(
-                backgroundColor: Colors.white,
-                selectedItemColor: Colors.blue,
-                unselectedItemColor: Colors.grey,
+                // backgroundColor: Colors.white,
+                // selectedItemColor: Colors.blue,
+                // unselectedItemColor: Colors.grey,
                 currentIndex: index,
                 onTap: (index) => _dashboardCubit.updateIndex(index),
                 items: const [

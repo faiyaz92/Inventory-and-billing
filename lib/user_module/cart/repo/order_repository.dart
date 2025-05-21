@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:requirment_gathering_app/core_module/services/firestore_provider.dart';
-import 'package:requirment_gathering_app/user_module/cart/order_dto.dart';
+import 'package:requirment_gathering_app/user_module/cart/data/order_dto.dart';
 
 abstract class IOrderRepository {
   Future<void> addOrder(String companyId, OrderDto order);
@@ -8,6 +8,7 @@ abstract class IOrderRepository {
   Future<List<OrderDto>> getAllOrders(String companyId);
   Future<void> updateOrderStatus(String companyId, String orderId, String status);
   Future<void> setExpectedDeliveryDate(String companyId, String orderId, DateTime date);
+  Future<OrderDto> getOrderById(String companyId, String orderId);
 }
 
 class OrderRepositoryImpl implements IOrderRepository {
@@ -62,12 +63,26 @@ class OrderRepositoryImpl implements IOrderRepository {
   @override
   Future<void> setExpectedDeliveryDate(String companyId, String orderId, DateTime date) async {
     try {
-      final ref =firestorePathProvider.getOrdersCollectionRef(companyId);
+      final ref = firestorePathProvider.getOrdersCollectionRef(companyId);
       await ref.doc(orderId).update({
         'expectedDeliveryDate': Timestamp.fromDate(date),
       });
     } catch (e) {
       throw Exception('Failed to set delivery date: $e');
+    }
+  }
+
+  @override
+  Future<OrderDto> getOrderById(String companyId, String orderId) async {
+    try {
+      final ref = firestorePathProvider.getOrdersCollectionRef(companyId).doc(orderId);
+      final doc = await ref.get();
+      if (!doc.exists) {
+        throw Exception('Order not found');
+      }
+      return OrderDto.fromFirestore(doc.data() as Map<String, dynamic>);
+    } catch (e) {
+      throw Exception('Failed to fetch order: $e');
     }
   }
 }

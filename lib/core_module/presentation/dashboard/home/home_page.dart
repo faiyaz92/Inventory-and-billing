@@ -178,6 +178,14 @@ class HomePage extends StatelessWidget {
                                   sl<Coordinator>()
                                       .navigateToProductManagementPage();
                                 },
+                              ),_buildGridItem(
+                                icon: Icons.manage_accounts,
+                                label: 'Cart Management',
+                                color: Colors.pink,
+                                onTap: () {
+                                  sl<Coordinator>()
+                                      .navigateToCartDashboard();
+                                },
                               ),
                             ],
                           ),

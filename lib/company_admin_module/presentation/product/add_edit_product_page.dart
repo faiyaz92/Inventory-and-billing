@@ -5,6 +5,7 @@ import 'package:requirment_gathering_app/company_admin_module/data/product/produ
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/product_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/product_state.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
+import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_drop_down_widget.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 
@@ -72,121 +73,227 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
     return BlocProvider(
       create: (context) => _cubit,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(widget.product == null ? 'Add Product' : 'Edit Product'),
+        appBar: CustomAppBar(
+          title: widget.product == null ? 'Add Product' : 'Edit Product',
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Product Name'),
-                  validator: (value) =>
-                      value!.isEmpty ? 'Enter product name' : null,
-                ),
-                TextFormField(
-                  controller: _priceController,
-                  decoration: const InputDecoration(labelText: 'Price'),
-                  keyboardType: TextInputType.number,
-                  validator: (value) => value!.isEmpty ? 'Enter price' : null,
-                ),
-                TextFormField(
-                  controller: _stockController,
-                  decoration: const InputDecoration(labelText: 'Stock'),
-                  keyboardType: TextInputType.number,
-                  validator: (value) => value!.isEmpty ? 'Enter stock' : null,
-                ),
-                BlocBuilder<AdminProductCubit, ProductState>(
-                  buildWhen: (previous, current) => current is CategoriesLoaded,
-                  builder: (context, state) {
-                    if (state is CategoriesLoaded) {
-                      // Extract category names and ensure no null or empty values
-                      final List<String> categoryNames = state.categories
-                          .where((category) =>
-                              category.name != null &&
-                              category
-                                  .name!.isNotEmpty) // Filter out invalid names
-                          .map((category) => category.name!)
-                          .toList();
-
-                      return CustomDropdown<String>(
-                        selectedValue: state
-                                    .selectedCategory?.name?.isNotEmpty ==
-                                true
-                            ? state.selectedCategory!
-                                .name // Use selected category name if available
-                            : null,
-                        // Default to no selection if not found (e.g., during product creation)
-                        items: categoryNames,
-                        labelText: 'Category',
-                        onChanged: (value) {
-                          if (value != null) {
-                            _cubit.selectCategory(
-                                value); // Update selected category
-                          }
-                        },
-                        validator: (value) => value == null || value.isEmpty
-                            ? 'Select a category'
-                            : null,
-                      );
-                    }
-                    return const SizedBox
-                        .shrink(); // Return an empty widget if the state isn't CategoriesLoaded
-                  },
-                ),
-                BlocBuilder<AdminProductCubit, ProductState>(
-                  buildWhen: (previous, current) =>
-                      current is SubcategoriesLoaded,
-                  builder: (context, state) {
-                    if (state is SubcategoriesLoaded) {
-                      // Safely filter and process subcategories
-                      final subcategoryItems = state.subcategories
-                          .where((subcategory) =>
-                              subcategory.name != null &&
-                              subcategory
-                                  .name!.isNotEmpty) // Filter valid names
-                          .map((subcategory) => subcategory.name!)
-                          .toSet() // Ensure uniqueness
-                          .toList();
-
-                      // Handle selected subcategory name safely
-                      final selectedSubcategoryName = state
-                                  .selectedSubcategory?.name?.isNotEmpty ==
-                              true
-                          ? state.selectedSubcategory!
-                              .name // Use selected subcategory name if valid
-                          : null; // Default to no selection for add flow
-
-                      return CustomDropdown<String>(
-                        selectedValue: selectedSubcategoryName,
-                        items:
-                            subcategoryItems.isNotEmpty ? subcategoryItems : [],
-                        // Ensure dropdown has valid items
-                        labelText: 'Subcategory',
-                        onChanged: (value) {
-                          if (value != null) {
-                            _cubit.selectSubcategory(
-                                value); // Update subcategory in cubit
-                          }
-                        },
-                        validator: (value) => value == null || value.isEmpty
-                            ? 'Select a subcategory'
-                            : null,
-                      );
-                    }
-                    // Graceful fallback for invalid state
-                    return const SizedBox.shrink();
-                  },
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _saveProduct,
-                  child: const Text('Save Product'),
-                ),
+        body: Container(
+          height: MediaQuery.of(context).size.height,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Theme.of(context).primaryColor.withOpacity(0.1),
+                Theme.of(context).primaryColor.withOpacity(0.3),
               ],
+            ),
+          ),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Product Name
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: TextFormField(
+                              controller: _nameController,
+                              decoration: InputDecoration(
+                                labelText: 'Product Name',
+                                labelStyle: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide.none,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 12,
+                                ),
+                                errorStyle: const TextStyle(color: Colors.red),
+                              ),
+                              validator: (value) =>
+                              value!.isEmpty ? 'Enter product name' : null,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // Price
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: TextFormField(
+                              controller: _priceController,
+                              decoration: InputDecoration(
+                                labelText: 'Price',
+                                labelStyle: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide.none,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 12,
+                                ),
+                                errorStyle: const TextStyle(color: Colors.red),
+                              ),
+                              keyboardType: TextInputType.number,
+                              validator: (value) => value!.isEmpty ? 'Enter price' : null,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // Stock
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: TextFormField(
+                              controller: _stockController,
+                              decoration: InputDecoration(
+                                labelText: 'Stock',
+                                labelStyle: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide.none,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 12,
+                                ),
+                                errorStyle: const TextStyle(color: Colors.red),
+                              ),
+                              keyboardType: TextInputType.number,
+                              validator: (value) => value!.isEmpty ? 'Enter stock' : null,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // Category Dropdown
+                          BlocBuilder<AdminProductCubit, ProductState>(
+                            buildWhen: (previous, current) => current is CategoriesLoaded,
+                            builder: (context, state) {
+                              if (state is CategoriesLoaded) {
+                                final List<String> categoryNames = state.categories
+                                    .where((category) =>
+                                category.name != null &&
+                                    category.name!.isNotEmpty)
+                                    .map((category) => category.name!)
+                                    .toList();
+
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[50],
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: CustomDropdown<String>(
+                                    selectedValue: state.selectedCategory?.name?.isNotEmpty == true
+                                        ? state.selectedCategory!.name
+                                        : null,
+                                    items: categoryNames,
+                                    labelText: 'Category',
+
+                                    onChanged: (value) {
+                                      if (value != null) {
+                                        _cubit.selectCategory(value);
+                                      }
+                                    },
+                                    validator: (value) => value == null || value.isEmpty
+                                        ? 'Select a category'
+                                        : null,
+                                  ),
+                                );
+                              }
+                              return const Center(child: CircularProgressIndicator());
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          // Subcategory Dropdown
+                          BlocBuilder<AdminProductCubit, ProductState>(
+                            buildWhen: (previous, current) =>
+                            current is SubcategoriesLoaded,
+                            builder: (context, state) {
+                              if (state is SubcategoriesLoaded) {
+                                final subcategoryItems = state.subcategories
+                                    .where((subcategory) =>
+                                subcategory.name != null &&
+                                    subcategory.name!.isNotEmpty)
+                                    .map((subcategory) => subcategory.name!)
+                                    .toSet()
+                                    .toList();
+
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[50],
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: CustomDropdown<String>(
+                                    selectedValue: state.selectedSubcategory?.name?.isNotEmpty == true
+                                        ? state.selectedSubcategory!.name
+                                        : null,
+                                    items: subcategoryItems.isNotEmpty ? subcategoryItems : [],
+                                    labelText: 'Subcategory',
+
+                                    onChanged: (value) {
+                                      if (value != null) {
+                                        _cubit.selectSubcategory(value);
+                                      }
+                                    },
+                                    validator: (value) => value == null || value.isEmpty
+                                        ? 'Select a subcategory'
+                                        : null,
+                                  ),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                          // Save Button
+                          ElevatedButton(
+                            onPressed: _saveProduct,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).primaryColor,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              textStyle: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            child: const Text('Save Product'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ),

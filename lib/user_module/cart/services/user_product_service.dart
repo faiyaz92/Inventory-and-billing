@@ -1,13 +1,15 @@
 import 'package:requirment_gathering_app/company_admin_module/data/inventory/stock_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/stock_service.dart';
-import 'package:requirment_gathering_app/user_module/cart/user_product_dto.dart';
-import 'package:requirment_gathering_app/user_module/cart/user_product_model.dart';
+import 'package:requirment_gathering_app/user_module/cart/services/i_user_product_service.dart';
+import 'package:requirment_gathering_app/user_module/cart/data/user_product_dto.dart';
+import 'package:requirment_gathering_app/user_module/cart/data/user_product_model.dart';
 
-class UserProductService {
+class UserProductService implements IUserProductService {
   final StockService stockService;
 
   UserProductService({required this.stockService});
 
+  @override
   Future<List<UserProduct>> getProducts() async {
     try {
       final stores = await stockService.getStores();

@@ -46,4 +46,8 @@ abstract class IFirestorePathProvider {
   CollectionReference getTransactionsCollectionRef(String companyId, String storeId);
 
   CollectionReference getOrdersCollectionRef(String companyId);
+  CollectionReference getCartsCollectionRef(String companyId); // New
+  DocumentReference getUserCartRef(String companyId, String userId); // New
+  CollectionReference getWishlistCollectionRef(String companyId);
+  DocumentReference getUserWishlistRef(String companyId, String userId);
 }

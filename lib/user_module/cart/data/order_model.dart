@@ -1,4 +1,4 @@
-import 'package:requirment_gathering_app/user_module/cart/order_dto.dart';
+import 'package:requirment_gathering_app/user_module/cart/data/order_dto.dart';
 
 class Order {
   final String id;
@@ -40,12 +40,16 @@ class CartItem {
   final String productName;
   final double price;
   final int quantity;
+  final double taxRate;
+  final double taxAmount;
 
   CartItem({
     required this.productId,
     required this.productName,
     required this.price,
     required this.quantity,
+    required this.taxRate,
+    required this.taxAmount,
   });
 
   factory CartItem.fromDto(CartItemDto dto) {
@@ -54,6 +58,10 @@ class CartItem {
       productName: dto.productName,
       price: dto.price,
       quantity: dto.quantity,
+      taxRate: dto.taxRate,
+      taxAmount: dto.taxAmount,
     );
   }
 }
+
+

@@ -208,9 +208,10 @@ class AppCoordinator implements Coordinator {
   }
 
   @override
-  Future navigateToBillingPage() {
+  Future<void> navigateToBillingPage() {
     // TODO: implement navigateToBillingPage
-    return _router.push(const BillingRoute());
+    // return _router.push(const BillingRoute());
+    return _router.push(const AddStockRoute()); //dummy
   }
 
   @override
@@ -261,63 +262,70 @@ class AppCoordinator implements Coordinator {
     return _router.push(const OverallStockRoute());
   }
 
-/* @override
-  void navigateToWishlistPage() {
-    _router.push(const WishlistRoute());
+  @override
+  Future<dynamic> navigateToWishlistPage() {
+    return _router.push(const WishlistRoute());
   }
 
   @override
-  void navigateToCartPage() {
-    _router.push(const CartRoute());
+  Future<dynamic> navigateToCartPage() {
+    return _router.push(const CartRoute());
   }
 
   @override
-  void navigateToOrderListPage() {
-    _router.push(const OrderListRoute());
+  Future<dynamic> navigateToOrderListPage() {
+    return _router.push(const OrderListRoute());
   }
 
   @override
-  void navigateToSettingsPage() {
-    _router.push(const SettingsRoute());
+  Future<dynamic> navigateToSettingsPage() {
+    // _router.push(const SettingsRoute());
+    return _router.push(const OrderListRoute());
   }
 
   @override
-  void navigateToShoppingCartEntryPage() {
-    _router.push(const ShoppingCartEntryRoute());
+  Future<dynamic> navigateToShoppingCartEntryPage() {
+    // _router.push(const ShoppingCartEntryRoute());
+    return _router.push(const OrderListRoute());
   }
 
   @override
-  void navigateToCartHomePage() {
-    _router.push(const CartHomeRoute());
+  Future<dynamic> navigateToCartHomePage() {
+    return _router.push(const CartHomeRoute());
   }
 
   @override
-  void navigateToCheckoutPage() {
-    _router.push(const CheckoutRoute());
+  Future<dynamic> navigateToCheckoutPage() {
+    return _router.push(const CheckoutRoute());
   }
 
   @override
-  void navigateToPreviewOrderPage() {
-    _router.push(const PreviewOrderRoute());
+  Future<dynamic> navigateToPreviewOrderPage() {
+    return _router.push(const PreviewOrderRoute());
+  }
+
+
+
+  @override
+  Future<dynamic> navigateToAdminPanelPage() {
+    return _router.push(const AdminPanelRoute());
   }
 
   @override
-  void navigateToPlaceOrderPage() {
-    _router.push(const PlaceOrderRoute());
+  Future<dynamic> navigateToAdminOrderDetailsPage(String? orderId) {
+    return _router.push(AdminOrderDetailsRoute(orderId: orderId ?? ''));
   }
 
   @override
-  void navigateToAdminPanelPage() {
-    _router.push(const AdminPanelRoute());
+  Future<dynamic> navigateToUserOrderDetailsPage(String? orderId) {
+    return _router.push(UserOrderDetailsRoute(orderId: orderId ?? ''));
   }
 
-  @override
-  void navigateToAdminOrderDetailsPage() {
-    _router.push(const AdminOrderDetailsRoute());
-  }
+
 
   @override
-  void navigateToOrderDetailsPage() {
-    _router.push(const OrderDetailsRoute());
-  }*/
+  Future navigateToCartDashboard() {
+    // TODO: implement navigateToCartDashboard
+    return _router.push(const CartDashboardRoute());
+  }
 }

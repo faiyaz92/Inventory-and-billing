@@ -394,6 +394,59 @@ class AddUserRouteArgs {
 }
 
 /// generated route for
+/// [AdminOrderDetailsPage]
+class AdminOrderDetailsRoute extends PageRouteInfo<AdminOrderDetailsRouteArgs> {
+  AdminOrderDetailsRoute({
+    Key? key,
+    required String orderId,
+    List<PageRouteInfo>? children,
+  }) : super(
+         AdminOrderDetailsRoute.name,
+         args: AdminOrderDetailsRouteArgs(key: key, orderId: orderId),
+         initialChildren: children,
+       );
+
+  static const String name = 'AdminOrderDetailsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<AdminOrderDetailsRouteArgs>();
+      return AdminOrderDetailsPage(key: args.key, orderId: args.orderId);
+    },
+  );
+}
+
+class AdminOrderDetailsRouteArgs {
+  const AdminOrderDetailsRouteArgs({this.key, required this.orderId});
+
+  final Key? key;
+
+  final String orderId;
+
+  @override
+  String toString() {
+    return 'AdminOrderDetailsRouteArgs{key: $key, orderId: $orderId}';
+  }
+}
+
+/// generated route for
+/// [AdminPanelPage]
+class AdminPanelRoute extends PageRouteInfo<void> {
+  const AdminPanelRoute({List<PageRouteInfo>? children})
+    : super(AdminPanelRoute.name, initialChildren: children);
+
+  static const String name = 'AdminPanelRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AdminPanelPage();
+    },
+  );
+}
+
+/// generated route for
 /// [AiCompanyListPage]
 class AiCompanyListRoute extends PageRouteInfo<void> {
   const AiCompanyListRoute({List<PageRouteInfo>? children})
@@ -426,17 +479,17 @@ class AttendanceRegisterRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [BillingPage]
-class BillingRoute extends PageRouteInfo<void> {
-  const BillingRoute({List<PageRouteInfo>? children})
-    : super(BillingRoute.name, initialChildren: children);
+/// [CartDashboardPage]
+class CartDashboardRoute extends PageRouteInfo<void> {
+  const CartDashboardRoute({List<PageRouteInfo>? children})
+    : super(CartDashboardRoute.name, initialChildren: children);
 
-  static const String name = 'BillingRoute';
+  static const String name = 'CartDashboardRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const BillingPage();
+      return const CartDashboardPage();
     },
   );
 }
@@ -458,6 +511,22 @@ class CartHomeRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [CartPage]
+class CartRoute extends PageRouteInfo<void> {
+  const CartRoute({List<PageRouteInfo>? children})
+    : super(CartRoute.name, initialChildren: children);
+
+  static const String name = 'CartRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const CartPage();
+    },
+  );
+}
+
+/// generated route for
 /// [CategoriesWithSubcategoriesPage]
 class CategoriesWithSubcategoriesRoute extends PageRouteInfo<void> {
   const CategoriesWithSubcategoriesRoute({List<PageRouteInfo>? children})
@@ -469,6 +538,22 @@ class CategoriesWithSubcategoriesRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const CategoriesWithSubcategoriesPage();
+    },
+  );
+}
+
+/// generated route for
+/// [CheckoutPage]
+class CheckoutRoute extends PageRouteInfo<void> {
+  const CheckoutRoute({List<PageRouteInfo>? children})
+    : super(CheckoutRoute.name, initialChildren: children);
+
+  static const String name = 'CheckoutRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const CheckoutPage();
     },
   );
 }
@@ -780,6 +865,22 @@ class LoginRouteArgs {
 }
 
 /// generated route for
+/// [OrderListPage]
+class OrderListRoute extends PageRouteInfo<void> {
+  const OrderListRoute({List<PageRouteInfo>? children})
+    : super(OrderListRoute.name, initialChildren: children);
+
+  static const String name = 'OrderListRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const OrderListPage();
+    },
+  );
+}
+
+/// generated route for
 /// [OverallStockPage]
 class OverallStockRoute extends PageRouteInfo<void> {
   const OverallStockRoute({List<PageRouteInfo>? children})
@@ -791,6 +892,22 @@ class OverallStockRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const OverallStockPage();
+    },
+  );
+}
+
+/// generated route for
+/// [PreviewOrderPage]
+class PreviewOrderRoute extends PageRouteInfo<void> {
+  const PreviewOrderRoute({List<PageRouteInfo>? children})
+    : super(PreviewOrderRoute.name, initialChildren: children);
+
+  static const String name = 'PreviewOrderRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const PreviewOrderPage();
     },
   );
 }
@@ -1072,6 +1189,59 @@ class TransactionsRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const TransactionsPage();
+    },
+  );
+}
+
+/// generated route for
+/// [UserOrderDetailsPage]
+class UserOrderDetailsRoute extends PageRouteInfo<UserOrderDetailsRouteArgs> {
+  UserOrderDetailsRoute({
+    Key? key,
+    required String orderId,
+    List<PageRouteInfo>? children,
+  }) : super(
+         UserOrderDetailsRoute.name,
+         args: UserOrderDetailsRouteArgs(key: key, orderId: orderId),
+         initialChildren: children,
+       );
+
+  static const String name = 'UserOrderDetailsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<UserOrderDetailsRouteArgs>();
+      return UserOrderDetailsPage(key: args.key, orderId: args.orderId);
+    },
+  );
+}
+
+class UserOrderDetailsRouteArgs {
+  const UserOrderDetailsRouteArgs({this.key, required this.orderId});
+
+  final Key? key;
+
+  final String orderId;
+
+  @override
+  String toString() {
+    return 'UserOrderDetailsRouteArgs{key: $key, orderId: $orderId}';
+  }
+}
+
+/// generated route for
+/// [WishlistPage]
+class WishlistRoute extends PageRouteInfo<void> {
+  const WishlistRoute({List<PageRouteInfo>? children})
+    : super(WishlistRoute.name, initialChildren: children);
+
+  static const String name = 'WishlistRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const WishlistPage();
     },
   );
 }

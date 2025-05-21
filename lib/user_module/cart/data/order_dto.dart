@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
-import 'package:requirment_gathering_app/user_module/cart/order_model.dart';
-import 'package:requirment_gathering_app/user_module/cart/order_model.dart';
+import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
+import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
 
 class OrderDto {
   final String id;
@@ -72,31 +72,17 @@ class CartItemDto {
   final String productName;
   final double price;
   final int quantity;
+  final double taxRate;
+  final double taxAmount;
 
   CartItemDto({
     required this.productId,
     required this.productName,
     required this.price,
     required this.quantity,
+    required this.taxRate,
+    required this.taxAmount,
   });
-
-  Map<String, dynamic> toMap() {
-    return {
-      'productId': productId,
-      'productName': productName,
-      'price': price,
-      'quantity': quantity,
-    };
-  }
-
-  factory CartItemDto.fromMap(Map<String, dynamic> map) {
-    return CartItemDto(
-      productId: map['productId'],
-      productName: map['productName'],
-      price: map['price'],
-      quantity: map['quantity'],
-    );
-  }
 
   factory CartItemDto.fromModel(CartItem item) {
     return CartItemDto(
@@ -104,6 +90,41 @@ class CartItemDto {
       productName: item.productName,
       price: item.price,
       quantity: item.quantity,
+      taxRate: item.taxRate,
+      taxAmount: item.taxAmount,
+    );
+  }
+
+  factory CartItemDto.fromMap(Map<String, dynamic> map) {
+    return CartItemDto(
+      productId: map['productId'] ?? '',
+      productName: map['productName'] ?? '',
+      price: (map['price'] as num?)?.toDouble() ?? 0.0,
+      quantity: map['quantity'] ?? 0,
+      taxRate: (map['taxRate'] as num?)?.toDouble() ?? 0.0,
+      taxAmount: (map['taxAmount'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'productId': productId,
+      'productName': productName,
+      'price': price,
+      'quantity': quantity,
+      'taxRate': taxRate,
+      'taxAmount': taxAmount,
+    };
+  }
+
+  CartItem toModel() {
+    return CartItem(
+      productId: productId,
+      productName: productName,
+      price: price,
+      quantity: quantity,
+      taxRate: taxRate,
+      taxAmount: taxAmount,
     );
   }
 }

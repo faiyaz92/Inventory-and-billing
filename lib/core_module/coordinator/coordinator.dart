@@ -90,17 +90,17 @@ abstract class Coordinator {
    Future<dynamic> navigateToStoreDetailsPage(String? storeId) ;
    Future<dynamic> navigateToOverAllStockPage() ;
 
-  // void navigateToWishlistPage();
-  // void navigateToCartPage();
-  // void navigateToOrderListPage();
-  // void navigateToSettingsPage();
-  // void navigateToShoppingCartEntryPage();
-  // void navigateToCartHomePage();
-  // void navigateToCheckoutPage();
-  // void navigateToPreviewOrderPage();
-  // void navigateToPlaceOrderPage();
-  // void navigateToAdminPanelPage();
-  // void navigateToAdminOrderDetailsPage();
-  // void navigateToOrderDetailsPage();
+  Future<dynamic> navigateToWishlistPage();
+  Future<dynamic> navigateToCartPage();
+  Future<dynamic> navigateToOrderListPage();
+  Future<dynamic> navigateToSettingsPage();
+  Future<dynamic> navigateToShoppingCartEntryPage();
+  Future<dynamic> navigateToCartHomePage();
+  Future<dynamic> navigateToCheckoutPage();
+  Future<dynamic> navigateToPreviewOrderPage();
+  Future<dynamic> navigateToAdminPanelPage();
+  Future<dynamic> navigateToAdminOrderDetailsPage(String? orderId);
+  Future<dynamic> navigateToUserOrderDetailsPage(String? orderId);
+  Future<dynamic> navigateToCartDashboard();
 
 }

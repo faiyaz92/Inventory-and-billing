@@ -87,4 +87,11 @@ class AppColors {
       ],
     );
   }
+
+  static const Color pending = Color(0xFFFFCA28); // For pending orders
+  static const Color processing = Color(0xFF42A5F5); // For processing orders
+  static const Color shipped = Color(0xFFAB47BC); // For shipped orders
+  static const Color completed = Color(0xFF66BB6A); // For completed orders
+
+
 }

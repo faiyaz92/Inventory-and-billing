@@ -56,14 +56,24 @@ import 'package:requirment_gathering_app/super_admin_module/repository/tenant_co
 import 'package:requirment_gathering_app/super_admin_module/repository/tenant_company_repository_impl.dart';
 import 'package:requirment_gathering_app/super_admin_module/services/tenant_company_service.dart';
 import 'package:requirment_gathering_app/super_admin_module/services/tenant_company_service_impl.dart';
-import 'package:requirment_gathering_app/user_module/cart/admin_order_cubit.dart';
-import 'package:requirment_gathering_app/user_module/cart/cart_cubit.dart';
-import 'package:requirment_gathering_app/user_module/cart/order_cubit.dart';
-import 'package:requirment_gathering_app/user_module/cart/order_repository.dart';
-import 'package:requirment_gathering_app/user_module/cart/order_service.dart';
-import 'package:requirment_gathering_app/user_module/cart/product_cubit.dart';
-import 'package:requirment_gathering_app/user_module/cart/user_product_service.dart';
-import 'package:requirment_gathering_app/user_module/cart/wish_list_cubit.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_cubit.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/cart_cubit.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/order_cubit.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/product_cubit.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/wish_list_cubit.dart';
+import 'package:requirment_gathering_app/user_module/cart/repo/cart_repository_impl.dart';
+import 'package:requirment_gathering_app/user_module/cart/repo/i_cart_repository.dart';
+import 'package:requirment_gathering_app/user_module/cart/repo/i_wish_list_repository.dart';
+import 'package:requirment_gathering_app/user_module/cart/repo/order_repository.dart';
+import 'package:requirment_gathering_app/user_module/cart/repo/wish_list_repository.dart';
+import 'package:requirment_gathering_app/user_module/cart/services/cart_service_impl.dart';
+import 'package:requirment_gathering_app/user_module/cart/services/i_cart_service.dart';
+import 'package:requirment_gathering_app/user_module/cart/services/i_user_product_service.dart';
+import 'package:requirment_gathering_app/user_module/cart/services/i_wishlist_service.dart';
+import 'package:requirment_gathering_app/user_module/cart/services/iorder_service.dart';
+import 'package:requirment_gathering_app/user_module/cart/services/order_service.dart';
+import 'package:requirment_gathering_app/user_module/cart/services/user_product_service.dart';
+import 'package:requirment_gathering_app/user_module/cart/services/wish_list_service.dart';
 import 'package:requirment_gathering_app/user_module/presentation/add_company/customer_company_cubit.dart';
 import 'package:requirment_gathering_app/user_module/presentation/company_settings/company_settings_cubit.dart';
 import 'package:requirment_gathering_app/user_module/repo/company_settings_repository.dart';
@@ -148,6 +158,11 @@ void _initRepositories() {
   sl.registerLazySingleton<IOrderRepository>(() => OrderRepositoryImpl(
         firestorePathProvider: sl<IFirestorePathProvider>(),
       ));
+  sl.registerLazySingleton<ICartRepository>(
+      () => CartRepositoryImpl(sl<IFirestorePathProvider>()));
+  sl.registerLazySingleton<IWishlistRepository>(() => WishlistRepositoryImpl(
+        firestorePathProvider: sl<IFirestorePathProvider>(),
+      ));
 }
 
 /// **3. Initialize Services**
@@ -207,10 +222,20 @@ void _initServices() {
         accountRepository: sl<AccountRepository>(),
       ));
 
-  sl.registerLazySingleton<UserProductService>(
+  sl.registerLazySingleton<IUserProductService>(
       () => UserProductService(stockService: sl<StockService>()));
-  sl.registerLazySingleton<OrderService>(
-      () => OrderService(orderRepository: sl<IOrderRepository>()));
+  sl.registerLazySingleton<IOrderService>(() => OrderService(
+        orderRepository: sl<IOrderRepository>(),
+        accountRepository: sl<AccountRepository>(),
+      ));
+  sl.registerLazySingleton<ICartService>(() => CartService(
+        cartRepository: sl<ICartRepository>(),
+        accountRepository: sl<AccountRepository>(),
+      ));
+  sl.registerLazySingleton<IWishlistService>(() => WishlistService(
+        wishlistRepository: sl<IWishlistRepository>(),
+        accountRepository: sl<AccountRepository>(),
+      ));
 }
 
 /// **4. Initialize Cubits (State Management)**
@@ -269,14 +294,18 @@ void _initCubits() {
         transactionService: sl<TransactionService>(),
       ));
 
+  sl.registerFactory(() => ProductCubit(
+        productService: sl<IUserProductService>(),
+        wishlistService: sl<IWishlistService>(),
+        cartService: sl<ICartService>(),
+      ));
+  sl.registerFactory(() => CartCubit(cartService: sl<ICartService>()));
   sl.registerFactory(
-      () => ProductCubit(productService: sl<UserProductService>()));
-  sl.registerFactory(() => CartCubit());
-  sl.registerFactory(() => WishlistCubit());
+      () => WishlistCubit(wishlistService: sl<IWishlistService>()));
   sl.registerFactory(() => OrderCubit(
-      orderService: sl<OrderService>(),
+      orderService: sl<IOrderService>(),
       accountRepository: sl<AccountRepository>()));
-  sl.registerFactory(() => AdminOrderCubit(orderService: sl<OrderService>()));
+  sl.registerFactory(() => AdminOrderCubit(orderService: sl<IOrderService>()));
 }
 
 /// **5. Initialize App Navigation & Coordinator**
