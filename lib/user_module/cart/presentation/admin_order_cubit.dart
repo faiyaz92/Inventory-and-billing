@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/employee_services.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
-import 'package:requirment_gathering_app/user_module/cart/services/iorder_service.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
+import 'package:requirment_gathering_app/user_module/cart/services/iorder_service.dart';
 
 abstract class AdminOrderState {}
 
@@ -17,7 +17,10 @@ class AdminOrderLoaded extends AdminOrderState {
   final DateTime? endDate;
   final DateTime? expectedDeliveryStartDate;
   final DateTime? expectedDeliveryEndDate;
-  AdminOrderLoaded(this.orders, this.users, {
+
+  AdminOrderLoaded(
+    this.orders,
+    this.users, {
     this.startDate,
     this.endDate,
     this.expectedDeliveryStartDate,
@@ -27,6 +30,7 @@ class AdminOrderLoaded extends AdminOrderState {
 
 class AdminOrderError extends AdminOrderState {
   final String message;
+
   AdminOrderError(this.message);
 }
 
@@ -55,22 +59,24 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
       if (startDate != null && endDate != null) {
         filteredOrders = filteredOrders.where((order) {
           return order.orderDate
-              .isAfter(startDate.subtract(const Duration(days: 1))) &&
+                  .isAfter(startDate.subtract(const Duration(days: 1))) &&
               order.orderDate.isBefore(endDate.add(const Duration(days: 1)));
         }).toList();
       }
 
       if (status != null) {
         filteredOrders = filteredOrders
-            .where((order) => order.status.toLowerCase() == status.toLowerCase())
+            .where(
+                (order) => order.status.toLowerCase() == status.toLowerCase())
             .toList();
       }
 
-      if (expectedDeliveryStartDate != null && expectedDeliveryEndDate != null) {
+      if (expectedDeliveryStartDate != null &&
+          expectedDeliveryEndDate != null) {
         filteredOrders = filteredOrders.where((order) {
           if (order.expectedDeliveryDate == null) return false;
-          return order.expectedDeliveryDate!.isAfter(
-              expectedDeliveryStartDate.subtract(const Duration(days: 1))) &&
+          return order.expectedDeliveryDate!.isAfter(expectedDeliveryStartDate
+                  .subtract(const Duration(days: 1))) &&
               order.expectedDeliveryDate!.isBefore(
                   expectedDeliveryEndDate.add(const Duration(days: 1)));
         }).toList();
@@ -103,10 +109,13 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
       {String? deliveredBy}) async {
     try {
       await orderService.updateOrderStatus(orderId, status);
-      if (status.toLowerCase() == 'completed' && deliveredBy != null) {
+      if (status.toLowerCase() == 'completed') {
         await orderService.setOrderDeliveryDate(orderId, DateTime.now());
         await orderService.setOrderDeliveredBy(orderId, deliveredBy);
-      }
+      }/*else {
+        // await orderService.setOrderDeliveryDate(orderId, DateTime.now());
+        await orderService.setOrderDeliveredBy(orderId, '');
+      }*/
       fetchOrders();
     } catch (e) {
       emit(AdminOrderError('Failed to update order status: ${e.toString()}'));
@@ -118,7 +127,8 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
       await orderService.setExpectedDeliveryDate(orderId, date);
       fetchOrders();
     } catch (e) {
-      emit(AdminOrderError('Failed to set expected delivery date: ${e.toString()}'));
+      emit(AdminOrderError(
+          'Failed to set expected delivery date: ${e.toString()}'));
     }
   }
 
@@ -134,10 +144,12 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
   Future<void> setResponsibleForDelivery(
       String orderId, String responsibleForDelivery) async {
     try {
-      await orderService.setResponsibleForDelivery(orderId, responsibleForDelivery);
+      await orderService.setResponsibleForDelivery(
+          orderId, responsibleForDelivery);
       fetchOrderById(orderId);
     } catch (e) {
-      emit(AdminOrderError('Failed to set responsible for delivery: ${e.toString()}'));
+      emit(AdminOrderError(
+          'Failed to set responsible for delivery: ${e.toString()}'));
     }
   }
 }

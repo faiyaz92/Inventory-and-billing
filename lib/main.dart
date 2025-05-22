@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final appRouter = sl.get<AppRouter>();
     return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
+      // debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primaryColor: Colors.blue,
         // fontFamily: 'Roboto', // Default font for the app

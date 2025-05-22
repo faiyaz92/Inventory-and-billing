@@ -2,19 +2,30 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:requirment_gathering_app/core_module/services/firestore_provider.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_dto.dart';
 
-
 abstract class IOrderRepository {
   Future<void> addOrder(String companyId, OrderDto order);
-  Future<List<OrderDto>> getOrdersByUser(String companyId, String userId);
-  Future<List<OrderDto>> getAllOrders(String companyId);
-  Future<void> updateOrderStatus(String companyId, String orderId, String status);
-  Future<void> setExpectedDeliveryDate(String companyId, String orderId, DateTime date);
-  Future<OrderDto> getOrderById(String companyId, String orderId);
-  Future<void> setOrderDeliveryDate(String companyId, String orderId, DateTime date);
-  Future<void> setOrderDeliveredBy(String companyId, String orderId, String deliveredBy);
-  Future<void> setResponsibleForDelivery(String companyId, String orderId, String responsibleForDelivery); // New method
-}
 
+  Future<List<OrderDto>> getOrdersByUser(String companyId, String userId);
+
+  Future<List<OrderDto>> getAllOrders(String companyId);
+
+  Future<void> updateOrderStatus(
+      String companyId, String orderId, String status, String? lastUpdatedBy);
+
+  Future<void> setExpectedDeliveryDate(
+      String companyId, String orderId, DateTime date, String? lastUpdatedBy);
+
+  Future<OrderDto> getOrderById(String companyId, String orderId);
+
+  Future<void> setOrderDeliveryDate(
+      String companyId, String orderId, DateTime date, String? lastUpdatedBy);
+
+  Future<void> setOrderDeliveredBy(String companyId, String orderId,
+      String? deliveredBy, String? lastUpdatedBy);
+
+  Future<void> setResponsibleForDelivery(String companyId, String orderId,
+      String responsibleForDelivery, String? lastUpdatedBy);
+}
 
 class OrderRepositoryImpl implements IOrderRepository {
   final IFirestorePathProvider firestorePathProvider;
@@ -34,11 +45,15 @@ class OrderRepositoryImpl implements IOrderRepository {
   }
 
   @override
-  Future<List<OrderDto>> getOrdersByUser(String companyId, String userId) async {
+  Future<List<OrderDto>> getOrdersByUser(
+      String companyId, String userId) async {
     try {
       final ref = firestorePathProvider.getOrdersCollectionRef(companyId);
       final snapshot = await ref.where('userId', isEqualTo: userId).get();
-      return snapshot.docs.map((doc) => OrderDto.fromFirestore(doc.data() as Map<String, dynamic>)).toList();
+      return snapshot.docs
+          .map((doc) =>
+              OrderDto.fromFirestore(doc.data() as Map<String, dynamic>))
+          .toList();
     } catch (e) {
       throw Exception('Failed to fetch orders: $e');
     }
@@ -49,28 +64,37 @@ class OrderRepositoryImpl implements IOrderRepository {
     try {
       final ref = firestorePathProvider.getOrdersCollectionRef(companyId);
       final snapshot = await ref.get();
-      return snapshot.docs.map((doc) => OrderDto.fromFirestore(doc.data() as Map<String, dynamic>)).toList();
+      return snapshot.docs
+          .map((doc) =>
+              OrderDto.fromFirestore(doc.data() as Map<String, dynamic>))
+          .toList();
     } catch (e) {
       throw Exception('Failed to fetch orders: $e');
     }
   }
 
   @override
-  Future<void> updateOrderStatus(String companyId, String orderId, String status) async {
+  Future<void> updateOrderStatus(String companyId, String orderId,
+      String status, String? lastUpdatedBy) async {
     try {
       final ref = firestorePathProvider.getOrdersCollectionRef(companyId);
-      await ref.doc(orderId).update({'status': status});
+      await ref.doc(orderId).update({
+        'status': status,
+        'lastUpdatedBy': lastUpdatedBy,
+      });
     } catch (e) {
       throw Exception('Failed to update order status: $e');
     }
   }
 
   @override
-  Future<void> setExpectedDeliveryDate(String companyId, String orderId, DateTime date) async {
+  Future<void> setExpectedDeliveryDate(String companyId, String orderId,
+      DateTime date, String? lastUpdatedBy) async {
     try {
       final ref = firestorePathProvider.getOrdersCollectionRef(companyId);
       await ref.doc(orderId).update({
         'expectedDeliveryDate': Timestamp.fromDate(date),
+        'lastUpdatedBy': lastUpdatedBy,
       });
     } catch (e) {
       throw Exception('Failed to set delivery date: $e');
@@ -80,7 +104,8 @@ class OrderRepositoryImpl implements IOrderRepository {
   @override
   Future<OrderDto> getOrderById(String companyId, String orderId) async {
     try {
-      final ref = firestorePathProvider.getOrdersCollectionRef(companyId).doc(orderId);
+      final ref =
+          firestorePathProvider.getOrdersCollectionRef(companyId).doc(orderId);
       final doc = await ref.get();
       if (!doc.exists) {
         throw Exception('Order not found');
@@ -92,11 +117,13 @@ class OrderRepositoryImpl implements IOrderRepository {
   }
 
   @override
-  Future<void> setOrderDeliveryDate(String companyId, String orderId, DateTime date) async {
+  Future<void> setOrderDeliveryDate(String companyId, String orderId,
+      DateTime date, String? lastUpdatedBy) async {
     try {
       final ref = firestorePathProvider.getOrdersCollectionRef(companyId);
       await ref.doc(orderId).update({
         'orderDeliveryDate': Timestamp.fromDate(date),
+        'lastUpdatedBy': lastUpdatedBy,
       });
     } catch (e) {
       throw Exception('Failed to set order delivery date: $e');
@@ -104,11 +131,13 @@ class OrderRepositoryImpl implements IOrderRepository {
   }
 
   @override
-  Future<void> setOrderDeliveredBy(String companyId, String orderId, String deliveredBy) async {
+  Future<void> setOrderDeliveredBy(String companyId, String orderId,
+      String? deliveredBy, String? lastUpdatedBy) async {
     try {
       final ref = firestorePathProvider.getOrdersCollectionRef(companyId);
       await ref.doc(orderId).update({
         'orderDeliveredBy': deliveredBy,
+        'lastUpdatedBy': lastUpdatedBy,
       });
     } catch (e) {
       throw Exception('Failed to set order delivered by: $e');
@@ -116,11 +145,13 @@ class OrderRepositoryImpl implements IOrderRepository {
   }
 
   @override
-  Future<void> setResponsibleForDelivery(String companyId, String orderId, String responsibleForDelivery) async {
+  Future<void> setResponsibleForDelivery(String companyId, String orderId,
+      String responsibleForDelivery, String? lastUpdatedBy) async {
     try {
       final ref = firestorePathProvider.getOrdersCollectionRef(companyId);
       await ref.doc(orderId).update({
         'responsibleForDelivery': responsibleForDelivery,
+        'lastUpdatedBy': lastUpdatedBy,
       });
     } catch (e) {
       throw Exception('Failed to set responsible for delivery: $e');

@@ -9,10 +9,11 @@ class Order {
   final String status;
   final DateTime orderDate;
   final DateTime? expectedDeliveryDate;
-  final DateTime? orderDeliveryDate; // Added for actual delivery date
-  final String? orderTakenBy; // Added for salesman who took the order
-  final String? orderDeliveredBy; // Added for salesman who delivered the order
-  final String? responsibleForDelivery; // Added for person responsible for delivery
+  final DateTime? orderDeliveryDate;
+  final String? orderTakenBy;
+  final String? orderDeliveredBy;
+  final String? responsibleForDelivery;
+  final String? lastUpdatedBy; // Added for last updated by
 
   Order({
     required this.id,
@@ -27,6 +28,7 @@ class Order {
     this.orderTakenBy,
     this.orderDeliveredBy,
     this.responsibleForDelivery,
+    this.lastUpdatedBy,
   });
 
   factory Order.fromDto(OrderDto dto) {
@@ -43,6 +45,7 @@ class Order {
       orderTakenBy: dto.orderTakenBy,
       orderDeliveredBy: dto.orderDeliveredBy,
       responsibleForDelivery: dto.responsibleForDelivery,
+      lastUpdatedBy: dto.lastUpdatedBy,
     );
   }
 }

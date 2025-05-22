@@ -10,10 +10,11 @@ class OrderDto {
   final String status;
   final DateTime orderDate;
   final DateTime? expectedDeliveryDate;
-  final DateTime? orderDeliveryDate; // Added for actual delivery date
-  final String? orderTakenBy; // Added for salesman who took the order
-  final String? orderDeliveredBy; // Added for salesman who delivered the order
-  final String? responsibleForDelivery; // Added for person responsible for delivery
+  final DateTime? orderDeliveryDate;
+  final String? orderTakenBy;
+  final String? orderDeliveredBy;
+  final String? responsibleForDelivery;
+  final String? lastUpdatedBy; // Added for last updated by
 
   OrderDto({
     required this.id,
@@ -28,6 +29,7 @@ class OrderDto {
     this.orderTakenBy,
     this.orderDeliveredBy,
     this.responsibleForDelivery,
+    this.lastUpdatedBy,
   });
 
   factory OrderDto.fromFirestore(Map<String, dynamic> data) {
@@ -35,7 +37,9 @@ class OrderDto {
       id: data['id'],
       userId: data['userId'],
       userName: data['userName'],
-      items: (data['items'] as List).map((item) => CartItemDto.fromMap(item)).toList(),
+      items: (data['items'] as List)
+          .map((item) => CartItemDto.fromMap(item))
+          .toList(),
       totalAmount: data['totalAmount'],
       status: data['status'],
       orderDate: (data['orderDate'] as Timestamp).toDate(),
@@ -48,6 +52,7 @@ class OrderDto {
       orderTakenBy: data['orderTakenBy'],
       orderDeliveredBy: data['orderDeliveredBy'],
       responsibleForDelivery: data['responsibleForDelivery'],
+      lastUpdatedBy: data['lastUpdatedBy'],
     );
   }
 
@@ -69,6 +74,7 @@ class OrderDto {
       'orderTakenBy': orderTakenBy,
       'orderDeliveredBy': orderDeliveredBy,
       'responsibleForDelivery': responsibleForDelivery,
+      'lastUpdatedBy': lastUpdatedBy,
     };
   }
 
@@ -86,6 +92,7 @@ class OrderDto {
       orderTakenBy: order.orderTakenBy,
       orderDeliveredBy: order.orderDeliveredBy,
       responsibleForDelivery: order.responsibleForDelivery,
+      lastUpdatedBy: order.lastUpdatedBy,
     );
   }
 }

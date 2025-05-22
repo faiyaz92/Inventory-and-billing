@@ -8,6 +8,6 @@ abstract class IOrderService {
   Future<void> setExpectedDeliveryDate(String orderId, DateTime date);
   Future<Order> getOrderById(String orderId);
   Future<void> setOrderDeliveryDate(String orderId, DateTime date);
-  Future<void> setOrderDeliveredBy(String orderId, String deliveredBy);
+  Future<void> setOrderDeliveredBy(String orderId, String? deliveredBy);
   Future<void> setResponsibleForDelivery(String orderId, String responsibleForDelivery); // New method
 }

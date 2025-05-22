@@ -42,7 +42,7 @@ class AdminOrderDetailsPage extends StatelessWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: BlocConsumer<AdminOrderCubit, AdminOrderState>(
                     listenWhen: (previous, current) =>
-                    current is AdminOrderError,
+                        current is AdminOrderError,
                     listener: (context, state) {
                       if (state is AdminOrderError) {
                         showDialog(
@@ -59,8 +59,8 @@ class AdminOrderDetailsPage extends StatelessWidget {
                               ),
                               content: Text(
                                 state.message,
-                                style:
-                                const TextStyle(color: AppColors.textPrimary),
+                                style: const TextStyle(
+                                    color: AppColors.textPrimary),
                               ),
                               actions: [
                                 TextButton(
@@ -81,8 +81,8 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                   },
                                   child: const Text(
                                     'Dismiss',
-                                    style:
-                                    TextStyle(color: AppColors.textSecondary),
+                                    style: TextStyle(
+                                        color: AppColors.textSecondary),
                                   ),
                                 ),
                               ],
@@ -122,9 +122,8 @@ class AdminOrderDetailsPage extends StatelessWidget {
                       if (state is AdminOrderLoaded) {
                         final order = state.orders.first;
                         final normalizedStatus = order.status.toLowerCase();
-                        final subtotal = order.items.fold(
-                            0.0,
-                                (sum, item) => sum + (item.price * item.quantity));
+                        final subtotal = order.items.fold(0.0,
+                            (sum, item) => sum + (item.price * item.quantity));
                         final totalTax = order.items
                             .fold(0.0, (sum, item) => sum + item.taxAmount);
 
@@ -181,22 +180,25 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                                   style: TextStyle(
                                                     fontSize: 14,
                                                     color:
-                                                    AppColors.textSecondary,
+                                                        AppColors.textSecondary,
                                                   ),
                                                 ),
                                               ),
                                             ),
                                             Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 4.0,
-                                                  horizontal: 8.0),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 4.0,
+                                                      horizontal: 8.0),
                                               child: Align(
-                                                alignment: Alignment.centerRight,
+                                                alignment:
+                                                    Alignment.centerRight,
                                                 child: Text(
                                                   order.id,
                                                   style: const TextStyle(
                                                     fontSize: 14,
-                                                    color: AppColors.textPrimary,
+                                                    color:
+                                                        AppColors.textPrimary,
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
@@ -217,22 +219,25 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                                   style: TextStyle(
                                                     fontSize: 14,
                                                     color:
-                                                    AppColors.textSecondary,
+                                                        AppColors.textSecondary,
                                                   ),
                                                 ),
                                               ),
                                             ),
                                             Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 4.0,
-                                                  horizontal: 8.0),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 4.0,
+                                                      horizontal: 8.0),
                                               child: Align(
-                                                alignment: Alignment.centerRight,
+                                                alignment:
+                                                    Alignment.centerRight,
                                                 child: Text(
                                                   order.userName,
                                                   style: const TextStyle(
                                                     fontSize: 14,
-                                                    color: AppColors.textPrimary,
+                                                    color:
+                                                        AppColors.textPrimary,
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
@@ -253,34 +258,100 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                                   style: TextStyle(
                                                     fontSize: 14,
                                                     color:
-                                                    AppColors.textSecondary,
+                                                        AppColors.textSecondary,
                                                   ),
                                                 ),
                                               ),
                                             ),
                                             Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 4.0,
-                                                  horizontal: 8.0),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 4.0,
+                                                      horizontal: 8.0),
                                               child: Align(
-                                                alignment: Alignment.centerRight,
+                                                alignment:
+                                                    Alignment.centerRight,
                                                 child: Text(
-                                                  order.orderTakenBy ??
-                                                      'Not Assigned',
+                                                  state.users
+                                                          .firstWhere(
+                                                            (user) =>
+                                                                user.userId ==
+                                                                order
+                                                                    .orderTakenBy,
+                                                            orElse: () => const UserInfo(
+                                                                userId: 'N/A',
+                                                                userName:
+                                                                    'No Assigned'),
+                                                          )
+                                                          .userName ??
+                                                      'Unknown',
                                                   style: const TextStyle(
                                                     fontSize: 14,
                                                     color:
-                                                    AppColors.textSecondary,
+                                                        AppColors.textSecondary,
                                                   ),
                                                 ),
                                               ),
                                             ),
                                           ],
                                         ),
+                                        if (order.lastUpdatedBy != null)
+                                          TableRow(
+                                            children: [
+                                              const Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                    vertical: 4.0,
+                                                    horizontal: 8.0),
+                                                child: Align(
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: Text(
+                                                    'Last Updated By',
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 4.0,
+                                                        horizontal: 8.0),
+                                                child: Align(
+                                                  alignment:
+                                                      Alignment.centerRight,
+                                                  child: Text(
+                                                    state.users
+                                                            .firstWhere(
+                                                              (user) =>
+                                                                  user.userId ==
+                                                                  order
+                                                                      .lastUpdatedBy,
+                                                              orElse: () => UserInfo(
+                                                                  userId: order
+                                                                      .lastUpdatedBy!,
+                                                                  userName:
+                                                                      'Unknown'),
+                                                            )
+                                                            .userName ??
+                                                        'Unknown',
+                                                    style: const TextStyle(
+                                                      fontSize: 14,
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         TableRow(
                                           decoration: BoxDecoration(
-                                            color:
-                                            AppColors.primary.withOpacity(0.1),
+                                            color: AppColors.primary
+                                                .withOpacity(0.1),
                                           ),
                                           children: [
                                             const Padding(
@@ -294,23 +365,26 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                                   style: TextStyle(
                                                     fontSize: 14,
                                                     color:
-                                                    AppColors.textSecondary,
+                                                        AppColors.textSecondary,
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
                                               ),
                                             ),
                                             Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 4.0,
-                                                  horizontal: 8.0),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 4.0,
+                                                      horizontal: 8.0),
                                               child: Align(
-                                                alignment: Alignment.centerRight,
+                                                alignment:
+                                                    Alignment.centerRight,
                                                 child: Text(
                                                   order.status,
                                                   style: const TextStyle(
                                                     fontSize: 14,
-                                                    color: AppColors.textPrimary,
+                                                    color:
+                                                        AppColors.textPrimary,
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
@@ -331,23 +405,25 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                                   style: TextStyle(
                                                     fontSize: 14,
                                                     color:
-                                                    AppColors.textSecondary,
+                                                        AppColors.textSecondary,
                                                   ),
                                                 ),
                                               ),
                                             ),
                                             Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 4.0,
-                                                  horizontal: 8.0),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 4.0,
+                                                      horizontal: 8.0),
                                               child: Align(
-                                                alignment: Alignment.centerRight,
+                                                alignment:
+                                                    Alignment.centerRight,
                                                 child: Text(
                                                   order.orderDate.toString(),
                                                   style: const TextStyle(
                                                     fontSize: 14,
                                                     color:
-                                                    AppColors.textSecondary,
+                                                        AppColors.textSecondary,
                                                   ),
                                                 ),
                                               ),
@@ -362,37 +438,41 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                                     vertical: 4.0,
                                                     horizontal: 8.0),
                                                 child: Align(
-                                                  alignment: Alignment.centerLeft,
+                                                  alignment:
+                                                      Alignment.centerLeft,
                                                   child: Text(
                                                     'Expected Delivery',
                                                     style: TextStyle(
                                                       fontSize: 14,
-                                                      color:
-                                                      AppColors.textSecondary,
+                                                      color: AppColors
+                                                          .textSecondary,
                                                     ),
                                                   ),
                                                 ),
                                               ),
                                               Padding(
-                                                padding: const EdgeInsets.symmetric(
-                                                    vertical: 4.0,
-                                                    horizontal: 8.0),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 4.0,
+                                                        horizontal: 8.0),
                                                 child: Align(
-                                                  alignment: Alignment.centerRight,
+                                                  alignment:
+                                                      Alignment.centerRight,
                                                   child: Text(
                                                     order.expectedDeliveryDate
                                                         .toString(),
                                                     style: const TextStyle(
                                                       fontSize: 14,
-                                                      color:
-                                                      AppColors.textSecondary,
+                                                      color: AppColors
+                                                          .textSecondary,
                                                     ),
                                                   ),
                                                 ),
                                               ),
                                             ],
                                           ),
-                                        if (order.responsibleForDelivery != null)
+                                        if (order.responsibleForDelivery !=
+                                            null)
                                           TableRow(
                                             children: [
                                               const Padding(
@@ -400,43 +480,45 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                                     vertical: 4.0,
                                                     horizontal: 8.0),
                                                 child: Align(
-                                                  alignment: Alignment.centerLeft,
+                                                  alignment:
+                                                      Alignment.centerLeft,
                                                   child: Text(
                                                     'Responsible for Delivery',
                                                     style: TextStyle(
                                                       fontSize: 14,
-                                                      color:
-                                                      AppColors.textSecondary,
+                                                      color: AppColors
+                                                          .textSecondary,
                                                     ),
                                                   ),
                                                 ),
                                               ),
                                               Padding(
-                                                padding: const EdgeInsets.symmetric(
-                                                    vertical: 4.0,
-                                                    horizontal: 8.0),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 4.0,
+                                                        horizontal: 8.0),
                                                 child: Align(
-                                                  alignment: Alignment.centerRight,
+                                                  alignment:
+                                                      Alignment.centerRight,
                                                   child: Text(
                                                     state.users
-                                                        .firstWhere(
-                                                          (user) =>
-                                                      user.userId ==
-                                                          order
-                                                              .responsibleForDelivery,
-                                                      orElse: () =>
-                                                          UserInfo(
-                                                              userId: order
-                                                                  .responsibleForDelivery!,
-                                                              userName:
-                                                              'Unknown'),
-                                                    )
-                                                        .userName ??
+                                                            .firstWhere(
+                                                              (user) =>
+                                                                  user.userId ==
+                                                                  order
+                                                                      .responsibleForDelivery,
+                                                              orElse: () => UserInfo(
+                                                                  userId: order
+                                                                      .responsibleForDelivery!,
+                                                                  userName:
+                                                                      'Unknown'),
+                                                            )
+                                                            .userName ??
                                                         'Unknown',
                                                     style: const TextStyle(
                                                       fontSize: 14,
-                                                      color:
-                                                      AppColors.textSecondary,
+                                                      color: AppColors
+                                                          .textSecondary,
                                                     ),
                                                   ),
                                                 ),
@@ -451,43 +533,45 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                                     vertical: 4.0,
                                                     horizontal: 8.0),
                                                 child: Align(
-                                                  alignment: Alignment.centerLeft,
+                                                  alignment:
+                                                      Alignment.centerLeft,
                                                   child: Text(
                                                     'Delivered By',
                                                     style: TextStyle(
                                                       fontSize: 14,
-                                                      color:
-                                                      AppColors.textSecondary,
+                                                      color: AppColors
+                                                          .textSecondary,
                                                     ),
                                                   ),
                                                 ),
                                               ),
                                               Padding(
-                                                padding: const EdgeInsets.symmetric(
-                                                    vertical: 4.0,
-                                                    horizontal: 8.0),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 4.0,
+                                                        horizontal: 8.0),
                                                 child: Align(
-                                                  alignment: Alignment.centerRight,
+                                                  alignment:
+                                                      Alignment.centerRight,
                                                   child: Text(
                                                     state.users
-                                                        .firstWhere(
-                                                          (user) =>
-                                                      user.userId ==
-                                                          order
-                                                              .orderDeliveredBy,
-                                                      orElse: () =>
-                                                          UserInfo(
-                                                              userId: order
-                                                                  .orderDeliveredBy!,
-                                                              userName:
-                                                              'Unknown'),
-                                                    )
-                                                        .userName ??
+                                                            .firstWhere(
+                                                              (user) =>
+                                                                  user.userId ==
+                                                                  order
+                                                                      .orderDeliveredBy,
+                                                              orElse: () => UserInfo(
+                                                                  userId: order
+                                                                      .orderDeliveredBy!,
+                                                                  userName:
+                                                                      'Unknown'),
+                                                            )
+                                                            .userName ??
                                                         'Unknown',
                                                     style: const TextStyle(
                                                       fontSize: 14,
-                                                      color:
-                                                      AppColors.textSecondary,
+                                                      color: AppColors
+                                                          .textSecondary,
                                                     ),
                                                   ),
                                                 ),
@@ -507,22 +591,25 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                                   style: TextStyle(
                                                     fontSize: 14,
                                                     color:
-                                                    AppColors.textSecondary,
+                                                        AppColors.textSecondary,
                                                   ),
                                                 ),
                                               ),
                                             ),
                                             Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 4.0,
-                                                  horizontal: 8.0),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 4.0,
+                                                      horizontal: 8.0),
                                               child: Align(
-                                                alignment: Alignment.centerRight,
+                                                alignment:
+                                                    Alignment.centerRight,
                                                 child: Text(
                                                   '₹${subtotal.toStringAsFixed(2)}',
                                                   style: const TextStyle(
                                                     fontSize: 14,
-                                                    color: AppColors.textPrimary,
+                                                    color:
+                                                        AppColors.textPrimary,
                                                     fontWeight: FontWeight.w500,
                                                   ),
                                                 ),
@@ -543,23 +630,25 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                                   style: TextStyle(
                                                     fontSize: 14,
                                                     color:
-                                                    AppColors.textSecondary,
+                                                        AppColors.textSecondary,
                                                   ),
                                                 ),
                                               ),
                                             ),
                                             Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 4.0,
-                                                  horizontal: 8.0),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 4.0,
+                                                      horizontal: 8.0),
                                               child: Align(
-                                                alignment: Alignment.centerRight,
+                                                alignment:
+                                                    Alignment.centerRight,
                                                 child: Text(
                                                   '₹${totalTax.toStringAsFixed(2)}',
                                                   style: const TextStyle(
                                                     fontSize: 14,
                                                     color:
-                                                    AppColors.textSecondary,
+                                                        AppColors.textSecondary,
                                                   ),
                                                 ),
                                               ),
@@ -568,9 +657,10 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                         ),
                                         TableRow(
                                           decoration: BoxDecoration(
-                                            color:
-                                            AppColors.primary.withOpacity(0.2),
-                                            borderRadius: const BorderRadius.only(
+                                            color: AppColors.primary
+                                                .withOpacity(0.2),
+                                            borderRadius:
+                                                const BorderRadius.only(
                                               bottomLeft: Radius.circular(12),
                                               bottomRight: Radius.circular(12),
                                             ),
@@ -586,23 +676,27 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                                   'Total',
                                                   style: TextStyle(
                                                     fontSize: 14,
-                                                    color: AppColors.textPrimary,
+                                                    color:
+                                                        AppColors.textPrimary,
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
                                               ),
                                             ),
                                             Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 4.0,
-                                                  horizontal: 8.0),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 4.0,
+                                                      horizontal: 8.0),
                                               child: Align(
-                                                alignment: Alignment.centerRight,
+                                                alignment:
+                                                    Alignment.centerRight,
                                                 child: Text(
                                                   '₹${order.totalAmount.toStringAsFixed(2)}',
                                                   style: const TextStyle(
                                                     fontSize: 14,
-                                                    color: AppColors.textPrimary,
+                                                    color:
+                                                        AppColors.textPrimary,
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
@@ -625,7 +719,8 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                 child: Padding(
                                   padding: const EdgeInsets.all(16.0),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       const Text(
                                         'Update Order',
@@ -649,22 +744,25 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                           'completed'
                                         ]
                                             .map((status) => DropdownMenuItem(
-                                          value: status,
-                                          child: Text(status.capitalize()),
-                                        ))
+                                                  value: status,
+                                                  child:
+                                                      Text(status.capitalize()),
+                                                ))
                                             .toList(),
                                         onChanged: (value) {
                                           if (value != null) {
                                             newContext
                                                 .read<AdminOrderCubit>()
-                                                .updateOrderStatus(order.id, value);
+                                                .updateOrderStatus(
+                                                    order.id, value);
                                           }
                                         },
                                       ),
                                       const SizedBox(height: 16),
                                       DropdownButtonFormField<String>(
                                         decoration: const InputDecoration(
-                                          labelText: 'Assign Responsible for Delivery',
+                                          labelText:
+                                              'Assign Responsible for Delivery',
                                           border: OutlineInputBorder(),
                                         ),
                                         value: order.responsibleForDelivery,
@@ -673,44 +771,18 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                             value: null,
                                             child: Text('Not Assigned'),
                                           ),
-                                          ...state.users.map((user) =>
-                                              DropdownMenuItem(
-                                                value: user.userId,
-                                                child:
-                                                Text(user.userName ?? 'Unknown'),
-                                              )),
+                                          ...state.users
+                                              .map((user) => DropdownMenuItem(
+                                                    value: user.userId,
+                                                    child: Text(user.userName ??
+                                                        'Unknown'),
+                                                  )),
                                         ],
                                         onChanged: (value) {
                                           newContext
                                               .read<AdminOrderCubit>()
                                               .setResponsibleForDelivery(
-                                              order.id, value ?? '');
-                                        },
-                                      ),
-                                      const SizedBox(height: 16),
-                                      DropdownButtonFormField<String>(
-                                        decoration: const InputDecoration(
-                                          labelText: 'Assign Delivery Person',
-                                          border: OutlineInputBorder(),
-                                        ),
-                                        value: order.orderDeliveredBy,
-                                        items: [
-                                          const DropdownMenuItem(
-                                            value: null,
-                                            child: Text('Not Assigned'),
-                                          ),
-                                          ...state.users.map((user) =>
-                                              DropdownMenuItem(
-                                                value: user.userId,
-                                                child:
-                                                Text(user.userName ?? 'Unknown'),
-                                              )),
-                                        ],
-                                        onChanged: (value) {
-                                          newContext
-                                              .read<AdminOrderCubit>()
-                                              .setOrderDeliveredBy(
-                                              order.id, value ?? '');
+                                                  order.id, value ?? '');
                                         },
                                       ),
                                       const SizedBox(height: 16),
@@ -726,19 +798,20 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                             newContext
                                                 .read<AdminOrderCubit>()
                                                 .setExpectedDeliveryDate(
-                                                order.id, date);
+                                                    order.id, date);
                                           }
                                         },
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: AppColors.primary,
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
-                                            BorderRadius.circular(12),
+                                                BorderRadius.circular(12),
                                           ),
                                         ),
                                         child: const Text(
                                           AppLabels.setDeliveryDate,
-                                          style: TextStyle(color: AppColors.white),
+                                          style:
+                                              TextStyle(color: AppColors.white),
                                         ),
                                       ),
                                     ],
@@ -772,35 +845,38 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                     ListView.separated(
                                       shrinkWrap: true,
                                       physics:
-                                      const NeverScrollableScrollPhysics(),
+                                          const NeverScrollableScrollPhysics(),
                                       itemCount: order.items.length,
                                       separatorBuilder: (context, index) =>
-                                      const SizedBox(height: 12),
+                                          const SizedBox(height: 12),
                                       itemBuilder: (context, index) {
                                         final item = order.items[index];
                                         return Card(
                                           elevation: 4,
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
-                                            BorderRadius.circular(12),
+                                                BorderRadius.circular(12),
                                           ),
                                           color: AppColors.cardBackground,
                                           child: Padding(
                                             padding: const EdgeInsets.symmetric(
-                                                vertical: 8.0, horizontal: 12.0),
+                                                vertical: 8.0,
+                                                horizontal: 12.0),
                                             child: Column(
                                               crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Text(
                                                   item.productName,
                                                   style: const TextStyle(
                                                     fontSize: 16,
                                                     fontWeight: FontWeight.bold,
-                                                    color: AppColors.textPrimary,
+                                                    color:
+                                                        AppColors.textPrimary,
                                                   ),
                                                   maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                 ),
                                                 const SizedBox(height: 8),
                                                 Container(
@@ -813,17 +889,20 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                                       width: 1,
                                                     ),
                                                     borderRadius:
-                                                    BorderRadius.circular(12),
+                                                        BorderRadius.circular(
+                                                            12),
                                                   ),
                                                   child: Table(
                                                     border: TableBorder(
-                                                      verticalInside: BorderSide(
+                                                      verticalInside:
+                                                          BorderSide(
                                                         color: AppColors
                                                             .textSecondary
                                                             .withOpacity(0.5),
                                                         width: 1,
                                                       ),
-                                                      horizontalInside: BorderSide(
+                                                      horizontalInside:
+                                                          BorderSide(
                                                         color: AppColors
                                                             .textSecondary
                                                             .withOpacity(0.5),
@@ -839,19 +918,18 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                                         children: [
                                                           Padding(
                                                             padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
+                                                                const EdgeInsets
+                                                                    .symmetric(
                                                               vertical: 4.0,
                                                               horizontal: 8.0,
                                                             ),
                                                             child: Align(
-                                                              alignment:
-                                                              Alignment
+                                                              alignment: Alignment
                                                                   .centerLeft,
                                                               child: Text(
                                                                 'Subtotal (₹${item.price} x ${item.quantity})',
                                                                 style:
-                                                                const TextStyle(
+                                                                    const TextStyle(
                                                                   fontSize: 14,
                                                                   color: AppColors
                                                                       .textSecondary,
@@ -861,25 +939,24 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                                           ),
                                                           Padding(
                                                             padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
+                                                                const EdgeInsets
+                                                                    .symmetric(
                                                               vertical: 4.0,
                                                               horizontal: 8.0,
                                                             ),
                                                             child: Align(
-                                                              alignment:
-                                                              Alignment
+                                                              alignment: Alignment
                                                                   .centerRight,
                                                               child: Text(
                                                                 '₹${(item.price * item.quantity).toStringAsFixed(2)}',
                                                                 style:
-                                                                const TextStyle(
+                                                                    const TextStyle(
                                                                   fontSize: 14,
                                                                   color: AppColors
                                                                       .textPrimary,
                                                                   fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
+                                                                      FontWeight
+                                                                          .w500,
                                                                 ),
                                                               ),
                                                             ),
@@ -890,19 +967,18 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                                         children: [
                                                           Padding(
                                                             padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
+                                                                const EdgeInsets
+                                                                    .symmetric(
                                                               vertical: 4.0,
                                                               horizontal: 8.0,
                                                             ),
                                                             child: Align(
-                                                              alignment:
-                                                              Alignment
+                                                              alignment: Alignment
                                                                   .centerLeft,
                                                               child: Text(
                                                                 'Tax (${(item.taxRate * 100).toStringAsFixed(0)}%)',
                                                                 style:
-                                                                const TextStyle(
+                                                                    const TextStyle(
                                                                   fontSize: 14,
                                                                   color: AppColors
                                                                       .textSecondary,
@@ -912,19 +988,18 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                                           ),
                                                           Padding(
                                                             padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
+                                                                const EdgeInsets
+                                                                    .symmetric(
                                                               vertical: 4.0,
                                                               horizontal: 8.0,
                                                             ),
                                                             child: Align(
-                                                              alignment:
-                                                              Alignment
+                                                              alignment: Alignment
                                                                   .centerRight,
                                                               child: Text(
                                                                 '₹${item.taxAmount.toStringAsFixed(2)}',
                                                                 style:
-                                                                const TextStyle(
+                                                                    const TextStyle(
                                                                   fontSize: 14,
                                                                   color: AppColors
                                                                       .textSecondary,
@@ -935,18 +1010,20 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                                         ],
                                                       ),
                                                       TableRow(
-                                                        decoration: BoxDecoration(
-                                                          color: AppColors.primary
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: AppColors
+                                                              .primary
                                                               .withOpacity(0.2),
                                                           borderRadius:
-                                                          const BorderRadius
-                                                              .only(
+                                                              const BorderRadius
+                                                                  .only(
                                                             bottomLeft:
-                                                            Radius.circular(
-                                                                12),
+                                                                Radius.circular(
+                                                                    12),
                                                             bottomRight:
-                                                            Radius.circular(
-                                                                12),
+                                                                Radius.circular(
+                                                                    12),
                                                           ),
                                                         ),
                                                         children: [
@@ -961,38 +1038,38 @@ class AdminOrderDetailsPage extends StatelessWidget {
                                                                   .centerLeft,
                                                               child: Text(
                                                                 'Total',
-                                                                style: TextStyle(
+                                                                style:
+                                                                    TextStyle(
                                                                   fontSize: 14,
                                                                   color: AppColors
                                                                       .textPrimary,
                                                                   fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
+                                                                      FontWeight
+                                                                          .bold,
                                                                 ),
                                                               ),
                                                             ),
                                                           ),
                                                           Padding(
                                                             padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
+                                                                const EdgeInsets
+                                                                    .symmetric(
                                                               vertical: 4.0,
                                                               horizontal: 8.0,
                                                             ),
                                                             child: Align(
-                                                              alignment:
-                                                              Alignment
+                                                              alignment: Alignment
                                                                   .centerRight,
                                                               child: Text(
                                                                 '₹${((item.price * item.quantity) + item.taxAmount).toStringAsFixed(2)}',
                                                                 style:
-                                                                const TextStyle(
+                                                                    const TextStyle(
                                                                   fontSize: 14,
                                                                   color: AppColors
                                                                       .textPrimary,
                                                                   fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
+                                                                      FontWeight
+                                                                          .bold,
                                                                 ),
                                                               ),
                                                             ),
