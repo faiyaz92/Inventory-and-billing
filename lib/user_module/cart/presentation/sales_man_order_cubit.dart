@@ -13,7 +13,11 @@ abstract class SalesmanOrderState {}
 
 class SalesmanOrderInitial extends SalesmanOrderState {}
 
-class SalesmanOrderLoading extends SalesmanOrderState {}
+class SalesmanOrderLoading extends SalesmanOrderState {
+  final String dialogMessage;
+
+  SalesmanOrderLoading({this.dialogMessage = 'Loading...'});
+}
 
 class SalesmanOrderLoaded extends SalesmanOrderState {
   final List<UserInfo> customers;
@@ -22,7 +26,8 @@ class SalesmanOrderLoaded extends SalesmanOrderState {
   final Map<String, int> productQuantities;
   final UserInfo? selectedCustomer;
   final String? customCustomerName;
-  final String searchQuery; // Added for search
+  final String searchQuery;
+  final bool? isLoading; // Added for search
 
   SalesmanOrderLoaded({
     required this.customers,
@@ -32,6 +37,7 @@ class SalesmanOrderLoaded extends SalesmanOrderState {
     this.selectedCustomer,
     this.customCustomerName,
     this.searchQuery = '',
+    this.isLoading = false,
   });
 }
 
@@ -90,6 +96,7 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
         selectedCustomer: _selectedCustomer,
         customCustomerName: _customCustomerName,
         searchQuery: _searchQuery,
+        isLoading: true,
       ));
     } catch (e) {
       emit(SalesmanOrderError('Failed to load data: $e'));
@@ -98,7 +105,8 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
 
   void selectCustomer(UserInfo? customer) {
     _selectedCustomer = customer;
-    _customCustomerName = null; // Reset custom customer name if a customer is selected
+    _customCustomerName =
+        null; // Reset custom customer name if a customer is selected
     emit(SalesmanOrderLoaded(
       customers: _customers,
       products: _products,
@@ -151,7 +159,7 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
     } else {
       _filteredProducts = _products
           .where((product) =>
-          product.name.toLowerCase().contains(query.toLowerCase()))
+              product.name.toLowerCase().contains(query.toLowerCase()))
           .toList();
     }
     emit(SalesmanOrderLoaded(
@@ -207,12 +215,16 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
   }
 
   Future<void> placeOrder() async {
-    if (_selectedCustomer == null && (_customCustomerName == null || _customCustomerName!.isEmpty)) {
-      emit(SalesmanOrderError('Please select a customer or enter a new customer name'));
+    if (_selectedCustomer == null &&
+        (_customCustomerName == null || _customCustomerName!.isEmpty)) {
+      emit(SalesmanOrderError(
+          'Please select a customer or enter a new customer name'));
       return;
     }
 
-    emit(SalesmanOrderLoading());
+    emit(SalesmanOrderLoading(
+      dialogMessage: 'Wait...'
+    ));
     try {
       // Add selected products to cart
       for (var product in _products) {
@@ -228,7 +240,8 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
       final salesmanId = (await accountRepository.getUserInfo())?.userId;
       final order = Order(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        userId: _selectedCustomer?.userId ?? 'CUSTOM_${DateTime.now().millisecondsSinceEpoch}',
+        userId: _selectedCustomer?.userId ??
+            'CUSTOM_${DateTime.now().millisecondsSinceEpoch}',
         userName: _selectedCustomer?.userName ?? _customCustomerName!,
         items: items,
         totalAmount: totalAmount,

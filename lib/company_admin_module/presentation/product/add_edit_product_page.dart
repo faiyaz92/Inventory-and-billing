@@ -2,7 +2,7 @@ import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart';
-import 'package:requirment_gathering_app/company_admin_module/presentation/product/product_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/product/admin_product_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/product_state.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
@@ -24,6 +24,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _stockController = TextEditingController();
+  final TextEditingController _taxController = TextEditingController(); // New controller for tax
 
   late AdminProductCubit _cubit;
 
@@ -31,7 +32,6 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
   void initState() {
     super.initState();
     _cubit = sl<AdminProductCubit>();
-    // Load categories
     if (widget.product != null) {
       _cubit.loadCategories(
           categoryId: widget.product!.categoryId,
@@ -39,6 +39,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
       _nameController.text = widget.product!.name;
       _priceController.text = widget.product!.price.toString();
       _stockController.text = widget.product!.stock.toString();
+      _taxController.text = widget.product!.tax.toString(); // Set tax for edit
     } else {
       _cubit.loadCategories();
     }
@@ -55,6 +56,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
         categoryId: _cubit.selectedCategoryId ?? '',
         subcategoryId: _cubit.selectedSubcategoryId ?? '',
         subcategoryName: _cubit.selectedSubcategoryName ?? '',
+        tax: double.parse(_taxController.text), // Include tax
       );
 
       if (widget.product == null) {
@@ -63,8 +65,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
         await _cubit.updateProduct(product);
       }
 
-      sl<Coordinator>()
-          .navigateBack(isUpdated: true); // Use Coordinator to go back
+      sl<Coordinator>().navigateBack(isUpdated: true);
     }
   }
 
@@ -158,7 +159,12 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                                 errorStyle: const TextStyle(color: Colors.red),
                               ),
                               keyboardType: TextInputType.number,
-                              validator: (value) => value!.isEmpty ? 'Enter price' : null,
+                              validator: (value) => value!.isEmpty
+                                  ? 'Enter price'
+                                  : double.tryParse(value) == null ||
+                                  double.parse(value) < 0
+                                  ? 'Enter a valid price'
+                                  : null,
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -187,13 +193,53 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                                 errorStyle: const TextStyle(color: Colors.red),
                               ),
                               keyboardType: TextInputType.number,
-                              validator: (value) => value!.isEmpty ? 'Enter stock' : null,
+                              validator: (value) => value!.isEmpty
+                                  ? 'Enter stock'
+                                  : int.tryParse(value) == null ||
+                                  int.parse(value) < 0
+                                  ? 'Enter a valid stock'
+                                  : null,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // Tax
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: TextFormField(
+                              controller: _taxController,
+                              decoration: InputDecoration(
+                                labelText: 'Tax (%)',
+                                labelStyle: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide.none,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 12,
+                                ),
+                                errorStyle: const TextStyle(color: Colors.red),
+                              ),
+                              keyboardType: TextInputType.number,
+                              validator: (value) => value!.isEmpty
+                                  ? 'Enter tax'
+                                  : double.tryParse(value) == null ||
+                                  double.parse(value) < 0
+                                  ? 'Enter a valid tax percentage'
+                                  : null,
                             ),
                           ),
                           const SizedBox(height: 16),
                           // Category Dropdown
                           BlocBuilder<AdminProductCubit, ProductState>(
-                            buildWhen: (previous, current) => current is CategoriesLoaded,
+                            buildWhen: (previous, current) =>
+                            current is CategoriesLoaded,
                             builder: (context, state) {
                               if (state is CategoriesLoaded) {
                                 final List<String> categoryNames = state.categories
@@ -209,24 +255,27 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: CustomDropdown<String>(
-                                    selectedValue: state.selectedCategory?.name?.isNotEmpty == true
+                                    selectedValue: state.selectedCategory
+                                        ?.name?.isNotEmpty ==
+                                        true
                                         ? state.selectedCategory!.name
                                         : null,
                                     items: categoryNames,
                                     labelText: 'Category',
-
                                     onChanged: (value) {
                                       if (value != null) {
                                         _cubit.selectCategory(value);
                                       }
                                     },
-                                    validator: (value) => value == null || value.isEmpty
+                                    validator: (value) =>
+                                    value == null || value.isEmpty
                                         ? 'Select a category'
                                         : null,
                                   ),
                                 );
                               }
-                              return const Center(child: CircularProgressIndicator());
+                              return const Center(
+                                  child: CircularProgressIndicator());
                             },
                           ),
                           const SizedBox(height: 16),
@@ -250,18 +299,21 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: CustomDropdown<String>(
-                                    selectedValue: state.selectedSubcategory?.name?.isNotEmpty == true
+                                    selectedValue: state.selectedSubcategory
+                                        ?.name?.isNotEmpty ==
+                                        true
                                         ? state.selectedSubcategory!.name
                                         : null,
-                                    items: subcategoryItems.isNotEmpty ? subcategoryItems : [],
+                                    items:
+                                    subcategoryItems.isNotEmpty ? subcategoryItems : [],
                                     labelText: 'Subcategory',
-
                                     onChanged: (value) {
                                       if (value != null) {
                                         _cubit.selectSubcategory(value);
                                       }
                                     },
-                                    validator: (value) => value == null || value.isEmpty
+                                    validator: (value) =>
+                                    value == null || value.isEmpty
                                         ? 'Select a subcategory'
                                         : null,
                                   ),
@@ -306,6 +358,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
     _nameController.dispose();
     _priceController.dispose();
     _stockController.dispose();
+    _taxController.dispose(); // Dispose tax controller
     super.dispose();
   }
 }

@@ -52,11 +52,18 @@ class StoreDto {
 
 abstract class StockRepository {
   Future<List<StockDto>> getStock(String companyId, String? storeId);
+
   Future<void> addStock(String companyId, StockDto stock);
+
   Future<void> updateStock(String companyId, StockDto stock);
-  Future<StockDto?> getStockByProduct(String companyId, String storeId, String productId);
+
+  Future<StockDto?> getStockByProduct(
+      String companyId, String storeId, String productId);
+
   Future<List<StoreDto>> getStores(String companyId);
+
   Future<String> getDefaultStoreId(String companyId);
+
   Future<void> addStore(String companyId, StoreDto store);
 }
 
@@ -72,8 +79,11 @@ class StockRepositoryImpl implements StockRepository {
   @override
   Future<List<StockDto>> getStock(String companyId, String? storeId) async {
     try {
-      final effectiveStoreId = (storeId == null || storeId.isEmpty) ? await getDefaultStoreId(companyId) : storeId;
-      final ref = firestorePathProvider.getStockCollectionRef(companyId, effectiveStoreId);
+      final effectiveStoreId = (storeId == null || storeId.isEmpty)
+          ? await getDefaultStoreId(companyId)
+          : storeId;
+      final ref = firestorePathProvider.getStockCollectionRef(
+          companyId, effectiveStoreId);
       final snapshot = await ref.get();
       return snapshot.docs.map((doc) => StockDto.fromFirestore(doc)).toList();
     } catch (e) {
@@ -84,16 +94,24 @@ class StockRepositoryImpl implements StockRepository {
   @override
   Future<void> addStock(String companyId, StockDto stock) async {
     try {
-      final effectiveStoreId = (stock.storeId == null || stock.storeId.isEmpty) ? await getDefaultStoreId(companyId) : stock.storeId;
+      final effectiveStoreId = (stock.storeId == null || stock.storeId.isEmpty)
+          ? await getDefaultStoreId(companyId)
+          : stock.storeId;
       final updatedStock = StockDto(
-        id: stock.id.isEmpty ? '${stock.productId}_$effectiveStoreId' : stock.id,
+        id: stock.id.isEmpty
+            ? '${stock.productId}_$effectiveStoreId'
+            : stock.id,
         productId: stock.productId,
         storeId: effectiveStoreId,
         quantity: stock.quantity,
         lastUpdated: stock.lastUpdated,
+        price: stock.price,
+        tax: stock.tax,
+        name: stock.name,
       );
-      final ref = firestorePathProvider.getStockCollectionRef(companyId, effectiveStoreId);
-      await ref.doc(updatedStock.id).set(updatedStock.toFirestore());
+      final ref = firestorePathProvider.getStockCollectionRef(
+          companyId, effectiveStoreId);
+      await ref.doc(updatedStock.productId).set(updatedStock.toFirestore());
     } catch (e) {
       throw Exception('Failed to add stock: $e');
     }
@@ -102,19 +120,26 @@ class StockRepositoryImpl implements StockRepository {
   @override
   Future<void> updateStock(String companyId, StockDto stock) async {
     try {
-      final effectiveStoreId = (stock.storeId == null || stock.storeId.isEmpty) ? await getDefaultStoreId(companyId) : stock.storeId;
-      final ref = firestorePathProvider.getStockCollectionRef(companyId, effectiveStoreId);
-      await ref.doc(stock.id).update(stock.toFirestore());
+      final effectiveStoreId = (stock.storeId == null || stock.storeId.isEmpty)
+          ? await getDefaultStoreId(companyId)
+          : stock.storeId;
+      final ref = firestorePathProvider.getStockCollectionRef(
+          companyId, effectiveStoreId);
+      await ref.doc(stock.productId).update(stock.toFirestore());
     } catch (e) {
       throw Exception('Failed to update stock: $e');
     }
   }
 
   @override
-  Future<StockDto?> getStockByProduct(String companyId, String storeId, String productId) async {
+  Future<StockDto?> getStockByProduct(
+      String companyId, String storeId, String productId) async {
     try {
-      final effectiveStoreId = (storeId == null || storeId.isEmpty) ? await getDefaultStoreId(companyId) : storeId;
-      final ref = firestorePathProvider.getStockCollectionRef(companyId, effectiveStoreId);
+      final effectiveStoreId = (storeId == null || storeId.isEmpty)
+          ? await getDefaultStoreId(companyId)
+          : storeId;
+      final ref = firestorePathProvider.getStockCollectionRef(
+          companyId, effectiveStoreId);
       final snapshot = await ref.where('productId', isEqualTo: productId).get();
       if (snapshot.docs.isEmpty) return null;
       return StockDto.fromFirestore(snapshot.docs.first);
@@ -146,7 +171,8 @@ class StockRepositoryImpl implements StockRepository {
         createdBy: adminUserId,
         createdAt: DateTime.now(),
       );
-      await firestorePathProvider.getStoresCollectionRef(companyId)
+      await firestorePathProvider
+          .getStoresCollectionRef(companyId)
           .doc(defaultStore.storeId)
           .set(defaultStore.toFirestore());
       return defaultStore.storeId;

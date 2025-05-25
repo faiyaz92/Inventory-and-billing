@@ -39,6 +39,11 @@ class StockServiceImpl implements StockService {
               storeId: dto.storeId,
               quantity: dto.quantity,
               lastUpdated: dto.lastUpdated,
+              price: dto.price,
+              subcategoryId: dto.subcategoryId,
+              tax: dto.tax,
+              categoryId: dto.categoryId,
+              name: dto.name,
             ))
         .toList();
   }
@@ -50,16 +55,30 @@ class StockServiceImpl implements StockService {
     if (companyId.isEmpty) {
       throw Exception('Company ID not found');
     }
+
     final stockDto = StockDto(
       id: stock.id,
       productId: stock.productId,
       storeId: stock.storeId,
       quantity: stock.quantity,
       lastUpdated: stock.lastUpdated,
+      name: stock.name,
+      price: stock.price,
+      stock: null,
+      // Explicitly ignore Product.stock
+      category: stock.category,
+      categoryId: stock.categoryId,
+      subcategoryId: stock.subcategoryId,
+      subcategoryName: stock.subcategoryName,
+      tax: stock.tax,
     );
+
     await stockRepository.addStock(companyId, stockDto);
   }
 
+  /// Updates an existing stock entry in Firestore.
+  /// Maps all StockModel fields, including nullable Product fields, to StockDto.
+  /// Sets stock field to null as Product.stock is ignored.
   @override
   Future<void> updateStock(StockModel stock) async {
     final userInfo = await accountRepository.getUserInfo();
@@ -67,13 +86,24 @@ class StockServiceImpl implements StockService {
     if (companyId.isEmpty) {
       throw Exception('Company ID not found');
     }
+
     final stockDto = StockDto(
       id: stock.id,
       productId: stock.productId,
       storeId: stock.storeId,
       quantity: stock.quantity,
       lastUpdated: stock.lastUpdated,
+      name: stock.name,
+      price: stock.price,
+      stock: null,
+      // Explicitly ignore Product.stock
+      category: stock.category,
+      categoryId: stock.categoryId,
+      subcategoryId: stock.subcategoryId,
+      subcategoryName: stock.subcategoryName,
+      tax: stock.tax,
     );
+
     await stockRepository.updateStock(companyId, stockDto);
   }
 

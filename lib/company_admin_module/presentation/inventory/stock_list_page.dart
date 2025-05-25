@@ -256,7 +256,7 @@ class _StockListPageState extends State<StockListPage> {
                                       size: 36,
                                     ),
                                     title: Text(
-                                      'Product ID: ${stock.productId}',
+                                      stock.name,
                                       style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,

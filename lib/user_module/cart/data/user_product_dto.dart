@@ -18,10 +18,11 @@ class UserProductDto {
 
   factory UserProductDto.fromStock(StockModel stock) {
     return UserProductDto(
-      id: stock.productId,
-      name: stock.productId, // Using productId as name for simplicity
-      price: 10.0, // Default price as per instructions
-    );
+        id: stock.productId,
+        name: stock.productId, // Using productId as name for simplicity
+        price: stock.price ?? 0,
+        taxRate: (stock.tax??0)/100,
+        );
   }
 
   Map<String, dynamic> toMap() {

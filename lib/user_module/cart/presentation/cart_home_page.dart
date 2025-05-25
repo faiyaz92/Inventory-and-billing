@@ -5,6 +5,7 @@ import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dar
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
+import 'package:requirment_gathering_app/user_module/cart/data/user_product_model.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/cart_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/product_cubit.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/wish_list_page.dart';
@@ -34,16 +35,16 @@ class _CartHomePageState extends State<CartHomePage> {
         title: _selectedIndex == 0
             ? 'Home'
             : _selectedIndex == 1
-                ? 'Wishlist'
-                : _selectedIndex == 2
-                    ? 'Cart'
-                    : 'Profile',
+            ? 'Wishlist'
+            : _selectedIndex == 2
+            ? 'Cart'
+            : 'Profile',
         actions: [
           IconButton(
             icon: const Icon(Icons.shopping_cart),
             onPressed: () {
               setState(() {
-                _selectedIndex = 2; // Switch to Cart tab
+                _selectedIndex = 2;
               });
             },
           ),
@@ -52,7 +53,6 @@ class _CartHomePageState extends State<CartHomePage> {
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          // Home Page (Original UI)
           BlocProvider(
             create: (_) => sl<ProductCubit>()..fetchProducts(),
             child: Container(
@@ -89,6 +89,13 @@ class _CartHomePageState extends State<CartHomePage> {
                       ),
                       Expanded(
                         child: BlocConsumer<ProductCubit, ProductState>(
+                          buildWhen: (previous, current) =>
+                          current is ProductLoading ||
+                              current is ProductLoaded ||
+                              current is ProductError ||
+                              current is OptimisticCartAdded ||
+                              current is OptimisticCartUpdated ||
+                              current is OptimisticWishlistToggled,
                           listener: (context, state) {
                             if (state is ProductError) {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -125,11 +132,11 @@ class _CartHomePageState extends State<CartHomePage> {
                                         ElevatedButton(
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor:
-                                                Theme.of(context).primaryColor,
+                                            Theme.of(context).primaryColor,
                                             foregroundColor: Colors.white,
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(8),
+                                              BorderRadius.circular(8),
                                             ),
                                           ),
                                           onPressed: () => context
@@ -143,174 +150,257 @@ class _CartHomePageState extends State<CartHomePage> {
                                 ),
                               );
                             }
+                            // Handle states with products
+                            List<UserProduct> products = [];
+                            List<UserProduct> wishlistItems = [];
+                            List<CartItem> cartItems = [];
+
                             if (state is ProductLoaded) {
-                              final products = state.products
-                                  .where((p) => p.name
-                                      .toLowerCase()
-                                      .contains(_searchQuery.toLowerCase()))
-                                  .toList();
-                              if (products.isEmpty) {
-                                return Center(
-                                  child: Card(
-                                    elevation: 4,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Padding(
-                                      padding: EdgeInsets.all(16.0),
-                                      child: Text(
-                                        'No products found',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.black87,
-                                        ),
+                              products = state.products;
+                              wishlistItems = state.wishlistItems;
+                              cartItems = state.cartItems;
+                            } else if (state is OptimisticCartAdded) {
+                              products = state.products;
+                              wishlistItems = state.wishlistItems;
+                              cartItems = state.cartItems;
+                            } else if (state is OptimisticCartUpdated) {
+                              products = state.products;
+                              wishlistItems = state.wishlistItems;
+                              cartItems = state.cartItems;
+                            } else if (state is OptimisticWishlistToggled) {
+                              products = state.products;
+                              wishlistItems = state.wishlistItems;
+                              cartItems = state.cartItems;
+                            }
+
+                            final filteredProducts = products
+                                .where((p) => p.name
+                                .toLowerCase()
+                                .contains(_searchQuery.toLowerCase()))
+                                .toList();
+
+                            if (filteredProducts.isEmpty) {
+                              return Center(
+                                child: Card(
+                                  elevation: 4,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(16.0),
+                                    child: Text(
+                                      'No products found',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.black87,
                                       ),
                                     ),
                                   ),
-                                );
-                              }
-                              return GridView.builder(
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  childAspectRatio: 1,
-                                  crossAxisSpacing: 12.0,
-                                  mainAxisSpacing: 12.0,
                                 ),
-                                itemCount: products.length,
-                                itemBuilder: (context, index) {
-                                  final product = products[index];
-                                  final isInWishlist = state.wishlistItems
-                                      .any((item) => item.id == product.id);
-                                  final cartItem = state.cartItems.firstWhere(
-                                    (item) => item.productId == product.id,
-                                    orElse: () => CartItem(
-                                      productId: product.id,
-                                      productName: product.name,
-                                      price: product.price,
-                                      quantity: 0,
-                                      taxRate: 0,
-                                      taxAmount: 0,
-                                    ),
-                                  );
-                                  final quantity = cartItem.quantity;
+                              );
+                            }
 
-                                  return Card(
-                                    elevation: 4,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Expanded(
-                                            child: Center(
+                            return GridView.builder(
+                              gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                childAspectRatio: 0.85,
+                                crossAxisSpacing: 12.0,
+                                mainAxisSpacing: 12.0,
+                              ),
+                              itemCount: filteredProducts.length,
+                              itemBuilder: (context, index) {
+                                final product = filteredProducts[index];
+                                final isInWishlist =
+                                wishlistItems.any((item) => item.id == product.id);
+                                final cartItem = cartItems.firstWhere(
+                                      (item) => item.productId == product.id,
+                                  orElse: () => CartItem(
+                                    productId: product.id,
+                                    productName: product.name,
+                                    price: product.price,
+                                    quantity: 0,
+                                    taxRate: 0,
+                                    taxAmount: 0,
+                                  ),
+                                );
+                                final quantity = cartItem.quantity;
+
+                                return Card(
+                                  elevation: 4,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(8),
+                                          child: Image.network(
+                                            'https://via.placeholder.com/100',
+                                            width: double.infinity,
+                                            height: 100,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (context, error, stackTrace) =>
+                                                Container(
+                                                  width: double.infinity,
+                                                  height: 100,
+                                                  color: Colors.grey[300],
+                                                  child: const Icon(
+                                                    Icons.image_not_supported,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
                                               child: Text(
                                                 product.name,
                                                 style: const TextStyle(
-                                                  fontSize: 18,
+                                                  fontSize: 16,
                                                   fontWeight: FontWeight.bold,
+                                                  color: Colors.black87,
                                                 ),
-                                                textAlign: TextAlign.center,
-                                                maxLines: 2,
+                                                maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
-                                          ),
-                                          Text(
-                                            '₹${product.price}',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.grey[600],
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              IconButton(
-                                                icon: Icon(
-                                                  isInWishlist
-                                                      ? Icons.favorite
-                                                      : Icons.favorite_border,
-                                                  color: isInWishlist
-                                                      ? Colors.red
-                                                      : Colors.grey[600],
-                                                  size: 24,
-                                                ),
-                                                onPressed: () => context
-                                                    .read<ProductCubit>()
-                                                    .toggleWishlist(product),
+                                            Text(
+                                              '₹${product.price.toStringAsFixed(2)}',
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                                color: Colors.black87,
                                               ),
-                                              const SizedBox(width: 8),
-                                              if (quantity == 0)
-                                                IconButton(
-                                                  icon: Icon(
-                                                    Icons.add_shopping_cart,
-                                                    color: Theme.of(context)
-                                                        .primaryColor,
-                                                    size: 24,
-                                                  ),
-                                                  onPressed: () => context
-                                                      .read<ProductCubit>()
-                                                      .addToCart(product, 1),
-                                                )
-                                              else
-                                                Row(
+                                            ),
+                                          ],
+                                        ),
+                                        const Spacer(),
+                                        Row(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            IconButton(
+                                              icon: Icon(
+                                                isInWishlist
+                                                    ? Icons.favorite
+                                                    : Icons.favorite_border,
+                                                color: isInWishlist
+                                                    ? Colors.red
+                                                    : Colors.grey[600],
+                                                size: 24,
+                                              ),
+                                              onPressed: () => context
+                                                  .read<ProductCubit>()
+                                                  .optimisticToggleWishlist(product),
+                                              constraints: const BoxConstraints(),
+                                              padding: EdgeInsets.zero,
+                                            ),
+                                            Container(
+                                              width: 110,
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 8, vertical: 4),
+                                              decoration: BoxDecoration(
+                                                color: Colors.blue[700],
+                                                borderRadius:
+                                                BorderRadius.circular(16),
+                                              ),
+                                              child: quantity == 0
+                                                  ? InkWell(
+                                                onTap: () => context
+                                                    .read<ProductCubit>()
+                                                    .optimisticAddToCart(
+                                                    product, 1),
+                                                child: const Row(
+                                                  mainAxisAlignment:
+                                                  MainAxisAlignment.center,
                                                   children: [
-                                                    IconButton(
-                                                      icon: Icon(
-                                                        Icons.remove_circle,
-                                                        color: Theme.of(context)
-                                                            .primaryColor,
-                                                        size: 24,
+                                                    Padding(
+                                                      padding:
+                                                      EdgeInsets.all(8),
+                                                      child: Icon(
+                                                        Icons.add,
+                                                        color: Colors.white,
+                                                        size: 16,
                                                       ),
-                                                      onPressed: () => context
-                                                          .read<ProductCubit>()
-                                                          .updateCartQuantity(
-                                                              product.id,
-                                                              quantity - 1),
                                                     ),
                                                     Text(
-                                                      '$quantity',
-                                                      style: const TextStyle(
-                                                        fontSize: 14,
+                                                      'Add',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: Colors.white,
                                                         fontWeight:
-                                                            FontWeight.w500,
+                                                        FontWeight.w500,
                                                       ),
-                                                    ),
-                                                    IconButton(
-                                                      icon: Icon(
-                                                        Icons.add_circle,
-                                                        color: Theme.of(context)
-                                                            .primaryColor,
-                                                        size: 24,
-                                                      ),
-                                                      onPressed: () => context
-                                                          .read<ProductCubit>()
-                                                          .updateCartQuantity(
-                                                              product.id,
-                                                              quantity + 1),
                                                     ),
                                                   ],
                                                 ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
+                                              )
+                                                  : Row(
+                                                mainAxisAlignment:
+                                                MainAxisAlignment
+                                                    .spaceBetween,
+                                                children: [
+                                                  InkWell(
+                                                    onTap: () => context
+                                                        .read<ProductCubit>()
+                                                        .optimisticUpdateQuantity(
+                                                        product.id,
+                                                        quantity - 1),
+                                                    child: const Padding(
+                                                      padding:
+                                                      EdgeInsets.all(8),
+                                                      child: Icon(
+                                                        Icons.remove,
+                                                        color: Colors.white,
+                                                        size: 16,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    '$quantity',
+                                                    style: const TextStyle(
+                                                      fontSize: 14,
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                      FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                  InkWell(
+                                                    onTap: () => context
+                                                        .read<ProductCubit>()
+                                                        .optimisticUpdateQuantity(
+                                                        product.id,
+                                                        quantity + 1),
+                                                    child: const Padding(
+                                                      padding:
+                                                      EdgeInsets.all(8),
+                                                      child: Icon(
+                                                        Icons.add,
+                                                        color: Colors.white,
+                                                        size: 16,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
-                                  );
-                                },
-                              );
-                            }
-                            return const Center(
-                                child: Text('No products found'));
+                                  ),
+                                );
+                              },
+                            );
                           },
                         ),
                       ),
@@ -320,11 +410,8 @@ class _CartHomePageState extends State<CartHomePage> {
               ),
             ),
           ),
-          // Wishlist Page
           const WishlistPage(),
-          // Cart Page
           const CartPage(),
-          // Profile Page
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -342,7 +429,6 @@ class _CartHomePageState extends State<CartHomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // User Details
                     Card(
                       elevation: 4,
                       shape: RoundedRectangleBorder(
@@ -363,7 +449,7 @@ class _CartHomePageState extends State<CartHomePage> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Name: John Doe', // Placeholder for user name
+                              'Name: John Doe',
                               style: TextStyle(
                                 fontSize: 16,
                                 color: Colors.grey[600],
@@ -372,7 +458,6 @@ class _CartHomePageState extends State<CartHomePage> {
                             const SizedBox(height: 4),
                             Text(
                               'Email: johndoe@example.com',
-                              // Placeholder for user email
                               style: TextStyle(
                                 fontSize: 16,
                                 color: Colors.grey[600],
@@ -383,7 +468,6 @@ class _CartHomePageState extends State<CartHomePage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    // Options List
                     Expanded(
                       child: ListView(
                         children: [
@@ -467,7 +551,6 @@ class _CartHomePageState extends State<CartHomePage> {
                                 color: Theme.of(context).primaryColor,
                               ),
                               onTap: () {
-                                // Add logout logic here
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('Logged out')),
                                 );

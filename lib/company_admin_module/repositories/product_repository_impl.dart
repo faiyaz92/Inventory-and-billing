@@ -7,26 +7,37 @@ class ProductRepositoryImpl implements ProductRepository {
   final FirebaseFirestore firestore;
   final IFirestorePathProvider firestorePathProvider;
 
-  ProductRepositoryImpl({required this.firestore, required this.firestorePathProvider});
+  ProductRepositoryImpl(
+      {required this.firestore, required this.firestorePathProvider});
 
   @override
   Future<List<ProductDTO>> getProducts(String companyId) async {
-    final snapshot = await firestorePathProvider.getProductCollectionRef(companyId).get();
+    final snapshot =
+        await firestorePathProvider.getProductCollectionRef(companyId).get();
     return snapshot.docs.map((doc) => ProductDTO.fromFirestore(doc)).toList();
   }
 
   @override
   Future<void> addProduct(String companyId, ProductDTO product) {
-    return firestorePathProvider.getProductCollectionRef(companyId).doc(product.name).set(product.toFirestore());
+    return firestorePathProvider
+        .getProductCollectionRef(companyId)
+        .doc(product.name)  //product inital name would be id and id never change
+        .set(product.toFirestore());
   }
 
   @override
   Future<void> updateProduct(String companyId, ProductDTO product) {
-    return firestorePathProvider.getProductCollectionRef(companyId).doc(product.id).update(product.toFirestore());
+    return firestorePathProvider
+        .getProductCollectionRef(companyId)
+        .doc(product.id)
+        .update(product.toFirestore());
   }
 
   @override
   Future<void> deleteProduct(String companyId, String productId) {
-    return firestorePathProvider.getProductCollectionRef(companyId).doc(productId).delete();
+    return firestorePathProvider
+        .getProductCollectionRef(companyId)
+        .doc(productId)
+        .delete();
   }
 }

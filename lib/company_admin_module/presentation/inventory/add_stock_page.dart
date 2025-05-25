@@ -2,8 +2,9 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/inventory/stock_model.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/stock_cubit.dart';
-import 'package:requirment_gathering_app/company_admin_module/presentation/product/product_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/product/admin_product_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/product_state.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
@@ -50,16 +51,16 @@ class _AddStockPageState extends State<AddStockPage> {
             key: _formKey,
             child: BlocConsumer<StockCubit, StockState>(
               listener: (context, state) {
-                if (state is StockLoaded) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Stock added successfully')),
-                  );
-                  // sl<Coordinator>().navigateBack(isUpdated: true);
-                } else if (state is StockError) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(state.error), backgroundColor: AppColors.red),
-                  );
-                }
+                // if (state is StockLoaded) {
+                //   ScaffoldMessenger.of(context).showSnackBar(
+                //     const SnackBar(content: Text('Stock added successfully')),
+                //   );
+                //   sl<Coordinator>().navigateBack(isUpdated: true);
+                // } else if (state is StockError) {
+                //   ScaffoldMessenger.of(context).showSnackBar(
+                //     SnackBar(content: Text(state.error), backgroundColor: AppColors.red),
+                //   );
+                // }
               },
               builder: (context, state) {
                 return BlocBuilder<StockCubit, StockState>(
@@ -134,14 +135,38 @@ class _AddStockPageState extends State<AddStockPage> {
                         ElevatedButton(
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
+                              // Fetch the selected Product
+                              final selectedProduct = products.firstWhere(
+                                    (product) => product.id == _selectedProductId,
+                                orElse: () => Product(
+                                  id: _selectedProductId ?? '',
+                                  name: '',
+                                  price: 0.0,
+                                  stock: 0,
+                                  category: '',
+                                  categoryId: '',
+                                  subcategoryId: '',
+                                  subcategoryName: '',
+                                  tax: 0.0,
+                                ),
+                              );
+
                               final stock = StockModel(
                                 id: '${_selectedProductId}_${_selectedStoreId}',
                                 productId: _selectedProductId!,
                                 storeId: _selectedStoreId!,
                                 quantity: _quantity,
                                 lastUpdated: DateTime.now(),
+                                name: null, // Let StockCubit map
+                                price: null,
+                                stock: null,
+                                category: null,
+                                categoryId: null,
+                                subcategoryId: null,
+                                subcategoryName: null,
+                                tax: null,
                               );
-                              _stockCubit.addStock(stock);
+                              _stockCubit.addStock(stock, product: selectedProduct);
                             }
                           },
                           child: const Text(AppLabels.saveButtonText),
