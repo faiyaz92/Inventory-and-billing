@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/stock_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/store_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/transaction_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/account_ledger_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/add_edit_category_cubit.dart';
@@ -319,7 +320,9 @@ void _initCubits() {
       orderService: sl<IOrderService>(),
       accountRepository: sl<AccountRepository>()));
   sl.registerFactory(() => AdminOrderCubit(
-      orderService: sl<IOrderService>(), employeeServices: sl<UserServices>()));
+      orderService: sl<IOrderService>(),
+      employeeServices: sl<UserServices>(),
+      storeService: sl<StoreService>()));
   sl.registerFactory(() => SalesmanOrderCubit(
         employeeServices: sl<UserServices>(),
         productService: sl<IUserProductService>(),

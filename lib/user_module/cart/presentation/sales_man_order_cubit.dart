@@ -222,9 +222,7 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
       return;
     }
 
-    emit(SalesmanOrderLoading(
-      dialogMessage: 'Wait...'
-    ));
+    emit(SalesmanOrderLoading(dialogMessage: 'Wait...'));
     try {
       // Add selected products to cart
       for (var product in _products) {
@@ -237,7 +235,9 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
       // Calculate total and create order
       final totalAmount = await cartCubit.totalAmount;
       final items = cartCubit.state.items;
-      final salesmanId = (await accountRepository.getUserInfo())?.userId;
+      final userInfo = await accountRepository.getUserInfo();
+      final salesmanId = userInfo?.userId;
+      final storeId = userInfo?.storeId;
       final order = Order(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         userId: _selectedCustomer?.userId ??
@@ -248,6 +248,7 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
         status: 'pending',
         orderDate: DateTime.now(),
         orderTakenBy: salesmanId,
+        storeId: storeId,
       );
 
       // Place the order

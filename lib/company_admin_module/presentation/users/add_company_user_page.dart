@@ -3,9 +3,9 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/store_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/add_user_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/store_services.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
@@ -15,7 +15,7 @@ import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 
 @RoutePage()
 class AddUserPage extends StatelessWidget {
-  final UserInfo? user; // Nullable: Used for editing
+  final UserInfo? user;
 
   const AddUserPage({super.key, this.user});
 
@@ -33,42 +33,6 @@ class AddUserPage extends StatelessWidget {
       child: _AddUserView(user: user),
     );
   }
-}
-
-class StoreCubit extends Cubit<StoreState> {
-  final StoreService storeService;
-
-  StoreCubit(this.storeService) : super(StoreInitial());
-
-  Future<void> fetchStores() async {
-    try {
-      emit(StoreLoading());
-      final stores = await storeService.getStores();
-      final defaultStoreId = await storeService.getDefaultStoreId();
-      emit(StoreLoaded(stores: stores, defaultStoreId: defaultStoreId));
-    } catch (e) {
-      emit(StoreError(e.toString()));
-    }
-  }
-}
-
-abstract class StoreState {}
-
-class StoreInitial extends StoreState {}
-
-class StoreLoading extends StoreState {}
-
-class StoreLoaded extends StoreState {
-  final List<StoreDto> stores;
-  final String defaultStoreId;
-
-  StoreLoaded({required this.stores, required this.defaultStoreId});
-}
-
-class StoreError extends StoreState {
-  final String error;
-
-  StoreError(this.error);
 }
 
 class _AddUserView extends StatefulWidget {
@@ -102,7 +66,19 @@ class _AddUserViewState extends State<_AddUserView> {
       dailyWageController.text = widget.user?.dailyWage?.toString() ?? '500.0';
       _selectedRole = widget.user?.role;
       _selectedStoreId = widget.user?.storeId;
+      print('initState (editing): _selectedStoreId = $_selectedStoreId');
     }
+    print('AddUserView initState: _selectedStoreId = $_selectedStoreId, isEditing = $isEditing');
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    emailController.dispose();
+    userNameController.dispose();
+    passwordController.dispose();
+    dailyWageController.dispose();
+    super.dispose();
   }
 
   void _resetForm() {
@@ -177,218 +153,60 @@ class _AddUserViewState extends State<_AddUserView> {
                     ),
                   ],
                 ),
-                child: BlocConsumer<AddUserCubit, AddUserState>(
-                  listener: (context, state) {
-                    if (state is AddUserSuccess) {
-                      _showSuccessDialog(isEditing
-                          ? "User updated successfully!"
-                          : "User added successfully!");
-                    } else if (state is AddUserFailure) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(state.error),
-                          backgroundColor: AppColors.red,
-                        ),
-                      );
+                child: BlocListener<StoreCubit, StoreState>(
+                  listener: (context, storeState) {
+                    if (storeState is StoreLoaded && !isEditing && _selectedStoreId == null) {
+                      // Validate defaultStoreId
+                      final validStoreId = storeState.stores.any((store) => store.storeId == storeState.defaultStoreId)
+                          ? storeState.defaultStoreId
+                          : storeState.stores.isNotEmpty
+                          ? storeState.stores.first.storeId
+                          : null;
+                      if (validStoreId != null) {
+                        _selectedStoreId = validStoreId;
+                        print('BlocListener: Set _selectedStoreId = $_selectedStoreId for adding');
+                      }
                     }
+                    print('StoreCubit state: $storeState');
                   },
-                  builder: (context, state) {
-                    return BlocBuilder<StoreCubit, StoreState>(
-                      builder: (context, storeState) {
-                        final addUserCubit = context.read<AddUserCubit>();
-                        List<StoreDto> stores = [];
-                        String? defaultStoreId;
+                  child: BlocConsumer<AddUserCubit, AddUserState>(
+                    listener: (context, state) {
+                      if (state is AddUserSuccess) {
+                        _showSuccessDialog(isEditing
+                            ? "User updated successfully!"
+                            : "User added successfully!");
+                      } else if (state is AddUserFailure) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(state.error),
+                            backgroundColor: AppColors.red,
+                          ),
+                        );
+                      }
+                    },
+                    builder: (context, state) {
+                      return BlocBuilder<StoreCubit, StoreState>(
+                        builder: (context, storeState) {
+                          List<StoreDto> stores = [];
+                          String? defaultStoreId;
 
-                        if (storeState is StoreLoaded) {
-                          stores = storeState.stores;
-                          defaultStoreId = storeState.defaultStoreId;
-                          if (_selectedStoreId == null && stores.isNotEmpty) {
-                            _selectedStoreId = defaultStoreId;
+                          if (storeState is StoreLoaded) {
+                            stores = storeState.stores;
+                            defaultStoreId = storeState.defaultStoreId;
+                            print('BlocBuilder: _selectedStoreId = $_selectedStoreId, stores = ${stores.map((s) => s.storeId).toList()}, defaultStoreId = $defaultStoreId');
                           }
-                        }
 
-                        return Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 12.0),
-                                child: TextFormField(
-                                  controller: nameController,
-                                  decoration: InputDecoration(
-                                    labelText: "Full Name",
-                                    labelStyle: TextStyle(
-                                      color: Theme.of(context).primaryColor,
-                                      fontSize: 16.0,
-                                    ),
-                                    filled: true,
-                                    fillColor: Colors.grey[100],
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      borderSide: BorderSide(color: Colors.grey[400]!),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      borderSide: BorderSide(color: Colors.grey[400]!),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                                    ),
-                                  ),
-                                  style: const TextStyle(fontSize: 16.0),
-                                  validator: (value) =>
-                                  value!.isEmpty ? "Name is required" : null,
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 12.0),
-                                child: TextFormField(
-                                  controller: emailController,
-                                  decoration: InputDecoration(
-                                    labelText: "Email",
-                                    labelStyle: TextStyle(
-                                      color: Theme.of(context).primaryColor,
-                                      fontSize: 16.0,
-                                    ),
-                                    filled: true,
-                                    fillColor: Colors.grey[100],
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      borderSide: BorderSide(color: Colors.grey[400]!),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      borderSide: BorderSide(color: Colors.grey[400]!),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                                    ),
-                                  ),
-                                  keyboardType: TextInputType.emailAddress,
-                                  style: const TextStyle(fontSize: 16.0),
-                                  validator: (value) =>
-                                  value!.isEmpty ? "Email is required" : null,
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 12.0),
-                                child: TextFormField(
-                                  controller: userNameController,
-                                  decoration: InputDecoration(
-                                    labelText: "Username",
-                                    labelStyle: TextStyle(
-                                      color: Theme.of(context).primaryColor,
-                                      fontSize: 16.0,
-                                    ),
-                                    filled: true,
-                                    fillColor: Colors.grey[100],
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      borderSide: BorderSide(color: Colors.grey[400]!),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      borderSide: BorderSide(color: Colors.grey[400]!),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                                    ),
-                                  ),
-                                  style: const TextStyle(fontSize: 16.0),
-                                  validator: (value) =>
-                                  value!.isEmpty ? "Username is required" : null,
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 12.0),
-                                child: TextFormField(
-                                  controller: dailyWageController,
-                                  decoration: InputDecoration(
-                                    labelText: "Daily Wage",
-                                    labelStyle: TextStyle(
-                                      color: Theme.of(context).primaryColor,
-                                      fontSize: 16.0,
-                                    ),
-                                    filled: true,
-                                    fillColor: Colors.grey[100],
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      borderSide: BorderSide(color: Colors.grey[400]!),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      borderSide: BorderSide(color: Colors.grey[400]!),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                                    ),
-                                  ),
-                                  keyboardType: TextInputType.number,
-                                  style: const TextStyle(fontSize: 16.0),
-                                  validator: (value) {
-                                    if (value!.isEmpty) return "Daily wage is required";
-                                    final wage = double.tryParse(value);
-                                    if (wage == null || wage <= 0) return "Enter a valid wage";
-                                    return null;
-                                  },
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 12.0),
-                                child: DropdownButtonFormField<Role>(
-                                  value: _selectedRole,
-                                  decoration: InputDecoration(
-                                    labelText: "Select Role",
-                                    labelStyle: TextStyle(
-                                      color: Theme.of(context).primaryColor,
-                                      fontSize: 16.0,
-                                    ),
-                                    filled: true,
-                                    fillColor: Colors.grey[100],
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      borderSide: BorderSide(color: Colors.grey[400]!),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      borderSide: BorderSide(color: Colors.grey[400]!),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                                    ),
-                                  ),
-                                  items: Role.values.map((role) {
-                                    return DropdownMenuItem(
-                                      value: role,
-                                      child: Text(
-                                        role.name.toUpperCase(),
-                                        style: const TextStyle(fontSize: 16.0, color: Colors.black),
-                                      ),
-                                    );
-                                  }).toList(),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _selectedRole = value;
-                                    });
-                                  },
-                                  validator: (value) =>
-                                  value == null ? "Role is required" : null,
-                                  style: const TextStyle(fontSize: 16.0, color: Colors.black),
-                                ),
-                              ),
-                              if (storeState is StoreLoaded && stores.length > 1)
+                          return Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                                 Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 12.0),
-                                  child: DropdownButtonFormField<String>(
-                                    value: _selectedStoreId,
+                                  child: TextFormField(
+                                    controller: nameController,
                                     decoration: InputDecoration(
-                                      labelText: "Select Store",
+                                      labelText: "Full Name",
                                       labelStyle: TextStyle(
                                         color: Theme.of(context).primaryColor,
                                         fontSize: 16.0,
@@ -408,108 +226,285 @@ class _AddUserViewState extends State<_AddUserView> {
                                         borderSide: BorderSide(color: Theme.of(context).primaryColor),
                                       ),
                                     ),
-                                    items: stores.map((store) {
+                                    style: const TextStyle(fontSize: 16.0),
+                                    validator: (value) =>
+                                    value!.isEmpty ? "Name is required" : null,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                  child: TextFormField(
+                                    controller: emailController,
+                                    decoration: InputDecoration(
+                                      labelText: "Email",
+                                      labelStyle: TextStyle(
+                                        color: Theme.of(context).primaryColor,
+                                        fontSize: 16.0,
+                                      ),
+                                      filled: true,
+                                      fillColor: Colors.grey[100],
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: BorderSide(color: Colors.grey[400]!),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: BorderSide(color: Colors.grey[400]!),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                      ),
+                                    ),
+                                    keyboardType: TextInputType.emailAddress,
+                                    style: const TextStyle(fontSize: 16.0),
+                                    validator: (value) =>
+                                    value!.isEmpty ? "Email is required" : null,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                  child: TextFormField(
+                                    controller: userNameController,
+                                    decoration: InputDecoration(
+                                      labelText: "Username",
+                                      labelStyle: TextStyle(
+                                        color: Theme.of(context).primaryColor,
+                                        fontSize: 16.0,
+                                      ),
+                                      filled: true,
+                                      fillColor: Colors.grey[100],
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: BorderSide(color: Colors.grey[400]!),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: BorderSide(color: Colors.grey[400]!),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                      ),
+                                    ),
+                                    style: const TextStyle(fontSize: 16.0),
+                                    validator: (value) =>
+                                    value!.isEmpty ? "Username is required" : null,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                  child: TextFormField(
+                                    controller: dailyWageController,
+                                    decoration: InputDecoration(
+                                      labelText: "Daily Wage",
+                                      labelStyle: TextStyle(
+                                        color: Theme.of(context).primaryColor,
+                                        fontSize: 16.0,
+                                      ),
+                                      filled: true,
+                                      fillColor: Colors.grey[100],
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: BorderSide(color: Colors.grey[400]!),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: BorderSide(color: Colors.grey[400]!),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                      ),
+                                    ),
+                                    keyboardType: TextInputType.number,
+                                    style: const TextStyle(fontSize: 16.0),
+                                    validator: (value) {
+                                      if (value!.isEmpty) return "Daily wage is required";
+                                      final wage = double.tryParse(value);
+                                      if (wage == null || wage <= 0) return "Enter a valid wage";
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                  child: DropdownButtonFormField<Role>(
+                                    value: _selectedRole,
+                                    decoration: InputDecoration(
+                                      labelText: "Select Role",
+                                      labelStyle: TextStyle(
+                                        color: Theme.of(context).primaryColor,
+                                        fontSize: 16.0,
+                                      ),
+                                      filled: true,
+                                      fillColor: Colors.grey[100],
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: BorderSide(color: Colors.grey[400]!),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: BorderSide(color: Colors.grey[400]!),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                      ),
+                                    ),
+                                    items: Role.values.map((role) {
                                       return DropdownMenuItem(
-                                        value: store.storeId,
+                                        value: role,
                                         child: Text(
-                                          store.name,
+                                          role.name.toUpperCase(),
                                           style: const TextStyle(fontSize: 16.0, color: Colors.black),
                                         ),
                                       );
                                     }).toList(),
                                     onChanged: (value) {
                                       setState(() {
-                                        _selectedStoreId = value;
+                                        _selectedRole = value;
+                                        print('Role Dropdown onChanged: _selectedRole = $_selectedRole');
                                       });
                                     },
                                     validator: (value) =>
-                                    value == null ? "Store is required" : null,
+                                    value == null ? "Role is required" : null,
                                     style: const TextStyle(fontSize: 16.0, color: Colors.black),
                                   ),
                                 ),
-                              if (!isEditing)
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                                  child: TextFormField(
-                                    controller: passwordController,
-                                    decoration: InputDecoration(
-                                      labelText: "Password",
-                                      labelStyle: TextStyle(
-                                        color: Theme.of(context).primaryColor,
+                                if (storeState is StoreLoaded && stores.length > 1)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                    child: DropdownButtonFormField<String>(
+                                      key: ValueKey(_selectedStoreId),
+                                      value: _selectedStoreId,
+                                      decoration: InputDecoration(
+                                        labelText: "Select Store",
+                                        labelStyle: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                          fontSize: 16.0,
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.grey[100],
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                        ),
+                                      ),
+                                      items: stores.map((store) {
+                                        return DropdownMenuItem(
+                                          value: store.storeId,
+                                          child: Text(
+                                            store.name,
+                                            style: const TextStyle(fontSize: 16.0, color: Colors.black),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: (value) {
+                                        _selectedStoreId = value;
+                                        print('Store Dropdown onChanged: _selectedStoreId = $_selectedStoreId');
+                                      },
+                                      validator: (value) =>
+                                      value == null ? "Store is required" : null,
+                                      style: const TextStyle(fontSize: 16.0, color: Colors.black),
+                                    ),
+                                  ),
+                                if (!isEditing)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                    child: TextFormField(
+                                      controller: passwordController,
+                                      decoration: InputDecoration(
+                                        labelText: "Password",
+                                        labelStyle: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                          fontSize: 16.0,
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.grey[100],
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                        ),
+                                      ),
+                                      obscureText: true,
+                                      style: const TextStyle(fontSize: 16.0),
+                                      validator: (value) => value!.length < 6
+                                          ? "Password must be at least 6 characters"
+                                          : null,
+                                    ),
+                                  ),
+                                const SizedBox(height: 20),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: state is AddUserLoading
+                                      ? const CircularProgressIndicator()
+                                      : ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Theme.of(context).primaryColor,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 24.0,
+                                        vertical: 12.0,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                      ),
+                                      textStyle: const TextStyle(
                                         fontSize: 16.0,
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.grey[100],
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Colors.grey[400]!),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Colors.grey[400]!),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    obscureText: true,
-                                    style: const TextStyle(fontSize: 16.0),
-                                    validator: (value) => value!.length < 6
-                                        ? "Password must be at least 6 characters"
-                                        : null,
-                                  ),
-                                ),
-                              const SizedBox(height: 20),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: state is AddUserLoading
-                                    ? const CircularProgressIndicator()
-                                    : ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Theme.of(context).primaryColor,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 24.0,
-                                      vertical: 12.0,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                    ),
-                                    textStyle: const TextStyle(
-                                      fontSize: 16.0,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    if (_formKey.currentState!.validate()) {
-                                      final userInfo = UserInfo(
-                                        userId: widget.user?.userId,
-                                        email: emailController.text.trim(),
-                                        role: _selectedRole,
-                                        name: nameController.text.trim(),
-                                        userName: userNameController.text.trim(),
-                                        dailyWage: double.tryParse(dailyWageController.text.trim()),
-                                        storeId: _selectedStoreId ?? defaultStoreId,
-                                      );
+                                    onPressed: () {
+                                      if (_formKey.currentState!.validate()) {
+                                        final userInfo = UserInfo(
+                                          userId: widget.user?.userId,
+                                          email: emailController.text.trim(),
+                                          role: _selectedRole,
+                                          name: nameController.text.trim(),
+                                          userName: userNameController.text.trim(),
+                                          dailyWage: double.tryParse(dailyWageController.text.trim()),
+                                          storeId: _selectedStoreId ?? defaultStoreId,
+                                        );
 
-                                      if (isEditing) {
-                                        addUserCubit.updateUser(userInfo);
-                                      } else {
-                                        addUserCubit.addUser(
-                                            userInfo, passwordController.text.trim());
+                                        print('Submitting userInfo with storeId = ${userInfo.storeId}');
+
+                                        if (isEditing) {
+                                          context.read<AddUserCubit>().updateUser(userInfo);
+                                        } else {
+                                          context.read<AddUserCubit>().addUser(
+                                            userInfo,
+                                            passwordController.text.trim(),
+                                          );
+                                        }
                                       }
-                                    }
-                                  },
-                                  child: Text(isEditing ? "Update User" : "Create User"),
+                                    },
+                                    child: Text(isEditing ? "Update User" : "Create User"),
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  },
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
               ),
             ),

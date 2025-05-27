@@ -180,7 +180,7 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
   }
 
   @override
-  Future<List<UserInfoDto>> getUsersFromTenantCompany(String companyId) async {
+  Future<List<UserInfoDto>> getUsersFromTenantCompany(String companyId, {String? storeId}) async {
     try {
       final userInfo = await _accountRepository.getUserInfo();
       final loggedInUserRole = userInfo?.role;
@@ -189,17 +189,25 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
       CollectionReference usersRef = _firestoreProvider.getTenantUsersRef(companyId);
       QuerySnapshot querySnapshot;
 
-      if (loggedInUserRole == Role.COMPANY_ADMIN) {
-        // COMPANY_ADMIN sees all users in the company
-        querySnapshot = await usersRef.get();
-      } else {
-        // Other roles (USER, STORE_ADMIN, SUPER_ADMIN) see only users with the same storeId
-        if (loggedInUserStoreId == null || loggedInUserStoreId.isEmpty) {
-          throw Exception('Logged-in user has no store ID assigned.');
-        }
+      if (storeId != null && storeId.isNotEmpty) {
+        // Filter by provided storeId, regardless of role
         querySnapshot = await usersRef
-            .where('storeId', isEqualTo: loggedInUserStoreId)
+            .where('storeId', isEqualTo: storeId)
             .get();
+      } else {
+        // No storeId provided, use existing role-based logic
+        if (loggedInUserRole == Role.COMPANY_ADMIN) {
+          // COMPANY_ADMIN sees all users in the company
+          querySnapshot = await usersRef.get();
+        } else {
+          // Other roles (USER, STORE_ADMIN, SUPER_ADMIN) see only users with the same storeId
+          if (loggedInUserStoreId == null || loggedInUserStoreId.isEmpty) {
+            throw Exception('Logged-in user has no store ID assigned.');
+          }
+          querySnapshot = await usersRef
+              .where('storeId', isEqualTo: loggedInUserStoreId)
+              .get();
+        }
       }
 
       return querySnapshot.docs

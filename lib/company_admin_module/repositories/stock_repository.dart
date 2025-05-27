@@ -177,7 +177,7 @@ class StockRepositoryImpl implements StockRepository {
           .set(defaultStore.toFirestore());
       return defaultStore.storeId;
     }
-    return stores.first.storeId;
+    return stores.last.storeId;
   }
 
   @override

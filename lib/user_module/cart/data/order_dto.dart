@@ -15,6 +15,7 @@ class OrderDto {
   final String? orderDeliveredBy;
   final String? responsibleForDelivery;
   final String? lastUpdatedBy; // Added for last updated by
+  final String? storeId; // New field
 
   OrderDto({
     required this.id,
@@ -30,19 +31,20 @@ class OrderDto {
     this.orderDeliveredBy,
     this.responsibleForDelivery,
     this.lastUpdatedBy,
+     this.storeId, // New field
   });
 
   factory OrderDto.fromFirestore(Map<String, dynamic> data) {
     return OrderDto(
-      id: data['id'],
-      userId: data['userId'],
-      userName: data['userName'],
-      items: (data['items'] as List)
+      id: data['id'] ?? '',
+      userId: data['userId'] ?? '',
+      userName: data['userName'] ?? '',
+      items: (data['items'] as List? ?? [])
           .map((item) => CartItemDto.fromMap(item))
           .toList(),
-      totalAmount: data['totalAmount'],
-      status: data['status'],
-      orderDate: (data['orderDate'] as Timestamp).toDate(),
+      totalAmount: (data['totalAmount'] as num?)?.toDouble() ?? 0.0,
+      status: data['status'] ?? '',
+      orderDate: (data['orderDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
       expectedDeliveryDate: data['expectedDeliveryDate'] != null
           ? (data['expectedDeliveryDate'] as Timestamp).toDate()
           : null,
@@ -53,6 +55,7 @@ class OrderDto {
       orderDeliveredBy: data['orderDeliveredBy'],
       responsibleForDelivery: data['responsibleForDelivery'],
       lastUpdatedBy: data['lastUpdatedBy'],
+      storeId: data['storeId'] ?? '', // New field
     );
   }
 
@@ -75,6 +78,7 @@ class OrderDto {
       'orderDeliveredBy': orderDeliveredBy,
       'responsibleForDelivery': responsibleForDelivery,
       'lastUpdatedBy': lastUpdatedBy,
+      'storeId': storeId, // New field
     };
   }
 
@@ -93,6 +97,7 @@ class OrderDto {
       orderDeliveredBy: order.orderDeliveredBy,
       responsibleForDelivery: order.responsibleForDelivery,
       lastUpdatedBy: order.lastUpdatedBy,
+      storeId: order.storeId, // New field
     );
   }
 }

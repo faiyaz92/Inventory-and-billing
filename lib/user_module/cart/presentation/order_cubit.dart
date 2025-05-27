@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
 import 'package:requirment_gathering_app/user_module/cart/services/iorder_service.dart';
-import 'package:requirment_gathering_app/user_module/cart/services/order_service.dart';
 
 abstract class OrderState {}
 

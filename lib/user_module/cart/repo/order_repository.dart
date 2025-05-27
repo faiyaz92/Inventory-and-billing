@@ -7,7 +7,7 @@ abstract class IOrderRepository {
 
   Future<List<OrderDto>> getOrdersByUser(String companyId, String userId);
 
-  Future<List<OrderDto>> getAllOrders(String companyId);
+  Future<List<OrderDto>> getAllOrders(String companyId, String? storeId);
 
   Future<void> updateOrderStatus(
       String companyId, String orderId, String status, String? lastUpdatedBy);
@@ -60,13 +60,23 @@ class OrderRepositoryImpl implements IOrderRepository {
   }
 
   @override
-  Future<List<OrderDto>> getAllOrders(String companyId) async {
+  Future<List<OrderDto>> getAllOrders(String companyId, String? storeId) async {
     try {
       final ref = firestorePathProvider.getOrdersCollectionRef(companyId);
-      final snapshot = await ref.get();
+      QuerySnapshot snapshot;
+
+      if (storeId == null) {
+        // No storeId provided, fetch all orders for the company
+        snapshot = await ref.get();
+      } else {
+        // Filter orders by the provided storeId
+        snapshot = await ref
+            .where('storeId', isEqualTo: storeId)
+            .get();
+      }
+
       return snapshot.docs
-          .map((doc) =>
-              OrderDto.fromFirestore(doc.data() as Map<String, dynamic>))
+          .map((doc) => OrderDto.fromFirestore(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
       throw Exception('Failed to fetch orders: $e');
