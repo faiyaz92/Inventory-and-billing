@@ -3,7 +3,7 @@ import 'package:requirment_gathering_app/company_admin_module/data/inventory/sto
 import 'package:requirment_gathering_app/company_admin_module/data/inventory/transaction_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/employee_services.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/stock_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/transaction_service.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
@@ -29,7 +29,7 @@ class StockError extends StockState {
 
 class StockCubit extends Cubit<StockState> {
   final StockService stockService;
-  final EmployeeServices employeeServices;
+  final UserServices employeeServices;
   final TransactionService transactionService;
   final AccountRepository accountRepository;
 

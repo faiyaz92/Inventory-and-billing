@@ -1,17 +1,17 @@
 import 'package:intl/intl.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/attendance/attendance_dto.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/attendance/attendance_model.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart' show UserServices;
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.dart';
 import 'package:requirment_gathering_app/super_admin_module/repository/tenant_company_repository.dart';
-import 'employee_services.dart';
 
-class EmployeesServiceImpl implements EmployeeServices {
+class UserServiceImpl implements UserServices {
   final ITenantCompanyRepository _tenantCompanyRepository;
   final AccountRepository _accountRepository;
 
-  EmployeesServiceImpl(this._tenantCompanyRepository, this._accountRepository);
+  UserServiceImpl(this._tenantCompanyRepository, this._accountRepository);
 
   @override
   Future<void> addUserToCompany(UserInfo userInfo, String password) async {

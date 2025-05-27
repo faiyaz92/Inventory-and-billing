@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/task/task_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/tasks/task_state.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/task_service.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/employee_services.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/user_module/data/company_settings.dart';
@@ -10,7 +10,7 @@ import 'package:requirment_gathering_app/user_module/services/customer_company_s
 
 class TaskCubit extends Cubit<TaskState> {
   final TaskService _taskService;
-  final EmployeeServices _companyOperationsService;
+  final UserServices _companyOperationsService;
   final CustomerCompanyService _companyService;
   final AccountRepository accountRepository;
 

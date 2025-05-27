@@ -1,11 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/attendance/attendance_model.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/employee_services.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 
 class EmployeeDetailsCubit extends Cubit<EmployeeDetailsState> {
-  final EmployeeServices _employeeServices;
+  final UserServices _employeeServices;
 
   EmployeeDetailsCubit(this._employeeServices) : super(EmployeeDetailsInitial());
 

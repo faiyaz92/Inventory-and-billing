@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/employee_services.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
@@ -127,7 +127,7 @@ class AdminOrderSetDeliveredByError extends AdminOrderState {
 
 class AdminOrderCubit extends Cubit<AdminOrderState> {
   final IOrderService orderService;
-  final EmployeeServices employeeServices;
+  final UserServices employeeServices;
   static final _dateFormatter = DateFormat('MMM dd, yyyy');
   static final _fullDateFormatter = DateFormat('yyyy-MM-dd HH:mm');
 

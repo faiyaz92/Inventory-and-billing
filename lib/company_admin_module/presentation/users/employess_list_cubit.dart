@@ -1,9 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/employee_services.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 
 class EmployeeCubit extends Cubit<EmployeesState> {
-  final EmployeeServices _employeeServices;
+  final UserServices _employeeServices;
 
   EmployeeCubit(this._employeeServices) : super(UserListInitial());
 

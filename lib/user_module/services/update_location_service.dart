@@ -3,11 +3,11 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_background_service_ios/flutter_background_service_ios.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/employee_services.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 
 class LocationUpdateService {
-  final EmployeeServices _employeeServices;
+  final UserServices _employeeServices;
   static final service = FlutterBackgroundService();
 
   LocationUpdateService(this._employeeServices);
@@ -41,7 +41,7 @@ class LocationUpdateService {
       );
     }
 
-    final employeeServices = sl<EmployeeServices>();
+    final employeeServices = sl<UserServices>();
     Timer.periodic(const Duration(seconds: 5), (timer) async {
       try {
         bool serviceEnabled = await Geolocator.isLocationServiceEnabled();

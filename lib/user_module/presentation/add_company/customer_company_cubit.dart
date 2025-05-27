@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_ledger_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/account_ledger_service.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/employee_services.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppKeys.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
@@ -16,7 +16,7 @@ import 'package:url_launcher/url_launcher.dart';
 class PartnerCubit extends Cubit<CompanyState> {
   final CustomerCompanyService _companyService;
   final IAccountLedgerService _accountLedgerService;
-  final EmployeeServices _userServices;
+  final UserServices _userServices;
   final List<Partner> originalCompanies = [];
   String searchKeyword = '';
   Partner? currentCompany;

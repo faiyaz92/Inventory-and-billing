@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/attendance/attendance_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/attendance_cubit.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/employee_services.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -22,7 +22,7 @@ class _AttendanceRegisterPageState extends State<AttendanceRegisterPage> {
 
   @override
   void initState() {
-    _attendanceCubit = AttendanceCubit(sl<EmployeeServices>())..fetchUsers();
+    _attendanceCubit = AttendanceCubit(sl<UserServices>())..fetchUsers();
     super.initState();
   }
 

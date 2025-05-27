@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/employee_services.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
@@ -51,7 +51,7 @@ class SalesmanOrderPlaced extends SalesmanOrderState {}
 
 // Cubit for handling salesman order logic
 class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
-  final EmployeeServices employeeServices;
+  final UserServices employeeServices;
   final IUserProductService productService;
   final AccountRepository accountRepository;
   final CartCubit cartCubit;

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/employee_details_cubit.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/employee_services.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 
@@ -16,7 +16,7 @@ class EmployeeDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => EmployeeDetailsCubit(sl<EmployeeServices>())..loadData(userId),
+      create: (_) => EmployeeDetailsCubit(sl<UserServices>())..loadData(userId),
       child: EmployeeDetailsBody(userId: userId),
     );
   }

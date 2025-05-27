@@ -23,8 +23,8 @@ import 'package:requirment_gathering_app/company_admin_module/repositories/trans
 import 'package:requirment_gathering_app/company_admin_module/service/account_ledger_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/category_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/category_service_impl.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/employee_services.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/employee_services_impl.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services_impl.dart' as userSerivceImpl;
 import 'package:requirment_gathering_app/company_admin_module/service/product_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/product_service_impl.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/stock_service.dart';
@@ -185,9 +185,8 @@ void _initServices() {
     ),
   );
 
-  // ✅ Register CompanyOperationsService
-  sl.registerLazySingleton<EmployeeServices>(
-    () => EmployeesServiceImpl(
+  sl.registerLazySingleton<UserServices>(
+    () => userSerivceImpl.UserServiceImpl(
       sl<ITenantCompanyRepository>(),
       sl<AccountRepository>(),
     ),
@@ -212,7 +211,7 @@ void _initServices() {
       ));
 
   sl.registerSingleton<LocationUpdateService>(
-      LocationUpdateService(sl<EmployeeServices>()));
+      LocationUpdateService(sl<UserServices>()));
   sl.registerSingleton<PermissionHandler>(PermissionHandler());
   sl.registerLazySingleton<StockService>(() => StockServiceImpl(
         stockRepository: sl<StockRepository>(),
@@ -248,7 +247,7 @@ void _initCubits() {
   sl.registerFactory(() => SplashCubit(sl<AccountRepository>()));
 
   sl.registerFactory(() => PartnerCubit(sl<CustomerCompanyService>(),
-      sl<EmployeeServices>(), sl<IAccountLedgerService>()));
+      sl<UserServices>(), sl<IAccountLedgerService>()));
   sl.registerFactory(() => DashboardCubit(sl<AuthService>()));
   sl.registerFactory(() => CompanySettingCubit(sl<CustomerCompanyService>()));
 
@@ -265,9 +264,9 @@ void _initCubits() {
 
   // ✅ Register AddUserCubit for adding users
   sl.registerFactory(() => AddUserCubit(
-        sl<EmployeeServices>(),
+        sl<UserServices>(),
       ));
-  sl.registerFactory(() => TaskCubit(sl<TaskService>(), sl<EmployeeServices>(),
+  sl.registerFactory(() => TaskCubit(sl<TaskService>(), sl<UserServices>(),
       sl<CustomerCompanyService>(), sl<AccountRepository>()));
   sl.registerFactory(() => AccountLedgerCubit(
         sl<IAccountLedgerService>(),
@@ -275,8 +274,8 @@ void _initCubits() {
         sl<CustomerCompanyService>(),
       ));
   sl.registerFactory(() => HomeCubit(sl<IUserService>()));
-  sl.registerFactory(() => EmployeeCubit(sl<EmployeeServices>()));
-  sl.registerFactory(() => SimpleEmployeeCubit(sl<EmployeeServices>()));
+  sl.registerFactory(() => EmployeeCubit(sl<UserServices>()));
+  sl.registerFactory(() => SimpleEmployeeCubit(sl<UserServices>()));
   sl.registerFactory(() => AdminProductCubit(
         productService: sl<ProductService>(),
         categoryService: sl<CategoryService>(),
@@ -284,12 +283,12 @@ void _initCubits() {
   sl.registerFactory(() => CategoryCubit(
         categoryService: sl<CategoryService>(),
       ));
-  sl.registerFactory(() => EmployeeDetailsCubit(sl<EmployeeServices>()));
-  sl.registerFactory(() => AttendanceCubit(sl<EmployeeServices>()));
+  sl.registerFactory(() => EmployeeDetailsCubit(sl<UserServices>()));
+  sl.registerFactory(() => AttendanceCubit(sl<UserServices>()));
 
   sl.registerFactory<StockCubit>(() => StockCubit(
         stockService: sl<StockService>(),
-        employeeServices: sl<EmployeeServices>(),
+        employeeServices: sl<UserServices>(),
         transactionService: sl<TransactionService>(),
         accountRepository: sl<AccountRepository>(),
       ));
@@ -310,9 +309,9 @@ void _initCubits() {
       accountRepository: sl<AccountRepository>()));
   sl.registerFactory(() => AdminOrderCubit(
       orderService: sl<IOrderService>(),
-      employeeServices: sl<EmployeeServices>()));
+      employeeServices: sl<UserServices>()));
   sl.registerFactory(() => SalesmanOrderCubit(
-        employeeServices: sl<EmployeeServices>(),
+        employeeServices: sl<UserServices>(),
         productService: sl<IUserProductService>(),
         accountRepository: sl<AccountRepository>(),
         cartCubit: sl<CartCubit>(),
