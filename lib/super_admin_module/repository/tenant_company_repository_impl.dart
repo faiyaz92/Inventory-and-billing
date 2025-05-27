@@ -182,15 +182,32 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
   @override
   Future<List<UserInfoDto>> getUsersFromTenantCompany(String companyId) async {
     try {
-      CollectionReference usersRef =
-          _firestoreProvider.getTenantUsersRef(companyId);
-      QuerySnapshot querySnapshot = await usersRef.get();
+      final userInfo = await _accountRepository.getUserInfo();
+      final loggedInUserRole = userInfo?.role;
+      final loggedInUserStoreId = userInfo?.storeId;
+
+      CollectionReference usersRef = _firestoreProvider.getTenantUsersRef(companyId);
+      QuerySnapshot querySnapshot;
+
+      if (loggedInUserRole == Role.COMPANY_ADMIN) {
+        // COMPANY_ADMIN sees all users in the company
+        querySnapshot = await usersRef.get();
+      } else {
+        // Other roles (USER, STORE_ADMIN, SUPER_ADMIN) see only users with the same storeId
+        if (loggedInUserStoreId == null || loggedInUserStoreId.isEmpty) {
+          throw Exception('Logged-in user has no store ID assigned.');
+        }
+        querySnapshot = await usersRef
+            .where('storeId', isEqualTo: loggedInUserStoreId)
+            .get();
+      }
+
       return querySnapshot.docs
           .map((doc) => UserInfoDto.fromMap(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
       print('Error fetching users: $e');
-      throw Exception('Failed to fetch users from tenant company.');
+      throw Exception('Failed to fetch users from tenant company: $e');
     }
   }
 

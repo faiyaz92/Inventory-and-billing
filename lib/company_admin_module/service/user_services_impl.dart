@@ -21,6 +21,7 @@ class UserServiceImpl implements UserServices {
       latitude: userInfo.latitude ?? 0.0,
       longitude: userInfo.longitude ?? 0.0,
       dailyWage: userInfo.dailyWage ?? 500.0,
+      storeId: userInfo.storeId, // Include storeId
     );
     await _tenantCompanyRepository.addUserToCompany(userInfo.toDto(), password);
   }
@@ -50,6 +51,7 @@ class UserServiceImpl implements UserServices {
       latitude: userInfo.latitude ?? existingUser.latitude,
       longitude: userInfo.longitude ?? existingUser.longitude,
       dailyWage: userInfo.dailyWage ?? existingUser.dailyWage,
+      storeId: userInfo.storeId ?? existingUser.storeId, // Include storeId
     );
 
     await _tenantCompanyRepository.updateUser(
@@ -58,7 +60,6 @@ class UserServiceImpl implements UserServices {
       updatedUserInfo,
     );
   }
-
   @override
   Future<void> updateUserLocation(double latitude, double longitude) async {
     final userInfo = await _accountRepository.getUserInfo();

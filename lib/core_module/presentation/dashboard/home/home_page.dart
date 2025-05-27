@@ -77,7 +77,8 @@ class HomePage extends StatelessWidget {
                             // TODO: Implement purchase flow (e.g., navigate to subscription page)
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Contact support to purchase a subscription.'),
+                                content: Text(
+                                    'Contact support to purchase a subscription.'),
                               ),
                             );
                           },
@@ -288,6 +289,91 @@ class HomePage extends StatelessWidget {
         ),
         _buildGridItem(
           icon: Icons.manage_accounts,
+          label: 'Cart Management',
+          color: Colors.pink,
+          onTap: () {
+            sl<Coordinator>().navigateToCartDashboard();
+          },
+        ),
+      ]);
+    } else if (role == Role.STORE_ADMIN) {
+      gridItems.addAll([
+        _buildGridItem(
+          icon: Icons.store,
+          label: 'My store',
+          color: Colors.orangeAccent,
+          onTap: () {
+            sl<Coordinator>().navigateToStoreDetailsPage(
+                '');
+          },
+        ),
+        _buildGridItem(
+          icon: Icons.store,
+          label: 'Store List',
+          color: Colors.pink,
+          onTap: () {
+            sl<Coordinator>().navigateToStoresListPage();
+          },
+        ),_buildGridItem(
+          icon: Icons.web_asset,
+          label: 'Stock List',
+          color: Colors.blueAccent,
+          onTap: () {
+            sl<Coordinator>().navigateToStockListPage();
+          },
+        ),
+        _buildGridItem(
+          icon: Icons.store,
+          label: 'Over all stock',
+          color: Colors.pink,
+          onTap: () {
+            sl<Coordinator>().navigateToOverAllStockPage();
+          },
+        ),
+
+        _buildGridItem(
+          icon: Icons.store,
+          label: 'Store Attendance',
+          color: Colors.pink,
+          onTap: () {
+            sl<Coordinator>().navigateToAttendancePage();
+          },
+        ),
+        _buildGridItem(
+          icon: Icons.add_task_outlined,
+          label: 'Add Task',
+          color: Colors.blue,
+          onTap: () {
+            sl<Coordinator>().navigateToAddTaskPage();
+          },
+        ),
+        _buildGridItem(
+          icon: Icons.task,
+          label: 'Task List',
+          color: Colors.green,
+          onTap: () {
+            sl<Coordinator>().navigateToTaskListPage();
+          },
+        ),
+
+        _buildGridItem(
+          icon: Icons.manage_accounts,
+          label: 'Add Customer',
+          color: Colors.pink,
+          onTap: () {
+            sl<Coordinator>().navigateToAddUserPage();
+          },
+        ),
+        _buildGridItem(
+          icon: Icons.manage_accounts,
+          label: 'Billing Customer',
+          color: Colors.pink,
+          onTap: () {
+            sl<Coordinator>().navigateToBillingPage();
+          },
+        ),
+        _buildGridItem(
+          icon: Icons.shopping_cart,
           label: 'Cart Management',
           color: Colors.pink,
           onTap: () {
