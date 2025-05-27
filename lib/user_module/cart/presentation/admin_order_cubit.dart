@@ -21,6 +21,9 @@ class AdminOrderListFetchSuccess extends AdminOrderState {
   final DateTime? endDate;
   final DateTime? expectedDeliveryStartDate;
   final DateTime? expectedDeliveryEndDate;
+  final String? status;
+  final String? orderTakenBy;
+  final String? orderDeliveredBy;
   final Map<String, List<Order>> groupedOrders;
   final String dateRangeLabel;
   final String expectedDeliveryRangeLabel;
@@ -34,6 +37,9 @@ class AdminOrderListFetchSuccess extends AdminOrderState {
     this.endDate,
     this.expectedDeliveryStartDate,
     this.expectedDeliveryEndDate,
+    this.status,
+    this.orderTakenBy,
+    this.orderDeliveredBy,
     required this.groupedOrders,
     required this.dateRangeLabel,
     required this.expectedDeliveryRangeLabel,
@@ -47,7 +53,7 @@ class AdminOrderListFetchError extends AdminOrderState {
   AdminOrderListFetchError(this.message);
 }
 
-// States for AdminOrderDetailsPage
+// States for AdminOrderDetailsPage (unchanged)
 class AdminOrderFetchLoading extends AdminOrderState {}
 
 class AdminOrderFetchSuccess extends AdminOrderState {
@@ -304,6 +310,8 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
     String? status,
     DateTime? expectedDeliveryStartDate,
     DateTime? expectedDeliveryEndDate,
+    String? orderTakenBy,
+    String? orderDeliveredBy,
   }) async {
     emit(AdminOrderListFetchLoading());
     try {
@@ -335,6 +343,18 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
         }).toList();
       }
 
+      if (orderTakenBy != null) {
+        filteredOrders = filteredOrders
+            .where((order) => order.orderTakenBy == orderTakenBy)
+            .toList();
+      }
+
+      if (orderDeliveredBy != null) {
+        filteredOrders = filteredOrders
+            .where((order) => order.orderDeliveredBy == orderDeliveredBy)
+            .toList();
+      }
+
       final users = await employeeServices.getUsersFromTenantCompany();
       final showTodayStats = _shouldShowTodayStats(startDate, endDate);
       emit(AdminOrderListFetchSuccess(
@@ -344,10 +364,13 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
         endDate: endDate,
         expectedDeliveryStartDate: expectedDeliveryStartDate,
         expectedDeliveryEndDate: expectedDeliveryEndDate,
+        status: status,
+        orderTakenBy: orderTakenBy,
+        orderDeliveredBy: orderDeliveredBy,
         groupedOrders: _groupOrdersByDate(filteredOrders),
         dateRangeLabel: _formatDateRange(startDate, endDate),
         expectedDeliveryRangeLabel:
-        _formatExpectedDeliveryRange(expectedDeliveryStartDate, endDate),
+        _formatExpectedDeliveryRange(expectedDeliveryStartDate, expectedDeliveryEndDate),
         statistics: _computeStatistics(filteredOrders, showTodayStats),
         showTodayStats: showTodayStats,
       ));
@@ -437,14 +460,3 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
     }
   }
 }
-
-// Placeholder for AppColors (replace with actual import)
-// class AppColors {
-//   static const Color textPrimary = Colors.black87;
-//   static const Color textSecondary = Colors.black54;
-//   static const Color primary = Colors.blue;
-//   static const Color red = Colors.red;
-//   static const Color green = Colors.green;
-//   static const Color white = Colors.white;
-//   static const Color cardBackground = Colors.white;
-// }

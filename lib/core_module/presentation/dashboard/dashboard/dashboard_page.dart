@@ -18,11 +18,13 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   late DashboardCubit _dashboardCubit;
+
   @override
   void initState() {
     _dashboardCubit = sl<DashboardCubit>();
-        super.initState();
+    super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -40,7 +42,7 @@ class _DashboardPageState extends State<DashboardPage> {
               IconButton(
                 icon: const Icon(Icons.logout),
                 onPressed: () {
-                  _dashboardCubit.logout();
+                  _showLogoutConfirmationDialog(context);
                 },
                 tooltip: "Logout",
               ),
@@ -60,9 +62,6 @@ class _DashboardPageState extends State<DashboardPage> {
             builder: (context, state) {
               final index = state is DashboardTabState ? state.index : 0;
               return BottomNavigationBar(
-                // backgroundColor: Colors.white,
-                // selectedItemColor: Colors.blue,
-                // unselectedItemColor: Colors.grey,
                 currentIndex: index,
                 onTap: (index) => _dashboardCubit.updateIndex(index),
                 items: const [
@@ -72,13 +71,66 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                   BottomNavigationBarItem(
                     icon: Icon(Icons.business),
-                    label: 'Companies',
+                    label: 'Sites',
                   ),
                 ],
               );
             },
           ),
         ),
+      ),
+    );
+  }
+
+  void _showLogoutConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        backgroundColor: Colors.white,
+        title: const Text(
+          'Confirm Logout',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        content: const Text(
+          'Are you sure you want to logout?',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.black54,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'No',
+              style: TextStyle(
+                fontSize: 16,
+                color: Theme.of(context).primaryColor,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () {
+              Navigator.of(context).pop();
+              _dashboardCubit.logout();
+            },
+            child: const Text('Yes'),
+          ),
+        ],
       ),
     );
   }

@@ -1,9 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/attendance/attendance_dto.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/attendance/attendance_model.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
+import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.dart';
 import 'package:requirment_gathering_app/super_admin_module/repository/tenant_company_repository.dart';
 import 'employee_services.dart';
 
@@ -32,7 +32,31 @@ class EmployeesServiceImpl implements EmployeeServices {
     if (userInfo.userId == null || userInfo.userId!.isEmpty) {
       throw Exception("User ID is missing. Cannot update user.");
     }
-    await _tenantCompanyRepository.updateUser(userInfo.userId!, companyId, userInfo.toDto());
+
+    // Fetch existing user data from repository
+    final existingUser = await _tenantCompanyRepository.getUser(userInfo.userId!, companyId);
+    if (existingUser == null) {
+      throw Exception("User does not exist.");
+    }
+
+    // Merge provided userInfo with existing data
+    final updatedUserInfo = UserInfoDto(
+      userId: userInfo.userId ?? existingUser.userId,
+      companyId: existingUser.companyId, // Preserve existing companyId
+      name: userInfo.name ?? existingUser.name,
+      email: userInfo.email ?? existingUser.email,
+      userName: userInfo.userName ?? existingUser.userName,
+      role: userInfo.role ?? existingUser.role,
+      latitude: userInfo.latitude ?? existingUser.latitude,
+      longitude: userInfo.longitude ?? existingUser.longitude,
+      dailyWage: userInfo.dailyWage ?? existingUser.dailyWage,
+    );
+
+    await _tenantCompanyRepository.updateUser(
+      userInfo.userId!,
+      companyId,
+      updatedUserInfo,
+    );
   }
 
   @override
@@ -69,7 +93,6 @@ class EmployeesServiceImpl implements EmployeeServices {
   Future<void> markAttendance(String userId, AttendanceModel attendance) async {
     final userInfo = await _accountRepository.getUserInfo();
     final companyId = userInfo?.companyId ?? '';
-    // Map AttendanceModel to AttendanceDTO
     final dateTime = DateFormat('dd-MM-yyyy').parse(attendance.date);
     final dto = AttendanceDTO(
       date: DateFormat('yyyy-MM-dd').format(dateTime),
@@ -85,9 +108,7 @@ class EmployeesServiceImpl implements EmployeeServices {
   Future<List<AttendanceModel>> getAttendance(String userId, String month) async {
     final userInfo = await _accountRepository.getUserInfo();
     final companyId = userInfo?.companyId ?? '';
-    // Get AttendanceDTOs from repository
     final attendanceDTOs = await _tenantCompanyRepository.getAttendance(userId, companyId, month);
-    // Map DTOs to Models
     return attendanceDTOs.map((dto) {
       return AttendanceModel(
         date: DateFormat('dd-MM-yyyy').format(DateTime.parse(dto.date)),

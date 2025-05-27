@@ -175,7 +175,7 @@ class AppCoordinator implements Coordinator {
 
   @override
   void navigateBack({bool isUpdated = false}) {
-    _router.back();
+    _router.maybePop(isUpdated);
   }
 
   @override
@@ -333,5 +333,11 @@ class AppCoordinator implements Coordinator {
   Future navigateToSalesManOrderPage() {
     // TODO: implement navigateToSalesManOrderPage
     return _router.push(const SalesmanOrderRoute());
+  }
+
+  @override
+  Future navigateToSimpleEmployeeList() {
+    // TODO: implement navigateToSimpleEmployeeList
+    return _router.push(const SimpleEmployeesRoute());
   }
 }

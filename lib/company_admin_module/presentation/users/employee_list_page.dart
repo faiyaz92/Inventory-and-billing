@@ -28,7 +28,7 @@ class EmployeesPageState extends State<EmployeesPage> {
   @override
   void initState() {
     super.initState();
-    _checkLocationPermission();
+    // _checkLocationPermission();
   }
 
   Future<void> _checkLocationPermission() async {

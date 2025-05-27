@@ -58,6 +58,17 @@ class EmployeeDetailsBodyState extends State<EmployeeDetailsBody> {
           if (state is EmployeeDetailsLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is EmployeeDetailsLoaded) {
+            // Calculate attendance counts
+            final presentCount = state.attendance
+                .where((a) => a.status.toLowerCase() == 'present')
+                .length;
+            final halfDayCount = state.attendance
+                .where((a) => a.status.toLowerCase() == 'half_day')
+                .length;
+            final absentCount = state.attendance
+                .where((a) => a.status.toLowerCase() == 'absent')
+                .length;
+
             return Column(
               children: [
                 Padding(
@@ -117,6 +128,50 @@ class EmployeeDetailsBodyState extends State<EmployeeDetailsBody> {
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: Colors.grey[900],
+                        ),
+                      ),
+                      const SizedBox(height: 8.0),
+                      // Attendance Summary Card
+                      Card(
+                        elevation: 4.0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Present: $presentCount',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.green[600],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Half Day: $halfDayCount',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.orange[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Text(
+                                'Absent: $absentCount',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.red[600],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       const SizedBox(height: 8.0),
@@ -181,6 +236,8 @@ class EmployeeDetailsBodyState extends State<EmployeeDetailsBody> {
                                           fontSize: 14,
                                           color: status.toLowerCase().contains('present')
                                               ? Colors.green[600]
+                                              : status.toLowerCase().contains('half day')
+                                              ? Colors.orange[600]
                                               : Colors.red[600],
                                           fontWeight: FontWeight.w500,
                                         ),

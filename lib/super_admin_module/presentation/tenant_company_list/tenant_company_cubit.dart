@@ -33,14 +33,7 @@ class TenantCompanyCubit extends Cubit<TenantCompanyState> {
     }
   }
 
-  Future<void> addCompany(TenantCompany company, String password) async {
-    try {
-      await _repository.createTenantCompany(company.toDto(), password);
-      fetchCompanies(); // Refresh list
-    } catch (e) {
-      emit(state.copyWith(error: e.toString()));
-    }
-  }
+
 
   Future<void> updateCompany(TenantCompany company) async {
     try {

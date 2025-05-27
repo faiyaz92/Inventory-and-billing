@@ -67,7 +67,8 @@ class TaskCubit extends Cubit<TaskState> {
       }
 
       allTasks.sort(_sortTasks);
-      emit(TaskLoaded(_filterTasks(), users));
+
+      emit(TaskLoaded(_filterTasks(), users,isLoading:isNeedToShow),);
     } catch (e) {
       emit(TaskError(e.toString()));
     }

@@ -995,6 +995,22 @@ class SalesmanOrderRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [SimpleEmployeesPage]
+class SimpleEmployeesRoute extends PageRouteInfo<void> {
+  const SimpleEmployeesRoute({List<PageRouteInfo>? children})
+    : super(SimpleEmployeesRoute.name, initialChildren: children);
+
+  static const String name = 'SimpleEmployeesRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const SimpleEmployeesPage();
+    },
+  );
+}
+
+/// generated route for
 /// [SplashScreenPage]
 class SplashScreenRoute extends PageRouteInfo<SplashScreenRouteArgs> {
   SplashScreenRoute({

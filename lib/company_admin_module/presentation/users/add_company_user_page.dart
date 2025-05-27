@@ -92,7 +92,6 @@ class _AddUserViewState extends State<_AddUserView> {
 
   @override
   Widget build(BuildContext context) {
-    final coordinator = GetIt.I<Coordinator>();
 
     return Scaffold(
       appBar: CustomAppBar(

@@ -22,7 +22,7 @@ class CompanyDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: AppLabels.companyListTitle,
+        title: /*AppLabels.companyListTitle*/'Site details',
         automaticallyImplyLeading: true,
         actions: [
           IconButton(

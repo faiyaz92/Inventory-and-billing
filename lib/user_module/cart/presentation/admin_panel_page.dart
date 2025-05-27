@@ -7,6 +7,7 @@ import 'package:requirment_gathering_app/core_module/presentation/widget/custom_
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
+import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_cubit.dart';
 import 'package:sticky_headers/sticky_headers.dart';
@@ -60,7 +61,7 @@ class AdminPanelPage extends StatelessWidget {
   Widget _buildFilters(BuildContext context) {
     return BlocBuilder<AdminOrderCubit, AdminOrderState>(
       buildWhen: (previous, current) =>
-          current is AdminOrderListFetchLoading ||
+      current is AdminOrderListFetchLoading ||
           current is AdminOrderListFetchSuccess ||
           current is AdminOrderListFetchError,
       builder: (context, state) {
@@ -69,13 +70,48 @@ class AdminPanelPage extends StatelessWidget {
         DateTime? expectedStartDate;
         DateTime? expectedEndDate;
         String? selectedStatus;
+        String? selectedOrderTakenBy;
+        String? selectedOrderDeliveredBy;
+        List<UserInfo> users = [];
 
         if (state is AdminOrderListFetchSuccess) {
           orderStartDate = state.startDate;
           orderEndDate = state.endDate;
           expectedStartDate = state.expectedDeliveryStartDate;
           expectedEndDate = state.expectedDeliveryEndDate;
+          selectedStatus = state.status;
+          selectedOrderTakenBy = state.orderTakenBy;
+          selectedOrderDeliveredBy = state.orderDeliveredBy;
+          users = state.users;
+          // Debug logging
+          // print('Users: ${users.map((u) => {'id': u.userId, 'name': u.userName}).toList()}');
+          // print('Selected OrderTakenBy: $selectedOrderTakenBy');
+          // print('Selected OrderDeliveredBy: $selectedOrderDeliveredBy');
         }
+
+        // Ensure valid dropdown values
+        final validOrderTakenBy = selectedOrderTakenBy != null &&
+            users.any((user) => user.userId == selectedOrderTakenBy)
+            ? selectedOrderTakenBy
+            : null;
+        final validOrderDeliveredBy = selectedOrderDeliveredBy != null &&
+            users.any((user) => user.userId == selectedOrderDeliveredBy)
+            ? selectedOrderDeliveredBy
+            : null;
+
+        // Generate dropdown items safely
+        final dropdownItems = [
+          const DropdownMenuItem<String>(
+            value: null,
+            child: Text('All Salesmen'),
+          ),
+          ...users.where((user) => user.userId != null && user.userId!.isNotEmpty).map(
+                (user) => DropdownMenuItem<String>(
+              value: user.userId,
+              child: Text(user.userName ?? 'Unknown'),
+            ),
+          ),
+        ];
 
         return Column(
           children: [
@@ -89,19 +125,20 @@ class AdminPanelPage extends StatelessWidget {
                         firstDate: DateTime(2020),
                         lastDate: DateTime.now(),
                         initialDateRange: DateTimeRange(
-                          start:
-                              DateTime.now().subtract(const Duration(days: 30)),
+                          start: DateTime.now().subtract(const Duration(days: 30)),
                           end: DateTime.now(),
                         ),
                       );
                       if (dateRange != null) {
                         context.read<AdminOrderCubit>().fetchOrders(
-                              startDate: dateRange.start,
-                              endDate: dateRange.end,
-                              status: selectedStatus,
-                              expectedDeliveryStartDate: expectedStartDate,
-                              expectedDeliveryEndDate: expectedEndDate,
-                            );
+                          startDate: dateRange.start,
+                          endDate: dateRange.end,
+                          status: selectedStatus,
+                          expectedDeliveryStartDate: expectedStartDate,
+                          expectedDeliveryEndDate: expectedEndDate,
+                          orderTakenBy: validOrderTakenBy,
+                          orderDeliveredBy: validOrderDeliveredBy,
+                        );
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -132,12 +169,14 @@ class AdminPanelPage extends StatelessWidget {
                       );
                       if (dateRange != null) {
                         context.read<AdminOrderCubit>().fetchOrders(
-                              startDate: orderStartDate,
-                              endDate: orderEndDate,
-                              status: selectedStatus,
-                              expectedDeliveryStartDate: dateRange.start,
-                              expectedDeliveryEndDate: dateRange.end,
-                            );
+                          startDate: orderStartDate,
+                          endDate: orderEndDate,
+                          status: selectedStatus,
+                          expectedDeliveryStartDate: dateRange.start,
+                          expectedDeliveryEndDate: dateRange.end,
+                          orderTakenBy: validOrderTakenBy,
+                          orderDeliveredBy: validOrderDeliveredBy,
+                        );
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -164,38 +203,33 @@ class AdminPanelPage extends StatelessWidget {
                       labelText: 'Filter by Status',
                       border: OutlineInputBorder(),
                       contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                     value: selectedStatus,
                     hint: const Text('All Statuses'),
                     items: const [
-                      DropdownMenuItem(
-                          value: null, child: Text('All Statuses')),
-                      DropdownMenuItem(
-                          value: 'pending', child: Text('Pending')),
-                      DropdownMenuItem(
-                          value: 'processing', child: Text('Processing')),
-                      DropdownMenuItem(
-                          value: 'shipped', child: Text('Shipped')),
-                      DropdownMenuItem(
-                          value: 'completed', child: Text('Completed')),
+                      DropdownMenuItem(value: null, child: Text('All Statuses')),
+                      DropdownMenuItem(value: 'pending', child: Text('Pending')),
+                      DropdownMenuItem(value: 'processing', child: Text('Processing')),
+                      DropdownMenuItem(value: 'shipped', child: Text('Shipped')),
+                      DropdownMenuItem(value: 'completed', child: Text('Completed')),
                     ],
                     onChanged: (value) {
-                      selectedStatus = value;
                       context.read<AdminOrderCubit>().fetchOrders(
-                            startDate: orderStartDate,
-                            endDate: orderEndDate,
-                            status: value,
-                            expectedDeliveryStartDate: expectedStartDate,
-                            expectedDeliveryEndDate: expectedEndDate,
-                          );
+                        startDate: orderStartDate,
+                        endDate: orderEndDate,
+                        status: value,
+                        expectedDeliveryStartDate: expectedStartDate,
+                        expectedDeliveryEndDate: expectedEndDate,
+                        orderTakenBy: validOrderTakenBy,
+                        orderDeliveredBy: validOrderDeliveredBy,
+                      );
                     },
                   ),
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
                   onPressed: () {
-                    selectedStatus = null;
                     context.read<AdminOrderCubit>().fetchOrders();
                   },
                   style: ElevatedButton.styleFrom(
@@ -212,6 +246,65 @@ class AdminPanelPage extends StatelessWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child:
+                  DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      labelText: 'Filter by Order Taken By',
+                      border: OutlineInputBorder(),
+                      contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    value: validOrderTakenBy,
+                    hint: const Text('All Salesmen'),
+                    items: dropdownItems,
+                    onChanged: (value) {
+                      context.read<AdminOrderCubit>().fetchOrders(
+                        startDate: orderStartDate,
+                        endDate: orderEndDate,
+                        status: selectedStatus,
+                        expectedDeliveryStartDate: expectedStartDate,
+                        expectedDeliveryEndDate: expectedEndDate,
+                        orderTakenBy: value,
+                        orderDeliveredBy: validOrderDeliveredBy,
+                      );
+                    },
+                    isDense: true,
+                    validator: (value) => null,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      labelText: 'Filter by Order Delivered By',
+                      border: OutlineInputBorder(),
+                      contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    value: validOrderDeliveredBy,
+                    hint: const Text('All Delivery Persons'),
+                    items: dropdownItems,
+                    onChanged: (value) {
+                      context.read<AdminOrderCubit>().fetchOrders(
+                        startDate: orderStartDate,
+                        endDate: orderEndDate,
+                        status: selectedStatus,
+                        expectedDeliveryStartDate: expectedStartDate,
+                        expectedDeliveryEndDate: expectedEndDate,
+                        orderTakenBy: validOrderTakenBy,
+                        orderDeliveredBy: value,
+                      );
+                    },
+                    isDense: true,
+                    validator: (value) => null,
+                  ),
+                ),
+              ],
+            ),
           ],
         );
       },
@@ -221,7 +314,7 @@ class AdminPanelPage extends StatelessWidget {
   Widget _buildStatsCard(BuildContext context) {
     return BlocBuilder<AdminOrderCubit, AdminOrderState>(
       buildWhen: (previous, current) =>
-          current is AdminOrderListFetchLoading ||
+      current is AdminOrderListFetchLoading ||
           current is AdminOrderListFetchSuccess ||
           current is AdminOrderListFetchError,
       builder: (context, state) {
@@ -281,7 +374,7 @@ class AdminPanelPage extends StatelessWidget {
                         child: const Text(
                           'View',
                           style:
-                              TextStyle(fontSize: 12, color: AppColors.white),
+                          TextStyle(fontSize: 12, color: AppColors.white),
                         ),
                       ),
                     ],
@@ -291,7 +384,7 @@ class AdminPanelPage extends StatelessWidget {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
+                    const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 4,
                       childAspectRatio: 3,
                       mainAxisSpacing: 8,
@@ -400,24 +493,21 @@ class AdminPanelPage extends StatelessWidget {
                       stat['value'],
                       valueColor: stat['color'],
                       valueWeight:
-                          stat['highlight'] == true ? FontWeight.bold : null,
+                      stat['highlight'] == true ? FontWeight.bold : null,
                       backgroundColor: stat['highlight'] == true
                           ? (stat['color'] as Color).withOpacity(0.1)
                           : null,
                       borderRadius: isFirst
                           ? const BorderRadius.only(
-                              topLeft: Radius.circular(12),
-                              topRight: Radius.circular(12),
-                            )
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12),
+                      )
                           : isLast
-                              ? const BorderRadius.only(
-                                  bottomLeft: Radius.circular(12),
-                                  bottomRight: Radius.circular(12),
-
-                                  // topLeft: Radius.circular(12),
-                                  // topRight: Radius.circular(12),
-                                )
-                              : null,
+                          ? const BorderRadius.only(
+                        bottomLeft: Radius.circular(12),
+                        bottomRight: Radius.circular(12),
+                      )
+                          : null,
                     );
                   }).toList(),
                 ),
@@ -451,7 +541,7 @@ class AdminPanelPage extends StatelessWidget {
   Widget _buildExpectedDeliveryLabel() {
     return BlocBuilder<AdminOrderCubit, AdminOrderState>(
       buildWhen: (previous, current) =>
-          current is AdminOrderListFetchSuccess ||
+      current is AdminOrderListFetchSuccess ||
           current is AdminOrderListFetchLoading ||
           current is AdminOrderListFetchError,
       builder: (context, state) {
@@ -481,7 +571,7 @@ class AdminPanelPage extends StatelessWidget {
   Widget _buildOrderList() {
     return BlocBuilder<AdminOrderCubit, AdminOrderState>(
       buildWhen: (previous, current) =>
-          current is AdminOrderListFetchLoading ||
+      current is AdminOrderListFetchLoading ||
           current is AdminOrderListFetchSuccess ||
           current is AdminOrderListFetchError,
       builder: (context, state) {
@@ -492,7 +582,7 @@ class AdminPanelPage extends StatelessWidget {
                 .compareTo(DateFormat('MMM dd, yyyy').parse(a)));
           return SliverList(
             delegate: SliverChildBuilderDelegate(
-              (context, index) {
+                  (context, index) {
                 final date = dates[index];
                 final orders = state.groupedOrders[date]!;
                 return StickyHeader(
@@ -500,7 +590,7 @@ class AdminPanelPage extends StatelessWidget {
                     width: double.infinity,
                     color: Theme.of(context).scaffoldBackgroundColor,
                     padding:
-                        const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                     child: Text(
                       date,
                       style: const TextStyle(
@@ -529,7 +619,7 @@ class AdminPanelPage extends StatelessWidget {
   Widget _buildOrderCard(
       BuildContext context, Order order, AdminOrderListFetchSuccess state) {
     final statusStyles =
-        context.read<AdminOrderCubit>().getStatusColors(order.status);
+    context.read<AdminOrderCubit>().getStatusColors(order.status);
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
@@ -637,7 +727,7 @@ class AdminPanelPage extends StatelessWidget {
                         valueColor: statusStyles['color'],
                         backgroundColor: statusStyles['backgroundColor'],
                         valueWeight: order.status.toLowerCase() == 'pending' ||
-                                order.status.toLowerCase() == 'processing'
+                            order.status.toLowerCase() == 'processing'
                             ? FontWeight.bold
                             : null,
                       ),
@@ -664,21 +754,21 @@ class AdminPanelPage extends StatelessWidget {
   }
 
   TableRow _buildTableRow(
-    String label,
-    String value, {
-    bool isBold = false,
-    FontWeight? valueWeight,
-    Color? valueColor = AppColors.textSecondary,
-    Color? backgroundColor,
-    BorderRadius? borderRadius,
-    int maxLines = 1,
-  }) {
+      String label,
+      String value, {
+        bool isBold = false,
+        FontWeight? valueWeight,
+        Color? valueColor = AppColors.textSecondary,
+        Color? backgroundColor,
+        BorderRadius? borderRadius,
+        int maxLines = 1,
+      }) {
     return TableRow(
       decoration: backgroundColor != null || borderRadius != null
           ? BoxDecoration(
-              color: backgroundColor,
-              borderRadius: borderRadius,
-            )
+        color: backgroundColor,
+        borderRadius: borderRadius,
+      )
           : null,
       children: [
         Padding(

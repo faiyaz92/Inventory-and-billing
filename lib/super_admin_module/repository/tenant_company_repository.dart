@@ -4,9 +4,14 @@ import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.d
 
 abstract class ITenantCompanyRepository {
   Future<String> generateTenantCompanyId(String companyName);
-  Future<void> createTenantCompany(TenantCompanyDto dto, String password);
+  Future<void> createTenantCompany(TenantCompanyDto dto, String password,
+      {
+    required String adminUsername,
+    required String adminName,
+  });
   Future<void> addUserToCompany(UserInfoDto userInfoDto, String password);
   Future<void> updateUser(String userId, String companyId, UserInfoDto userInfoDto);
+  Future<UserInfoDto?> getUser(String userId, String companyId);
   Future<List<TenantCompanyDto>> getTenantCompanies();
   Future<void> updateTenantCompany(TenantCompanyDto updatedDto);
   Future<void> deleteTenantCompany(String companyId);

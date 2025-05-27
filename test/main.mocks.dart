@@ -785,6 +785,24 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
         ),
         returnValue: _i5.Future<dynamic>.value(),
       ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToSalesManOrderPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToSalesManOrderPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToSimpleEmployeeList() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToSimpleEmployeeList,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 }
 
 /// A class which mocks [AuthService].
@@ -854,8 +872,10 @@ class MockTenantCompanyService extends _i1.Mock
   @override
   _i5.Future<void> createTenantCompany(
     _i10.TenantCompany? company,
-    String? password,
-  ) =>
+    String? password, {
+    required String? adminUsername,
+    required String? adminName,
+  }) =>
       (super.noSuchMethod(
         Invocation.method(
           #createTenantCompany,
@@ -863,6 +883,10 @@ class MockTenantCompanyService extends _i1.Mock
             company,
             password,
           ],
+          {
+            #adminUsername: adminUsername,
+            #adminName: adminName,
+          },
         ),
         returnValue: _i5.Future<void>.value(),
         returnValueForMissingStub: _i5.Future<void>.value(),

@@ -1,6 +1,7 @@
-import 'package:auto_route/annotations.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/task/task_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/tasks/task_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/tasks/task_state.dart';
@@ -42,7 +43,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
       selectedUserName = widget.task!.assignedToUserName;
       selectedStatus = widget.task?.status;
       deadlineController.text = widget.task!.deadline != null
-          ? "${widget.task!.deadline!.year}-${widget.task!.deadline!.month.toString().padLeft(2, '0')}-${widget.task!.deadline!.day.toString().padLeft(2, '0')}"
+          ? DateFormat('dd-MM-yyyy').format(widget.task!.deadline!)
           : '';
     }
   }
@@ -305,7 +306,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
         controller: deadlineController,
         readOnly: true,
         decoration: InputDecoration(
-          labelText: "Deadline (YYYY-MM-DD)",
+          labelText: "Deadline (DD-MM-YYYY)",
           labelStyle: TextStyle(
             color: Theme.of(context).primaryColor,
             fontSize: 16.0,
@@ -347,6 +348,20 @@ class _AddTaskPageState extends State<AddTaskPage> {
       return;
     }
 
+    // Convert DD-MM-YYYY to YYYY-MM-DD for parsing
+    String formattedDate = '';
+    try {
+      final parts = deadlineController.text.split('-');
+      if (parts.length == 3) {
+        formattedDate = '${parts[2]}-${parts[1]}-${parts[0]}';
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Invalid date format")),
+      );
+      return;
+    }
+
     final task = TaskModel(
       taskId: widget.task?.taskId ?? "",
       title: titleController.text,
@@ -354,7 +369,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
       assignedTo: selectedUserId!,
       createdBy: "Admin",
       status: selectedStatus ?? '',
-      deadline: DateTime.tryParse(deadlineController.text) ?? DateTime.now(),
+      deadline: DateTime.tryParse(formattedDate) ?? DateTime.now(),
       assignedToUserName: selectedUserName ?? '',
       createdAt: widget.task?.createdAt,
     );
@@ -377,9 +392,6 @@ Future<void> selectDate(
     lastDate: DateTime(2100),
   );
   if (pickedDate != null) {
-    controller.text = pickedDate.toIso8601String().split("T")[0];
+    controller.text = DateFormat('dd-MM-yyyy').format(pickedDate);
   }
 }
-
-/// **Task Status Enum**
-enum TaskStatus { Pending, Done, Snoozed }

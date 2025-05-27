@@ -31,7 +31,7 @@ class CompanySettingPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildSection(
+                        /*_buildSection(
                           title: "Priorities",
                           items: state.settings.priorities,
                           onAdd: (newPriority) =>
@@ -48,7 +48,7 @@ class CompanySettingPage extends StatelessWidget {
                               cubit.addBusinessType(newBusinessType, context),
                           onDelete: (businessType) =>
                               cubit.removeBusinessType(businessType),
-                        ),
+                        ),*/
                         const SizedBox(height: 16),
                         _buildSection(
                           title: "Task Statuses",
@@ -57,11 +57,11 @@ class CompanySettingPage extends StatelessWidget {
                               cubit.addTaskStatus(newStatus, context),
                           onDelete: (status) => cubit.removeTaskStatus(status),
                         ),
-                        const SizedBox(height: 16),
+                        /*const SizedBox(height: 16),
                         _buildCountrySection(context, cubit, state),
                         const SizedBox(height: 16),
                         _buildPurposeSection(
-                            context, cubit, state), // New section
+                            context, cubit, state), */// New section
                       ],
                     ),
                   ),

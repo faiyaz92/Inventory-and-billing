@@ -11,6 +11,7 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/users
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/attendance_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/employee_details_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/employess_list_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/users/simple_employee_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/account_ledger_repository.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/category_repository.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/product_repository.dart';
@@ -275,6 +276,7 @@ void _initCubits() {
       ));
   sl.registerFactory(() => HomeCubit(sl<IUserService>()));
   sl.registerFactory(() => EmployeeCubit(sl<EmployeeServices>()));
+  sl.registerFactory(() => SimpleEmployeeCubit(sl<EmployeeServices>()));
   sl.registerFactory(() => AdminProductCubit(
         productService: sl<ProductService>(),
         categoryService: sl<CategoryService>(),

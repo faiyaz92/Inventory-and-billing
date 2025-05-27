@@ -20,10 +20,16 @@ class AddTenantCompanyCubit extends Cubit<AddTenantCompanyState> {
 
   AddTenantCompanyCubit(this._tenantCompanyService) : super(AddTenantCompanyState());
 
-  Future<void> addTenantCompany(TenantCompany company, String password) async {
+  Future<void> addTenantCompany(
+      TenantCompany company, String password, String adminUsername, String adminName) async {
     emit(AddTenantCompanyLoading());
     try {
-      await _tenantCompanyService.createTenantCompany(company, password);
+      await _tenantCompanyService.createTenantCompany(
+        company,
+        password,
+        adminUsername: adminUsername,
+        adminName: adminName,
+      );
       emit(AddTenantCompanySuccess());
     } catch (e) {
       emit(AddTenantCompanyError(e.toString()));

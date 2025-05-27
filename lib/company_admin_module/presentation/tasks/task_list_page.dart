@@ -43,12 +43,62 @@ class _TaskListPageState extends State<TaskListPage>
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => _taskCubit,
-      child: BlocBuilder<TaskCubit, TaskState>(
+      child: BlocConsumer<TaskCubit, TaskState>(
+        listener: (context, state) {
+          // Dismiss only the loading dialog when loading is complete
+          if (state is TaskLoaded) {
+            if (state.isLoading) if (Navigator.canPop(context)) {
+              Navigator.pop(context); // Close the loading dialog
+            }
+          }else if(state is TaskError){
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context); // Close the loading dialog
+            }
+          }
+        },
         builder: (context, state) {
           if (state is TaskLoading) {
+            // Show dialog-based loading UI
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 12),
+                        Text(
+                          "Loading...",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            });
+            // Return an empty Scaffold while dialog is shown
             return const Scaffold(
               backgroundColor: Colors.white,
-              body: Center(child: CircularProgressIndicator()),
+              body: SizedBox.shrink(),
             );
           } else if (state is TaskLoaded || state is TaskSettingsLoaded) {
             if (state is TaskSettingsLoaded) {
@@ -59,7 +109,7 @@ class _TaskListPageState extends State<TaskListPage>
             _statuses = _taskCubit
                 .getUniqueStatuses(tasks)
                 .where((status) =>
-                tasks.any((task) => (task.status ?? 'pending') == status))
+                    tasks.any((task) => (task.status ?? 'pending') == status))
                 .toList();
 
             if (_tabController == null ||
@@ -74,7 +124,7 @@ class _TaskListPageState extends State<TaskListPage>
               floatingActionButton: FloatingActionButton(
                 onPressed: () async {
                   final result =
-                  await sl<Coordinator>().navigateToAddTaskPage();
+                      await sl<Coordinator>().navigateToAddTaskPage();
                   if (result) {
                     _taskCubit
                       ..fetchTasks()
@@ -114,24 +164,24 @@ class _TaskListPageState extends State<TaskListPage>
                     Expanded(
                       child: _statuses.isEmpty
                           ? const Center(
-                          child: Text("No tasks available",
-                              style: TextStyle(fontSize: 16)))
+                              child: Text("No tasks available",
+                                  style: TextStyle(fontSize: 16)))
                           : TabBarView(
-                        controller: _tabController,
-                        children: _statuses.map((status) {
-                          return RefreshIndicator(
-                            onRefresh: () async {
-                              _taskCubit.allTasks.clear();
-                              _taskCubit.users.clear();
-                              _taskCubit
-                                ..fetchTasks(isNeedToShow: false)
-                                ..loadTaskSettings();
-                              return;
-                            },
-                            child: _buildTaskList(tasks, status),
-                          );
-                        }).toList(),
-                      ),
+                              controller: _tabController,
+                              children: _statuses.map((status) {
+                                return RefreshIndicator(
+                                  onRefresh: () async {
+                                    _taskCubit.allTasks.clear();
+                                    _taskCubit.users.clear();
+                                    _taskCubit
+                                      ..fetchTasks(isNeedToShow: false)
+                                      ..loadTaskSettings();
+                                    return;
+                                  },
+                                  child: _buildTaskList(tasks, status),
+                                );
+                              }).toList(),
+                            ),
                     ),
                   ],
                 ),
@@ -153,7 +203,7 @@ class _TaskListPageState extends State<TaskListPage>
   /// User Filter Dropdown
   Widget _buildUserFilterDropdown(List<UserInfo> users) {
     List<String> uniqueUsers =
-    users.map((user) => user.userName ?? "Unknown").toSet().toList();
+        users.map((user) => user.userName ?? "Unknown").toSet().toList();
     uniqueUsers.insert(0, "All Users");
 
     return Container(
@@ -269,10 +319,10 @@ class _TaskListPageState extends State<TaskListPage>
   Widget _buildTaskList(List<TaskModel> allTasks, String statusFilter) {
     List<TaskModel> filteredTasks = allTasks
         .where((task) =>
-    (task.status ?? 'pending') == statusFilter &&
-        (_taskCubit.selectedUserName == null ||
-            _taskCubit.selectedUserName == "All Users" ||
-            task.assignedToUserName == _taskCubit.selectedUserName))
+            (task.status ?? 'pending') == statusFilter &&
+            (_taskCubit.selectedUserName == null ||
+                _taskCubit.selectedUserName == "All Users" ||
+                task.assignedToUserName == _taskCubit.selectedUserName))
         .toList()
       ..sort((a, b) {
         final statusA = a.status ?? 'pending';
@@ -346,10 +396,9 @@ class _TaskListPageState extends State<TaskListPage>
                     },
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-
                       child: Table(
-                        border: TableBorder.all(
-                            color: Colors.grey[300]!, width: 1),
+                        border:
+                            TableBorder.all(color: Colors.grey[300]!, width: 1),
                         columnWidths: const {
                           0: FixedColumnWidth(120),
                           1: FlexColumnWidth(),
@@ -374,10 +423,9 @@ class _TaskListPageState extends State<TaskListPage>
                                 child: Padding(
                                   padding: const EdgeInsets.all(12),
                                   child: Row(
-                                    mainAxisAlignment:
-                                    MainAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     crossAxisAlignment:
-                                    CrossAxisAlignment.center,
+                                        CrossAxisAlignment.center,
                                     children: [
                                       Expanded(
                                         child: Text(
@@ -394,8 +442,8 @@ class _TaskListPageState extends State<TaskListPage>
                                             _showDeleteConfirmation(
                                                 context, task.taskId ?? '');
                                           } else {
-                                            final updatedTask = task.copyWith(
-                                                status: value);
+                                            final updatedTask =
+                                                task.copyWith(status: value);
                                             _taskCubit.updateTask(
                                                 updatedTask.taskId,
                                                 updatedTask);
@@ -446,8 +494,8 @@ class _TaskListPageState extends State<TaskListPage>
                             ],
                           ),
                           TableRow(
-                            decoration: const BoxDecoration(
-                                color: Color(0xFFFFE6E6)),
+                            decoration:
+                                const BoxDecoration(color: Color(0xFFFFE6E6)),
                             children: [
                               const TableCell(
                                 child: Padding(
@@ -477,8 +525,8 @@ class _TaskListPageState extends State<TaskListPage>
                             ],
                           ),
                           TableRow(
-                            decoration: const BoxDecoration(
-                                color: Color(0xFFE6FFE6)),
+                            decoration:
+                                const BoxDecoration(color: Color(0xFFE6FFE6)),
                             children: [
                               const TableCell(
                                 child: Padding(
@@ -507,8 +555,8 @@ class _TaskListPageState extends State<TaskListPage>
                             ],
                           ),
                           TableRow(
-                            decoration: const BoxDecoration(
-                                color: Color(0xFFF5F5F5)),
+                            decoration:
+                                const BoxDecoration(color: Color(0xFFF5F5F5)),
                             children: [
                               const TableCell(
                                 child: Padding(

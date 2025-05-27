@@ -29,6 +29,7 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/users
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/attendance_register_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/employee_details_view.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/employee_list_page.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/users/simple_user_list.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/dashboard/dashboard_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/home_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/forgot_password_page.dart';
@@ -137,5 +138,6 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: CartDashboardRoute.page, ),
         AutoRoute(page: UserOrderDetailsRoute.page, ),
         AutoRoute(page: SalesmanOrderRoute.page, ),
+        AutoRoute(page: SimpleEmployeesRoute.page, ),
       ];
 }

@@ -45,11 +45,18 @@ class CompanyAdminPage extends StatelessWidget {
                         },
                       ),
                       _buildGridItem(
+                        icon: Icons.monetization_on_sharp,
+                        label: 'User salary List',
+                        color: Colors.orangeAccent,
+                        onTap: () {
+                          sl<Coordinator>().navigateToUserListPage();
+                        },
+                      ), _buildGridItem(
                         icon: Icons.list,
                         label: 'User List',
                         color: Colors.green,
                         onTap: () {
-                          sl<Coordinator>().navigateToUserListPage();
+                          sl<Coordinator>().navigateToSimpleEmployeeList();
                         },
                       ),
                       _buildGridItem(

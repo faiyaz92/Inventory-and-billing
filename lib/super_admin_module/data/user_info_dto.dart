@@ -52,6 +52,20 @@ class UserInfoDto extends Equatable {
     };
   }
 
+  Map<String, dynamic> toPartialMap() {
+    final map = <String, dynamic>{};
+    map['userId'] = userId; // Always include userId
+    if (companyId != null) map['companyId'] = companyId;
+    if (name != null) map['name'] = name;
+    if (email != null) map['email'] = email;
+    if (userName != null) map['userName'] = userName;
+    if (role != null) map['role'] = role.name;
+    if (latitude != null) map['latitude'] = latitude;
+    if (longitude != null) map['longitude'] = longitude;
+    if (dailyWage != null) map['dailyWage'] = dailyWage;
+    return map;
+  }
+
   UserInfoDto copyWith({
     String? userId,
     String? companyId,

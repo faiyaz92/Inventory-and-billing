@@ -103,5 +103,6 @@ abstract class Coordinator {
   Future<dynamic> navigateToUserOrderDetailsPage(String? orderId);
   Future<dynamic> navigateToCartDashboard();
   Future<dynamic> navigateToSalesManOrderPage();
+  Future<dynamic> navigateToSimpleEmployeeList();
 
 }

@@ -12,10 +12,86 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Define demo expiration date
+    final DateTime demoExpirationDate = DateTime(2025, 7, 10);
+    final bool isDemoExpired = DateTime.now().isAfter(demoExpirationDate);
+
     return BlocProvider(
       create: (context) => sl<HomeCubit>()..fetchUserInfo(),
       child: BlocBuilder<HomeCubit, HomeState>(
         builder: (context, state) {
+          // If demo is expired, show purchase message
+          if (isDemoExpired) {
+            return Scaffold(
+              body: Center(
+                child: Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  color: Colors.white,
+                  margin: const EdgeInsets.all(16.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.lock,
+                          size: 48,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Your free demo period has ended.',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Please purchase a subscription to continue using the app.',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.black54,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).primaryColor,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24.0,
+                              vertical: 12.0,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
+                          onPressed: () {
+                            // TODO: Implement purchase flow (e.g., navigate to subscription page)
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Contact support to purchase a subscription.'),
+                              ),
+                            );
+                          },
+                          child: const Text('Purchase Now'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+
+          // Existing UI for non-expired demo
           if (state is HomeLoading) {
             return Scaffold(
               body: Center(
@@ -27,7 +103,6 @@ class HomePage extends StatelessWidget {
               ),
             );
           } else if (state is HomeLoaded) {
-            // Determine visible tiles based on role
             final List<Widget> gridItems = _buildGridItemsForRole(
               context: context,
               role: state.role,
@@ -51,7 +126,6 @@ class HomePage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Welcome Card
                         SizedBox(
                           width: double.infinity,
                           child: Card(
@@ -74,7 +148,6 @@ class HomePage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        // GridView
                         Expanded(
                           child: GridView.count(
                             crossAxisCount: 3,
@@ -112,7 +185,6 @@ class HomePage extends StatelessWidget {
   }) {
     final List<Widget> gridItems = [];
 
-    // Super Admin: Only sees Super Admin tile
     if (role == Role.SUPER_ADMIN) {
       gridItems.add(
         _buildGridItem(
@@ -124,9 +196,7 @@ class HomePage extends StatelessWidget {
           },
         ),
       );
-    }
-    // Company Admin: Sees all tiles except Super Admin
-    else if (role == Role.COMPANY_ADMIN) {
+    } else if (role == Role.COMPANY_ADMIN) {
       gridItems.addAll([
         _buildGridItem(
           icon: Icons.admin_panel_settings,
@@ -225,9 +295,7 @@ class HomePage extends StatelessWidget {
           },
         ),
       ]);
-    }
-    // User: Sees all tiles except Super Admin and Company Admin
-    else {
+    } else {
       gridItems.addAll([
         _buildGridItem(
           icon: Icons.add_task_outlined,

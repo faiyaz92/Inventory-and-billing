@@ -6,6 +6,7 @@ class CustomLoadingDialog extends StatelessWidget {
 
   const CustomLoadingDialog({
     super.key,
+    // ignore: avoid_hardcoded_strings
     this.message = 'Loading...',
   });
 
@@ -22,21 +23,21 @@ class CustomLoadingDialog extends StatelessWidget {
             BoxShadow(
               color: AppColors.textPrimary.withOpacity(0.2),
               blurRadius: 8,
-              offset: Offset(0, 4),
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
+            const CircularProgressIndicator(
               color: AppColors.primary,
               strokeWidth: 3,
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Text(
               message,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,

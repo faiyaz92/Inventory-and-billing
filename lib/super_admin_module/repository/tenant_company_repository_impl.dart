@@ -24,18 +24,22 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
     String companyId = companyName.toLowerCase().replaceAll(' ', '_');
     bool exists = await _firestoreProvider.checkCompanyExists(companyId);
     if (exists) {
-      companyId += "_${DateTime.now().millisecondsSinceEpoch}";
+      companyId += '_${DateTime.now().millisecondsSinceEpoch}';
     }
     return companyId;
   }
 
   @override
   Future<void> createTenantCompany(
-      TenantCompanyDto dto, String password) async {
+    TenantCompanyDto dto,
+    String password, {
+    required String adminUsername,
+    required String adminName,
+  }) async {
     final userInfo = await _accountRepository.getUserInfo();
     String? superAdminId = userInfo?.userId;
     if (superAdminId == null) {
-      throw Exception("Super Admin not logged in.");
+      throw Exception('Super Admin not logged in.');
     }
     String companyId = await generateTenantCompanyId(dto.name ?? '');
     UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
@@ -55,8 +59,8 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
       email: dto.email ?? '',
       role: Role.COMPANY_ADMIN,
       companyId: companyId,
-      name: '',
-      userName: '',
+      name: adminName,
+      userName: adminUsername,
     );
     await _firestoreProvider
         .getTenantUsersRef(companyId)
@@ -77,7 +81,7 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
     );
     String userId = userCredential.user!.uid;
     if (userInfoDto.companyId == null || userInfoDto.companyId!.isEmpty) {
-      throw Exception("Company ID is missing. Cannot add user.");
+      throw Exception('Company ID is missing. Cannot add user.');
     }
     UserInfoDto updatedUserInfo = userInfoDto.copyWith(userId: userId);
     await _firestoreProvider
@@ -91,25 +95,43 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
   }
 
   @override
-  Future<void> updateUser(String userId, String companyId, UserInfoDto userInfoDto) async {
+  Future<void> updateUser(
+      String userId, String companyId, UserInfoDto userInfoDto) async {
     try {
+      final updateData = userInfoDto.toPartialMap();
       await _firestoreProvider
           .getTenantUsersRef(companyId)
           .doc(userId)
-          .update(userInfoDto.toMap());
+          .update(updateData);
       await _firestoreProvider
           .getCommonUsersPath()
           .doc(userId)
-          .update(userInfoDto.toMap());
+          .update(updateData);
     } catch (e) {
-      throw Exception("Error updating user: $e");
+      throw Exception('Error updating user: $e');
+    }
+  }
+
+  @override
+  Future<UserInfoDto?> getUser(String userId, String companyId) async {
+    try {
+      final userSnapshot = await _firestoreProvider
+          .getTenantUsersRef(companyId)
+          .doc(userId)
+          .get();
+      if (!userSnapshot.exists) {
+        return null;
+      }
+      return UserInfoDto.fromMap(userSnapshot.data() as Map<String, dynamic>);
+    } catch (e) {
+      throw Exception('Error fetching user: $e');
     }
   }
 
   @override
   Future<List<TenantCompanyDto>> getTenantCompanies() async {
     final snapshot =
-    await _firestoreProvider.basePath.collection('tenantCompanies').get();
+        await _firestoreProvider.basePath.collection('tenantCompanies').get();
     return snapshot.docs
         .map((doc) => TenantCompanyDto.fromMap(doc.data()))
         .toList();
@@ -132,7 +154,7 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
     try {
       User? currentUser = _auth.currentUser;
       if (currentUser == null) {
-        throw Exception("No user is currently logged in.");
+        throw Exception('No user is currently logged in.');
       }
       UserInfoDto superAdminUser = UserInfoDto(
         userId: currentUser.uid,
@@ -161,7 +183,7 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
   Future<List<UserInfoDto>> getUsersFromTenantCompany(String companyId) async {
     try {
       CollectionReference usersRef =
-      _firestoreProvider.getTenantUsersRef(companyId);
+          _firestoreProvider.getTenantUsersRef(companyId);
       QuerySnapshot querySnapshot = await usersRef.get();
       return querySnapshot.docs
           .map((doc) => UserInfoDto.fromMap(doc.data() as Map<String, dynamic>))
@@ -184,7 +206,7 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
           .doc(userId)
           .delete();
     } catch (e) {
-      throw Exception("Error deleting user: $e");
+      throw Exception('Error deleting user: $e');
     }
   }
 
@@ -218,7 +240,6 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
         .orderBy('date')
         .get();
 
-    // Convert Firestore data to AttendanceModel, then to AttendanceDTO
     final models = snapshot.docs.map((doc) {
       final data = doc.data() as Map<String, dynamic>;
       return AttendanceModel(
@@ -227,7 +248,6 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
       );
     }).toList();
 
-    // Convert Models to DTOs for output
     return models.map((model) {
       final dateTime = DateFormat('dd-MM-yyyy').parse(model.date);
       return AttendanceDTO(
@@ -321,7 +341,7 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
     }).toList();
 
     final userSnapshot =
-    await _firestoreProvider.getTenantUserRef(companyId, userId).get();
+        await _firestoreProvider.getTenantUserRef(companyId, userId).get();
     final userData = userSnapshot.data() as Map<String, dynamic>;
     final dailyWage = (userData['dailyWage'] as num?)?.toDouble() ?? 500.0;
     int presentDays = models.where((model) => model.status == 'present').length;
