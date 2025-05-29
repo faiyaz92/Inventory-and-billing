@@ -56,7 +56,7 @@ class _SalesReportPageState extends State<SalesReportPage> {
                     onChanged: (value) {
                       setState(() => _selectedStoreId = value);
                       if (value != null) {
-                        context.read<TransactionCubit>().fetchTransactions(value);
+                        // context.read<TransactionCubit>().fetchTransactions(value);
                       }
                     },
                   ),
