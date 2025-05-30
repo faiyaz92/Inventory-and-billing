@@ -628,6 +628,22 @@ class CompanyListRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [CompanyPerformancePage]
+class CompanyPerformanceRoute extends PageRouteInfo<void> {
+  const CompanyPerformanceRoute({List<PageRouteInfo>? children})
+    : super(CompanyPerformanceRoute.name, initialChildren: children);
+
+  static const String name = 'CompanyPerformanceRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const CompanyPerformancePage();
+    },
+  );
+}
+
+/// generated route for
 /// [CompanySettingPage]
 class CompanySettingRoute extends PageRouteInfo<void> {
   const CompanySettingRoute({List<PageRouteInfo>? children})

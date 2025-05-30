@@ -13,17 +13,14 @@ import 'package:shimmer/shimmer.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 
 @RoutePage()
-class PerformanceDetailsPage extends StatefulWidget {
-  final String entityType;
-  final String entityId;
-
-  const PerformanceDetailsPage({super.key, required this.entityType, required this.entityId});
+class CompanyPerformancePage extends StatefulWidget {
+  const CompanyPerformancePage({super.key});
 
   @override
-  _PerformanceDetailsPageState createState() => _PerformanceDetailsPageState();
+  _CompanyPerformancePageState createState() => _CompanyPerformancePageState();
 }
 
-class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
+class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
   DateTimeRange dateRange = DateTimeRange(
     start: DateTime.now().subtract(const Duration(days: 365)),
     end: DateTime.now(),
@@ -34,11 +31,11 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
     return BlocProvider(
       create: (_) {
         final cubit = sl<AdminOrderCubit>();
-        cubit.fetchOrdersForEntity(widget.entityType, widget.entityId, dateRange.start, dateRange.end);
+        cubit.fetchOrders(startDate: dateRange.start, endDate: dateRange.end);
         return cubit;
       },
       child: Scaffold(
-        appBar: CustomAppBar(title: '${widget.entityType.capitalize()} Performance'),
+        appBar: const CustomAppBar(title: 'Company Performance'),
         body: Container(
           width: double.infinity,
           height: double.infinity,
@@ -65,7 +62,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          _buildEntityNameCard(context),
+                          _buildTitleCard(context),
                           const SizedBox(height: 16),
                           _buildDateRangeCard(context),
                           const SizedBox(height: 16),
@@ -96,67 +93,25 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
     );
   }
 
-  Widget _buildEntityNameCard(BuildContext context) {
-    return FutureBuilder<String>(
-      future: context.read<AdminOrderCubit>().fetchEntityName(widget.entityType, widget.entityId),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Shimmer.fromColors(
-            baseColor: Colors.grey[300]!,
-            highlightColor: Colors.grey[100]!,
-            child: Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Container(
-                constraints: const BoxConstraints(minHeight: 80),
-                padding: const EdgeInsets.all(16.0),
-                child: Container(height: 24, color: Colors.white),
-              ),
+  Widget _buildTitleCard(BuildContext context) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 80),
+        padding: const EdgeInsets.all(16.0),
+        child: const Center(
+          child: Text(
+            'Company Performance',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+              shadows: [Shadow(blurRadius: 2, color: Colors.black12, offset: Offset(1, 1))],
             ),
-          );
-        } else if (snapshot.hasError) {
-          return Card(
-            elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Container(
-              constraints: const BoxConstraints(minHeight: 80),
-              padding: const EdgeInsets.all(16.0),
-              child: Center(
-                child: Text(
-                  '${widget.entityType.capitalize()}: ${widget.entityId}',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                    shadows: [Shadow(blurRadius: 2, color: Colors.black12, offset: Offset(1, 1))],
-                  ),
-                ),
-              ),
-            ),
-          );
-        } else {
-          final entityName = snapshot.data ?? widget.entityId;
-          return Card(
-            elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Container(
-              constraints: const BoxConstraints(minHeight: 80),
-              padding: const EdgeInsets.all(16.0),
-              child: Center(
-                child: Text(
-                  '${widget.entityType.capitalize()}: $entityName',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                    shadows: [Shadow(blurRadius: 2, color: Colors.black12, offset: Offset(1, 1))],
-                  ),
-                ),
-              ),
-            ),
-          );
-        }
-      },
+          ),
+        ),
+      ),
     );
   }
 
@@ -190,7 +145,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
             );
             if (picked != null) {
               setState(() => dateRange = picked);
-              context.read<AdminOrderCubit>().fetchOrdersForEntity(widget.entityType, widget.entityId, picked.start, picked.end);
+              context.read<AdminOrderCubit>().fetchOrders(startDate: picked.start, endDate: picked.end);
             }
           },
         ),
@@ -201,8 +156,6 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
   Widget _buildStatsCard(AdminOrderListFetchSuccess state) {
     final totalOrders = state.orders.length;
     final totalAmount = state.orders.fold(0.0, (sum, order) => sum + order.totalAmount);
-    final isCustomer = widget.entityType == 'customer';
-    final lastOrderText = isCustomer && state.orders.isNotEmpty ? _daysSinceLastOrder(state.orders.first) : null;
 
     final stats = [
       {
@@ -217,13 +170,6 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
         'color': AppColors.textPrimary,
         'highlight': AppColors.green.withOpacity(0.3),
       },
-      if (lastOrderText != null)
-        {
-          'label': 'Last Order',
-          'value': lastOrderText,
-          'color': AppColors.textSecondary,
-          'highlight': AppColors.primary.withOpacity(0.3),
-        },
     ];
 
     return Card(
@@ -617,7 +563,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
         constraints: const BoxConstraints(minHeight: 80),
         child: ExpansionTile(
           title: const Text(
-            'View Orders',
+            'View Recent Orders',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
           ),
           tilePadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -863,11 +809,6 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
     return GraphData(spots: spots, interval: interval, trend: trend, dates: sortedDates);
   }
 
-  String _daysSinceLastOrder(Order order) {
-    final diff = DateTime.now().difference(order.orderDate);
-    return '${diff.inDays} days ago';
-  }
-
   Widget _buildShimmerEffect() {
     return Shimmer.fromColors(
       baseColor: Colors.grey[300]!,
@@ -902,7 +843,3 @@ class GraphData {
 }
 
 enum Trend { up, down, neutral }
-
-extension StringExtension on String {
-  String capitalize() => this[0].toUpperCase() + substring(1);
-}

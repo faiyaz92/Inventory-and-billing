@@ -857,6 +857,15 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
         ),
         returnValue: _i5.Future<dynamic>.value(),
       ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToCompanyPerformancePage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToCompanyPerformancePage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 }
 
 /// A class which mocks [AuthService].

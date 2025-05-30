@@ -1,3 +1,4 @@
+import 'package:flutter/src/widgets/framework.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/category.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/sub_category.dart';
@@ -110,5 +111,6 @@ abstract class Coordinator {
   Future<dynamic> navigateToStoreOrderListPage();
   Future<dynamic> navigateToCustomerOrderListPage();
   Future<dynamic> navigateToPerformanceDetailsPage({required String entityType, required String entityId});
+  Future<dynamic> navigateToCompanyPerformancePage();
 
 }

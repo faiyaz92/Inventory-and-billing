@@ -304,8 +304,6 @@ class AppCoordinator implements Coordinator {
     return _router.push(const PreviewOrderRoute());
   }
 
-
-
   @override
   Future<dynamic> navigateToAdminPanelPage() {
     return _router.push(const AdminPanelRoute());
@@ -320,8 +318,6 @@ class AppCoordinator implements Coordinator {
   Future<dynamic> navigateToUserOrderDetailsPage(String? orderId) {
     return _router.push(UserOrderDetailsRoute(orderId: orderId ?? ''));
   }
-
-
 
   @override
   Future navigateToCartDashboard() {
@@ -340,15 +336,30 @@ class AppCoordinator implements Coordinator {
     // TODO: implement navigateToSimpleEmployeeList
     return _router.push(const SimpleEmployeesRoute());
   }
+
   @override
-  Future<dynamic> navigateToSalesmanOrderListPage() => _router.push(const SalesmanOrderListRoute());
+  Future<dynamic> navigateToSalesmanOrderListPage() =>
+      _router.push(const SalesmanOrderListRoute());
+
   @override
-  Future<dynamic> navigateToDeliveryManOrderListPage() => _router.push(const DeliveryManOrderListRoute());
+  Future<dynamic> navigateToDeliveryManOrderListPage() =>
+      _router.push(const DeliveryManOrderListRoute());
+
   @override
-  Future<dynamic> navigateToStoreOrderListPage() => _router.push(const StoreOrderListRoute());
+  Future<dynamic> navigateToStoreOrderListPage() =>
+      _router.push(const StoreOrderListRoute());
+
   @override
-  Future<dynamic> navigateToCustomerOrderListPage() => _router.push(const CustomerOrderListRoute());
+  Future<dynamic> navigateToCustomerOrderListPage() =>
+      _router.push(const CustomerOrderListRoute());
+
   @override
-  Future<dynamic> navigateToPerformanceDetailsPage({required String entityType, required String entityId}) =>
-      _router.push(PerformanceDetailsRoute(entityType: entityType, entityId: entityId));
+  Future<dynamic> navigateToPerformanceDetailsPage(
+          {required String entityType, required String entityId}) =>
+      _router.push(
+          PerformanceDetailsRoute(entityType: entityType, entityId: entityId));
+
+  @override
+  Future<dynamic> navigateToCompanyPerformancePage() =>
+      _router.push(const CompanyPerformanceRoute());
 }

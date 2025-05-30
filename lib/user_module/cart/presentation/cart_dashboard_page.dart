@@ -38,7 +38,6 @@ class CartDashboardPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // GridView
                 Expanded(
                   child: GridView.count(
                     crossAxisCount: 3,
@@ -51,27 +50,57 @@ class CartDashboardPage extends StatelessWidget {
                         'Cart',
                         Icons.list,
                         Colors.blue,
-                        () => sl<Coordinator>().navigateToCartHomePage(),
+                            () => sl<Coordinator>().navigateToCartHomePage(),
                       ),
                       _buildDashboardCard(
                         context,
                         'Cart Admin',
                         Icons.receipt,
                         Colors.orange,
-                        () => sl<Coordinator>().navigateToAdminPanelPage(),
-                      ), _buildDashboardCard(
+                            () => sl<Coordinator>().navigateToAdminPanelPage(),
+                      ),
+                      _buildDashboardCard(
                         context,
-                        'Sales man order',
+                        'Salesman Orders',
                         Icons.receipt,
                         Colors.orange,
-                        () => sl<Coordinator>().navigateToSalesManOrderPage(),
+                            () => sl<Coordinator>().navigateToSalesManOrderPage(),
                       ),
-
-                      _buildDashboardCard(context, 'Salesman List Orders', Icons.person, Colors.green, () => sl<Coordinator>().navigateToSalesmanOrderListPage()),
-                      _buildDashboardCard(context, 'Delivery Man List Orders', Icons.delivery_dining, Colors.purple, () => sl<Coordinator>().navigateToDeliveryManOrderListPage()),
-                      _buildDashboardCard(context, 'Store List Orders', Icons.store, Colors.red, () => sl<Coordinator>().navigateToStoreOrderListPage()),
-                      _buildDashboardCard(context, 'Customer List Orders', Icons.people, Colors.teal, () => sl<Coordinator>().navigateToCustomerOrderListPage()),
-
+                      _buildDashboardCard(
+                        context,
+                        'Salesman List',
+                        Icons.person,
+                        Colors.green,
+                            () => sl<Coordinator>().navigateToSalesmanOrderListPage(),
+                      ),
+                      _buildDashboardCard(
+                        context,
+                        'Delivery Man List',
+                        Icons.delivery_dining,
+                        Colors.purple,
+                            () => sl<Coordinator>().navigateToDeliveryManOrderListPage(),
+                      ),
+                      _buildDashboardCard(
+                        context,
+                        'Store List',
+                        Icons.store,
+                        Colors.red,
+                            () => sl<Coordinator>().navigateToStoreOrderListPage(),
+                      ),
+                      _buildDashboardCard(
+                        context,
+                        'Customer List',
+                        Icons.people,
+                        Colors.teal,
+                            () => sl<Coordinator>().navigateToCustomerOrderListPage(),
+                      ),
+                      _buildDashboardCard(
+                        context,
+                        'Company Performance',
+                        Icons.trending_up,
+                        Colors.blueAccent,
+                            () => sl<Coordinator>().navigateToCompanyPerformancePage(),
+                      ),
                     ],
                   ),
                 ),
@@ -84,12 +113,12 @@ class CartDashboardPage extends StatelessWidget {
   }
 
   Widget _buildDashboardCard(
-    BuildContext context,
-    String title,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
+      BuildContext context,
+      String title,
+      IconData icon,
+      Color color,
+      VoidCallback onTap,
+      ) {
     return Card(
       elevation: 4.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
