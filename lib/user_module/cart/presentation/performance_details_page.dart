@@ -65,15 +65,15 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          _buildEntityNameCard(context),
+                          const SizedBox(height: 16),
                           _buildDateRangeCard(context),
                           const SizedBox(height: 16),
                           _buildStatsCard(state),
                           const SizedBox(height: 16),
                           _buildGraphCard(state),
                           const SizedBox(height: 16),
-
                           _buildOrderCountGraphCard(state),
-
                           const SizedBox(height: 16),
                           _buildOrdersCard(state),
                         ],
@@ -93,6 +93,70 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildEntityNameCard(BuildContext context) {
+    return FutureBuilder<String>(
+      future: context.read<AdminOrderCubit>().fetchEntityName(widget.entityType, widget.entityId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Container(
+                constraints: const BoxConstraints(minHeight: 80),
+                padding: const EdgeInsets.all(16.0),
+                child: Container(height: 24, color: Colors.white),
+              ),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 80),
+              padding: const EdgeInsets.all(16.0),
+              child: Center(
+                child: Text(
+                  '${widget.entityType.capitalize()}: ${widget.entityId}',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                    shadows: [Shadow(blurRadius: 2, color: Colors.black12, offset: Offset(1, 1))],
+                  ),
+                ),
+              ),
+            ),
+          );
+        } else {
+          final entityName = snapshot.data ?? widget.entityId;
+          return Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 80),
+              padding: const EdgeInsets.all(16.0),
+              child: Center(
+                child: Text(
+                  '${widget.entityType.capitalize()}: $entityName',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                    shadows: [Shadow(blurRadius: 2, color: Colors.black12, offset: Offset(1, 1))],
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+      },
     );
   }
 
@@ -209,7 +273,6 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
                       ),
                     ),
                     Container(
-                      // padding: double.infinity,
                       alignment: Alignment.centerRight,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
@@ -233,6 +296,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
       ),
     );
   }
+
   Widget _buildGraphCard(AdminOrderListFetchSuccess state) {
     final data = _generateGraphData(state.orders, dateRange);
     if (data.spots.isEmpty) {
@@ -355,7 +419,6 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
                   ],
                   lineTouchData: LineTouchData(
                     touchTooltipData: LineTouchTooltipData(
-                      // tooltipBgColor: Colors.black.withOpacity(0.8),
                       getTooltipItems: (touchedSpots) => touchedSpots.map((spot) {
                         final index = spot.x.toInt();
                         if (index >= 0 && index < data.dates.length) {
@@ -384,6 +447,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
       ),
     );
   }
+
   Widget _buildOrderCountGraphCard(AdminOrderListFetchSuccess state) {
     final data = _generateOrderCountGraphData(state.orders, dateRange);
     if (data.spots.isEmpty) {
@@ -399,171 +463,142 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
     }
 
     return Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 80),
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Order Count Trend',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                  ),
-                  Text(
-                    data.trend == Trend.up ? '↑ Up' : data.trend == Trend.down ? '↓ Down' : '↔ Neutral',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: data.trend == Trend.up ? Colors.green : data.trend == Trend.down ? Colors.red : Colors.grey,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 300,
-                child: LineChart(
-                  LineChartData(
-                    gridData: FlGridData(
-                      show: true,
-                      drawVerticalLine: true,
-                      horizontalInterval: (data.spots.map((e) => e.y).reduce((a, b) => a > b ? a : b) / 5).ceilToDouble(),
-                      verticalInterval: data.spots.length / 5,
-                      getDrawingHorizontalLine: (value) => FlLine(color: Colors.grey.shade200, strokeWidth: 1),
-                      getDrawingVerticalLine: (value) => FlLine(color: Colors.grey.shade200, strokeWidth: 1),
-                    ),
-                    titlesData: FlTitlesData(
-                      leftTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          reservedSize: 50,
-                          getTitlesWidget: (value, meta) => Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: Text(
-                              value.toInt().toString(),
-                              style: const TextStyle(fontSize: 12),
-                              textAlign: TextAlign.right,
-                            ),
-                          ),
-                        ),
-                      ),
-                      bottomTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          reservedSize: 30,
-                          getTitlesWidget: (value, meta) {
-                            final index = value.toInt();
-                            if (index >= 0 && index < data.dates.length) {
-                              final date = data.dates[index];
-                              return SideTitleWidget(
-                                axisSide: meta.axisSide,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 8.0),
-                                  child: Text(
-                                    data.interval == 'daily'
-                                        ? '${date.day}/${date.month}'
-                                        : data.interval == 'weekly'
-                                        ? 'W${(date.day / 7).ceil()}'
-                                        : '${date.month}/${date.year % 100}',
-                                    style: const TextStyle(fontSize: 12),
-                                  ),
-                                ),
-                              );
-                            }
-                            return const SizedBox();
-                          },
-                        ),
-                      ),
-                      rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    ),
-                    borderData: FlBorderData(show: true, border: Border.all(color: Colors.grey.shade300)),
-                    lineBarsData: [
-                      LineChartBarData(
-                        spots: data.spots,
-                        isCurved: true,
-                        color: data.trend == Trend.up ? Colors.green : Colors.red,
-                        barWidth: 3,
-                        dotData: FlDotData(
-                          show: true,
-                          getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
-                            radius: 4,
-                            color: data.trend == Trend.up ? Colors.green : Colors.red,
-                            strokeWidth: 1,
-                            strokeColor: Colors.white,
-                          ),
-                        ),
-                        belowBarData: BarAreaData(
-                          show: true,
-                          color: (data.trend == Trend.up ? Colors.green : Colors.red).withOpacity(0.1),
-                        ),
-                      ),
-                    ],
-                    lineTouchData: LineTouchData(
-                      touchTooltipData: LineTouchTooltipData(
-                        getTooltipItems: (touchedSpots) => touchedSpots.map((spot) {
-                          final index = spot.x.toInt();
-                          if (index >= 0 && index < data.dates.length) {
-                            final date = data.dates[index];
-                            final dateText = data.interval == 'daily'
-                                ? '${date.day}/${date.month}/${date.year}'
-                                : data.interval == 'weekly'
-                                ? 'Week of ${date.day}/${date.month}/${date.year}'
-                                : '${date.month}/${date.year}';
-                            return LineTooltipItem(
-                              '${spot.y.toInt()} orders\n$dateText',
-                              const TextStyle(color: Colors.white, fontSize: 12),
-                            );
-                          }
-                          return null;
-                        }).toList(),
-                      ),
-                    ),
-                    minY: 0,
-                    maxY: (data.spots.map((e) => e.y).reduce((a, b) => a > b ? a : b) * 1.1).ceilToDouble(),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 80),
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Order Count Trend',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                ),
+                Text(
+                  data.trend == Trend.up ? '↑ Up' : data.trend == Trend.down ? '↓ Down' : '↔ Neutral',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: data.trend == Trend.up ? Colors.green : data.trend == Trend.down ? Colors.red : Colors.grey,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 300,
+              child: LineChart(
+                LineChartData(
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: true,
+                    horizontalInterval: (data.spots.map((e) => e.y).reduce((a, b) => a > b ? a : b) / 5).ceilToDouble(),
+                    verticalInterval: data.spots.length / 5,
+                    getDrawingHorizontalLine: (value) => FlLine(color: Colors.grey.shade200, strokeWidth: 1),
+                    getDrawingVerticalLine: (value) => FlLine(color: Colors.grey.shade200, strokeWidth: 1),
+                  ),
+                  titlesData: FlTitlesData(
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 50,
+                        getTitlesWidget: (value, meta) => Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: Text(
+                            value.toInt().toString(),
+                            style: const TextStyle(fontSize: 12),
+                            textAlign: TextAlign.right,
+                          ),
+                        ),
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 30,
+                        getTitlesWidget: (value, meta) {
+                          final index = value.toInt();
+                          if (index >= 0 && index < data.dates.length) {
+                            final date = data.dates[index];
+                            return SideTitleWidget(
+                              axisSide: meta.axisSide,
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Text(
+                                  data.interval == 'daily'
+                                      ? '${date.day}/${date.month}'
+                                      : data.interval == 'weekly'
+                                      ? 'W${(date.day / 7).ceil()}'
+                                      : '${date.month}/${date.year % 100}',
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                              ),
+                            );
+                          }
+                          return const SizedBox();
+                        },
+                      ),
+                    ),
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  ),
+                  borderData: FlBorderData(show: true, border: Border.all(color: Colors.grey.shade300)),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: data.spots,
+                      isCurved: true,
+                      color: data.trend == Trend.up ? Colors.green : Colors.red,
+                      barWidth: 3,
+                      dotData: FlDotData(
+                        show: true,
+                        getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
+                          radius: 4,
+                          color: data.trend == Trend.up ? Colors.green : Colors.red,
+                          strokeWidth: 1,
+                          strokeColor: Colors.white,
+                        ),
+                      ),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        color: (data.trend == Trend.up ? Colors.green : Colors.red).withOpacity(0.1),
+                      ),
+                    ),
+                  ],
+                  lineTouchData: LineTouchData(
+                    touchTooltipData: LineTouchTooltipData(
+                      getTooltipItems: (touchedSpots) => touchedSpots.map((spot) {
+                        final index = spot.x.toInt();
+                        if (index >= 0 && index < data.dates.length) {
+                          final date = data.dates[index];
+                          final dateText = data.interval == 'daily'
+                              ? '${date.day}/${date.month}/${date.year}'
+                              : data.interval == 'weekly'
+                              ? 'Week of ${date.day}/${date.month}/${date.year}'
+                              : '${date.month}/${date.year}';
+                          return LineTooltipItem(
+                            '${spot.y.toInt()} orders\n$dateText',
+                            const TextStyle(color: Colors.white, fontSize: 12),
+                          );
+                        }
+                        return null;
+                      }).toList(),
+                    ),
+                  ),
+                  minY: 0,
+                  maxY: (data.spots.map((e) => e.y).reduce((a, b) => a > b ? a : b) * 1.1).ceilToDouble(),
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
+      ),
     );
   }
-  GraphData _generateOrderCountGraphData(List<Order> orders, DateTimeRange range) {
-    final duration = range.end.difference(range.start).inDays;
-    final interval = duration <= 7 ? 'daily' : (duration <= 90 ? 'weekly' : 'monthly');
-    final Map<DateTime, int> aggregated = {};
 
-    for (var order in orders) {
-      final date = interval == 'daily'
-          ? DateTime(order.orderDate.year, order.orderDate.month, order.orderDate.day)
-          : interval == 'weekly'
-          ? DateTime(order.orderDate.year, order.orderDate.month, order.orderDate.day - order.orderDate.weekday + 1)
-          : DateTime(order.orderDate.year, order.orderDate.month);
-      aggregated[date] = (aggregated[date] ?? 0) + 1;
-    }
-
-    final sortedDates = aggregated.keys.toList()..sort();
-    final spots = <FlSpot>[];
-    for (var i = 0; i < sortedDates.length; i++) {
-      final date = sortedDates[i];
-      final count = aggregated[date]!.toDouble();
-      spots.add(FlSpot(i.toDouble(), count));
-    }
-
-    final trend = spots.isEmpty || spots.length == 1
-        ? Trend.neutral
-        : spots.last.y > spots.first.y
-        ? Trend.up
-        : Trend.down;
-
-    return GraphData(spots: spots, interval: interval, trend: trend, dates: sortedDates);
-  }
   Widget _buildOrdersCard(AdminOrderListFetchSuccess state) {
     final groupedOrders = <String, List<Order>>{};
     final formatter = DateFormat('MMM dd, yyyy');
@@ -578,6 +613,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Container(
         constraints: const BoxConstraints(minHeight: 80),
         child: ExpansionTile(
@@ -797,6 +833,37 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
     return GraphData(spots: spots, interval: interval, trend: trend, dates: sortedDates);
   }
 
+  GraphData _generateOrderCountGraphData(List<Order> orders, DateTimeRange range) {
+    final duration = range.end.difference(range.start).inDays;
+    final interval = duration <= 7 ? 'daily' : (duration <= 90 ? 'weekly' : 'monthly');
+    final Map<DateTime, int> aggregated = {};
+
+    for (var order in orders) {
+      final date = interval == 'daily'
+          ? DateTime(order.orderDate.year, order.orderDate.month, order.orderDate.day)
+          : interval == 'weekly'
+          ? DateTime(order.orderDate.year, order.orderDate.month, order.orderDate.day - order.orderDate.weekday + 1)
+          : DateTime(order.orderDate.year, order.orderDate.month);
+      aggregated[date] = (aggregated[date] ?? 0) + 1;
+    }
+
+    final sortedDates = aggregated.keys.toList()..sort();
+    final spots = <FlSpot>[];
+    for (var i = 0; i < sortedDates.length; i++) {
+      final date = sortedDates[i];
+      final count = aggregated[date]!.toDouble();
+      spots.add(FlSpot(i.toDouble(), count));
+    }
+
+    final trend = spots.isEmpty || spots.length == 1
+        ? Trend.neutral
+        : spots.last.y > spots.first.y
+        ? Trend.up
+        : Trend.down;
+
+    return GraphData(spots: spots, interval: interval, trend: trend, dates: sortedDates);
+  }
+
   String _daysSinceLastOrder(Order order) {
     final diff = DateTime.now().difference(order.orderDate);
     return '${diff.inDays} days ago';
@@ -810,6 +877,8 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            Container(height: 80, color: Colors.white),
+            const SizedBox(height: 16),
             Container(height: 80, color: Colors.white),
             const SizedBox(height: 16),
             Container(height: 80, color: Colors.white),
