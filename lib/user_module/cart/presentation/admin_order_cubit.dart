@@ -520,4 +520,48 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
           'Failed to set responsible for delivery: ${e.toString()}'));
     }
   }
+
+  Future<void> fetchOrdersForEntity(String entityType, String entityId, DateTime startDate, DateTime endDate) async {
+    emit(AdminOrderListFetchLoading());
+    try {
+      final orders = await orderService.getAllOrders();
+      final users = await employeeServices.getUsersFromTenantCompany();
+      final stores = await storeService.getStores();
+
+      List<Order> filteredOrders = orders.where((order) {
+        return order.orderDate.isAfter(startDate.subtract(const Duration(days: 1))) &&
+            order.orderDate.isBefore(endDate.add(const Duration(days: 1)));
+      }).toList();
+
+      switch (entityType) {
+        case 'salesman':
+          filteredOrders = filteredOrders.where((order) => order.orderTakenBy == entityId).toList();
+          break;
+        case 'deliveryman':
+          filteredOrders = filteredOrders.where((order) => order.orderDeliveredBy == entityId).toList();
+          break;
+        case 'store':
+          filteredOrders = filteredOrders.where((order) => order.storeId == entityId).toList();
+          break;
+        case 'customer':
+          filteredOrders = filteredOrders.where((order) => order.userId == entityId).toList();
+          break;
+      }
+
+      emit(AdminOrderListFetchSuccess(
+        orders: filteredOrders,
+        users: users,
+        stores: stores,
+        startDate: startDate,
+        endDate: endDate,
+        groupedOrders: _groupOrdersByDate(filteredOrders),
+        dateRangeLabel: _formatDateRange(startDate, endDate),
+        expectedDeliveryRangeLabel: _formatExpectedDeliveryRange(null, null),
+        statistics: _computeStatistics(filteredOrders, false),
+        showTodayStats: false,
+      ));
+    } catch (e) {
+      emit(AdminOrderListFetchError('Failed to fetch orders: $e'));
+    }
+  }
 }

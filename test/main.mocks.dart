@@ -803,6 +803,60 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
         ),
         returnValue: _i5.Future<dynamic>.value(),
       ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToSalesmanOrderListPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToSalesmanOrderListPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToDeliveryManOrderListPage() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #navigateToDeliveryManOrderListPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToStoreOrderListPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToStoreOrderListPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToCustomerOrderListPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToCustomerOrderListPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToPerformanceDetailsPage({
+    required String? entityType,
+    required String? entityId,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #navigateToPerformanceDetailsPage,
+          [],
+          {
+            #entityType: entityType,
+            #entityId: entityId,
+          },
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 }
 
 /// A class which mocks [AuthService].

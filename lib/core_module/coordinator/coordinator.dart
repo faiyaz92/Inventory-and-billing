@@ -104,5 +104,11 @@ abstract class Coordinator {
   Future<dynamic> navigateToCartDashboard();
   Future<dynamic> navigateToSalesManOrderPage();
   Future<dynamic> navigateToSimpleEmployeeList();
+  // New Navigation Methods
+  Future<dynamic> navigateToSalesmanOrderListPage();
+  Future<dynamic> navigateToDeliveryManOrderListPage();
+  Future<dynamic> navigateToStoreOrderListPage();
+  Future<dynamic> navigateToCustomerOrderListPage();
+  Future<dynamic> navigateToPerformanceDetailsPage({required String entityType, required String entityId});
 
 }

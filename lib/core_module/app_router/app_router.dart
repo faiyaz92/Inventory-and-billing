@@ -46,9 +46,14 @@ import 'package:requirment_gathering_app/user_module/cart/presentation/cart_dash
 import 'package:requirment_gathering_app/user_module/cart/presentation/cart_home_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/cart_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/check_out_page.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/customer_order_list_page.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/deliveryman_order_list_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/order_list_page.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/performance_details_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/place_order_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/sales_man_order_page.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/salesman_order_list_page.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/store_order_list_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/user_order_details.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/wish_list_page.dart';
 import 'package:requirment_gathering_app/user_module/data/partner.dart';
@@ -139,5 +144,10 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: UserOrderDetailsRoute.page, ),
         AutoRoute(page: SalesmanOrderRoute.page, ),
         AutoRoute(page: SimpleEmployeesRoute.page, ),
+        AutoRoute(page: SalesmanOrderListRoute.page, path: '/salesman-order-list'),
+        AutoRoute(page: DeliveryManOrderListRoute.page, path: '/deliveryman-order-list'),
+        AutoRoute(page: StoreOrderListRoute.page, path: '/store-order-list'),
+        AutoRoute(page: CustomerOrderListRoute.page, path: '/customer-order-list'),
+        AutoRoute(page: PerformanceDetailsRoute.page, path: '/performance-details'),
       ];
 }

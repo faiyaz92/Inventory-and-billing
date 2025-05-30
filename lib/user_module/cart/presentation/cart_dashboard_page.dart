@@ -66,6 +66,12 @@ class CartDashboardPage extends StatelessWidget {
                         Colors.orange,
                         () => sl<Coordinator>().navigateToSalesManOrderPage(),
                       ),
+
+                      _buildDashboardCard(context, 'Salesman List Orders', Icons.person, Colors.green, () => sl<Coordinator>().navigateToSalesmanOrderListPage()),
+                      _buildDashboardCard(context, 'Delivery Man List Orders', Icons.delivery_dining, Colors.purple, () => sl<Coordinator>().navigateToDeliveryManOrderListPage()),
+                      _buildDashboardCard(context, 'Store List Orders', Icons.store, Colors.red, () => sl<Coordinator>().navigateToStoreOrderListPage()),
+                      _buildDashboardCard(context, 'Customer List Orders', Icons.people, Colors.teal, () => sl<Coordinator>().navigateToCustomerOrderListPage()),
+
                     ],
                   ),
                 ),

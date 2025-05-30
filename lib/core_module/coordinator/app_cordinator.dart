@@ -340,4 +340,15 @@ class AppCoordinator implements Coordinator {
     // TODO: implement navigateToSimpleEmployeeList
     return _router.push(const SimpleEmployeesRoute());
   }
+  @override
+  Future<dynamic> navigateToSalesmanOrderListPage() => _router.push(const SalesmanOrderListRoute());
+  @override
+  Future<dynamic> navigateToDeliveryManOrderListPage() => _router.push(const DeliveryManOrderListRoute());
+  @override
+  Future<dynamic> navigateToStoreOrderListPage() => _router.push(const StoreOrderListRoute());
+  @override
+  Future<dynamic> navigateToCustomerOrderListPage() => _router.push(const CustomerOrderListRoute());
+  @override
+  Future<dynamic> navigateToPerformanceDetailsPage({required String entityType, required String entityId}) =>
+      _router.push(PerformanceDetailsRoute(entityType: entityType, entityId: entityId));
 }

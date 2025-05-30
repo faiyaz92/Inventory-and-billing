@@ -696,6 +696,22 @@ class CreateLedgerRouteArgs {
 }
 
 /// generated route for
+/// [CustomerOrderListPage]
+class CustomerOrderListRoute extends PageRouteInfo<void> {
+  const CustomerOrderListRoute({List<PageRouteInfo>? children})
+    : super(CustomerOrderListRoute.name, initialChildren: children);
+
+  static const String name = 'CustomerOrderListRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const CustomerOrderListPage();
+    },
+  );
+}
+
+/// generated route for
 /// [DashboardPage]
 class DashboardRoute extends PageRouteInfo<void> {
   const DashboardRoute({List<PageRouteInfo>? children})
@@ -707,6 +723,22 @@ class DashboardRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const DashboardPage();
+    },
+  );
+}
+
+/// generated route for
+/// [DeliveryManOrderListPage]
+class DeliveryManOrderListRoute extends PageRouteInfo<void> {
+  const DeliveryManOrderListRoute({List<PageRouteInfo>? children})
+    : super(DeliveryManOrderListRoute.name, initialChildren: children);
+
+  static const String name = 'DeliveryManOrderListRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DeliveryManOrderListPage();
     },
   );
 }
@@ -897,6 +929,59 @@ class OverallStockRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [PerformanceDetailsPage]
+class PerformanceDetailsRoute
+    extends PageRouteInfo<PerformanceDetailsRouteArgs> {
+  PerformanceDetailsRoute({
+    Key? key,
+    required String entityType,
+    required String entityId,
+    List<PageRouteInfo>? children,
+  }) : super(
+         PerformanceDetailsRoute.name,
+         args: PerformanceDetailsRouteArgs(
+           key: key,
+           entityType: entityType,
+           entityId: entityId,
+         ),
+         initialChildren: children,
+       );
+
+  static const String name = 'PerformanceDetailsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<PerformanceDetailsRouteArgs>();
+      return PerformanceDetailsPage(
+        key: args.key,
+        entityType: args.entityType,
+        entityId: args.entityId,
+      );
+    },
+  );
+}
+
+class PerformanceDetailsRouteArgs {
+  const PerformanceDetailsRouteArgs({
+    this.key,
+    required this.entityType,
+    required this.entityId,
+  });
+
+  final Key? key;
+
+  final String entityType;
+
+  final String entityId;
+
+  @override
+  String toString() {
+    return 'PerformanceDetailsRouteArgs{key: $key, entityType: $entityType, entityId: $entityId}';
+  }
+}
+
+/// generated route for
 /// [PreviewOrderPage]
 class PreviewOrderRoute extends PageRouteInfo<void> {
   const PreviewOrderRoute({List<PageRouteInfo>? children})
@@ -974,6 +1059,22 @@ class SalesReportRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const SalesReportPage();
+    },
+  );
+}
+
+/// generated route for
+/// [SalesmanOrderListPage]
+class SalesmanOrderListRoute extends PageRouteInfo<void> {
+  const SalesmanOrderListRoute({List<PageRouteInfo>? children})
+    : super(SalesmanOrderListRoute.name, initialChildren: children);
+
+  static const String name = 'SalesmanOrderListRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const SalesmanOrderListPage();
     },
   );
 }
@@ -1106,6 +1207,22 @@ class StoreDetailsRouteArgs {
   String toString() {
     return 'StoreDetailsRouteArgs{key: $key, storeId: $storeId}';
   }
+}
+
+/// generated route for
+/// [StoreOrderListPage]
+class StoreOrderListRoute extends PageRouteInfo<void> {
+  const StoreOrderListRoute({List<PageRouteInfo>? children})
+    : super(StoreOrderListRoute.name, initialChildren: children);
+
+  static const String name = 'StoreOrderListRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const StoreOrderListPage();
+    },
+  );
 }
 
 /// generated route for
