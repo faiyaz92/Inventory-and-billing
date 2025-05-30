@@ -100,6 +100,12 @@ class CartDashboardPage extends StatelessWidget {
                         Icons.trending_up,
                         Colors.blueAccent,
                             () => sl<Coordinator>().navigateToCompanyPerformancePage(),
+                      ), _buildDashboardCard(
+                        context,
+                        'Product Performance',
+                        Icons.trending_up,
+                        Colors.blueAccent,
+                            () => sl<Coordinator>().navigateToProductPerformanceListPage(),
                       ),
                     ],
                   ),

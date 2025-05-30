@@ -1064,6 +1064,22 @@ class ProductMgtRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [ProductTrendingListPage]
+class ProductTrendingListRoute extends PageRouteInfo<void> {
+  const ProductTrendingListRoute({List<PageRouteInfo>? children})
+    : super(ProductTrendingListRoute.name, initialChildren: children);
+
+  static const String name = 'ProductTrendingListRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const ProductTrendingListPage();
+    },
+  );
+}
+
+/// generated route for
 /// [SalesReportPage]
 class SalesReportRoute extends PageRouteInfo<void> {
   const SalesReportRoute({List<PageRouteInfo>? children})

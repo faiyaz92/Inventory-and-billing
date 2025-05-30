@@ -52,6 +52,7 @@ import 'package:requirment_gathering_app/user_module/cart/presentation/deliverym
 import 'package:requirment_gathering_app/user_module/cart/presentation/order_list_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/performance_details_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/place_order_page.dart';
+import 'package:requirment_gathering_app/user_module/cart/presentation/product_trending_list_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/sales_man_order_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/salesman_order_list_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/store_order_list_page.dart';
@@ -151,5 +152,6 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: CustomerOrderListRoute.page, path: '/customer-order-list'),
         AutoRoute(page: PerformanceDetailsRoute.page, path: '/performance-details'),
         AutoRoute(page: CompanyPerformanceRoute.page),
+        AutoRoute(page: ProductTrendingListRoute.page),
       ];
 }

@@ -361,5 +361,7 @@ class AppCoordinator implements Coordinator {
 
   @override
   Future<dynamic> navigateToCompanyPerformancePage() =>
-      _router.push(const CompanyPerformanceRoute());
+      _router.push(const CompanyPerformanceRoute());@override
+  Future<dynamic> navigateToProductPerformanceListPage() =>
+      _router.push(const ProductTrendingListRoute());
 }
