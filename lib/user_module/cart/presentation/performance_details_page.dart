@@ -199,6 +199,112 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
   }
 
   Widget _buildStatsCard(AdminOrderListFetchSuccess state) {
+    if (widget.entityType == 'product') {
+      int totalOrders = 0;
+      double totalAmount = 0.0;
+      int totalQuantity = 0;
+      for (var order in state.orders) {
+        for (var item in order.items) {
+          if (item.productId == widget.entityId) {
+            totalOrders++;
+            totalAmount += item.price * item.quantity;
+            totalQuantity += item.quantity;
+          }
+        }
+      }
+
+      final stats = [
+        {
+          'label': 'Total Orders',
+          'value': totalOrders.toString(),
+          'color': AppColors.textPrimary,
+          'highlight': AppColors.blue.withOpacity(0.3),
+        },
+        {
+          'label': 'Total Amount',
+          'value': '₹${totalAmount.toStringAsFixed(2)}',
+          'color': AppColors.textPrimary,
+          'highlight': AppColors.green.withOpacity(0.3),
+        },
+        {
+          'label': 'Quantity Sold',
+          'value': totalQuantity.toString(),
+          'color': AppColors.textSecondary,
+          'highlight': AppColors.primary.withOpacity(0.3),
+        },
+      ];
+
+      return Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 80),
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Product Performance Summary',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                  shadows: [Shadow(blurRadius: 2, color: Colors.black12, offset: Offset(1, 1))],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Table(
+                border: TableBorder.all(
+                  color: AppColors.textSecondary.withOpacity(0.5),
+                  width: 1,
+                ),
+                columnWidths: const {
+                  0: FlexColumnWidth(1),
+                  1: FlexColumnWidth(1),
+                },
+                children: stats.asMap().entries.map((entry) {
+                  final stat = entry.value;
+                  return TableRow(
+                    decoration: BoxDecoration(
+                      color: stat['highlight'] as Color,
+                    ),
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                        child: Text(
+                          stat['label'] as String,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        alignment: Alignment.centerRight,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                          child: Text(
+                            stat['value'] as String,
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: stat['color'] as Color,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            textAlign: TextAlign.right,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final totalOrders = state.orders.length;
     final totalAmount = state.orders.fold(0.0, (sum, order) => sum + order.totalAmount);
     final isCustomer = widget.entityType == 'customer';
@@ -323,9 +429,9 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Order Amount Trend',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                Text(
+                  widget.entityType == 'product' ? 'Product Sales Trend' : 'Order Amount Trend',
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                 ),
                 Text(
                   data.trend == Trend.up ? '↑ Up' : data.trend == Trend.down ? '↓ Down' : '↔ Neutral',
@@ -474,9 +580,9 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Order Count Trend',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                Text(
+                  widget.entityType == 'product' ? 'Product Order Count Trend' : 'Order Count Trend',
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                 ),
                 Text(
                   data.trend == Trend.up ? '↑ Up' : data.trend == Trend.down ? '↓ Down' : '↔ Neutral',
@@ -806,13 +912,28 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
     final interval = duration <= 7 ? 'daily' : (duration <= 90 ? 'weekly' : 'monthly');
     final Map<DateTime, double> aggregated = {};
 
-    for (var order in orders) {
-      final date = interval == 'daily'
-          ? DateTime(order.orderDate.year, order.orderDate.month, order.orderDate.day)
-          : interval == 'weekly'
-          ? DateTime(order.orderDate.year, order.orderDate.month, order.orderDate.day - order.orderDate.weekday + 1)
-          : DateTime(order.orderDate.year, order.orderDate.month);
-      aggregated[date] = (aggregated[date] ?? 0) + order.totalAmount;
+    if (widget.entityType == 'product') {
+      for (var order in orders) {
+        for (var item in order.items) {
+          if (item.productId == widget.entityId) {
+            final date = interval == 'daily'
+                ? DateTime(order.orderDate.year, order.orderDate.month, order.orderDate.day)
+                : interval == 'weekly'
+                ? DateTime(order.orderDate.year, order.orderDate.month, order.orderDate.day - order.orderDate.weekday + 1)
+                : DateTime(order.orderDate.year, order.orderDate.month);
+            aggregated[date] = (aggregated[date] ?? 0) + (item.price * item.quantity);
+          }
+        }
+      }
+    } else {
+      for (var order in orders) {
+        final date = interval == 'daily'
+            ? DateTime(order.orderDate.year, order.orderDate.month, order.orderDate.day)
+            : interval == 'weekly'
+            ? DateTime(order.orderDate.year, order.orderDate.month, order.orderDate.day - order.orderDate.weekday + 1)
+            : DateTime(order.orderDate.year, order.orderDate.month);
+        aggregated[date] = (aggregated[date] ?? 0) + order.totalAmount;
+      }
     }
 
     final sortedDates = aggregated.keys.toList()..sort();
@@ -837,13 +958,28 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
     final interval = duration <= 7 ? 'daily' : (duration <= 90 ? 'weekly' : 'monthly');
     final Map<DateTime, int> aggregated = {};
 
-    for (var order in orders) {
-      final date = interval == 'daily'
-          ? DateTime(order.orderDate.year, order.orderDate.month, order.orderDate.day)
-          : interval == 'weekly'
-          ? DateTime(order.orderDate.year, order.orderDate.month, order.orderDate.day - order.orderDate.weekday + 1)
-          : DateTime(order.orderDate.year, order.orderDate.month);
-      aggregated[date] = (aggregated[date] ?? 0) + 1;
+    if (widget.entityType == 'product') {
+      for (var order in orders) {
+        for (var item in order.items) {
+          if (item.productId == widget.entityId) {
+            final date = interval == 'daily'
+                ? DateTime(order.orderDate.year, order.orderDate.month, order.orderDate.day)
+                : interval == 'weekly'
+                ? DateTime(order.orderDate.year, order.orderDate.month, order.orderDate.day - order.orderDate.weekday + 1)
+                : DateTime(order.orderDate.year, order.orderDate.month);
+            aggregated[date] = (aggregated[date] ?? 0) + 1;
+          }
+        }
+      }
+    } else {
+      for (var order in orders) {
+        final date = interval == 'daily'
+            ? DateTime(order.orderDate.year, order.orderDate.month, order.orderDate.day)
+            : interval == 'weekly'
+            ? DateTime(order.orderDate.year, order.orderDate.month, order.orderDate.day - order.orderDate.weekday + 1)
+            : DateTime(order.orderDate.year, order.orderDate.month);
+        aggregated[date] = (aggregated[date] ?? 0) + 1;
+      }
     }
 
     final sortedDates = aggregated.keys.toList()..sort();
