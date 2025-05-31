@@ -8,14 +8,14 @@ class OrderDto {
   final List<CartItemDto> items;
   final double totalAmount;
   final String status;
-  final DateTime orderDate;
-  final DateTime? expectedDeliveryDate;
-  final DateTime? orderDeliveryDate;
   final String? orderTakenBy;
   final String? orderDeliveredBy;
   final String? responsibleForDelivery;
   final String? lastUpdatedBy; // Added for last updated by
   final String? storeId; // New field
+  final DateTime orderDate;
+  final DateTime? expectedDeliveryDate;
+  final DateTime? orderDeliveryDate;
 
   OrderDto({
     required this.id,

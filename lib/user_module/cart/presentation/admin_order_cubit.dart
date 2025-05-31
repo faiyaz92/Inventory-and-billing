@@ -352,7 +352,7 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
 
       if (startDate != null && endDate != null) {
         filteredOrders = filteredOrders.where((order) {
-          return order.orderDate.isAfter(startDate.subtract(const Duration(days: 1))) &&
+          return order.orderDate.isAfter(startDate/*.subtract(const Duration(days: 1))*/) &&
               order.orderDate.isBefore(endDate.add(const Duration(days: 1)));
         }).toList();
       }

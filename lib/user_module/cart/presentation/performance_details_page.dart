@@ -26,8 +26,10 @@ class PerformanceDetailsPage extends StatefulWidget {
 }
 
 class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
+  String? _selectedFilter = 'week'; // Default: Year filter
+
   DateTimeRange dateRange = DateTimeRange(
-    start: DateTime.now().subtract(const Duration(days: 365)),
+    start: DateTime.now().subtract(const Duration(days: 7)),
     end: DateTime.now(),
   );
 
@@ -88,14 +90,14 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
                             _buildQuantitySoldGraphCard(state),
                             // In _buildQuantitySoldGraphCard, after LineChart
                             const SizedBox(height: 16),
-                            _buildAverageQuantitySoldCard(state),                          ],
+                            _buildAverageQuantitySoldCard(state),
+                          ],
                           const SizedBox(height: 16),
                           _buildOrdersCard(state),
-                          if(widget.entityType=='customer')...[
+                          if (widget.entityType == 'customer') ...[
                             _buildCustomerProductsCard(state)
                           ]
                         ],
-
                       ),
                     ),
                   );
@@ -112,6 +114,176 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
           ),
         ),
       ),
+    );
+  }
+
+// Add this field to _PerformanceDetailsPageState
+
+// Add this method to _PerformanceDetailsPageState
+  void _applyQuickFilter(String filter) {
+    setState(() {
+      _selectedFilter = filter;
+      final now = DateTime.now();
+      switch (filter) {
+        case 'week':
+          dateRange = DateTimeRange(
+            start: now.subtract(const Duration(days: 7)),
+            end: now,
+          );
+          break;
+        case 'month':
+          dateRange = DateTimeRange(
+            start: now.subtract(const Duration(days: 30)),
+            end: now,
+          );
+          break;
+        case '3months':
+          dateRange = DateTimeRange(
+            start: now.subtract(const Duration(days: 90)),
+            end: now,
+          );
+          break;
+        case '6months':
+          dateRange = DateTimeRange(
+            start: now.subtract(const Duration(days: 180)),
+            end: now,
+          );
+          break;
+        case 'year':
+          dateRange = DateTimeRange(
+            start: now.subtract(const Duration(days: 365)),
+            end: now,
+          );
+          break;
+      }
+    });
+    context.read<AdminOrderCubit>().fetchOrdersForEntity(
+          widget.entityType,
+          widget.entityId,
+          dateRange.start,
+          dateRange.end,
+        );
+  }
+
+// Replace _buildDateRangeCard in _PerformanceDetailsPageState with this
+  Widget _buildDateRangeCard(BuildContext context) {
+    final formatter = DateFormat('dd-MM-yyyy');
+    final totalDays = dateRange.end.difference(dateRange.start).inDays + 1;
+    return Column(
+      children: [
+        Card(
+          elevation: 4,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: ListTile(
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            title: Text(
+              'Date Range: ${formatter.format(dateRange.start)} - ${formatter.format(dateRange.end)}',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 4.0),
+              child: Text(
+                'Total $totalDays days',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+            trailing:
+                const Icon(Icons.calendar_today, color: AppColors.primary),
+            onTap: () async {
+              final picked = await showDateRangePicker(
+                context: context,
+                firstDate: DateTime(2020),
+                lastDate: DateTime.now(),
+                initialDateRange: dateRange,
+                builder: (context, child) => Theme(
+                  data: ThemeData.light().copyWith(
+                    colorScheme:
+                        const ColorScheme.light(primary: AppColors.primary),
+                  ),
+                  child: child!,
+                ),
+              );
+              if (picked != null) {
+                setState(() {
+                  dateRange = picked;
+                  _selectedFilter = null; // Deselect chips for custom range
+                });
+                context.read<AdminOrderCubit>().fetchOrdersForEntity(
+                      widget.entityType,
+                      widget.entityId,
+                      picked.start,
+                      picked.end,
+                    );
+              }
+            },
+          ),
+        ),
+        const SizedBox(height: 8),
+        Card(
+          elevation: 4,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              border:
+                  Border.all(color: AppColors.textSecondary.withOpacity(0.5)),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              alignment: WrapAlignment.start,
+              children: [
+                {'label': 'Last Week', 'value': 'week'},
+                {'label': 'Last Month', 'value': 'month'},
+                {'label': 'Last 3 Months', 'value': '3months'},
+                {'label': 'Last 6 Months', 'value': '6months'},
+                {'label': 'Last Year', 'value': 'year'},
+              ].map((filter) {
+                final isSelected = _selectedFilter == filter['value'];
+                return ChoiceChip(
+                  label: Text(
+                    filter['label'] as String,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : AppColors.textPrimary,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                  selected: isSelected,
+                  selectedColor: AppColors.primary,
+                  backgroundColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.textSecondary.withOpacity(0.5),
+                    ),
+                  ),
+                  onSelected: (selected) {
+                    if (selected) {
+                      _applyQuickFilter(filter['value'] as String);
+                    }
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -194,63 +366,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
     );
   }
 
-
 // Replace this method in _PerformanceDetailsPageState in performance_details_page.dart
-
-  Widget _buildDateRangeCard(BuildContext context) {
-    final formatter = DateFormat('dd-MM-yyyy');
-    final totalDays = dateRange.end.difference(dateRange.start).inDays + 1; // Inclusive
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Container(
-        constraints: const BoxConstraints(minHeight: 80),
-        padding: const EdgeInsets.all(16.0),
-        child: ListTile(
-          contentPadding: EdgeInsets.zero,
-          title: Text(
-            'Date Range: ${formatter.format(dateRange.start)} - ${formatter.format(dateRange.end)}',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: Text(
-              'Total $totalDays days',
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ),
-          trailing: const Icon(Icons.calendar_today, color: AppColors.primary),
-          onTap: () async {
-            final picked = await showDateRangePicker(
-              context: context,
-              firstDate: DateTime(2020),
-              lastDate: DateTime.now(),
-              initialDateRange: dateRange,
-              builder: (context, child) => Theme(
-                data: ThemeData.light().copyWith(
-                  colorScheme: const ColorScheme.light(primary: AppColors.primary),
-                ),
-                child: child!,
-              ),
-            );
-            if (picked != null) {
-              setState(() => dateRange = picked);
-              context.read<AdminOrderCubit>().fetchOrdersForEntity(
-                  widget.entityType, widget.entityId, picked.start, picked.end);
-            }
-          },
-        ),
-      ),
-    );
-  }
 
   Widget _buildStatsCard(AdminOrderListFetchSuccess state) {
     if (widget.entityType == 'product') {
@@ -1211,7 +1327,6 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
     );
   }
 
-
   Widget _buildOrderCard(
       BuildContext context, Order order, AdminOrderListFetchSuccess state) {
     final statusStyles =
@@ -1378,7 +1493,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
                 color: AppColors.textPrimary),
           ),
           tilePadding:
-          const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           children: [
             ListView.builder(
               shrinkWrap: true,
@@ -1392,7 +1507,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
                     width: double.infinity,
                     color: Theme.of(context).scaffoldBackgroundColor,
                     padding:
-                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                        const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                     child: Text(
                       date,
                       style: const TextStyle(
@@ -1602,138 +1717,12 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
     );
   }
 
-// Add these methods to _PerformanceDetailsPageState in performance_details_page.dart
-
- /* Map<String, double> _calculateAverageOrderSaleAmount(
+  Map<String, double> _calculateAverageOrderSaleAmount(
       AdminOrderListFetchSuccess state) {
     final orders = state.orders;
     final range = dateRange;
     final durationDays =
         range.end.difference(range.start).inDays + 1; // Inclusive
-    if (orders.isEmpty || durationDays <= 0) {
-      return {'daily': 0.0, 'weekly': 0.0, 'monthly': 0.0};
-    }
-
-    double totalAmount = 0.0;
-    int orderCount = 0;
-
-    if (widget.entityType == 'product') {
-      for (var order in orders) {
-        for (var item in order.items) {
-          if (item.productId == widget.entityId) {
-            totalAmount += (item.price * item.quantity) + item.taxAmount;
-            orderCount++;
-          }
-        }
-      }
-    } else {
-      totalAmount = orders.fold(0.0, (sum, order) => sum + order.totalAmount);
-      orderCount = orders.length;
-    }
-
-    // Calculate number of periods
-    final days = durationDays.toDouble();
-    final weeks = days / 7;
-    final months = days / 30; // Approximate month length
-
-    // Calculate averages (avoid division by zero)
-    final dailyAvg =
-        orderCount > 0 ? totalAmount / orderCount : 0.0; // Avg per order
-    final weeklyAvg =
-        weeks > 0 ? totalAmount / weeks : totalAmount; // Total over weeks
-    final monthlyAvg =
-        months > 0 ? totalAmount / months : totalAmount; // Total over months
-
-    return {
-      'daily': dailyAvg,
-      'weekly': weeklyAvg,
-      'monthly': monthlyAvg,
-    };
-  }
-
-  Map<String, double> _calculateAverageOrderCount(
-      AdminOrderListFetchSuccess state) {
-    final orders = state.orders;
-    final range = dateRange;
-    final durationDays =
-        range.end.difference(range.start).inDays + 1; // Inclusive
-    if (orders.isEmpty || durationDays <= 0) {
-      return {'daily': 0.0, 'weekly': 0.0, 'monthly': 0.0};
-    }
-
-    int orderCount = 0;
-    if (widget.entityType == 'product') {
-      for (var order in orders) {
-        if (order.items.any((item) => item.productId == widget.entityId)) {
-          orderCount++;
-        }
-      }
-    } else {
-      orderCount = orders.length;
-    }
-
-    // Calculate number of periods
-    final days = durationDays.toDouble();
-    final weeks = days / 7;
-    final months = days / 30; // Approximate month length
-
-    // Calculate averages
-    final dailyAvg = days > 0 ? orderCount / days : 0.0;
-    final weeklyAvg = weeks > 0 ? orderCount / weeks : orderCount;
-    final monthlyAvg = months > 0 ? orderCount / months : orderCount;
-
-    return {
-      'daily': dailyAvg,
-      'weekly': weeklyAvg.toDouble(),
-      'monthly': monthlyAvg.toDouble(),
-    };
-  }
-
-  Map<String, double> _calculateAverageQuantitySold(
-      AdminOrderListFetchSuccess state) {
-    if (widget.entityType != 'product') {
-      return {'daily': 0.0, 'weekly': 0.0, 'monthly': 0.0};
-    }
-
-    final orders = state.orders;
-    final range = dateRange;
-    final durationDays =
-        range.end.difference(range.start).inDays + 1; // Inclusive
-    if (orders.isEmpty || durationDays <= 0) {
-      return {'daily': 0.0, 'weekly': 0.0, 'monthly': 0.0};
-    }
-
-    int totalQuantity = 0;
-    for (var order in orders) {
-      for (var item in order.items) {
-        if (item.productId == widget.entityId) {
-          totalQuantity += item.quantity;
-        }
-      }
-    }
-
-    // Calculate number of periods
-    final days = durationDays.toDouble();
-    final weeks = days / 7;
-    final months = days / 30; // Approximate month length
-
-    // Calculate averages
-    final dailyAvg = days > 0 ? totalQuantity / days : 0.0;
-    final weeklyAvg = weeks > 0 ? totalQuantity / weeks : totalQuantity;
-    final monthlyAvg = months > 0 ? totalQuantity / months : totalQuantity;
-
-    return {
-      'daily': dailyAvg,
-      'weekly': weeklyAvg.toDouble(),
-      'monthly': monthlyAvg.toDouble(),
-    };
-  }*/
-
-
-  Map<String, double> _calculateAverageOrderSaleAmount(AdminOrderListFetchSuccess state) {
-    final orders = state.orders;
-    final range = dateRange;
-    final durationDays = range.end.difference(range.start).inDays + 1; // Inclusive
     if (orders.isEmpty || durationDays <= 0) {
       return {'daily': 0.0, 'weekly': 0.0, 'monthly': 0.0};
     }
@@ -1764,10 +1753,12 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
     };
   }
 
-  Map<String, double> _calculateAverageOrderCount(AdminOrderListFetchSuccess state) {
+  Map<String, double> _calculateAverageOrderCount(
+      AdminOrderListFetchSuccess state) {
     final orders = state.orders;
     final range = dateRange;
-    final durationDays = range.end.difference(range.start).inDays + 1; // Inclusive
+    final durationDays =
+        range.end.difference(range.start).inDays + 1; // Inclusive
     if (orders.isEmpty || durationDays <= 0) {
       return {'daily': 0.0, 'weekly': 0.0, 'monthly': 0.0};
     }
@@ -1796,14 +1787,16 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
     };
   }
 
-  Map<String, double> _calculateAverageQuantitySold(AdminOrderListFetchSuccess state) {
+  Map<String, double> _calculateAverageQuantitySold(
+      AdminOrderListFetchSuccess state) {
     if (widget.entityType != 'product') {
       return {'daily': 0.0, 'weekly': 0.0, 'monthly': 0.0};
     }
 
     final orders = state.orders;
     final range = dateRange;
-    final durationDays = range.end.difference(range.start).inDays + 1; // Inclusive
+    final durationDays =
+        range.end.difference(range.start).inDays + 1; // Inclusive
     if (orders.isEmpty || durationDays <= 0) {
       return {'daily': 0.0, 'weekly': 0.0, 'monthly': 0.0};
     }
@@ -1829,6 +1822,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
       'monthly': monthlyAvg,
     };
   }
+
   List<ProductSalesData> _aggregateCustomerProductSales(List<Order> orders) {
     if (widget.entityType != 'customer') return [];
 
@@ -1851,8 +1845,9 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
           productMap[productId] = ProductSalesData(
             productId: productId,
             productName: currentData.productName,
-            totalAmount:
-            currentData.totalAmount + (cartItem.price * cartItem.quantity) + cartItem.taxAmount,
+            totalAmount: currentData.totalAmount +
+                (cartItem.price * cartItem.quantity) +
+                cartItem.taxAmount,
             totalQuantity: currentData.totalQuantity + cartItem.quantity,
             orderCount: currentData.orderCount + 1,
           );
@@ -1877,7 +1872,8 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
         child: Container(
           constraints: const BoxConstraints(minHeight: 80),
           padding: const EdgeInsets.all(16.0),
-          child: const Center(child: Text('No products purchased by this customer')),
+          child: const Center(
+              child: Text('No products purchased by this customer')),
         ),
       );
     }
@@ -1896,7 +1892,8 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
               color: AppColors.textPrimary,
             ),
           ),
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          tilePadding:
+              const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           children: [
             ListView.builder(
               shrinkWrap: true,

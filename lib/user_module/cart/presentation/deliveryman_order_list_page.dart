@@ -1,65 +1,264 @@
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
+import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_cubit.dart';
 
 @RoutePage()
-class DeliveryManOrderListPage extends StatelessWidget {
-  const DeliveryManOrderListPage({super.key});
+class DeliveryManOrderListPage extends StatefulWidget {
+const DeliveryManOrderListPage({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<AdminOrderCubit>()..fetchOrders(),
-      child: Scaffold(
-        appBar: const CustomAppBar(title: 'Delivery Man Orders'),
-        body: BlocBuilder<AdminOrderCubit, AdminOrderState>(
-          builder: (context, state) {
-            if (state is AdminOrderListFetchLoading) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is AdminOrderListFetchSuccess) {
-              final deliveryManOrders = _groupOrdersByDeliveryMan(state.orders, state.users);
-              return ListView.builder(
-                itemCount: deliveryManOrders.length,
-                itemBuilder: (context, index) {
-                  final deliveryMan = deliveryManOrders.keys.elementAt(index);
-                  final orders = deliveryManOrders[deliveryMan]!;
-                  return ListTile(
-                    title: Text(deliveryMan.userName ?? 'Unknown'),
-                    subtitle: Text('Orders: ${orders.length} | Total: ₹${orders.fold(0.0, (sum, order) => sum + order.totalAmount).toStringAsFixed(2)}'),
-                    onTap: () {
-                      sl<Coordinator>().navigateToPerformanceDetailsPage(
-                        entityType: 'deliveryman',
-                        entityId: deliveryMan.userId!,
-                      );
-                    },
-                  );
-                },
-              );
-            }
-            return const Center(child: Text('Error loading data'));
-          },
-        ),
-      ),
-    );
-  }
+@override
+State<DeliveryManOrderListPage> createState() => _DeliveryManOrderListPageState();
+}
 
-  Map<UserInfo, List<Order>> _groupOrdersByDeliveryMan(List<Order> orders, List<UserInfo> users) {
-    final Map<UserInfo, List<Order>> grouped = {};
-    for (var order in orders) {
-      if (order.orderDeliveredBy != null) {
-        final deliveryMan = users.firstWhere(
-              (user) => user.userId == order.orderDeliveredBy,
-          orElse: () => UserInfo(userId: order.orderDeliveredBy, userName: 'Unknown'),
-        );
-        grouped.putIfAbsent(deliveryMan, () => []).add(order);
-      }
-    }
-    return grouped;
-  }
+class _DeliveryManOrderListPageState extends State<DeliveryManOrderListPage> {
+DateTimeRange _dateRange = DateTimeRange(
+start: DateTime.now().subtract(const Duration(days: 7)),
+end: DateTime.now(),
+);
+String? _selectedFilter = 'week'; // Default: Week filter
+late final AdminOrderCubit _adminOrderCubit;
+
+@override
+void initState() {
+super.initState();
+_adminOrderCubit = sl<AdminOrderCubit>()
+..fetchOrders(
+startDate: _dateRange.start,
+endDate: _dateRange.end,
+);
+}
+
+Future<void> _pickDateRange(BuildContext context) async {
+final picked = await showDateRangePicker(
+context: context,
+firstDate: DateTime(2020),
+lastDate: DateTime.now(),
+initialDateRange: _dateRange,
+builder: (context, child) => Theme(
+data: ThemeData.light().copyWith(
+colorScheme: const ColorScheme.light(primary: AppColors.primary),
+),
+child: child!,
+),
+);
+if (picked != null && mounted) {
+setState(() {
+_dateRange = picked;
+_selectedFilter = null; // Deselect chips for custom range
+});
+_adminOrderCubit.fetchOrders(
+startDate: picked.start,
+endDate: picked.end,
+);
+}
+}
+
+void _applyQuickFilter(String filter) {
+setState(() {
+_selectedFilter = filter;
+final now = DateTime.now();
+switch (filter) {
+case 'year':
+_dateRange = DateTimeRange(
+start: now.subtract(const Duration(days: 365)),
+end: now,
+);
+break;
+case 'week':
+_dateRange = DateTimeRange(
+start: now.subtract(const Duration(days: 7)),
+end: now,
+);
+break;
+case 'month':
+_dateRange = DateTimeRange(
+start: now.subtract(const Duration(days: 30)),
+end: now,
+);
+break;
+case '3months':
+_dateRange = DateTimeRange(
+start: now.subtract(const Duration(days: 90)),
+end: now,
+);
+break;
+case '6months':
+_dateRange = DateTimeRange(
+start: now.subtract(const Duration(days: 180)),
+end: now,
+);
+break;
+}
+});
+_adminOrderCubit.fetchOrders(
+startDate: _dateRange.start,
+endDate: _dateRange.end,
+);
+}
+
+Widget _buildDateRangeCard() {
+final formatter = DateFormat('dd-MM-yyyy');
+final totalDays = _dateRange.end.difference(_dateRange.start).inDays + 1;
+return Padding(
+padding: const EdgeInsets.all(16.0),
+child: Card(
+elevation: 4,
+shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+child: ListTile(
+contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+title: Text(
+'Date Range: ${formatter.format(_dateRange.start)} - ${formatter.format(_dateRange.end)}',
+style: const TextStyle(
+fontSize: 16,
+fontWeight: FontWeight.w500,
+color: AppColors.textPrimary,
+),
+),
+subtitle: Padding(
+padding: const EdgeInsets.only(top: 4.0),
+child: Text(
+'Total $totalDays days',
+style: const TextStyle(
+fontSize: 14,
+fontWeight: FontWeight.w400,
+color: AppColors.textSecondary,
+),
+),
+),
+trailing: const Icon(Icons.calendar_today, color: AppColors.primary),
+onTap: () => _pickDateRange(context),
+),
+),
+);
+}
+
+Widget _buildQuickFilterChips() {
+final filters = [
+{'label': 'Last 1 Year', 'value': 'year'},
+{'label': 'Week', 'value': 'week'},
+{'label': 'Month', 'value': 'month'},
+{'label': 'Last 3 Months', 'value': '3months'},
+{'label': 'Last 6 Months', 'value': '6months'},
+];
+return Padding(
+padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+child: Card(
+elevation: 4,
+shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+child: Container(
+width: double.infinity,
+padding: const EdgeInsets.all(8.0),
+decoration: BoxDecoration(
+border: Border.all(color: AppColors.textSecondary.withOpacity(0.5)),
+borderRadius: BorderRadius.circular(12),
+),
+child: Wrap(
+spacing: 8.0,
+runSpacing: 8.0,
+alignment: WrapAlignment.start,
+children: filters.map((filter) {
+final isSelected = _selectedFilter == filter['value'];
+return ChoiceChip(
+label: Text(
+filter['label'] as String,
+style: TextStyle(
+color: isSelected ? Colors.white : AppColors.textPrimary,
+fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+),
+),
+selected: isSelected,
+selectedColor: AppColors.primary,
+backgroundColor: Colors.transparent,
+shape: RoundedRectangleBorder(
+borderRadius: BorderRadius.circular(20),
+side: BorderSide(
+color: isSelected
+? AppColors.primary
+    : AppColors.textSecondary.withOpacity(0.5),
+),
+),
+onSelected: (selected) {
+if (selected) {
+_applyQuickFilter(filter['value'] as String);
+}
+},
+);
+}).toList(),
+),
+),
+),
+);
+}
+
+Map<UserInfo, List<Order>> _groupOrdersByDeliveryMan(List<Order> orders, List<UserInfo> users) {
+final Map<UserInfo, List<Order>> grouped = {};
+for (var order in orders) {
+if (order.orderDeliveredBy != null) {
+final deliveryMan = users.firstWhere(
+(user) => user.userId == order.orderDeliveredBy,
+orElse: () => UserInfo(userId: order.orderDeliveredBy, userName: 'Unknown'),
+);
+grouped.putIfAbsent(deliveryMan, () => []).add(order);
+}
+}
+return grouped;
+}
+
+@override
+Widget build(BuildContext context) {
+return BlocProvider(
+create: (_) => _adminOrderCubit,
+child: Scaffold(
+appBar: const CustomAppBar(title: 'Delivery Man Orders'),
+body: Column(
+children: [
+_buildDateRangeCard(),
+_buildQuickFilterChips(),
+Expanded(
+child: BlocBuilder<AdminOrderCubit, AdminOrderState>(
+builder: (context, state) {
+if (state is AdminOrderListFetchLoading) {
+return const Center(child: CircularProgressIndicator());
+} else if (state is AdminOrderListFetchSuccess) {
+final deliveryManOrders = _groupOrdersByDeliveryMan(state.orders, state.users);
+if (deliveryManOrders.isEmpty) {
+return const Center(child: Text('No delivery men found for this period'));
+}
+return ListView.builder(
+itemCount: deliveryManOrders.length,
+itemBuilder: (context, index) {
+final deliveryMan = deliveryManOrders.keys.elementAt(index);
+final orders = deliveryManOrders[deliveryMan]!;
+return ListTile(
+title: Text(deliveryMan.userName ?? 'Unknown'),
+subtitle: Text(
+'Orders: ${orders.length} | Total: ₹${orders.fold(0.0, (sum, order) => sum + order.totalAmount).toStringAsFixed(2)}'),
+onTap: () {
+sl<Coordinator>().navigateToPerformanceDetailsPage(
+entityType: 'deliveryman',
+entityId: deliveryMan.userId!,
+);
+},
+);
+},
+);
+}
+return const Center(child: Text('Error loading data'));
+},
+),
+),
+],
+),
+),
+);
+}
 }

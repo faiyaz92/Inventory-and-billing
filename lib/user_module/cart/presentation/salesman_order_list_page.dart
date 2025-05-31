@@ -35,104 +35,13 @@ class _SalesmanOrderListPageState extends State<SalesmanOrderListPage> {
         endDate: _dateRange.end,
       );
   }
-
-  Future<void> _pickDateRange(BuildContext context) async {
-    final picked = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
-      initialDateRange: _dateRange,
-      builder: (context, child) => Theme(
-        data: ThemeData.light().copyWith(
-          colorScheme: const ColorScheme.light(primary: AppColors.primary),
-        ),
-        child: child!,
-      ),
-    );
-    if (picked != null && mounted) {
-      setState(() {
-        _dateRange = picked;
-        _selectedFilter = null; // Deselect chips for custom range
-      });
-      _adminOrderCubit.fetchOrders(
-        startDate: picked.start,
-        endDate: picked.end,
-      );
-    }
-  }
-
-  void _applyQuickFilter(String filter) {
-    setState(() {
-      _selectedFilter = filter;
-      final now = DateTime.now();
-      switch (filter) {
-        case 'year':
-          _dateRange = DateTimeRange(
-            start: now.subtract(const Duration(days: 365)),
-            end: now,
-          );
-          break;
-        case 'week':
-          _dateRange = DateTimeRange(
-            start: now.subtract(const Duration(days: 7)),
-            end: now,
-          );
-          break;
-        case 'month':
-          _dateRange = DateTimeRange(
-            start: now.subtract(const Duration(days: 30)),
-            end: now,
-          );
-          break;
-      }
-    });
-    _adminOrderCubit.fetchOrders(
-      startDate: _dateRange.start,
-      endDate: _dateRange.end,
-    );
-  }
-
-  Widget _buildDateRangeCard() {
-    final formatter = DateFormat('dd-MM-yyyy');
-    final totalDays = _dateRange.end.difference(_dateRange.start).inDays + 1;
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          title: Text(
-            'Date Range: ${formatter.format(_dateRange.start)} - ${formatter.format(_dateRange.end)}',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: Text(
-              'Total $totalDays days',
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ),
-          trailing: const Icon(Icons.calendar_today, color: AppColors.primary),
-          onTap: () => _pickDateRange(context),
-        ),
-      ),
-    );
-  }
-
   Widget _buildQuickFilterChips() {
     final filters = [
       {'label': 'Last 1 Year', 'value': 'year'},
       {'label': 'Week', 'value': 'week'},
       {'label': 'Month', 'value': 'month'},
+      {'label': 'Last 3 Months', 'value': '3months'},
+      {'label': 'Last 6 Months', 'value': '6months'},
     ];
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -183,6 +92,111 @@ class _SalesmanOrderListPageState extends State<SalesmanOrderListPage> {
       ),
     );
   }
+
+  void _applyQuickFilter(String filter) {
+    setState(() {
+      _selectedFilter = filter;
+      final now = DateTime.now();
+      switch (filter) {
+        case 'year':
+          _dateRange = DateTimeRange(
+            start: now.subtract(const Duration(days: 365)),
+            end: now,
+          );
+          break;
+        case 'week':
+          _dateRange = DateTimeRange(
+            start: now.subtract(const Duration(days: 7)),
+            end: now,
+          );
+          break;
+        case 'month':
+          _dateRange = DateTimeRange(
+            start: now.subtract(const Duration(days: 30)),
+            end: now,
+          );
+          break;
+        case '3months':
+          _dateRange = DateTimeRange(
+            start: now.subtract(const Duration(days: 90)),
+            end: now,
+          );
+          break;
+        case '6months':
+          _dateRange = DateTimeRange(
+            start: now.subtract(const Duration(days: 180)),
+            end: now,
+          );
+          break;
+      }
+    });
+    _adminOrderCubit.fetchOrders(
+      startDate: _dateRange.start,
+      endDate: _dateRange.end,
+    );
+  }
+  Future<void> _pickDateRange(BuildContext context) async {
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      initialDateRange: _dateRange,
+      builder: (context, child) => Theme(
+        data: ThemeData.light().copyWith(
+          colorScheme: const ColorScheme.light(primary: AppColors.primary),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null && mounted) {
+      setState(() {
+        _dateRange = picked;
+        _selectedFilter = null; // Deselect chips for custom range
+      });
+      _adminOrderCubit.fetchOrders(
+        startDate: picked.start,
+        endDate: picked.end,
+      );
+    }
+  }
+
+
+  Widget _buildDateRangeCard() {
+    final formatter = DateFormat('dd-MM-yyyy');
+    final totalDays = _dateRange.end.difference(_dateRange.start).inDays + 1;
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          title: Text(
+            'Date Range: ${formatter.format(_dateRange.start)} - ${formatter.format(_dateRange.end)}',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Text(
+              'Total $totalDays days',
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          trailing: const Icon(Icons.calendar_today, color: AppColors.primary),
+          onTap: () => _pickDateRange(context),
+        ),
+      ),
+    );
+  }
+
 
   Map<UserInfo, List<Order>> _groupOrdersBySalesman(List<Order> orders, List<UserInfo> users) {
     final Map<UserInfo, List<Order>> grouped = {};

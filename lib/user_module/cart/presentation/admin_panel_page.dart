@@ -15,13 +15,163 @@ import 'package:requirment_gathering_app/user_module/cart/presentation/admin_ord
 import 'package:sticky_headers/sticky_headers.dart';
 
 @RoutePage()
-class AdminPanelPage extends StatelessWidget {
+class AdminPanelPage extends StatefulWidget {
   const AdminPanelPage({super.key});
 
   @override
+  State<AdminPanelPage> createState() => _AdminPanelPageState();
+}
+
+class _AdminPanelPageState extends State<AdminPanelPage> {
+  String  _selectedFilter ='9/8';
+  late final AdminOrderCubit _adminOrderCubit;
+  @override
+  void initState() {
+    _adminOrderCubit = sl<AdminOrderCubit>()/*..fetchOrders()*/;
+    _applyQuickFilter(_selectedFilter);
+    super.initState();
+  }
+  void _applyQuickFilter(String filter) {
+    _selectedFilter = filter;
+    final now = DateTime.now();
+    DateTime startDate;
+    DateTime endDate;
+
+    switch (filter) {
+      case 'today':
+        startDate = DateTime(now.year, now.month, now.day);
+        endDate = startDate;
+        break;
+      case 'yesterday':
+        startDate = now.subtract(const Duration(days: 1));
+        startDate = DateTime(startDate.year, startDate.month, startDate.day);
+        endDate = startDate;
+        break;
+      case 'daybefore':
+        startDate = now.subtract(const Duration(days: 2));
+        startDate = DateTime(startDate.year, startDate.month, startDate.day);
+        endDate = startDate;
+        break;
+      case 'tomorrow':
+        startDate = now.add(const Duration(days: 1));
+        startDate = DateTime(startDate.year, startDate.month, startDate.day);
+        endDate = startDate;
+        break;
+      case 'year':
+        startDate = now.subtract(const Duration(days: 365));
+        endDate = now;
+        break;
+      case 'week':
+        startDate = now.subtract(const Duration(days: 7));
+        endDate = now;
+        break;
+      case 'month':
+        startDate = now.subtract(const Duration(days: 30));
+        endDate = now;
+        break;
+      case '3months':
+        startDate = now.subtract(const Duration(days: 90));
+        endDate = now;
+        break;
+      case '6months':
+        startDate = now.subtract(const Duration(days: 180));
+        endDate = now;
+        break;
+      default:
+        startDate = now.subtract(const Duration(days: 90)); // Fallback to 3 months
+        endDate = now;
+        break;
+    }
+
+    _adminOrderCubit.fetchOrders(
+      startDate: startDate,
+      endDate: endDate,
+    );
+    final state =_adminOrderCubit.state;
+    if (state is AdminOrderListFetchSuccess) {
+      _adminOrderCubit.fetchOrders(
+        startDate: startDate,
+        endDate: endDate,
+        status: state.status,
+        expectedDeliveryStartDate: state.expectedDeliveryStartDate,
+        expectedDeliveryEndDate: state.expectedDeliveryEndDate,
+        orderTakenBy: state.orderTakenBy,
+        orderDeliveredBy: state.orderDeliveredBy,
+        storeId: state.storeId,
+        userId: state.userId,
+        minTotalAmount: state.minTotalAmount,
+        maxTotalAmount: state.maxTotalAmount,
+      );
+    } else {
+      _adminOrderCubit.fetchOrders(
+        startDate: startDate,
+        endDate: endDate,
+      );
+    }
+  }
+
+  Widget _buildQuickFilterChips() {
+    final filters = [
+      {'label': 'Today', 'value': 'today'},
+      {'label': 'Yesterday', 'value': 'yesterday'},
+      {'label': 'Day Before', 'value': 'daybefore'},
+      {'label': 'Tomorrow', 'value': 'tomorrow'},
+      {'label': 'Last 1 Year', 'value': 'year'},
+      {'label': 'Week', 'value': 'week'},
+      {'label': 'Month', 'value': 'month'},
+      {'label': 'Last 3 Months', 'value': '3months'},
+      {'label': 'Last 6 Months', 'value': '6months'},
+    ];
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(8.0),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.textSecondary.withOpacity(0.5)),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Wrap(
+          spacing: 8.0,
+          runSpacing: 8.0,
+          alignment: WrapAlignment.start,
+          children: filters.map((filter) {
+            final isSelected = _selectedFilter == filter['value'];
+            return ChoiceChip(
+              label: Text(
+                filter['label'] as String,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : AppColors.textPrimary,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+              selected: isSelected,
+              selectedColor: AppColors.primary,
+              backgroundColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.textSecondary.withOpacity(0.5),
+                ),
+              ),
+              onSelected: (selected) {
+                if (selected) {
+                  _applyQuickFilter(filter['value'] as String);
+                }
+              },
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+  @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => sl<AdminOrderCubit>()..fetchOrders(),
+      create: (_) => _adminOrderCubit,
       child: Scaffold(
         appBar: const CustomAppBar(title: AppLabels.adminPanelTitle),
         body: Container(
@@ -140,7 +290,7 @@ class AdminPanelPage extends StatelessWidget {
                           ),
                         );
                         if (dateRange != null) {
-                          context.read<AdminOrderCubit>().fetchOrders(
+                          _adminOrderCubit.fetchOrders(
                                 startDate: dateRange.start,
                                 endDate: dateRange.end,
                                 status: selectedStatus,
@@ -183,7 +333,7 @@ class AdminPanelPage extends StatelessWidget {
                           ),
                         );
                         if (dateRange != null) {
-                          context.read<AdminOrderCubit>().fetchOrders(
+                          _adminOrderCubit.fetchOrders(
                                 startDate: orderStartDate,
                                 endDate: orderEndDate,
                                 status: selectedStatus,
@@ -213,6 +363,9 @@ class AdminPanelPage extends StatelessWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
+
+              _buildQuickFilterChips(),
               const SizedBox(height: 12),
               // Status and Clear Filters
               Row(
@@ -256,7 +409,7 @@ class AdminPanelPage extends StatelessWidget {
                             value: 'completed', child: Text('Completed')),
                       ],
                       onChanged: (value) {
-                        context.read<AdminOrderCubit>().fetchOrders(
+                        _adminOrderCubit.fetchOrders(
                               startDate: orderStartDate,
                               endDate: orderEndDate,
                               status: value,
@@ -275,7 +428,7 @@ class AdminPanelPage extends StatelessWidget {
                   const SizedBox(width: 8),
                   ElevatedButton(
                     onPressed: () =>
-                        context.read<AdminOrderCubit>().fetchOrders(),
+                        _adminOrderCubit.fetchOrders(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.red,
                       shape: RoundedRectangleBorder(
@@ -322,7 +475,7 @@ class AdminPanelPage extends StatelessWidget {
                       ),
                       items: dropdownItems,
                       onChanged: (value) {
-                        context.read<AdminOrderCubit>().fetchOrders(
+                        _adminOrderCubit.fetchOrders(
                               startDate: orderStartDate,
                               endDate: orderEndDate,
                               status: selectedStatus,
@@ -367,7 +520,7 @@ class AdminPanelPage extends StatelessWidget {
                       ),
                       items: dropdownItems,
                       onChanged: (value) {
-                        context.read<AdminOrderCubit>().fetchOrders(
+                        _adminOrderCubit.fetchOrders(
                               startDate: orderStartDate,
                               endDate: orderEndDate,
                               status: selectedStatus,
@@ -424,7 +577,7 @@ class AdminPanelPage extends StatelessWidget {
                             )),
                       ],
                       onChanged: (value) {
-                        context.read<AdminOrderCubit>().fetchOrders(
+                        _adminOrderCubit.fetchOrders(
                               startDate: orderStartDate,
                               endDate: orderEndDate,
                               status: selectedStatus,
@@ -469,7 +622,7 @@ class AdminPanelPage extends StatelessWidget {
                       ),
                       items: dropdownItems,
                       onChanged: (value) {
-                        context.read<AdminOrderCubit>().fetchOrders(
+                        _adminOrderCubit.fetchOrders(
                               startDate: orderStartDate,
                               endDate: orderEndDate,
                               status: selectedStatus,
@@ -503,7 +656,7 @@ class AdminPanelPage extends StatelessWidget {
                       initialValue: minTotalAmount?.toString() ?? '',
                       onFieldSubmitted: (value) {
                         final min = double.tryParse(value);
-                        context.read<AdminOrderCubit>().fetchOrders(
+                        _adminOrderCubit.fetchOrders(
                               startDate: orderStartDate,
                               endDate: orderEndDate,
                               status: selectedStatus,
@@ -532,7 +685,7 @@ class AdminPanelPage extends StatelessWidget {
                       initialValue: maxTotalAmount?.toString() ?? '',
                       onFieldSubmitted: (value) {
                         final max = double.tryParse(value);
-                        context.read<AdminOrderCubit>().fetchOrders(
+                        _adminOrderCubit.fetchOrders(
                               startDate: orderStartDate,
                               endDate: orderEndDate,
                               status: selectedStatus,
@@ -866,7 +1019,7 @@ class AdminPanelPage extends StatelessWidget {
   Widget _buildOrderCard(
       BuildContext context, Order order, AdminOrderListFetchSuccess state) {
     final statusStyles =
-        context.read<AdminOrderCubit>().getStatusColors(order.status);
+        _adminOrderCubit.getStatusColors(order.status);
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(

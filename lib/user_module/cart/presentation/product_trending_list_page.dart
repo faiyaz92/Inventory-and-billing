@@ -82,6 +82,64 @@ class _ProductTrendingListPageState extends State<ProductTrendingListPage> {
     }
   }
 
+  Widget _buildQuickFilterChips() {
+    final filters = [
+      {'label': 'Last 1 Year', 'value': 'year'},
+      {'label': 'Week', 'value': 'week'},
+      {'label': 'Month', 'value': 'month'},
+      {'label': 'Last 3 Months', 'value': '3months'},
+      {'label': 'Last 6 Months', 'value': '6months'},
+    ];
+    return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.textSecondary.withOpacity(0.5)),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              alignment: WrapAlignment.start,
+              children: filters.map((filter) {
+                final isSelected = _selectedFilter == filter['value'];
+                return ChoiceChip(
+                  label: Text(
+                    filter['label'] as String,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : AppColors.textPrimary,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                  selected: isSelected,
+                  selectedColor: AppColors.primary,
+                  backgroundColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.textSecondary.withOpacity(0.5),
+                    ),
+                  ),
+                  onSelected: (selected) {
+                    if (selected) {
+                      _applyQuickFilter(filter['value'] as String);
+                    }
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+        )
+    );
+  }
+
   void _applyQuickFilter(String filter) {
     setState(() {
       _selectedFilter = filter;
@@ -105,6 +163,18 @@ class _ProductTrendingListPageState extends State<ProductTrendingListPage> {
             end: now,
           );
           break;
+        case '3months':
+          _dateRange = DateTimeRange(
+            start: now.subtract(const Duration(days: 90)),
+            end: now,
+          );
+          break;
+        case '6months':
+          _dateRange = DateTimeRange(
+            start: now.subtract(const Duration(days: 30)),
+            end: now,
+          );
+          break;
       }
     });
     context.read<AdminOrderCubit>().fetchOrders(
@@ -112,7 +182,6 @@ class _ProductTrendingListPageState extends State<ProductTrendingListPage> {
       endDate: _dateRange.end,
     );
   }
-
   Widget _buildDateRangeCard() {
     final formatter = DateFormat('dd-MM-yyyy');
     final totalDays = _dateRange.end.difference(_dateRange.start).inDays + 1;
@@ -149,61 +218,6 @@ class _ProductTrendingListPageState extends State<ProductTrendingListPage> {
     );
   }
 
-  Widget _buildQuickFilterChips() {
-    final filters = [
-      {'label': 'Last 1 Year', 'value': 'year'},
-      {'label': 'Week', 'value': 'week'},
-      {'label': 'Month', 'value': 'month'},
-    ];
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(8.0),
-          decoration: BoxDecoration(
-            border: Border.all(color: AppColors.textSecondary.withOpacity(0.5)),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Wrap(
-            spacing: 8.0,
-            runSpacing: 8.0,
-            alignment: WrapAlignment.start,
-            children: filters.map((filter) {
-              final isSelected = _selectedFilter == filter['value'];
-              return ChoiceChip(
-                label: Text(
-                  filter['label'] as String,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : AppColors.textPrimary,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                ),
-                selected: isSelected,
-                selectedColor: AppColors.primary,
-                backgroundColor: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(
-                    color: isSelected
-                        ? AppColors.primary
-                        : AppColors.textSecondary.withOpacity(0.5),
-                  ),
-                ),
-                onSelected: (selected) {
-                  if (selected) {
-                    _applyQuickFilter(filter['value'] as String);
-                  }
-                },
-              );
-            }).toList(),
-          ),
-        ),
-      ),
-    );
-  }
 
   List<ProductSalesData> _aggregateProductSales(
       List<Order> orders, List<StockModel> stockItems) {
