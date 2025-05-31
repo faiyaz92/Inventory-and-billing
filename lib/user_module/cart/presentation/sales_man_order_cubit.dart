@@ -183,7 +183,7 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
   double calculateProductTax(String productId) {
     final product = _products.firstWhere((p) => p.id == productId);
     final quantity = _productQuantities[productId] ?? 0;
-    return product.taxAmount * quantity;
+    return ((product.price * product.taxRate))* quantity;
   }
 
   double calculateProductTotal(String productId) {

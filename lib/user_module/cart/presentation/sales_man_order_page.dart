@@ -18,8 +18,6 @@ class SalesmanOrderPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => sl<CartCubit>()),
-        BlocProvider(create: (_) => sl<OrderCubit>()),
         BlocProvider(create: (_) => sl<SalesmanOrderCubit>()),
       ],
       child: BlocConsumer<SalesmanOrderCubit, SalesmanOrderState>(
