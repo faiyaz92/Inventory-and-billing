@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
+
 
 class UserInfo extends Equatable {
   final String? userId;
@@ -9,11 +11,12 @@ class UserInfo extends Equatable {
   final String? email;
   final String? userName;
   final Role? role;
+  final UserType? userType; // New field
   final double? latitude;
   final double? longitude;
   final double? dailyWage;
   final String? storeId;
-  final String? accountLedgerId; // New field
+  final String? accountLedgerId;
 
   const UserInfo({
     this.userId,
@@ -22,11 +25,12 @@ class UserInfo extends Equatable {
     this.email,
     this.userName,
     this.role,
+    this.userType, // New field
     this.latitude,
     this.longitude,
     this.dailyWage,
     this.storeId,
-    this.accountLedgerId, // New field
+    this.accountLedgerId,
   });
 
   factory UserInfo.fromJson(Map<String, dynamic> json) {
@@ -37,11 +41,12 @@ class UserInfo extends Equatable {
       email: json['email'] as String?,
       userName: json['userName'] as String?,
       role: json['role'] != null ? RoleExtension.fromString(json['role']) : null,
+      userType: json['userType'] != null ? UserTypeExtension.fromString(json['userType']) : null, // New field
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
       dailyWage: (json['dailyWage'] as num?)?.toDouble() ?? 500.0,
       storeId: json['storeId'] as String?,
-      accountLedgerId: json['accountLedgerId'] as String?, // New field
+      accountLedgerId: json['accountLedgerId'] as String?,
     );
   }
 
@@ -53,11 +58,12 @@ class UserInfo extends Equatable {
       'email': email,
       'userName': userName,
       'role': role?.name,
+      'userType': userType?.name, // New field
       'latitude': latitude,
       'longitude': longitude,
       'dailyWage': dailyWage,
       'storeId': storeId,
-      'accountLedgerId': accountLedgerId, // New field
+      'accountLedgerId': accountLedgerId,
     };
   }
 
@@ -68,11 +74,12 @@ class UserInfo extends Equatable {
     String? email,
     String? userName,
     Role? role,
+    UserType? userType, // New field
     double? latitude,
     double? longitude,
     double? dailyWage,
     String? storeId,
-    String? accountLedgerId, // New field
+    String? accountLedgerId,
   }) {
     return UserInfo(
       userId: userId ?? this.userId,
@@ -81,11 +88,12 @@ class UserInfo extends Equatable {
       email: email ?? this.email,
       userName: userName ?? this.userName,
       role: role ?? this.role,
+      userType: userType ?? this.userType, // New field
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       dailyWage: dailyWage ?? this.dailyWage,
       storeId: storeId ?? this.storeId,
-      accountLedgerId: accountLedgerId ?? this.accountLedgerId, // New field
+      accountLedgerId: accountLedgerId ?? this.accountLedgerId,
     );
   }
 
@@ -97,11 +105,12 @@ class UserInfo extends Equatable {
       email: email ?? '',
       userName: userName ?? '',
       role: role ?? Role.USER,
+      userType: userType ?? UserType.Employee, // New field with default
       latitude: latitude,
       longitude: longitude,
       dailyWage: dailyWage,
       storeId: storeId,
-      accountLedgerId: accountLedgerId, // New field
+      accountLedgerId: accountLedgerId,
     );
   }
 
@@ -113,11 +122,12 @@ class UserInfo extends Equatable {
       email: dto.email,
       userName: dto.userName,
       role: dto.role,
+      userType: dto.userType, // New field
       latitude: dto.latitude,
       longitude: dto.longitude,
       dailyWage: dto.dailyWage,
       storeId: dto.storeId,
-      accountLedgerId: dto.accountLedgerId, // New field
+      accountLedgerId: dto.accountLedgerId,
     );
   }
 
@@ -129,10 +139,11 @@ class UserInfo extends Equatable {
     email,
     userName,
     role,
+    userType, // New field
     latitude,
     longitude,
     dailyWage,
     storeId,
-    accountLedgerId, // New field
+    accountLedgerId,
   ];
 }

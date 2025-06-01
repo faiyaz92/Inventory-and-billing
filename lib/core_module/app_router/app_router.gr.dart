@@ -1375,6 +1375,43 @@ class TransactionsRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [UserLedgerPage]
+class UserLedgerRoute extends PageRouteInfo<UserLedgerRouteArgs> {
+  UserLedgerRoute({
+    Key? key,
+    required UserInfo user,
+    List<PageRouteInfo>? children,
+  }) : super(
+         UserLedgerRoute.name,
+         args: UserLedgerRouteArgs(key: key, user: user),
+         initialChildren: children,
+       );
+
+  static const String name = 'UserLedgerRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<UserLedgerRouteArgs>();
+      return UserLedgerPage(key: args.key, user: args.user);
+    },
+  );
+}
+
+class UserLedgerRouteArgs {
+  const UserLedgerRouteArgs({this.key, required this.user});
+
+  final Key? key;
+
+  final UserInfo user;
+
+  @override
+  String toString() {
+    return 'UserLedgerRouteArgs{key: $key, user: $user}';
+  }
+}
+
+/// generated route for
 /// [UserOrderDetailsPage]
 class UserOrderDetailsRoute extends PageRouteInfo<UserOrderDetailsRouteArgs> {
   UserOrderDetailsRoute({

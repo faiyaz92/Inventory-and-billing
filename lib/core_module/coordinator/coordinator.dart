@@ -113,5 +113,5 @@ abstract class Coordinator {
   Future<dynamic> navigateToPerformanceDetailsPage({required String entityType, required String entityId});
   Future<dynamic> navigateToCompanyPerformancePage();
   Future<dynamic> navigateToProductPerformanceListPage();
-
+  Future<dynamic> navigateToUserLedgerPage({required UserInfo user});
 }

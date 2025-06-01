@@ -1,72 +1,125 @@
+// File: company_admin_module/data/ledger/account_ledger_state.dart
+// Update AccountLedgerState to align with UserLedgerCubit
+import 'package:equatable/equatable.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_ledger_model.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/ledger/transaction_model.dart';
 
-abstract class AccountLedgerState {}
+abstract class AccountLedgerState extends Equatable {
+  const AccountLedgerState();
+
+  @override
+  List<Object?> get props => [];
+}
 
 class AccountLedgerInitial extends AccountLedgerState {}
 
 class AccountLedgerLoading extends AccountLedgerState {}
 
+class AccountLedgerFetching extends AccountLedgerState {}
+
+class AccountLedgerPosting extends AccountLedgerState {}
+
 class AccountLedgerLoaded extends AccountLedgerState {
   final AccountLedger ledger;
-  AccountLedgerLoaded(this.ledger);
+
+  const AccountLedgerLoaded(this.ledger);
+
+  @override
+  List<Object?> get props => [ledger];
 }
 
-class AccountLedgerError extends AccountLedgerState {
-  final String message;
-  AccountLedgerError(this.message);
+class AccountLedgerUpdated extends AccountLedgerState {
+  final AccountLedger ledger;
+
+  const AccountLedgerUpdated(this.ledger);
+
+  @override
+  List<Object?> get props => [ledger];
 }
 
 class AccountLedgerSuccess extends AccountLedgerState {
   final String message;
-  AccountLedgerSuccess(this.message);
+
+  const AccountLedgerSuccess(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class AccountLedgerError extends AccountLedgerState {
+  final String message;
+
+  const AccountLedgerError(this.message);
+
+  @override
+  List<Object?> get props => [message];
 }
 
 class TransactionPopupOpened extends AccountLedgerState {
   final bool isDebit;
-  final String companyType;
+  final String? companyType;
+  final Map<String, List<String>> purposeTypeMap;
   final String? selectedPurpose;
   final String? selectedType;
-  final Map<String, List<String>> purposeTypeMap;
+  final bool isInitialOpen;
   final String? errorMessage;
-  final bool isInitialOpen; // New flag to mark initial popup open
 
-  TransactionPopupOpened({
+  const TransactionPopupOpened({
     required this.isDebit,
-    required this.companyType,
+    this.companyType,
+    required this.purposeTypeMap,
     this.selectedPurpose,
     this.selectedType,
-    required this.purposeTypeMap,
+    this.isInitialOpen = false,
     this.errorMessage,
-    required this.isInitialOpen,
   });
 
   TransactionPopupOpened copyWith({
     bool? isDebit,
     String? companyType,
+    Map<String, List<String>>? purposeTypeMap,
     String? selectedPurpose,
     String? selectedType,
-    Map<String, List<String>>? purposeTypeMap,
-    String? errorMessage,
     bool? isInitialOpen,
+    String? errorMessage,
   }) {
     return TransactionPopupOpened(
       isDebit: isDebit ?? this.isDebit,
       companyType: companyType ?? this.companyType,
-      selectedPurpose: selectedPurpose,
-      selectedType: selectedType,
       purposeTypeMap: purposeTypeMap ?? this.purposeTypeMap,
-      errorMessage: errorMessage,
+      selectedPurpose: selectedPurpose ?? this.selectedPurpose,
+      selectedType: selectedType ?? this.selectedType,
       isInitialOpen: isInitialOpen ?? this.isInitialOpen,
+      errorMessage: errorMessage ?? this.errorMessage,
     );
   }
+
+  @override
+  List<Object?> get props => [
+    isDebit,
+    companyType,
+    purposeTypeMap,
+    selectedPurpose,
+    selectedType,
+    isInitialOpen,
+    errorMessage,
+  ];
 }
 
-class TransactionAddSuccess extends AccountLedgerState {
+class TransactionSuccess extends AccountLedgerState {
   final String message;
-  TransactionAddSuccess(this.message);
+
+  const TransactionSuccess(this.message);
+
+  @override
+  List<Object?> get props => [message];
 }
 
 class TransactionAddFailed extends AccountLedgerState {
   final String message;
-  TransactionAddFailed(this.message);
+
+  const TransactionAddFailed(this.message);
+
+  @override
+  List<Object?> get props => [message];
 }

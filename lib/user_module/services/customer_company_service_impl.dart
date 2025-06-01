@@ -31,8 +31,8 @@ class CustomerCompanyServiceImpl implements CustomerCompanyService {
     }
   }
 
-  @override
-  Future<Either<Exception, void>> saveCompany(Partner company) async {
+/*  @override
+  Future<Either<Exception, String>> saveCompany(Partner company) async {
     try {
       final currentUserResult = await _getCurrentUser();
       if (currentUserResult.isLeft()) {
@@ -55,7 +55,7 @@ class CustomerCompanyServiceImpl implements CustomerCompanyService {
     } catch (e) {
       return Left(Exception('Failed to save company: $e'));
     }
-  }
+  }*/
 
   @override
   Future<Either<Exception, CompanySettingsUi>> fetchCompanySettings() async {
@@ -77,7 +77,7 @@ class CustomerCompanyServiceImpl implements CustomerCompanyService {
   }
 
   @override
-  Future<void> addCompany(Partner company) async {
+  Future<String> addCompany(Partner company) async {
     try {
       final currentUserResult = await _getCurrentUser();
       if (currentUserResult.isLeft()) {
@@ -91,7 +91,12 @@ class CustomerCompanyServiceImpl implements CustomerCompanyService {
       );
 
       final dto = PartnerDto.fromUiModel(updatedCompany);
-      await _companyRepository.addCompany(dto);
+      final id = await _companyRepository.addCompany(dto);
+      return id.fold((l)  {
+        return l.toString();
+      }, (r) {
+        return r;
+      });
     } catch (e) {
       throw Exception('Failed to add company: $e');
     }

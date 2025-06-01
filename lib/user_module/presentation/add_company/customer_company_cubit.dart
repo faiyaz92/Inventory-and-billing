@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_ledger_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/account_ledger_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
-import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppKeys.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
 import 'package:requirment_gathering_app/core_module/utils/date_time_utils.dart';
@@ -431,16 +430,18 @@ class PartnerCubit extends Cubit<CompanyState> {
             return;
           }
           if (company.id.isEmpty) {
-            await _companyService.addCompany(company);
+            final companyId = await _companyService.addCompany(company);
             final newLedger = AccountLedger(
               totalOutstanding: 0,
               promiseAmount: null,
               promiseDate: null,
               transactions: [],
             );
-            await _accountLedgerService.createLedger(company, newLedger);
+            String ledgerId =
+                await _accountLedgerService.createLedger(newLedger);
+            await _companyService.updateCompany(companyId, company.copyWith(accountLedgerId: ledgerId, id: companyId));
           } else {
-            await _companyService.updateCompany(company.id!, company);
+            await _companyService.updateCompany(company.id, company);
           }
           emit(SavedState());
         },

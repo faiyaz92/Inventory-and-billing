@@ -2,7 +2,7 @@ import 'package:requirment_gathering_app/company_admin_module/data/attendance/at
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 
 abstract class UserServices {
-  Future<void> addUserToCompany(UserInfo userInfo, String password);
+  Future<String> addUserToCompany(UserInfo userInfo, String password);
   Future<void> updateUser(UserInfo userInfo);
   Future<List<UserInfo>> getUsersFromTenantCompany({String? storeId});
   Future<void> deleteUser(String userId);

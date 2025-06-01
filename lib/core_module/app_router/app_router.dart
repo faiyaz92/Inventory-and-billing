@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/ledger/user_ledger_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/category.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/sub_category.dart';
@@ -153,5 +154,6 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: PerformanceDetailsRoute.page, path: '/performance-details'),
         AutoRoute(page: CompanyPerformanceRoute.page),
         AutoRoute(page: ProductTrendingListRoute.page),
+        AutoRoute(page: UserLedgerRoute.page, path: '/user-ledger'),
       ];
 }

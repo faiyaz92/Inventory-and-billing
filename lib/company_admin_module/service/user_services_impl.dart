@@ -15,7 +15,7 @@ class UserServiceImpl implements UserServices {
   UserServiceImpl(this._tenantCompanyRepository, this._accountRepository);
 
   @override
-  Future<void> addUserToCompany(UserInfo userInfo, String password) async {
+  Future<String> addUserToCompany(UserInfo userInfo, String password) async {
     final loggedInUserInfo = await _accountRepository.getUserInfo();
     userInfo = userInfo.copyWith(
       companyId: loggedInUserInfo?.companyId ?? '',
@@ -24,7 +24,7 @@ class UserServiceImpl implements UserServices {
       dailyWage: userInfo.dailyWage ?? 500.0,
       storeId: userInfo.storeId, // Include storeId
     );
-    await _tenantCompanyRepository.addUserToCompany(userInfo.toDto(), password);
+   return await _tenantCompanyRepository.addUserToCompany(userInfo.toDto(), password);
   }
 
   @override

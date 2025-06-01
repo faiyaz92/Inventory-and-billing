@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/ledger/user_ledger_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/stock_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/store_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/transaction_cubit.dart';
@@ -8,7 +9,6 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/ledge
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/add_edit_category_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/admin_product_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/tasks/task_cubit.dart';
-import 'package:requirment_gathering_app/company_admin_module/presentation/users/add_company_user_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/add_user_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/attendance_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/employee_details_cubit.dart';
@@ -202,7 +202,6 @@ void _initServices() {
       () => AccountLedgerServiceImpl(
             sl<IAccountLedgerRepository>(),
             sl<AccountRepository>(),
-            sl<CustomerCompanyService>(),
           ));
   sl.registerLazySingleton<IUserService>(
       () => UserServiceImpl(sl<AccountRepository>()));
@@ -277,6 +276,7 @@ void _initCubits() {
   sl.registerFactory(() => AddUserCubit(
         sl<UserServices>(),
         sl<StoreService>(),
+        sl<IAccountLedgerService>(),
       ));
   sl.registerFactory(() => TaskCubit(sl<TaskService>(), sl<UserServices>(),
       sl<CustomerCompanyService>(), sl<AccountRepository>()));
@@ -333,6 +333,11 @@ void _initCubits() {
   sl.registerFactory<StoreCubit>(
     () => StoreCubit(sl<StoreService>()),
   );
+  sl.registerFactory(() => UserLedgerCubit(
+        sl<IAccountLedgerService>(),
+        sl<AccountRepository>(),
+        sl<CustomerCompanyService>(),
+      ));
 }
 
 /// **5. Initialize App Navigation & Coordinator**

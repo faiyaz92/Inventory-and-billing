@@ -12,7 +12,7 @@ abstract class ITenantCompanyRepository {
     required String adminName,
   });
 
-  Future<void> addUserToCompany(UserInfoDto userInfoDto, String password);
+  Future<String> addUserToCompany(UserInfoDto userInfoDto, String password);
 
   Future<void> updateUser(
       String userId, String companyId, UserInfoDto userInfoDto);

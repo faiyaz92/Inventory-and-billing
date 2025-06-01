@@ -73,7 +73,7 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
   }
 
   @override
-  Future<void> addUserToCompany(
+  Future<String> addUserToCompany(
       UserInfoDto userInfoDto, String password) async {
     UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
       email: userInfoDto.email ?? '',
@@ -92,6 +92,7 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
         .getCommonUsersPath()
         .doc(userId)
         .set(updatedUserInfo.toMap());
+    return userId;
   }
 
   @override

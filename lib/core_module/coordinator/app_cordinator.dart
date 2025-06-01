@@ -364,4 +364,9 @@ class AppCoordinator implements Coordinator {
       _router.push(const CompanyPerformanceRoute());@override
   Future<dynamic> navigateToProductPerformanceListPage() =>
       _router.push(const ProductTrendingListRoute());
+  // File: core_module/coordinator/app_coordinator.dart
+  @override
+  Future<dynamic> navigateToUserLedgerPage({required UserInfo user}) {
+    return _router.push(UserLedgerRoute(user: user));
+  }
 }
