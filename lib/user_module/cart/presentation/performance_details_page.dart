@@ -7,6 +7,7 @@ import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dar
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
+import 'package:requirment_gathering_app/core_module/utils/custom_loading_dialog.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_cubit.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/product_trending_list_page.dart';
@@ -62,7 +63,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
             child: BlocBuilder<AdminOrderCubit, AdminOrderState>(
               builder: (context, state) {
                 if (state is AdminOrderListFetchLoading) {
-                  return _buildShimmerEffect();
+                  return const Center(child: CustomLoadingDialog());
                 } else if (state is AdminOrderListFetchSuccess) {
                   return SingleChildScrollView(
                     padding: EdgeInsets.zero,
@@ -79,18 +80,12 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
                           const SizedBox(height: 16),
                           _buildGraphCard(state),
                           const SizedBox(height: 16),
-                          _buildAverageOrderSaleAmountCard(state),
-                          const SizedBox(height: 16),
                           _buildOrderCountGraphCard(state),
-                          // In _buildOrderCountGraphCard, after LineChart
-                          const SizedBox(height: 16),
-                          _buildAverageOrderCountCard(state),
+
                           if (widget.entityType == 'product') ...[
                             const SizedBox(height: 16),
                             _buildQuantitySoldGraphCard(state),
-                            // In _buildQuantitySoldGraphCard, after LineChart
-                            const SizedBox(height: 16),
-                            _buildAverageQuantitySoldCard(state),
+
                           ],
                           const SizedBox(height: 16),
                           _buildOrdersCard(state),
@@ -341,22 +336,19 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: Container(
-              constraints: const BoxConstraints(minHeight: 80),
               padding: const EdgeInsets.all(16.0),
-              child: Center(
-                child: Text(
-                  '${widget.entityType.capitalize()}: $entityName',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                    shadows: [
-                      Shadow(
-                          blurRadius: 2,
-                          color: Colors.black12,
-                          offset: Offset(1, 1))
-                    ],
-                  ),
+              child: Text(
+                '${widget.entityType.capitalize()}: $entityName',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                  shadows: [
+                    Shadow(
+                        blurRadius: 2,
+                        color: Colors.black12,
+                        offset: Offset(1, 1))
+                  ],
                 ),
               ),
             ),
@@ -594,143 +586,200 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
 
   Widget _buildAverageOrderSaleAmountCard(AdminOrderListFetchSuccess state) {
     final averages = _calculateAverageOrderSaleAmount(state);
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Average Order Sale Amount',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            ...averages.entries.map((entry) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '${entry.key.capitalize()} Avg:',
-                        style: const TextStyle(
-                            fontSize: 14, color: AppColors.textSecondary),
-                      ),
-                      Text(
-                        '₹${entry.value.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                )),
-          ],
+    return  Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          'Average Order Sale Amount',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+            shadows: [
+              Shadow(blurRadius: 2, color: Colors.black12, offset: Offset(1, 1))
+            ],
+          ),
         ),
-      ),
+        const SizedBox(height: 16),
+        Table(
+          border: TableBorder.all(
+            color: AppColors.textSecondary.withOpacity(0.5),
+            width: 1,
+          ),
+          columnWidths: const {
+            0: FlexColumnWidth(1),
+            1: FlexColumnWidth(1),
+          },
+          children: averages.entries.map((entry) {
+            return TableRow(
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+              ),
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                  child: Text(
+                    '${entry.key.capitalize()} Avg sale',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                Container(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                    child: Text(
+                      '₹${entry.value.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
-
   Widget _buildAverageOrderCountCard(AdminOrderListFetchSuccess state) {
     final averages = _calculateAverageOrderCount(state);
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Average Order Count',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            ...averages.entries.map((entry) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '${entry.key.capitalize()} Avg:',
-                        style: const TextStyle(
-                            fontSize: 14, color: AppColors.textSecondary),
-                      ),
-                      Text(
-                        '${entry.value.toStringAsFixed(2)} orders',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                )),
-          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          'Average Order Count',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+            shadows: [
+              Shadow(blurRadius: 2, color: Colors.black12, offset: Offset(1, 1))
+            ],
+          ),
         ),
-      ),
+        const SizedBox(height: 16),
+        Table(
+          border: TableBorder.all(
+            color: AppColors.textSecondary.withOpacity(0.5),
+            width: 1,
+          ),
+          columnWidths: const {
+            0: FlexColumnWidth(1),
+            1: FlexColumnWidth(1),
+          },
+          children: averages.entries.map((entry) {
+            return TableRow(
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+              ),
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                  child: Text(
+                    '${entry.key.capitalize()} Avg orders',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                Container(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                    child: Text(
+                      entry.value.toStringAsFixed(2),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
-
   Widget _buildAverageQuantitySoldCard(AdminOrderListFetchSuccess state) {
     if (widget.entityType != 'product') return const SizedBox.shrink();
     final averages = _calculateAverageQuantitySold(state);
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Average Quantity Sold',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            ...averages.entries.map((entry) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '${entry.key.capitalize()} Avg:',
-                        style: const TextStyle(
-                            fontSize: 14, color: AppColors.textSecondary),
-                      ),
-                      Text(
-                        '${entry.value.toStringAsFixed(2)} units',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                )),
-          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          'Average Quantity Sold',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+            shadows: [
+              Shadow(blurRadius: 2, color: Colors.black12, offset: Offset(1, 1))
+            ],
+          ),
         ),
-      ),
+        const SizedBox(height: 16),
+        Table(
+          border: TableBorder.all(
+            color: AppColors.textSecondary.withOpacity(0.5),
+            width: 1,
+          ),
+          columnWidths: const {
+            0: FlexColumnWidth(1),
+            1: FlexColumnWidth(1),
+          },
+          children: averages.entries.map((entry) {
+            return TableRow(
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+              ),
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                  child: Text(
+                    '${entry.key.capitalize()} Avg quantity sold',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                Container(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                    child: Text(
+                      '${entry.value.toStringAsFixed(2)} units',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
-
   Widget _buildGraphCard(AdminOrderListFetchSuccess state) {
     final data = _generateGraphData(state.orders, dateRange);
     if (data.spots.isEmpty) {
@@ -909,6 +958,10 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 30,),
+            Container(width: double.maxFinite,height: 2,color: AppColors.grey,),
+            const SizedBox(height: 8,),
+            _buildAverageOrderSaleAmountCard(state),
           ],
         ),
       ),
@@ -1094,6 +1147,10 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 30),
+            Container(width: double.maxFinite,height: 2,color: AppColors.grey,),
+            const SizedBox(height: 8,),
+            _buildAverageOrderCountCard(state),
           ],
         ),
       ),
@@ -1321,6 +1378,11 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 30,),
+
+            Container(width: double.maxFinite,height: 2,color: AppColors.grey,),
+            const SizedBox(height: 8,),
+            _buildAverageQuantitySoldCard(state),
           ],
         ),
       ),

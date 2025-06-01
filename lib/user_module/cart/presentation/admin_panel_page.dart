@@ -9,6 +9,7 @@ import 'package:requirment_gathering_app/core_module/service_locator/service_loc
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
 import 'package:requirment_gathering_app/core_module/utils/custom_loading_dialog.dart';
+import 'package:requirment_gathering_app/core_module/utils/text_styles.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_cubit.dart';
@@ -23,20 +24,21 @@ class AdminPanelPage extends StatefulWidget {
 }
 
 class _AdminPanelPageState extends State<AdminPanelPage> {
-  String  _selectedFilter ='9/8';
+  String _selectedFilter = '3months';
   late final AdminOrderCubit _adminOrderCubit;
+  late DateTime startDate;
+  late DateTime endDate;
+
   @override
   void initState() {
-    _adminOrderCubit = sl<AdminOrderCubit>()/*..fetchOrders()*/;
+    _adminOrderCubit = sl<AdminOrderCubit>() /*..fetchOrders()*/;
     _applyQuickFilter(_selectedFilter);
     super.initState();
   }
+
   void _applyQuickFilter(String filter) {
     _selectedFilter = filter;
     final now = DateTime.now();
-    DateTime startDate;
-    DateTime endDate;
-
     switch (filter) {
       case 'today':
         startDate = DateTime(now.year, now.month, now.day);
@@ -52,11 +54,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
         startDate = DateTime(startDate.year, startDate.month, startDate.day);
         endDate = startDate;
         break;
-      case 'tomorrow':
-        startDate = now.add(const Duration(days: 1));
-        startDate = DateTime(startDate.year, startDate.month, startDate.day);
-        endDate = startDate;
-        break;
+
       case 'year':
         startDate = now.subtract(const Duration(days: 365));
         endDate = now;
@@ -78,7 +76,8 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
         endDate = now;
         break;
       default:
-        startDate = now.subtract(const Duration(days: 90)); // Fallback to 3 months
+        startDate =
+            now.subtract(const Duration(days: 90)); // Fallback to 3 months
         endDate = now;
         break;
     }
@@ -87,7 +86,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
       startDate: startDate,
       endDate: endDate,
     );
-    final state =_adminOrderCubit.state;
+    final state = _adminOrderCubit.state;
     if (state is AdminOrderListFetchSuccess) {
       _adminOrderCubit.fetchOrders(
         startDate: startDate,
@@ -115,12 +114,11 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
       {'label': 'Today', 'value': 'today'},
       {'label': 'Yesterday', 'value': 'yesterday'},
       {'label': 'Day Before', 'value': 'daybefore'},
-      {'label': 'Tomorrow', 'value': 'tomorrow'},
-      {'label': 'Last 1 Year', 'value': 'year'},
       {'label': 'Week', 'value': 'week'},
       {'label': 'Month', 'value': 'month'},
       {'label': 'Last 3 Months', 'value': '3months'},
       {'label': 'Last 6 Months', 'value': '6months'},
+      {'label': 'Last 1 Year', 'value': 'year'},
     ];
     return Card(
       elevation: 4,
@@ -132,42 +130,57 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
           border: Border.all(color: AppColors.textSecondary.withOpacity(0.5)),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Wrap(
-          spacing: 8.0,
-          runSpacing: 8.0,
-          alignment: WrapAlignment.start,
-          children: filters.map((filter) {
-            final isSelected = _selectedFilter == filter['value'];
-            return ChoiceChip(
-              label: Text(
-                filter['label'] as String,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : AppColors.textPrimary,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                ),
-              ),
-              selected: isSelected,
-              selectedColor: AppColors.primary,
-              backgroundColor: Colors.transparent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                side: BorderSide(
-                  color: isSelected
-                      ? AppColors.primary
-                      : AppColors.textSecondary.withOpacity(0.5),
-                ),
-              ),
-              onSelected: (selected) {
-                if (selected) {
-                  _applyQuickFilter(filter['value'] as String);
-                }
-              },
-            );
-          }).toList(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Qucik filter',
+              style:
+                  defaultTextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(
+              height: 12,
+            ),
+            Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              alignment: WrapAlignment.start,
+              children: filters.map((filter) {
+                final isSelected = _selectedFilter == filter['value'];
+                return ChoiceChip(
+                  label: Text(
+                    filter['label'] as String,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : AppColors.textPrimary,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                  selected: isSelected,
+                  selectedColor: AppColors.primary,
+                  backgroundColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.textSecondary.withOpacity(0.5),
+                    ),
+                  ),
+                  onSelected: (selected) {
+                    if (selected) {
+                      _applyQuickFilter(filter['value'] as String);
+                    }
+                  },
+                );
+              }).toList(),
+            ),
+          ],
         ),
       ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -284,25 +297,24 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                           firstDate: DateTime(2020),
                           lastDate: DateTime.now(),
                           initialDateRange: DateTimeRange(
-                            start: DateTime.now()
-                                .subtract(const Duration(days: 30)),
-                            end: DateTime.now(),
+                            start: startDate,
+                            end: endDate,
                           ),
                         );
                         if (dateRange != null) {
                           _adminOrderCubit.fetchOrders(
-                                startDate: dateRange.start,
-                                endDate: dateRange.end,
-                                status: selectedStatus,
-                                expectedDeliveryStartDate: expectedStartDate,
-                                expectedDeliveryEndDate: expectedEndDate,
-                                orderTakenBy: validOrderTakenBy,
-                                orderDeliveredBy: validOrderDeliveredBy,
-                                storeId: selectedStoreId,
-                                userId: validUserId,
-                                minTotalAmount: minTotalAmount,
-                                maxTotalAmount: maxTotalAmount,
-                              );
+                            startDate: dateRange.start,
+                            endDate: dateRange.end,
+                            status: selectedStatus,
+                            expectedDeliveryStartDate: expectedStartDate,
+                            expectedDeliveryEndDate: expectedEndDate,
+                            orderTakenBy: validOrderTakenBy,
+                            orderDeliveredBy: validOrderDeliveredBy,
+                            storeId: selectedStoreId,
+                            userId: validUserId,
+                            minTotalAmount: minTotalAmount,
+                            maxTotalAmount: maxTotalAmount,
+                          );
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -334,18 +346,18 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                         );
                         if (dateRange != null) {
                           _adminOrderCubit.fetchOrders(
-                                startDate: orderStartDate,
-                                endDate: orderEndDate,
-                                status: selectedStatus,
-                                expectedDeliveryStartDate: dateRange.start,
-                                expectedDeliveryEndDate: dateRange.end,
-                                orderTakenBy: validOrderTakenBy,
-                                orderDeliveredBy: validOrderDeliveredBy,
-                                storeId: selectedStoreId,
-                                userId: selectedUserId,
-                                minTotalAmount: minTotalAmount,
-                                maxTotalAmount: maxTotalAmount,
-                              );
+                            startDate: orderStartDate,
+                            endDate: orderEndDate,
+                            status: selectedStatus,
+                            expectedDeliveryStartDate: dateRange.start,
+                            expectedDeliveryEndDate: dateRange.end,
+                            orderTakenBy: validOrderTakenBy,
+                            orderDeliveredBy: validOrderDeliveredBy,
+                            storeId: selectedStoreId,
+                            userId: selectedUserId,
+                            minTotalAmount: minTotalAmount,
+                            maxTotalAmount: maxTotalAmount,
+                          );
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -410,25 +422,24 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                       ],
                       onChanged: (value) {
                         _adminOrderCubit.fetchOrders(
-                              startDate: orderStartDate,
-                              endDate: orderEndDate,
-                              status: value,
-                              expectedDeliveryStartDate: expectedStartDate,
-                              expectedDeliveryEndDate: expectedEndDate,
-                              orderTakenBy: validOrderTakenBy,
-                              orderDeliveredBy: validOrderDeliveredBy,
-                              storeId: selectedStoreId,
-                              userId: selectedUserId,
-                              minTotalAmount: minTotalAmount,
-                              maxTotalAmount: maxTotalAmount,
-                            );
+                          startDate: orderStartDate,
+                          endDate: orderEndDate,
+                          status: value,
+                          expectedDeliveryStartDate: expectedStartDate,
+                          expectedDeliveryEndDate: expectedEndDate,
+                          orderTakenBy: validOrderTakenBy,
+                          orderDeliveredBy: validOrderDeliveredBy,
+                          storeId: selectedStoreId,
+                          userId: selectedUserId,
+                          minTotalAmount: minTotalAmount,
+                          maxTotalAmount: maxTotalAmount,
+                        );
                       },
                     ),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton(
-                    onPressed: () =>
-                        _adminOrderCubit.fetchOrders(),
+                    onPressed: () => _adminOrderCubit.fetchOrders(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.red,
                       shape: RoundedRectangleBorder(
@@ -476,18 +487,18 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                       items: dropdownItems,
                       onChanged: (value) {
                         _adminOrderCubit.fetchOrders(
-                              startDate: orderStartDate,
-                              endDate: orderEndDate,
-                              status: selectedStatus,
-                              expectedDeliveryStartDate: expectedStartDate,
-                              expectedDeliveryEndDate: expectedEndDate,
-                              orderTakenBy: value,
-                              orderDeliveredBy: validOrderDeliveredBy,
-                              storeId: selectedStoreId,
-                              userId: selectedUserId,
-                              minTotalAmount: minTotalAmount,
-                              maxTotalAmount: maxTotalAmount,
-                            );
+                          startDate: orderStartDate,
+                          endDate: orderEndDate,
+                          status: selectedStatus,
+                          expectedDeliveryStartDate: expectedStartDate,
+                          expectedDeliveryEndDate: expectedEndDate,
+                          orderTakenBy: value,
+                          orderDeliveredBy: validOrderDeliveredBy,
+                          storeId: selectedStoreId,
+                          userId: selectedUserId,
+                          minTotalAmount: minTotalAmount,
+                          maxTotalAmount: maxTotalAmount,
+                        );
                       },
                     ),
                   ),
@@ -521,18 +532,18 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                       items: dropdownItems,
                       onChanged: (value) {
                         _adminOrderCubit.fetchOrders(
-                              startDate: orderStartDate,
-                              endDate: orderEndDate,
-                              status: selectedStatus,
-                              expectedDeliveryStartDate: expectedStartDate,
-                              expectedDeliveryEndDate: expectedEndDate,
-                              orderTakenBy: validOrderTakenBy,
-                              orderDeliveredBy: value,
-                              storeId: selectedStoreId,
-                              userId: selectedUserId,
-                              minTotalAmount: minTotalAmount,
-                              maxTotalAmount: maxTotalAmount,
-                            );
+                          startDate: orderStartDate,
+                          endDate: orderEndDate,
+                          status: selectedStatus,
+                          expectedDeliveryStartDate: expectedStartDate,
+                          expectedDeliveryEndDate: expectedEndDate,
+                          orderTakenBy: validOrderTakenBy,
+                          orderDeliveredBy: value,
+                          storeId: selectedStoreId,
+                          userId: selectedUserId,
+                          minTotalAmount: minTotalAmount,
+                          maxTotalAmount: maxTotalAmount,
+                        );
                       },
                     ),
                   ),
@@ -578,18 +589,18 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                       ],
                       onChanged: (value) {
                         _adminOrderCubit.fetchOrders(
-                              startDate: orderStartDate,
-                              endDate: orderEndDate,
-                              status: selectedStatus,
-                              expectedDeliveryStartDate: expectedStartDate,
-                              expectedDeliveryEndDate: expectedEndDate,
-                              orderTakenBy: validOrderTakenBy,
-                              orderDeliveredBy: validOrderDeliveredBy,
-                              storeId: value,
-                              userId: selectedUserId,
-                              minTotalAmount: minTotalAmount,
-                              maxTotalAmount: maxTotalAmount,
-                            );
+                          startDate: orderStartDate,
+                          endDate: orderEndDate,
+                          status: selectedStatus,
+                          expectedDeliveryStartDate: expectedStartDate,
+                          expectedDeliveryEndDate: expectedEndDate,
+                          orderTakenBy: validOrderTakenBy,
+                          orderDeliveredBy: validOrderDeliveredBy,
+                          storeId: value,
+                          userId: selectedUserId,
+                          minTotalAmount: minTotalAmount,
+                          maxTotalAmount: maxTotalAmount,
+                        );
                       },
                     ),
                   ),
@@ -623,18 +634,18 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                       items: dropdownItems,
                       onChanged: (value) {
                         _adminOrderCubit.fetchOrders(
-                              startDate: orderStartDate,
-                              endDate: orderEndDate,
-                              status: selectedStatus,
-                              expectedDeliveryStartDate: expectedStartDate,
-                              expectedDeliveryEndDate: expectedEndDate,
-                              orderTakenBy: validOrderTakenBy,
-                              orderDeliveredBy: validOrderDeliveredBy,
-                              storeId: selectedStoreId,
-                              userId: value,
-                              minTotalAmount: minTotalAmount,
-                              maxTotalAmount: maxTotalAmount,
-                            );
+                          startDate: orderStartDate,
+                          endDate: orderEndDate,
+                          status: selectedStatus,
+                          expectedDeliveryStartDate: expectedStartDate,
+                          expectedDeliveryEndDate: expectedEndDate,
+                          orderTakenBy: validOrderTakenBy,
+                          orderDeliveredBy: validOrderDeliveredBy,
+                          storeId: selectedStoreId,
+                          userId: value,
+                          minTotalAmount: minTotalAmount,
+                          maxTotalAmount: maxTotalAmount,
+                        );
                       },
                     ),
                   ),
@@ -657,18 +668,18 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                       onFieldSubmitted: (value) {
                         final min = double.tryParse(value);
                         _adminOrderCubit.fetchOrders(
-                              startDate: orderStartDate,
-                              endDate: orderEndDate,
-                              status: selectedStatus,
-                              expectedDeliveryStartDate: expectedStartDate,
-                              expectedDeliveryEndDate: expectedEndDate,
-                              orderTakenBy: validOrderTakenBy,
-                              orderDeliveredBy: validOrderDeliveredBy,
-                              storeId: selectedStoreId,
-                              userId: selectedUserId,
-                              minTotalAmount: min,
-                              maxTotalAmount: maxTotalAmount,
-                            );
+                          startDate: orderStartDate,
+                          endDate: orderEndDate,
+                          status: selectedStatus,
+                          expectedDeliveryStartDate: expectedStartDate,
+                          expectedDeliveryEndDate: expectedEndDate,
+                          orderTakenBy: validOrderTakenBy,
+                          orderDeliveredBy: validOrderDeliveredBy,
+                          storeId: selectedStoreId,
+                          userId: selectedUserId,
+                          minTotalAmount: min,
+                          maxTotalAmount: maxTotalAmount,
+                        );
                       },
                     ),
                   ),
@@ -686,18 +697,18 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                       onFieldSubmitted: (value) {
                         final max = double.tryParse(value);
                         _adminOrderCubit.fetchOrders(
-                              startDate: orderStartDate,
-                              endDate: orderEndDate,
-                              status: selectedStatus,
-                              expectedDeliveryStartDate: expectedStartDate,
-                              expectedDeliveryEndDate: expectedEndDate,
-                              orderTakenBy: validOrderTakenBy,
-                              orderDeliveredBy: validOrderDeliveredBy,
-                              storeId: selectedStoreId,
-                              userId: selectedUserId,
-                              minTotalAmount: minTotalAmount,
-                              maxTotalAmount: max,
-                            );
+                          startDate: orderStartDate,
+                          endDate: orderEndDate,
+                          status: selectedStatus,
+                          expectedDeliveryStartDate: expectedStartDate,
+                          expectedDeliveryEndDate: expectedEndDate,
+                          orderTakenBy: validOrderTakenBy,
+                          orderDeliveredBy: validOrderDeliveredBy,
+                          storeId: selectedStoreId,
+                          userId: selectedUserId,
+                          minTotalAmount: minTotalAmount,
+                          maxTotalAmount: max,
+                        );
                       },
                     ),
                   ),
@@ -1018,8 +1029,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
 
   Widget _buildOrderCard(
       BuildContext context, Order order, AdminOrderListFetchSuccess state) {
-    final statusStyles =
-        _adminOrderCubit.getStatusColors(order.status);
+    final statusStyles = _adminOrderCubit.getStatusColors(order.status);
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(

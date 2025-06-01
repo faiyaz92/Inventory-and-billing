@@ -7,6 +7,7 @@ import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dar
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
+import 'package:requirment_gathering_app/core_module/utils/custom_loading_dialog.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_cubit.dart';
 import 'package:shimmer/shimmer.dart';
@@ -26,8 +27,8 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
     end: DateTime.now(),
   );
 
-
-  String? _selectedFilter = 'week'; // Add this state variable to _CompanyPerformancePageState
+  String? _selectedFilter =
+      'week'; // Add this state variable to _CompanyPerformancePageState
 
   Widget _buildQuickFilterChips() {
     final filters = [
@@ -122,9 +123,9 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
       }
     });
     context.read<AdminOrderCubit>().fetchOrders(
-      startDate: dateRange.start,
-      endDate: dateRange.end,
-    );
+          startDate: dateRange.start,
+          endDate: dateRange.end,
+        );
   }
 
   Widget _buildDateRangeCard(BuildContext context) {
@@ -140,7 +141,10 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
           contentPadding: EdgeInsets.zero,
           title: Text(
             'Date Range: ${formatter.format(dateRange.start)} - ${formatter.format(dateRange.end)}',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
+            style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textPrimary),
           ),
           subtitle: Padding(
             padding: const EdgeInsets.only(top: 4.0),
@@ -162,7 +166,8 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
               initialDateRange: dateRange,
               builder: (context, child) => Theme(
                 data: ThemeData.light().copyWith(
-                  colorScheme: const ColorScheme.light(primary: AppColors.primary),
+                  colorScheme:
+                      const ColorScheme.light(primary: AppColors.primary),
                 ),
                 child: child!,
               ),
@@ -173,9 +178,9 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                 _selectedFilter = null; // Deselect filter for custom range
               });
               context.read<AdminOrderCubit>().fetchOrders(
-                startDate: picked.start,
-                endDate: picked.end,
-              );
+                    startDate: picked.start,
+                    endDate: picked.end,
+                  );
             }
           },
         ),
@@ -210,7 +215,7 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
             child: BlocBuilder<AdminOrderCubit, AdminOrderState>(
               builder: (context, state) {
                 if (state is AdminOrderListFetchLoading) {
-                  return _buildShimmerEffect();
+                  return const Center(child: CustomLoadingDialog());
                 } else if (state is AdminOrderListFetchSuccess) {
                   return SingleChildScrollView(
                     padding: EdgeInsets.zero,
@@ -220,29 +225,26 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
 
 // In _CompanyPerformancePageState, update the build method's Column children:
-                          children: [
-                          _buildTitleCard(context),
-                        const SizedBox(height: 16),
-                        _buildDateRangeCard(context),
-                        const SizedBox(height: 16),
-                        _buildQuickFilterChips(),
-                        const SizedBox(height: 16),
-                        _buildStatsCard(state),
-                        // Average Sale Amount
-                     // Average Order Count
-                        const SizedBox(height: 16),
-                        _buildGraphCard(state),
-                            const SizedBox(height: 16),
-                            _buildAverageOrderSaleAmountCard(state),
-                        const SizedBox(height: 16),
-                        _buildOrderCountGraphCard(state),
-                        const SizedBox(height: 16),
-                            _buildAverageOrderCountCard(state),
-                            const SizedBox(height: 16),
+                        children: [
+                          // _buildTitleCard(context),
+                          // const SizedBox(height: 16),
+                          _buildDateRangeCard(context),
+                          const SizedBox(height: 16),
+                          _buildQuickFilterChips(),
+                          const SizedBox(height: 16),
+                          _buildStatsCard(state),
+                          // Average Sale Amount
+                          // Average Order Count
+                          const SizedBox(height: 16),
+                          _buildGraphCard(state),
 
-                            _buildOrdersCard(state),
+                          const SizedBox(height: 16),
+                          _buildOrderCountGraphCard(state),
+                          const SizedBox(height: 16),
+
+                          _buildOrdersCard(state),
                         ],
-                                            ),
+                      ),
                     ),
                   );
                 } else {
@@ -266,27 +268,27 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
-        constraints: const BoxConstraints(minHeight: 80),
         padding: const EdgeInsets.all(16.0),
-        child: const Center(
-          child: Text(
-            'Company Performance',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-              shadows: [Shadow(blurRadius: 2, color: Colors.black12, offset: Offset(1, 1))],
-            ),
+        child: const Text(
+          'Company Performance',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+            shadows: [
+              Shadow(
+                  blurRadius: 2, color: Colors.black12, offset: Offset(1, 1))
+            ],
           ),
         ),
       ),
     );
   }
 
-
   Widget _buildStatsCard(AdminOrderListFetchSuccess state) {
     final totalOrders = state.orders.length;
-    final totalAmount = state.orders.fold(0.0, (sum, order) => sum + order.totalAmount);
+    final totalAmount =
+        state.orders.fold(0.0, (sum, order) => sum + order.totalAmount);
 
     final stats = [
       {
@@ -318,7 +320,12 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
-                shadows: [Shadow(blurRadius: 2, color: Colors.black12, offset: Offset(1, 1))],
+                shadows: [
+                  Shadow(
+                      blurRadius: 2,
+                      color: Colors.black12,
+                      offset: Offset(1, 1))
+                ],
               ),
             ),
             const SizedBox(height: 16),
@@ -339,7 +346,8 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                   ),
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 12),
                       child: Text(
                         stat['label'] as String,
                         style: const TextStyle(
@@ -352,7 +360,8 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                     Container(
                       alignment: Alignment.centerRight,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 12, horizontal: 12),
                         child: Text(
                           stat['value'] as String,
                           style: TextStyle(
@@ -402,13 +411,24 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
               children: [
                 const Text(
                   'Order Amount Trend',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary),
                 ),
                 Text(
-                  data.trend == Trend.up ? '↑ Up' : data.trend == Trend.down ? '↓ Down' : '↔ Neutral',
+                  data.trend == Trend.up
+                      ? '↑ Up'
+                      : data.trend == Trend.down
+                          ? '↓ Down'
+                          : '↔ Neutral',
                   style: TextStyle(
                     fontSize: 14,
-                    color: data.trend == Trend.up ? Colors.green : data.trend == Trend.down ? Colors.red : Colors.grey,
+                    color: data.trend == Trend.up
+                        ? Colors.green
+                        : data.trend == Trend.down
+                            ? Colors.red
+                            : Colors.grey,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -422,10 +442,16 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                   gridData: FlGridData(
                     show: true,
                     drawVerticalLine: true,
-                    horizontalInterval: (data.spots.map((e) => e.y).reduce((a, b) => a > b ? a : b) / 5).ceilToDouble(),
+                    horizontalInterval: (data.spots
+                                .map((e) => e.y)
+                                .reduce((a, b) => a > b ? a : b) /
+                            5)
+                        .ceilToDouble(),
                     verticalInterval: data.spots.length / 5,
-                    getDrawingHorizontalLine: (value) => FlLine(color: Colors.grey.shade200, strokeWidth: 1),
-                    getDrawingVerticalLine: (value) => FlLine(color: Colors.grey.shade200, strokeWidth: 1),
+                    getDrawingHorizontalLine: (value) =>
+                        FlLine(color: Colors.grey.shade200, strokeWidth: 1),
+                    getDrawingVerticalLine: (value) =>
+                        FlLine(color: Colors.grey.shade200, strokeWidth: 1),
                   ),
                   titlesData: FlTitlesData(
                     leftTitles: AxisTitles(
@@ -458,8 +484,8 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                                   data.interval == 'daily'
                                       ? '${date.day}/${date.month}'
                                       : data.interval == 'weekly'
-                                      ? 'W${(date.day / 7).ceil()}'
-                                      : '${date.month}/${date.year % 100}',
+                                          ? 'W${(date.day / 7).ceil()}'
+                                          : '${date.month}/${date.year % 100}',
                                   style: const TextStyle(fontSize: 12),
                                 ),
                               ),
@@ -469,10 +495,14 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                         },
                       ),
                     ),
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
                   ),
-                  borderData: FlBorderData(show: true, border: Border.all(color: Colors.grey.shade300)),
+                  borderData: FlBorderData(
+                      show: true,
+                      border: Border.all(color: Colors.grey.shade300)),
                   lineBarsData: [
                     LineChartBarData(
                       spots: data.spots,
@@ -481,30 +511,36 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                       barWidth: 3,
                       dotData: FlDotData(
                         show: true,
-                        getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
+                        getDotPainter: (spot, percent, bar, index) =>
+                            FlDotCirclePainter(
                           radius: 4,
-                          color: data.trend == Trend.up ? Colors.green : Colors.red,
+                          color: data.trend == Trend.up
+                              ? Colors.green
+                              : Colors.red,
                           strokeWidth: 1,
                           strokeColor: Colors.white,
                         ),
                       ),
                       belowBarData: BarAreaData(
                         show: true,
-                        color: (data.trend == Trend.up ? Colors.green : Colors.red).withOpacity(0.1),
+                        color:
+                            (data.trend == Trend.up ? Colors.green : Colors.red)
+                                .withOpacity(0.1),
                       ),
                     ),
                   ],
                   lineTouchData: LineTouchData(
                     touchTooltipData: LineTouchTooltipData(
-                      getTooltipItems: (touchedSpots) => touchedSpots.map((spot) {
+                      getTooltipItems: (touchedSpots) =>
+                          touchedSpots.map((spot) {
                         final index = spot.x.toInt();
                         if (index >= 0 && index < data.dates.length) {
                           final date = data.dates[index];
                           final dateText = data.interval == 'daily'
                               ? '${date.day}/${date.month}/${date.year}'
                               : data.interval == 'weekly'
-                              ? 'Week of ${date.day}/${date.month}/${date.year}'
-                              : '${date.month}/${date.year}';
+                                  ? 'Week of ${date.day}/${date.month}/${date.year}'
+                                  : '${date.month}/${date.year}';
                           return LineTooltipItem(
                             '₹${spot.y.toStringAsFixed(2)}\n$dateText',
                             const TextStyle(color: Colors.white, fontSize: 12),
@@ -515,10 +551,26 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                     ),
                   ),
                   minY: 0,
-                  maxY: (data.spots.map((e) => e.y).reduce((a, b) => a > b ? a : b) * 1.1).ceilToDouble(),
+                  maxY: (data.spots
+                              .map((e) => e.y)
+                              .reduce((a, b) => a > b ? a : b) *
+                          1.1)
+                      .ceilToDouble(),
                 ),
               ),
             ),
+            const SizedBox(
+              height: 30,
+            ),
+            Container(
+              width: double.maxFinite,
+              height: 2,
+              color: AppColors.grey,
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            _buildAverageOrderSaleAmountCard(state)
           ],
         ),
       ),
@@ -534,7 +586,8 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
         child: Container(
           constraints: const BoxConstraints(minHeight: 80),
           padding: const EdgeInsets.all(16.0),
-          child: const Center(child: Text('No order count data available for this period')),
+          child: const Center(
+              child: Text('No order count data available for this period')),
         ),
       );
     }
@@ -553,13 +606,24 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
               children: [
                 const Text(
                   'Order Count Trend',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary),
                 ),
                 Text(
-                  data.trend == Trend.up ? '↑ Up' : data.trend == Trend.down ? '↓ Down' : '↔ Neutral',
+                  data.trend == Trend.up
+                      ? '↑ Up'
+                      : data.trend == Trend.down
+                          ? '↓ Down'
+                          : '↔ Neutral',
                   style: TextStyle(
                     fontSize: 14,
-                    color: data.trend == Trend.up ? Colors.green : data.trend == Trend.down ? Colors.red : Colors.grey,
+                    color: data.trend == Trend.up
+                        ? Colors.green
+                        : data.trend == Trend.down
+                            ? Colors.red
+                            : Colors.grey,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -573,10 +637,16 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                   gridData: FlGridData(
                     show: true,
                     drawVerticalLine: true,
-                    horizontalInterval: (data.spots.map((e) => e.y).reduce((a, b) => a > b ? a : b) / 5).ceilToDouble(),
+                    horizontalInterval: (data.spots
+                                .map((e) => e.y)
+                                .reduce((a, b) => a > b ? a : b) /
+                            5)
+                        .ceilToDouble(),
                     verticalInterval: data.spots.length / 5,
-                    getDrawingHorizontalLine: (value) => FlLine(color: Colors.grey.shade200, strokeWidth: 1),
-                    getDrawingVerticalLine: (value) => FlLine(color: Colors.grey.shade200, strokeWidth: 1),
+                    getDrawingHorizontalLine: (value) =>
+                        FlLine(color: Colors.grey.shade200, strokeWidth: 1),
+                    getDrawingVerticalLine: (value) =>
+                        FlLine(color: Colors.grey.shade200, strokeWidth: 1),
                   ),
                   titlesData: FlTitlesData(
                     leftTitles: AxisTitles(
@@ -609,8 +679,8 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                                   data.interval == 'daily'
                                       ? '${date.day}/${date.month}'
                                       : data.interval == 'weekly'
-                                      ? 'W${(date.day / 7).ceil()}'
-                                      : '${date.month}/${date.year % 100}',
+                                          ? 'W${(date.day / 7).ceil()}'
+                                          : '${date.month}/${date.year % 100}',
                                   style: const TextStyle(fontSize: 12),
                                 ),
                               ),
@@ -620,10 +690,14 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                         },
                       ),
                     ),
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
                   ),
-                  borderData: FlBorderData(show: true, border: Border.all(color: Colors.grey.shade300)),
+                  borderData: FlBorderData(
+                      show: true,
+                      border: Border.all(color: Colors.grey.shade300)),
                   lineBarsData: [
                     LineChartBarData(
                       spots: data.spots,
@@ -632,30 +706,36 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                       barWidth: 3,
                       dotData: FlDotData(
                         show: true,
-                        getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
+                        getDotPainter: (spot, percent, bar, index) =>
+                            FlDotCirclePainter(
                           radius: 4,
-                          color: data.trend == Trend.up ? Colors.green : Colors.red,
+                          color: data.trend == Trend.up
+                              ? Colors.green
+                              : Colors.red,
                           strokeWidth: 1,
                           strokeColor: Colors.white,
                         ),
                       ),
                       belowBarData: BarAreaData(
                         show: true,
-                        color: (data.trend == Trend.up ? Colors.green : Colors.red).withOpacity(0.1),
+                        color:
+                            (data.trend == Trend.up ? Colors.green : Colors.red)
+                                .withOpacity(0.1),
                       ),
                     ),
                   ],
                   lineTouchData: LineTouchData(
                     touchTooltipData: LineTouchTooltipData(
-                      getTooltipItems: (touchedSpots) => touchedSpots.map((spot) {
+                      getTooltipItems: (touchedSpots) =>
+                          touchedSpots.map((spot) {
                         final index = spot.x.toInt();
                         if (index >= 0 && index < data.dates.length) {
                           final date = data.dates[index];
                           final dateText = data.interval == 'daily'
                               ? '${date.day}/${date.month}/${date.year}'
                               : data.interval == 'weekly'
-                              ? 'Week of ${date.day}/${date.month}/${date.year}'
-                              : '${date.month}/${date.year}';
+                                  ? 'Week of ${date.day}/${date.month}/${date.year}'
+                                  : '${date.month}/${date.year}';
                           return LineTooltipItem(
                             '${spot.y.toInt()} orders\n$dateText',
                             const TextStyle(color: Colors.white, fontSize: 12),
@@ -666,10 +746,26 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                     ),
                   ),
                   minY: 0,
-                  maxY: (data.spots.map((e) => e.y).reduce((a, b) => a > b ? a : b) * 1.1).ceilToDouble(),
+                  maxY: (data.spots
+                              .map((e) => e.y)
+                              .reduce((a, b) => a > b ? a : b) *
+                          1.1)
+                      .ceilToDouble(),
                 ),
               ),
             ),
+            const SizedBox(
+              height: 30,
+            ),
+            Container(
+              width: double.maxFinite,
+              height: 2,
+              color: AppColors.grey,
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            _buildAverageOrderCountCard(state),
           ],
         ),
       ),
@@ -685,7 +781,8 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
       groupedOrders[dateKey]!.add(order);
     }
 
-    final dates = groupedOrders.keys.toList()..sort((a, b) => formatter.parse(b).compareTo(formatter.parse(a)));
+    final dates = groupedOrders.keys.toList()
+      ..sort((a, b) => formatter.parse(b).compareTo(formatter.parse(a)));
 
     return Card(
       elevation: 4,
@@ -695,9 +792,13 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
         child: ExpansionTile(
           title: const Text(
             'View Recent Orders',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary),
           ),
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          tilePadding:
+              const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           children: [
             ListView.builder(
               shrinkWrap: true,
@@ -710,14 +811,20 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                   header: Container(
                     width: double.infinity,
                     color: Theme.of(context).scaffoldBackgroundColor,
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                     child: Text(
                       date,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary),
                     ),
                   ),
                   content: Column(
-                    children: orders.map((order) => _buildOrderCard(context, order, state)).toList(),
+                    children: orders
+                        .map((order) => _buildOrderCard(context, order, state))
+                        .toList(),
                   ),
                 );
               },
@@ -728,14 +835,17 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
     );
   }
 
-  Widget _buildOrderCard(BuildContext context, Order order, AdminOrderListFetchSuccess state) {
-    final statusStyles = context.read<AdminOrderCubit>().getStatusColors(order.status);
+  Widget _buildOrderCard(
+      BuildContext context, Order order, AdminOrderListFetchSuccess state) {
+    final statusStyles =
+        context.read<AdminOrderCubit>().getStatusColors(order.status);
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
       child: InkWell(
-        onTap: () => sl<Coordinator>().navigateToAdminOrderDetailsPage(order.id),
+        onTap: () =>
+            sl<Coordinator>().navigateToAdminOrderDetailsPage(order.id),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
@@ -752,11 +862,15 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                       children: [
                         Text(
                           'Order #${order.id}',
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                          style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary),
                         ),
                         Text(
                           'Customer: ${order.userName}',
-                          style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                          style: const TextStyle(
+                              fontSize: 14, color: AppColors.textSecondary),
                         ),
                       ],
                     ),
@@ -767,12 +881,17 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                 decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.textSecondary.withOpacity(0.5), width: 1),
+                  border: Border.all(
+                      color: AppColors.textSecondary.withOpacity(0.5),
+                      width: 1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  context.read<AdminOrderCubit>().formatOrderDate(order.orderDate),
-                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  context
+                      .read<AdminOrderCubit>()
+                      .formatOrderDate(order.orderDate),
+                  style: const TextStyle(
+                      fontSize: 12, color: AppColors.textSecondary),
                 ),
               ),
               const SizedBox(height: 8),
@@ -780,13 +899,19 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                 alignment: Alignment.centerRight,
                 child: Container(
                   decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.textSecondary.withOpacity(0.5), width: 1),
+                    border: Border.all(
+                        color: AppColors.textSecondary.withOpacity(0.5),
+                        width: 1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Table(
                     border: TableBorder(
-                      verticalInside: BorderSide(color: AppColors.textSecondary.withOpacity(0.5), width: 1),
-                      horizontalInside: BorderSide(color: AppColors.textSecondary.withOpacity(0.5), width: 1),
+                      verticalInside: BorderSide(
+                          color: AppColors.textSecondary.withOpacity(0.5),
+                          width: 1),
+                      horizontalInside: BorderSide(
+                          color: AppColors.textSecondary.withOpacity(0.5),
+                          width: 1),
                     ),
                     columnWidths: const {
                       0: FlexColumnWidth(3),
@@ -795,7 +920,9 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                     children: [
                       _buildTableRow(
                         'Products',
-                        context.read<AdminOrderCubit>().getProductNames(order.items),
+                        context
+                            .read<AdminOrderCubit>()
+                            .getProductNames(order.items),
                         maxLines: 2,
                       ),
                       _buildTableRow(
@@ -803,7 +930,8 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                         order.status,
                         valueColor: statusStyles['color'],
                         backgroundColor: statusStyles['backgroundColor'],
-                        valueWeight: order.status.toLowerCase() == 'pending' || order.status.toLowerCase() == 'processing'
+                        valueWeight: order.status.toLowerCase() == 'pending' ||
+                                order.status.toLowerCase() == 'processing'
                             ? FontWeight.bold
                             : null,
                       ),
@@ -813,7 +941,9 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                         isBold: true,
                         valueColor: AppColors.textPrimary,
                         backgroundColor: AppColors.primary.withOpacity(0.1),
-                        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(12), bottomRight: Radius.circular(12)),
+                        borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(12),
+                            bottomRight: Radius.circular(12)),
                       ),
                     ],
                   ),
@@ -827,21 +957,21 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
   }
 
   TableRow _buildTableRow(
-      String label,
-      String value, {
-        bool isBold = false,
-        FontWeight? valueWeight,
-        Color? valueColor = AppColors.textSecondary,
-        Color? backgroundColor,
-        BorderRadius? borderRadius,
-        int maxLines = 1,
-      }) {
+    String label,
+    String value, {
+    bool isBold = false,
+    FontWeight? valueWeight,
+    Color? valueColor = AppColors.textSecondary,
+    Color? backgroundColor,
+    BorderRadius? borderRadius,
+    int maxLines = 1,
+  }) {
     return TableRow(
       decoration: backgroundColor != null || borderRadius != null
           ? BoxDecoration(
-        color: backgroundColor,
-        borderRadius: borderRadius,
-      )
+              color: backgroundColor,
+              borderRadius: borderRadius,
+            )
           : null,
       children: [
         Padding(
@@ -867,7 +997,8 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
               style: TextStyle(
                 fontSize: 14,
                 color: valueColor,
-                fontWeight: valueWeight ?? (isBold ? FontWeight.bold : FontWeight.normal),
+                fontWeight: valueWeight ??
+                    (isBold ? FontWeight.bold : FontWeight.normal),
               ),
               maxLines: maxLines,
               overflow: TextOverflow.ellipsis,
@@ -880,15 +1011,18 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
 
   GraphData _generateGraphData(List<Order> orders, DateTimeRange range) {
     final duration = range.end.difference(range.start).inDays;
-    final interval = duration <= 7 ? 'daily' : (duration <= 90 ? 'weekly' : 'monthly');
+    final interval =
+        duration <= 7 ? 'daily' : (duration <= 90 ? 'weekly' : 'monthly');
     final Map<DateTime, double> aggregated = {};
 
     for (var order in orders) {
       final date = interval == 'daily'
-          ? DateTime(order.orderDate.year, order.orderDate.month, order.orderDate.day)
+          ? DateTime(
+              order.orderDate.year, order.orderDate.month, order.orderDate.day)
           : interval == 'weekly'
-          ? DateTime(order.orderDate.year, order.orderDate.month, order.orderDate.day - order.orderDate.weekday + 1)
-          : DateTime(order.orderDate.year, order.orderDate.month);
+              ? DateTime(order.orderDate.year, order.orderDate.month,
+                  order.orderDate.day - order.orderDate.weekday + 1)
+              : DateTime(order.orderDate.year, order.orderDate.month);
       aggregated[date] = (aggregated[date] ?? 0) + order.totalAmount;
     }
 
@@ -903,23 +1037,28 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
     final trend = spots.isEmpty || spots.length == 1
         ? Trend.neutral
         : spots.last.y > spots.first.y
-        ? Trend.up
-        : Trend.down;
+            ? Trend.up
+            : Trend.down;
 
-    return GraphData(spots: spots, interval: interval, trend: trend, dates: sortedDates);
+    return GraphData(
+        spots: spots, interval: interval, trend: trend, dates: sortedDates);
   }
 
-  GraphData _generateOrderCountGraphData(List<Order> orders, DateTimeRange range) {
+  GraphData _generateOrderCountGraphData(
+      List<Order> orders, DateTimeRange range) {
     final duration = range.end.difference(range.start).inDays;
-    final interval = duration <= 7 ? 'daily' : (duration <= 90 ? 'weekly' : 'monthly');
+    final interval =
+        duration <= 7 ? 'daily' : (duration <= 90 ? 'weekly' : 'monthly');
     final Map<DateTime, int> aggregated = {};
 
     for (var order in orders) {
       final date = interval == 'daily'
-          ? DateTime(order.orderDate.year, order.orderDate.month, order.orderDate.day)
+          ? DateTime(
+              order.orderDate.year, order.orderDate.month, order.orderDate.day)
           : interval == 'weekly'
-          ? DateTime(order.orderDate.year, order.orderDate.month, order.orderDate.day - order.orderDate.weekday + 1)
-          : DateTime(order.orderDate.year, order.orderDate.month);
+              ? DateTime(order.orderDate.year, order.orderDate.month,
+                  order.orderDate.day - order.orderDate.weekday + 1)
+              : DateTime(order.orderDate.year, order.orderDate.month);
       aggregated[date] = (aggregated[date] ?? 0) + 1;
     }
 
@@ -934,10 +1073,11 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
     final trend = spots.isEmpty || spots.length == 1
         ? Trend.neutral
         : spots.last.y > spots.first.y
-        ? Trend.up
-        : Trend.down;
+            ? Trend.up
+            : Trend.down;
 
-    return GraphData(spots: spots, interval: interval, trend: trend, dates: sortedDates);
+    return GraphData(
+        spots: spots, interval: interval, trend: trend, dates: sortedDates);
   }
 
   Widget _buildShimmerEffect() {
@@ -963,15 +1103,17 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
     );
   }
 
-
-  Map<String, double> _calculateAverageOrderSaleAmount(AdminOrderListFetchSuccess state) {
+  Map<String, double> _calculateAverageOrderSaleAmount(
+      AdminOrderListFetchSuccess state) {
     final orders = state.orders;
-    final durationDays = dateRange.end.difference(dateRange.start).inDays + 1; // Inclusive
+    final durationDays =
+        dateRange.end.difference(dateRange.start).inDays + 1; // Inclusive
     if (orders.isEmpty || durationDays <= 0) {
       return {'daily': 0.0, 'weekly': 0.0, 'monthly': 0.0};
     }
 
-    final totalAmount = orders.fold(0.0, (sum, order) => sum + order.totalAmount);
+    final totalAmount =
+        orders.fold(0.0, (sum, order) => sum + order.totalAmount);
 
     // Calculate daily average
     final dailyAvg = durationDays > 0 ? totalAmount / durationDays : 0.0;
@@ -986,84 +1128,79 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
     };
   }
 
-
-
   Widget _buildAverageOrderSaleAmountCard(AdminOrderListFetchSuccess state) {
     final averages = _calculateAverageOrderSaleAmount(state);
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Average Order Sale Amount',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-                shadows: [
-                  Shadow(blurRadius: 2, color: Colors.black12, offset: Offset(1, 1))
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Table(
-              border: TableBorder.all(
-                color: AppColors.textSecondary.withOpacity(0.5),
-                width: 1,
-              ),
-              columnWidths: const {
-                0: FlexColumnWidth(1),
-                1: FlexColumnWidth(1),
-              },
-              children: averages.entries.map((entry) {
-                return TableRow(
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
-                  ),
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                      child: Text(
-                        '${entry.key.capitalize()} Avg:',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      alignment: Alignment.centerRight,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                        child: Text(
-                          '₹${entry.value.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              }).toList(),
-            ),
-          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          'Average Order Sale Amount',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+            shadows: [
+              Shadow(blurRadius: 2, color: Colors.black12, offset: Offset(1, 1))
+            ],
+          ),
         ),
-      ),
+        const SizedBox(height: 16),
+        Table(
+          border: TableBorder.all(
+            color: AppColors.textSecondary.withOpacity(0.5),
+            width: 1,
+          ),
+          columnWidths: const {
+            0: FlexColumnWidth(1),
+            1: FlexColumnWidth(1),
+          },
+          children: averages.entries.map((entry) {
+            return TableRow(
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+              ),
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                  child: Text(
+                    '${entry.key.capitalize()} Avg sale',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                Container(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 12),
+                    child: Text(
+                      '₹${entry.value.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 
-  Map<String, double> _calculateAverageOrderCount(AdminOrderListFetchSuccess state) {
+  Map<String, double> _calculateAverageOrderCount(
+      AdminOrderListFetchSuccess state) {
     final orders = state.orders;
-    final durationDays = dateRange.end.difference(dateRange.start).inDays + 1; // Inclusive
+    final durationDays =
+        dateRange.end.difference(dateRange.start).inDays + 1; // Inclusive
     if (orders.isEmpty || durationDays <= 0) {
       return {'daily': 0.0, 'weekly': 0.0, 'monthly': 0.0};
     }
@@ -1085,77 +1222,74 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
 
   Widget _buildAverageOrderCountCard(AdminOrderListFetchSuccess state) {
     final averages = _calculateAverageOrderCount(state);
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Average Order Count',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-                shadows: [
-                  Shadow(blurRadius: 2, color: Colors.black12, offset: Offset(1, 1))
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Table(
-              border: TableBorder.all(
-                color: AppColors.textSecondary.withOpacity(0.5),
-                width: 1,
-              ),
-              columnWidths: const {
-                0: FlexColumnWidth(1),
-                1: FlexColumnWidth(1),
-              },
-              children: averages.entries.map((entry) {
-                return TableRow(
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
-                  ),
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                      child: Text(
-                        '${entry.key.capitalize()} Avg:',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      alignment: Alignment.centerRight,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                        child: Text(
-                          entry.value.toStringAsFixed(2),
-                          style: const TextStyle(
-                            fontSize: 18,
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              }).toList(),
-            ),
-          ],
+    return  Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          'Average Order Count',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+            shadows: [
+              Shadow(
+                  blurRadius: 2,
+                  color: Colors.black12,
+                  offset: Offset(1, 1))
+            ],
+          ),
         ),
-      ),
+        const SizedBox(height: 16),
+        Table(
+          border: TableBorder.all(
+            color: AppColors.textSecondary.withOpacity(0.5),
+            width: 1,
+          ),
+          columnWidths: const {
+            0: FlexColumnWidth(1),
+            1: FlexColumnWidth(1),
+          },
+          children: averages.entries.map((entry) {
+            return TableRow(
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+              ),
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 12, horizontal: 12),
+                  child: Text(
+                    '${entry.key.capitalize()} Avg orders',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                Container(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 12),
+                    child: Text(
+                      entry.value.toStringAsFixed(2),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
-
 }
 
 class GraphData {
@@ -1164,10 +1298,15 @@ class GraphData {
   final Trend trend;
   final List<DateTime> dates;
 
-  GraphData({required this.spots, required this.interval, required this.trend, required this.dates});
+  GraphData(
+      {required this.spots,
+      required this.interval,
+      required this.trend,
+      required this.dates});
 }
 
 enum Trend { up, down, neutral }
+
 extension StringExtension on String {
   String capitalize() => this[0].toUpperCase() + substring(1);
 }

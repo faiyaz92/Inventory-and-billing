@@ -12,7 +12,8 @@ class UserInfo extends Equatable {
   final double? latitude;
   final double? longitude;
   final double? dailyWage;
-  final String? storeId; // New field
+  final String? storeId;
+  final String? accountLedgerId; // New field
 
   const UserInfo({
     this.userId,
@@ -24,7 +25,8 @@ class UserInfo extends Equatable {
     this.latitude,
     this.longitude,
     this.dailyWage,
-    this.storeId, // New field
+    this.storeId,
+    this.accountLedgerId, // New field
   });
 
   factory UserInfo.fromJson(Map<String, dynamic> json) {
@@ -38,7 +40,8 @@ class UserInfo extends Equatable {
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
       dailyWage: (json['dailyWage'] as num?)?.toDouble() ?? 500.0,
-      storeId: json['storeId'] as String?, // New field
+      storeId: json['storeId'] as String?,
+      accountLedgerId: json['accountLedgerId'] as String?, // New field
     );
   }
 
@@ -53,7 +56,8 @@ class UserInfo extends Equatable {
       'latitude': latitude,
       'longitude': longitude,
       'dailyWage': dailyWage,
-      'storeId': storeId, // New field
+      'storeId': storeId,
+      'accountLedgerId': accountLedgerId, // New field
     };
   }
 
@@ -67,7 +71,8 @@ class UserInfo extends Equatable {
     double? latitude,
     double? longitude,
     double? dailyWage,
-    String? storeId, // New field
+    String? storeId,
+    String? accountLedgerId, // New field
   }) {
     return UserInfo(
       userId: userId ?? this.userId,
@@ -79,7 +84,8 @@ class UserInfo extends Equatable {
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       dailyWage: dailyWage ?? this.dailyWage,
-      storeId: storeId ?? this.storeId, // New field
+      storeId: storeId ?? this.storeId,
+      accountLedgerId: accountLedgerId ?? this.accountLedgerId, // New field
     );
   }
 
@@ -94,7 +100,8 @@ class UserInfo extends Equatable {
       latitude: latitude,
       longitude: longitude,
       dailyWage: dailyWage,
-      storeId: storeId, // New field
+      storeId: storeId,
+      accountLedgerId: accountLedgerId, // New field
     );
   }
 
@@ -109,7 +116,8 @@ class UserInfo extends Equatable {
       latitude: dto.latitude,
       longitude: dto.longitude,
       dailyWage: dto.dailyWage,
-      storeId: dto.storeId, // New field
+      storeId: dto.storeId,
+      accountLedgerId: dto.accountLedgerId, // New field
     );
   }
 
@@ -124,6 +132,7 @@ class UserInfo extends Equatable {
     latitude,
     longitude,
     dailyWage,
-    storeId, // New field
+    storeId,
+    accountLedgerId, // New field
   ];
 }

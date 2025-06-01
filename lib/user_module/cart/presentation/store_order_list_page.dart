@@ -7,6 +7,7 @@ import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dar
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
+import 'package:requirment_gathering_app/core_module/utils/custom_loading_dialog.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_cubit.dart';
 
@@ -23,7 +24,7 @@ class _StoreOrderListPageState extends State<StoreOrderListPage> {
     start: DateTime.now().subtract(const Duration(days: 7)),
     end: DateTime.now(),
   );
-  String? _selectedFilter = 'week'; // Default: Week filter
+  String? _selectedFilter = 'week';
   late final AdminOrderCubit _adminOrderCubit;
 
   @override
@@ -52,7 +53,7 @@ class _StoreOrderListPageState extends State<StoreOrderListPage> {
     if (picked != null && mounted) {
       setState(() {
         _dateRange = picked;
-        _selectedFilter = null; // Deselect chips for custom range
+        _selectedFilter = null;
       });
       _adminOrderCubit.fetchOrders(
         startDate: picked.start,
@@ -76,43 +77,57 @@ class _StoreOrderListPageState extends State<StoreOrderListPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(12.0),
           decoration: BoxDecoration(
             border: Border.all(color: AppColors.textSecondary.withOpacity(0.5)),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Wrap(
-            spacing: 8.0,
-            runSpacing: 8.0,
-            alignment: WrapAlignment.start,
-            children: filters.map((filter) {
-              final isSelected = _selectedFilter == filter['value'];
-              return ChoiceChip(
-                label: Text(
-                  filter['label'] as String,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : AppColors.textPrimary,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Quick Filter',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
                 ),
-                selected: isSelected,
-                selectedColor: AppColors.primary,
-                backgroundColor: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(
-                    color: isSelected
-                        ? AppColors.primary
-                        : AppColors.textSecondary.withOpacity(0.5),
-                  ),
-                ),
-                onSelected: (selected) {
-                  if (selected) {
-                    _applyQuickFilter(filter['value'] as String);
-                  }
-                },
-              );
-            }).toList(),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8.0,
+                runSpacing: 8.0,
+                alignment: WrapAlignment.start,
+                children: filters.map((filter) {
+                  final isSelected = _selectedFilter == filter['value'];
+                  return ChoiceChip(
+                    label: Text(
+                      filter['label'] as String,
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : AppColors.textPrimary,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                    selected: isSelected,
+                    selectedColor: AppColors.primary,
+                    backgroundColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      side: BorderSide(
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.textSecondary.withOpacity(0.5),
+                      ),
+                    ),
+                    onSelected: (selected) {
+                      if (selected) {
+                        _applyQuickFilter(filter['value'] as String);
+                      }
+                    },
+                  );
+                }).toList(),
+              ),
+            ],
           ),
         ),
       ),
@@ -161,6 +176,7 @@ class _StoreOrderListPageState extends State<StoreOrderListPage> {
       endDate: _dateRange.end,
     );
   }
+
   Widget _buildDateRangeCard() {
     final formatter = DateFormat('dd-MM-yyyy');
     final totalDays = _dateRange.end.difference(_dateRange.start).inDays + 1;
@@ -170,33 +186,31 @@ class _StoreOrderListPageState extends State<StoreOrderListPage> {
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          leading: Icon(Icons.calendar_today, color: AppColors.primary, size: 36),
           title: Text(
             'Date Range: ${formatter.format(_dateRange.start)} - ${formatter.format(_dateRange.end)}',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.bold,
               color: AppColors.textPrimary,
             ),
           ),
           subtitle: Padding(
-            padding: const EdgeInsets.only(top: 4.0),
+            padding: const EdgeInsets.only(top: 8.0),
             child: Text(
               'Total $totalDays days',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w400,
                 color: AppColors.textSecondary,
               ),
             ),
           ),
-          trailing: const Icon(Icons.calendar_today, color: AppColors.primary),
           onTap: () => _pickDateRange(context),
         ),
       ),
     );
   }
-
 
   Map<StoreDto, List<Order>> _groupOrdersByStore(List<Order> orders, List<StoreDto> stores) {
     final Map<StoreDto, List<Order>> grouped = {};
@@ -212,50 +226,193 @@ class _StoreOrderListPageState extends State<StoreOrderListPage> {
     return grouped;
   }
 
+  Widget _buildStoreCard(StoreDto store, List<Order> orders) {
+    final totalAmount = orders.fold(0.0, (sum, order) => sum + order.totalAmount);
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+      child: InkWell(
+        onTap: () {
+          sl<Coordinator>().navigateToPerformanceDetailsPage(
+            entityType: 'store',
+            entityId: store.storeId,
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.store, color: AppColors.primary, size: 36),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          store.name,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        Text(
+                          'Store ID: ${store.storeId}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: AppColors.textSecondary.withOpacity(0.5),
+                      width: 1,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Table(
+                    border: TableBorder(
+                      verticalInside: BorderSide(
+                        color: AppColors.textSecondary.withOpacity(0.5),
+                        width: 1,
+                      ),
+                      horizontalInside: BorderSide(
+                        color: AppColors.textSecondary.withOpacity(0.5),
+                        width: 1,
+                      ),
+                    ),
+                    columnWidths: const {
+                      0: FlexColumnWidth(3),
+                      1: FlexColumnWidth(2),
+                    },
+                    children: [
+                      _buildTableRow('Orders', '${orders.length}'),
+                      _buildTableRow(
+                        'Total',
+                        '₹${totalAmount.toStringAsFixed(2)}',
+                        isBold: true,
+                        valueColor: AppColors.textPrimary,
+                        backgroundColor: AppColors.primary.withOpacity(0.1),
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(12),
+                          bottomRight: Radius.circular(12),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  TableRow _buildTableRow(
+      String label,
+      String value, {
+        bool isBold = false,
+        Color? valueColor = AppColors.textSecondary,
+        Color? backgroundColor,
+        BorderRadius? borderRadius,
+      }) {
+    return TableRow(
+      decoration: backgroundColor != null || borderRadius != null
+          ? BoxDecoration(
+        color: backgroundColor,
+        borderRadius: borderRadius,
+      )
+          : null,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 14,
+              color: valueColor,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            ),
+            textAlign: TextAlign.right,
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => _adminOrderCubit,
       child: Scaffold(
-        appBar: const CustomAppBar(title: 'Store Orders'),
-        body: Column(
-          children: [
-            _buildDateRangeCard(),
-            _buildQuickFilterChips(),
-            Expanded(
-              child: BlocBuilder<AdminOrderCubit, AdminOrderState>(
-                builder: (context, state) {
-                  if (state is AdminOrderListFetchLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (state is AdminOrderListFetchSuccess) {
-                    final storeOrders = _groupOrdersByStore(state.orders, state.stores);
-                    if (storeOrders.isEmpty) {
-                      return const Center(child: Text('No stores found for this period'));
-                    }
-                    return ListView.builder(
-                      itemCount: storeOrders.length,
-                      itemBuilder: (context, index) {
-                        final store = storeOrders.keys.elementAt(index);
-                        final orders = storeOrders[store]!;
-                        return ListTile(
-                          title: Text(store.name),
-                          subtitle: Text(
-                              'Orders: ${orders.length} | Total: ₹${orders.fold(0.0, (sum, order) => sum + order.totalAmount).toStringAsFixed(2)}'),
-                          onTap: () {
-                            sl<Coordinator>().navigateToPerformanceDetailsPage(
-                              entityType: 'store',
-                              entityId: store.storeId,
-                            );
-                          },
-                        );
-                      },
-                    );
-                  }
-                  return const Center(child: Text('Error loading data'));
-                },
-              ),
+        appBar: const CustomAppBar(title: 'Top Stores'),
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Theme.of(context).primaryColor.withOpacity(0.1),
+                Theme.of(context).primaryColor.withOpacity(0.3),
+              ],
             ),
-          ],
+          ),
+          child: Column(
+            children: [
+              _buildDateRangeCard(),
+              _buildQuickFilterChips(),
+              Expanded(
+                child: BlocBuilder<AdminOrderCubit, AdminOrderState>(
+                  builder: (context, state) {
+                    if (state is AdminOrderListFetchLoading) {
+                      return const Center(child: CustomLoadingDialog());
+                    } else if (state is AdminOrderListFetchSuccess) {
+                      final storeOrders = _groupOrdersByStore(state.orders, state.stores);
+                      if (storeOrders.isEmpty) {
+                        return const Center(child: Text('No stores found for this period'));
+                      }
+                      return ListView.builder(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        itemCount: storeOrders.length,
+                        itemBuilder: (context, index) {
+                          final store = storeOrders.keys.elementAt(index);
+                          final orders = storeOrders[store]!;
+                          return _buildStoreCard(store, orders);
+                        },
+                      );
+                    }
+                    return const Center(child: Text('Error loading data'));
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

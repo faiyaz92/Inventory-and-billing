@@ -586,7 +586,7 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
                 (user) => user.userId == entityId,
             orElse: () => UserInfo(userId: entityId, userName: entityId),
           );
-          return user.userName ?? entityId;
+          return user.name ?? entityId;
         case 'store':
           final store = stores.firstWhere(
                 (store) => store.storeId == entityId,
