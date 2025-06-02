@@ -107,6 +107,26 @@ class CartDashboardPage extends StatelessWidget {
                         Colors.blueAccent,
                             () => sl<Coordinator>().navigateToProductPerformanceListPage(),
                       ),
+
+                      _buildDashboardCard(
+                        context,
+                        'Taxi booking',
+                        Icons.car_rental,
+                        Colors.blueAccent,
+                            () => sl<Coordinator>().navigateToTaxiBookingPage(),
+                      ), _buildDashboardCard(
+                        context,
+                        'Taxi admin',
+                        Icons.admin_panel_settings,
+                        Colors.blueAccent,
+                            () => sl<Coordinator>().navigateToTaxiBookingsAdminPage(),
+                      ), _buildDashboardCard(
+                        context,
+                        'Taxi Setting',
+                        Icons.settings,
+                        Colors.blueAccent,
+                            () => sl<Coordinator>().navigateToTaxiSettingsPage(),
+                      ),
                     ],
                   ),
                 ),

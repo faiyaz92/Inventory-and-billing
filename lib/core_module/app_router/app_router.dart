@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/ledger/user_ledger_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/category.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart';
@@ -8,7 +9,6 @@ import 'package:requirment_gathering_app/company_admin_module/data/task/task_mod
 import 'package:requirment_gathering_app/company_admin_module/presentation/company_admin_dashboard.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/add_stock_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/add_store_page.dart';
-import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/billing_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/inventory_dashboard_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/over_stock_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/sales_report_page.dart';
@@ -36,11 +36,18 @@ import 'package:requirment_gathering_app/core_module/presentation/dashboard/home
 import 'package:requirment_gathering_app/core_module/presentation/login/forgot_password_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/login_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/splash_screen.dart';
+import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/super_admin_module/ai_module/presentation/ai_company_list_page.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/tenant_company.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/presentation/add_tenant_company/add_tenant_company_page.dart';
 import 'package:requirment_gathering_app/super_admin_module/presentation/dashboard/super_admin_page.dart';
+import 'package:requirment_gathering_app/taxi/taxi_admin_cubit.dart';
+import 'package:requirment_gathering_app/taxi/taxi_booking_admin_panel_page.dart';
+import 'package:requirment_gathering_app/taxi/taxi_booking_cubit.dart';
+import 'package:requirment_gathering_app/taxi/taxi_booking_page.dart';
+import 'package:requirment_gathering_app/taxi/taxi_setting_cubit.dart';
+import 'package:requirment_gathering_app/taxi/taxi_setting_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_details_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_panel_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/cart_dashboard_page.dart';
@@ -142,18 +149,60 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: CheckoutRoute.page, path: '/checkout'),
         AutoRoute(page: PreviewOrderRoute.page, path: '/preview-order'),
         AutoRoute(page: AdminPanelRoute.page, path: '/admin-panel'),
-        AutoRoute(page: AdminOrderDetailsRoute.page, path: '/admin-order-details'),
-        AutoRoute(page: CartDashboardRoute.page, ),
-        AutoRoute(page: UserOrderDetailsRoute.page, ),
-        AutoRoute(page: SalesmanOrderRoute.page, ),
-        AutoRoute(page: SimpleEmployeesRoute.page, ),
-        AutoRoute(page: SalesmanOrderListRoute.page, path: '/salesman-order-list'),
-        AutoRoute(page: DeliveryManOrderListRoute.page, path: '/deliveryman-order-list'),
+        AutoRoute(
+            page: AdminOrderDetailsRoute.page, path: '/admin-order-details'),
+        AutoRoute(
+          page: CartDashboardRoute.page,
+        ),
+        AutoRoute(
+          page: UserOrderDetailsRoute.page,
+        ),
+        AutoRoute(
+          page: SalesmanOrderRoute.page,
+        ),
+        AutoRoute(
+          page: SimpleEmployeesRoute.page,
+        ),
+        AutoRoute(
+            page: SalesmanOrderListRoute.page, path: '/salesman-order-list'),
+        AutoRoute(
+            page: DeliveryManOrderListRoute.page,
+            path: '/deliveryman-order-list'),
         AutoRoute(page: StoreOrderListRoute.page, path: '/store-order-list'),
-        AutoRoute(page: CustomerOrderListRoute.page, path: '/customer-order-list'),
-        AutoRoute(page: PerformanceDetailsRoute.page, path: '/performance-details'),
+        AutoRoute(
+            page: CustomerOrderListRoute.page, path: '/customer-order-list'),
+        AutoRoute(
+            page: PerformanceDetailsRoute.page, path: '/performance-details'),
         AutoRoute(page: CompanyPerformanceRoute.page),
         AutoRoute(page: ProductTrendingListRoute.page),
         AutoRoute(page: UserLedgerRoute.page, path: '/user-ledger'),
+        AutoRoute(
+            page: PageInfo(TaxiBookingRoute.name, builder: (data) {
+              return MultiBlocProvider(providers: [
+                BlocProvider(
+                  create: (context) => sl<TaxiBookingCubit>(),
+                ),
+                BlocProvider(
+                  create: (context) => sl<TaxiSettingsCubit>(),
+                ),
+              ], child: const TaxiBookingPage());
+            }),
+            path: '/taxi-booking'),
+        AutoRoute(
+            page: PageInfo(TaxiSettingsRoute.name, builder: (data) {
+              return BlocProvider(
+                create: (context) => sl<TaxiSettingsCubit>(),
+                child: const TaxiSettingsPage(),
+              );
+            }),
+            path: '/taxi-settings'),
+        AutoRoute(
+            page: PageInfo(TaxiBookingsAdminRoute.name, builder: (data) {
+              return BlocProvider(
+                create: (context) => sl<TaxiAdminCubit>(),
+                child: const TaxiBookingsAdminPage(),
+              );
+            }),
+            path: '/taxi-bookings-admin'),
       ];
 }

@@ -1359,6 +1359,54 @@ class TaskListRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [TaxiBookingPage]
+class TaxiBookingRoute extends PageRouteInfo<void> {
+  const TaxiBookingRoute({List<PageRouteInfo>? children})
+    : super(TaxiBookingRoute.name, initialChildren: children);
+
+  static const String name = 'TaxiBookingRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const TaxiBookingPage();
+    },
+  );
+}
+
+/// generated route for
+/// [TaxiBookingsAdminPage]
+class TaxiBookingsAdminRoute extends PageRouteInfo<void> {
+  const TaxiBookingsAdminRoute({List<PageRouteInfo>? children})
+    : super(TaxiBookingsAdminRoute.name, initialChildren: children);
+
+  static const String name = 'TaxiBookingsAdminRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const TaxiBookingsAdminPage();
+    },
+  );
+}
+
+/// generated route for
+/// [TaxiSettingsPage]
+class TaxiSettingsRoute extends PageRouteInfo<void> {
+  const TaxiSettingsRoute({List<PageRouteInfo>? children})
+    : super(TaxiSettingsRoute.name, initialChildren: children);
+
+  static const String name = 'TaxiSettingsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const TaxiSettingsPage();
+    },
+  );
+}
+
+/// generated route for
 /// [TransactionsPage]
 class TransactionsRoute extends PageRouteInfo<void> {
   const TransactionsRoute({List<PageRouteInfo>? children})

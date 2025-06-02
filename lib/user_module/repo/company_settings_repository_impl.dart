@@ -27,8 +27,6 @@ class CompanySettingRepositoryImpl implements CompanySettingRepository {
           .collection('settings')
           .doc('companySettings')
           .get();
-      // final doc = await _pathProvider.firestore.collection('settings').doc('companySettings').get();
-      // final doc = await _pathProvider.firestore.doc('Easy2Solutions').collection('settings').doc('companySettings').get();
       if (doc.exists) {
         final dto = CompanySettingDto.fromMap(doc.data()!);
         return Right(dto.toUiModel());
