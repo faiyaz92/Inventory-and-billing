@@ -56,9 +56,9 @@ class TaxiTypeDto {
     required this.createdBy,
   });
 
-  factory TaxiTypeDto.fromFirestore(Map<String, dynamic> data) {
+  factory TaxiTypeDto.fromFirestore(QueryDocumentSnapshot doc,Map<String, dynamic> data) {
     return TaxiTypeDto(
-      id: data['id'] ?? '',
+      id:doc.id,
       name: data['name'] ?? '',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       createdBy: data['createdBy'] ?? '',

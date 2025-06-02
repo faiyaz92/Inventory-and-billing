@@ -1,9 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:equatable/equatable.dart';
-
 class TripStatus extends Equatable {
   final String id;
   final String name;
@@ -56,9 +53,9 @@ class TripStatusDto {
     required this.createdBy,
   });
 
-  factory TripStatusDto.fromFirestore(Map<String, dynamic> data) {
+  factory TripStatusDto.fromFirestore(QueryDocumentSnapshot data) {
     return TripStatusDto(
-      id: data['id'] ?? '',
+      id: data.id,
       name: data['name'] ?? '',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       createdBy: data['createdBy'] ?? '',

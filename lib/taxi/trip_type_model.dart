@@ -56,9 +56,9 @@ class TripTypeDto {
     required this.createdBy,
   });
 
-  factory TripTypeDto.fromFirestore(Map<String, dynamic> data) {
+  factory TripTypeDto.fromFirestore(QueryDocumentSnapshot data) {
     return TripTypeDto(
-      id: data['id'] ?? '',
+      id: data.id,
       name: data['name'] ?? '',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       createdBy: data['createdBy'] ?? '',

@@ -196,13 +196,16 @@ class AppRouter extends RootStackRouter {
               );
             }),
             path: '/taxi-settings'),
-        AutoRoute(
+       /* AutoRoute(
             page: PageInfo(TaxiBookingsAdminRoute.name, builder: (data) {
               return BlocProvider(
                 create: (context) => sl<TaxiAdminCubit>(),
                 child: const TaxiBookingsAdminPage(),
               );
             }),
-            path: '/taxi-bookings-admin'),
-      ];
+            path: '/taxi-bookings-admin'),*/
+
+    AutoRoute(page: TaxiBookingsAdminRoute.page, ),
+
+  ];
 }

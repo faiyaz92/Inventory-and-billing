@@ -7,12 +7,21 @@ import 'package:requirment_gathering_app/taxi/visitior_counter_model.dart';
 abstract class ITaxiBookingService {
   Future<void> createBooking(TaxiBooking booking);
   Future<List<TaxiBooking>> getBookings({
+    String? bookingId,
     String? status,
     DateTime? startDate,
     DateTime? endDate,
+    String? taxiTypeId,
+    String? serviceTypeId,
+    String? tripTypeId,
+    String? acceptedByDriverId,
+    double? minTotalFareAmount,
+    double? maxTotalFareAmount,
   });
   Future<void> updateBookingStatus(String bookingId, String status);
-  Future<void> acceptBooking(String bookingId, UserInfo driver);
+  Future<void> acceptBooking(String bookingId, UserInfo? driver);
+  Future<void> assignBooking(
+      String bookingId, UserInfo driver, String? currentAcceptedByDriverId);
   Future<VisitorCounter> getVisitorCounter(String date);
 }
 
@@ -30,22 +39,35 @@ class TaxiBookingServiceImpl implements ITaxiBookingService {
   @override
   Future<void> createBooking(TaxiBooking booking) async {
     final companyId = await _getCompanyId();
-    await _repository.createBooking(companyId,booking);
+    await _repository.createBooking(companyId, booking);
   }
 
   @override
   Future<List<TaxiBooking>> getBookings({
+    String? bookingId,
     String? status,
     DateTime? startDate,
     DateTime? endDate,
+    String? taxiTypeId,
+    String? serviceTypeId,
+    String? tripTypeId,
+    String? acceptedByDriverId,
+    double? minTotalFareAmount,
+    double? maxTotalFareAmount,
   }) async {
     final companyId = await _getCompanyId();
-
     return await _repository.getBookings(
       companyId,
+      bookingId: bookingId,
       status: status,
       startDate: startDate,
       endDate: endDate,
+      taxiTypeId: taxiTypeId,
+      serviceTypeId: serviceTypeId,
+      tripTypeId: tripTypeId,
+      acceptedByDriverId: acceptedByDriverId,
+      minTotalFareAmount: minTotalFareAmount,
+      maxTotalFareAmount: maxTotalFareAmount,
     );
   }
 
@@ -56,9 +78,17 @@ class TaxiBookingServiceImpl implements ITaxiBookingService {
   }
 
   @override
-  Future<void> acceptBooking(String bookingId, UserInfo driver) async {
+  Future<void> acceptBooking(String bookingId, UserInfo? driver) async {
     final companyId = await _getCompanyId();
     await _repository.acceptBooking(companyId, bookingId, driver);
+  }
+
+  @override
+  Future<void> assignBooking(
+      String bookingId, UserInfo driver, String? currentAcceptedByDriverId) async {
+    final companyId = await _getCompanyId();
+    await _repository.assignBooking(
+        companyId, bookingId, driver, currentAcceptedByDriverId);
   }
 
   @override

@@ -56,9 +56,9 @@ class ServiceTypeDto {
     required this.createdBy,
   });
 
-  factory ServiceTypeDto.fromFirestore(Map<String, dynamic> data) {
+  factory ServiceTypeDto.fromFirestore(QueryDocumentSnapshot data) {
     return ServiceTypeDto(
-      id: data['id'] ?? '',
+      id: data.id,
       name: data['name'] ?? '',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       createdBy: data['createdBy'] ?? '',

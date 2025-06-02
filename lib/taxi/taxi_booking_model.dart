@@ -70,16 +70,16 @@ class TaxiBooking extends Equatable {
     String? additionalInfo,
     String? pickupAddress,
     String? dropAddress,
-    DateTime? date,
-    String? startTime,
+    DateTime? tripDate,
+    String? tripStartTime,
     DateTime? actualStartTime,
     String? tripStatus,
     bool? accepted,
-    String? acceptedByUserId,
-    String? acceptedByUserName,
+    String? acceptedByDriverId,
+    String? acceptedByDriverName,
     DateTime? completedTime,
     double? totalFareAmount,
-    DateTime? loggedDate,
+    DateTime? createdAt,
     String? lastUpdatedBy,
     DateTime? lastUpdatedAt,
   }) {
@@ -97,16 +97,16 @@ class TaxiBooking extends Equatable {
       additionalInfo: additionalInfo ?? this.additionalInfo,
       pickupAddress: pickupAddress ?? this.pickupAddress,
       dropAddress: dropAddress ?? this.dropAddress,
-      tripDate: date ?? this.tripDate,
-      tripStartTime: startTime ?? this.tripStartTime,
+      tripDate: tripDate ?? this.tripDate,
+      tripStartTime: tripStartTime ?? this.tripStartTime,
       actualStartTime: actualStartTime ?? this.actualStartTime,
       tripStatus: tripStatus ?? this.tripStatus,
       accepted: accepted ?? this.accepted,
-      acceptedByDriverId: acceptedByUserId ?? this.acceptedByDriverId,
-      acceptedByDriverName: acceptedByUserName ?? this.acceptedByDriverName,
+      acceptedByDriverId: acceptedByDriverId ?? this.acceptedByDriverId,
+      acceptedByDriverName: acceptedByDriverName ?? this.acceptedByDriverName,
       completedTime: completedTime ?? this.completedTime,
       totalFareAmount: totalFareAmount ?? this.totalFareAmount,
-      createdAt: loggedDate ?? this.createdAt,
+      createdAt: createdAt ?? this.createdAt,
       lastUpdatedBy: lastUpdatedBy ?? this.lastUpdatedBy,
       lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
     );
@@ -127,8 +127,8 @@ class TaxiBooking extends Equatable {
       additionalInfo: dto.additionalInfo,
       pickupAddress: dto.pickupAddress,
       dropAddress: dto.dropAddress,
-      tripDate: dto.date,
-      tripStartTime: dto.startTime,
+      tripDate: dto.tripDate,
+      tripStartTime: dto.tripStartTime,
       actualStartTime: dto.actualStartTime,
       tripStatus: dto.tripStatus,
       accepted: dto.accepted,
@@ -136,7 +136,7 @@ class TaxiBooking extends Equatable {
       acceptedByDriverName: dto.acceptedByUserName,
       completedTime: dto.completedTime,
       totalFareAmount: dto.totalFareAmount,
-      createdAt: dto.loggedDate,
+      createdAt: dto.createdAt,
       lastUpdatedBy: dto.lastUpdatedBy,
       lastUpdatedAt: dto.lastUpdatedAt,
     );
@@ -144,32 +144,32 @@ class TaxiBooking extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        passengerNumbers,
-        firstName,
-        lastName,
-        email,
-        countryCode,
-        mobileNumber,
-        taxiTypeId,
-        tripTypeId,
-        serviceTypeId,
-        additionalInfo,
-        pickupAddress,
-        dropAddress,
-        tripDate,
-        tripStartTime,
-        actualStartTime,
-        tripStatus,
-        accepted,
-        acceptedByDriverId,
-        acceptedByDriverName,
-        completedTime,
-        totalFareAmount,
-        createdAt,
-        lastUpdatedBy,
-        lastUpdatedAt,
-      ];
+    id,
+    passengerNumbers,
+    firstName,
+    lastName,
+    email,
+    countryCode,
+    mobileNumber,
+    taxiTypeId,
+    tripTypeId,
+    serviceTypeId,
+    additionalInfo,
+    pickupAddress,
+    dropAddress,
+    tripDate,
+    tripStartTime,
+    actualStartTime,
+    tripStatus,
+    accepted,
+    acceptedByDriverId,
+    acceptedByDriverName,
+    completedTime,
+    totalFareAmount,
+    createdAt,
+    lastUpdatedBy,
+    lastUpdatedAt,
+  ];
 }
 
 class TaxiBookingDto {
@@ -186,8 +186,8 @@ class TaxiBookingDto {
   final String additionalInfo;
   final String pickupAddress;
   final String dropAddress;
-  final DateTime date;
-  final String startTime;
+  final DateTime tripDate;
+  final String tripStartTime;
   final DateTime? actualStartTime;
   final String tripStatus;
   final bool accepted;
@@ -195,7 +195,7 @@ class TaxiBookingDto {
   final String? acceptedByUserName;
   final DateTime? completedTime;
   final double totalFareAmount;
-  final DateTime loggedDate;
+  final DateTime createdAt;
   final String lastUpdatedBy;
   final DateTime lastUpdatedAt;
 
@@ -213,8 +213,8 @@ class TaxiBookingDto {
     required this.additionalInfo,
     required this.pickupAddress,
     required this.dropAddress,
-    required this.date,
-    required this.startTime,
+    required this.tripDate,
+    required this.tripStartTime,
     this.actualStartTime,
     required this.tripStatus,
     required this.accepted,
@@ -222,46 +222,43 @@ class TaxiBookingDto {
     this.acceptedByUserName,
     this.completedTime,
     required this.totalFareAmount,
-    required this.loggedDate,
+    required this.createdAt,
     required this.lastUpdatedBy,
     required this.lastUpdatedAt,
   });
 
-  factory TaxiBookingDto.fromFirestore(Map<String, dynamic> data) {
+  factory TaxiBookingDto.fromFirestore(Map<String, dynamic> data, String docId) {
     return TaxiBookingDto(
-      id: data['id'] ?? '',
-      passengerNumbers: data['passengerNumbers'] ?? 1,
-      firstName: data['firstName'] ?? '',
-      lastName: data['lastName'] ?? '',
-      email: data['email'] ?? '',
-      countryCode: data['countryCode'] ?? '',
-      mobileNumber: data['mobileNumber'] ?? '',
-      taxiTypeId: data['taxiTypeId'] ?? '',
-      tripTypeId: data['tripTypeId'] ?? '',
-      serviceTypeId: data['serviceTypeId'] ?? '',
-      additionalInfo: data['additionalInfo'] ?? '',
-      pickupAddress: data['pickupAddress'] ?? '',
-      dropAddress: data['dropAddress'] ?? '',
-      date: (data['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      startTime: data['startTime'] ?? '',
+      id: docId,
+      passengerNumbers: data['passengerNumbers'] as int? ?? 1,
+      firstName: data['firstName'] as String? ?? '',
+      lastName: data['lastName'] as String? ?? '',
+      email: data['email'] as String? ?? '',
+      countryCode: data['countryCode'] as String? ?? '',
+      mobileNumber: data['mobileNumber'] as String? ?? '',
+      taxiTypeId: data['taxiTypeId'] as String? ?? '',
+      tripTypeId: data['tripTypeId'] as String? ?? '',
+      serviceTypeId: data['serviceTypeId'] as String? ?? '',
+      additionalInfo: data['additionalInfo'] as String? ?? '',
+      pickupAddress: data['pickupAddress'] as String? ?? '',
+      dropAddress: data['dropAddress'] as String? ?? '',
+      tripDate: (data['tripDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      tripStartTime: data['tripStartTime'] as String? ?? '',
       actualStartTime: (data['actualStartTime'] as Timestamp?)?.toDate(),
-      tripStatus: data['tripStatus'] ?? 'pending',
-      accepted: data['accepted'] ?? false,
-      acceptedByUserId: data['acceptedByUserId'],
-      acceptedByUserName: data['acceptedByUserName'],
+      tripStatus: data['tripStatus'] as String? ?? 'pending',
+      accepted: data['accepted'] as bool? ?? false,
+      acceptedByUserId: data['acceptedByUserId'] as String?,
+      acceptedByUserName: data['acceptedByUserName'] as String?,
       completedTime: (data['completedTime'] as Timestamp?)?.toDate(),
       totalFareAmount: (data['totalFareAmount'] as num?)?.toDouble() ?? 0.0,
-      loggedDate:
-          (data['loggedDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      lastUpdatedBy: data['lastUpdatedBy'] ?? '',
-      lastUpdatedAt:
-          (data['lastUpdatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      lastUpdatedBy: data['lastUpdatedBy'] as String? ?? '',
+      lastUpdatedAt: (data['lastUpdatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 
   Map<String, dynamic> toFirestore() {
     return {
-      'id': id,
       'passengerNumbers': passengerNumbers,
       'firstName': firstName,
       'lastName': lastName,
@@ -274,18 +271,16 @@ class TaxiBookingDto {
       'additionalInfo': additionalInfo,
       'pickupAddress': pickupAddress,
       'dropAddress': dropAddress,
-      'date': Timestamp.fromDate(date),
-      'startTime': startTime,
-      'actualStartTime':
-          actualStartTime != null ? Timestamp.fromDate(actualStartTime!) : null,
+      'tripDate': Timestamp.fromDate(tripDate),
+      'tripStartTime': tripStartTime,
+      'actualStartTime': actualStartTime != null ? Timestamp.fromDate(actualStartTime!) : null,
       'tripStatus': tripStatus,
       'accepted': accepted,
       'acceptedByUserId': acceptedByUserId,
       'acceptedByUserName': acceptedByUserName,
-      'completedTime':
-          completedTime != null ? Timestamp.fromDate(completedTime!) : null,
+      'completedTime': completedTime != null ? Timestamp.fromDate(completedTime!) : null,
       'totalFareAmount': totalFareAmount,
-      'loggedDate': Timestamp.fromDate(loggedDate),
+      'createdAt': Timestamp.fromDate(createdAt),
       'lastUpdatedBy': lastUpdatedBy,
       'lastUpdatedAt': Timestamp.fromDate(lastUpdatedAt),
     };
@@ -306,8 +301,8 @@ class TaxiBookingDto {
       additionalInfo: model.additionalInfo,
       pickupAddress: model.pickupAddress,
       dropAddress: model.dropAddress,
-      date: model.tripDate,
-      startTime: model.tripStartTime,
+      tripDate: model.tripDate,
+      tripStartTime: model.tripStartTime,
       actualStartTime: model.actualStartTime,
       tripStatus: model.tripStatus,
       accepted: model.accepted,
@@ -315,7 +310,7 @@ class TaxiBookingDto {
       acceptedByUserName: model.acceptedByDriverName,
       completedTime: model.completedTime,
       totalFareAmount: model.totalFareAmount,
-      loggedDate: model.createdAt,
+      createdAt: model.createdAt,
       lastUpdatedBy: model.lastUpdatedBy,
       lastUpdatedAt: model.lastUpdatedAt,
     );

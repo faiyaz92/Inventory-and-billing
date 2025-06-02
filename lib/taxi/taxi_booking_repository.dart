@@ -1,110 +1,197 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/core_module/services/firestore_provider.dart';
-import 'package:requirment_gathering_app/core_module/services/firestore_provider_impl.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/taxi/taxi_booking_model.dart';
 import 'package:requirment_gathering_app/taxi/visitior_counter_model.dart';
 
-
 abstract class ITaxiBookingRepository {
-  Future<void> createBooking(String companyId,TaxiBooking booking);
-
-  Future<List<TaxiBooking>> getBookings(String companyId,
-      {String? status, DateTime? startDate, DateTime? endDate});
-
-  Future<void> updateBookingStatus(String companyId, String bookingId,
-      String status);
-
-  Future<void> acceptBooking(String companyId, String bookingId,
-      UserInfo driver);
-
-  Future<void> updateVisitorCounter(String companyId, String date);
-
+  Future<void> createBooking(String companyId, TaxiBooking booking);
+  Future<List<TaxiBooking>> getBookings(
+      String companyId, {
+        String? bookingId,
+        String? status,
+        DateTime? startDate,
+        DateTime? endDate,
+        String? taxiTypeId,
+        String? serviceTypeId,
+        String? tripTypeId,
+        String? acceptedByDriverId,
+        double? minTotalFareAmount,
+        double? maxTotalFareAmount,
+      });
+  Future<void> updateBookingStatus(String companyId, String bookingId, String status);
+  Future<void> acceptBooking(String companyId, String bookingId, UserInfo? driver);
+  Future<void> assignBooking(
+      String companyId, String bookingId, UserInfo driver, String? currentAcceptedByDriverId);
   Future<VisitorCounter> getVisitorCounter(String companyId, String date);
+  Future<void> updateVisitorCounter(String companyId, String date);
 }
 
 class TaxiBookingRepositoryImpl implements ITaxiBookingRepository {
   final IFirestorePathProvider _pathProvider;
-  TaxiBookingRepositoryImpl(this._pathProvider,);
+
+  TaxiBookingRepositoryImpl(this._pathProvider);
 
   @override
-  Future<void> createBooking(String companyId,TaxiBooking booking) async {
+  Future<void> createBooking(String companyId, TaxiBooking booking) async {
     final dto = TaxiBookingDto.fromModel(booking);
     await _pathProvider.getTaxiBookingsCollectionRef(companyId).add(dto.toFirestore());
   }
 
   @override
   Future<List<TaxiBooking>> getBookings(
-      String companyId, {String? status, DateTime? startDate, DateTime? endDate}) async {
-
+      String companyId, {
+        String? bookingId,
+        String? status,
+        DateTime? startDate,
+        DateTime? endDate,
+        String? taxiTypeId,
+        String? serviceTypeId,
+        String? tripTypeId,
+        String? acceptedByDriverId,
+        double? minTotalFareAmount,
+        double? maxTotalFareAmount,
+      }) async {
     Query<Object?> query = _pathProvider.getTaxiBookingsCollectionRef(companyId);
-    if (status != null) query = query.where('tripStatus', isEqualTo: status);
+
+    if (bookingId != null) {
+      final doc = await _pathProvider.getTaxiBookingsCollectionRef(companyId).doc(bookingId).get();      if (doc.exists) {
+        return [
+          TaxiBooking.fromDto(
+            TaxiBookingDto.fromFirestore(doc.data() as Map<String, dynamic>, doc.id),
+          )
+        ];
+      }
+      return [];
+    }
+
+    if (status != null) {
+      query = query.where('tripStatus', isEqualTo: status);
+    }
     if (startDate != null) {
       query = query.where(
-          'date', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate));
+        'tripDate',
+        isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
+      );
     }
     if (endDate != null) {
-      query =
-          query.where('date', isLessThanOrEqualTo: Timestamp.fromDate(endDate));
+      query = query.where(
+        'tripDate',
+        isLessThanOrEqualTo: Timestamp.fromDate(endDate),
+      );
+    }
+    if (taxiTypeId != null) {
+      query = query.where('taxiTypeId', isEqualTo: taxiTypeId);
+    }
+    if (serviceTypeId != null) {
+      query = query.where('serviceTypeId', isEqualTo: serviceTypeId);
+    }
+    if (tripTypeId != null) {
+      query = query.where('tripTypeId', isEqualTo: tripTypeId);
+    }
+    if (acceptedByDriverId != null) {
+      query = query.where('acceptedByUserId', isEqualTo: acceptedByDriverId);
+    }
+    if (minTotalFareAmount != null) {
+      query = query.where('totalFareAmount', isGreaterThanOrEqualTo: minTotalFareAmount);
+    }
+    if (maxTotalFareAmount != null) {
+      query = query.where('totalFareAmount', isLessThanOrEqualTo: maxTotalFareAmount);
     }
 
     final snapshot = await query.get();
-    return snapshot.docs.map((doc) => TaxiBooking.fromDto(
-        TaxiBookingDto.fromFirestore(doc.data() as Map<String, dynamic>)))
-        .toList();
+    return snapshot.docs.map((doc) {
+      return TaxiBooking.fromDto(
+        TaxiBookingDto.fromFirestore(doc.data() as Map<String, dynamic>, doc.id),
+      );
+    }).toList();
   }
 
   @override
-  Future<void> updateBookingStatus(String companyId, String bookingId,
-      String status) async {
-    await _pathProvider.getTaxiBookingsCollectionRef(companyId)
+  Future<void> updateBookingStatus(String companyId, String bookingId, String status) async {
+    await _pathProvider
+        .getTaxiBookingsCollectionRef(companyId)
         .doc(bookingId)
         .update({'tripStatus': status});
   }
 
   @override
-  Future<void> acceptBooking(String companyId, String bookingId,
-      UserInfo driver) async {
-    await _pathProvider.getTaxiBookingsCollectionRef(companyId)
+  Future<void> acceptBooking(String companyId, String bookingId, UserInfo? driver) async {
+    final updates = {
+      'accepted': driver != null,
+      'tripStatus': driver != null ? 'confirmed' : 'pending',
+      'acceptedByUserId': driver != null ? driver.userId ?? '' : '',
+      'acceptedByUserName': driver != null ? driver.userName ?? '' : '',
+    };
+    await _pathProvider
+        .getTaxiBookingsCollectionRef(companyId)
         .doc(bookingId)
-        .update({
-      'accepted': true,
-      'acceptedByUserId': driver.userId,
-      'acceptedByUserName': driver.userName,
-      'tripStatus': 'confirmed',
+        .update(updates);
+  }
+
+  @override
+  Future<void> assignBooking(
+      String companyId,
+      String bookingId,
+      UserInfo driver,
+      String? currentAcceptedByDriverId,
+      ) async {
+    final docRef = _pathProvider.getTaxiBookingsCollectionRef(companyId).doc(bookingId);
+    await _pathProvider.firestore.runTransaction((transaction) async {
+      final snapshot = await transaction.get(docRef);
+      if (!snapshot.exists) {
+        throw Exception('Booking not found');
+      }
+      final currentData = snapshot.data() as Map<String, dynamic>;
+      final currentDriverId = currentData['acceptedByUserId'] as String?;
+      if (currentAcceptedByDriverId != null && currentDriverId != currentAcceptedByDriverId) {
+        throw Exception('Driver assignment conflict');
+      }
+      transaction.update(docRef, {
+        'accepted': true,
+        'acceptedByUserId': driver.userId ?? '',
+        'acceptedByUserName': driver.userName ?? '',
+        'tripStatus': 'confirmed',
+      });
     });
+  }
+
+  @override
+  Future<VisitorCounter> getVisitorCounter(String companyId, String date) async {
+    final snapshot =
+    await _pathProvider.getVisitorCountersCollectionRef(companyId).doc(date).get();
+    if (!snapshot.exists) {
+      return VisitorCounter(
+        count: 0,
+        lastUpdated: DateTime.now(),
+        page: 'TaxiBookingPage',
+      );
+    }
+    return VisitorCounter.fromDto(
+      VisitorCounterDto.fromFirestore(snapshot.data() as Map<String, dynamic>),
+    );
   }
 
   @override
   Future<void> updateVisitorCounter(String companyId, String date) async {
-    final ref = _pathProvider.getVisitorCountersCollectionRef(companyId).doc(
-        date);
+    final ref = _pathProvider.getVisitorCountersCollectionRef(companyId).doc(date);
     await _pathProvider.firestore.runTransaction((transaction) async {
       final snapshot = await transaction.get(ref);
       if (!snapshot.exists) {
-        transaction.set(ref, VisitorCounterDto(
-            count: 1, lastUpdated: DateTime.now(), page: 'TaxiBookingPage')
-            .toFirestore());
+        transaction.set(
+          ref,
+          VisitorCounterDto(
+            count: 1,
+            lastUpdated: DateTime.now(),
+            page: 'TaxiBookingPage',
+          ).toFirestore(),
+        );
       } else {
         transaction.update(ref, {
           'count': FieldValue.increment(1),
-          'lastUpdated': Timestamp.fromDate(DateTime.now())
+          'lastUpdated': Timestamp.fromDate(DateTime.now()),
         });
       }
     });
-  }
-
-  @override
-  Future<VisitorCounter> getVisitorCounter(String companyId,
-      String date) async {
-    final snapshot = await _pathProvider.getVisitorCountersCollectionRef(
-        companyId).doc(date).get();
-    if (!snapshot.exists) {
-      return VisitorCounter(
-          count: 0, lastUpdated: DateTime.now(), page: 'TaxiBookingPage');
-    }
-    return VisitorCounter.fromDto(VisitorCounterDto.fromFirestore(
-        snapshot.data() as Map<String, dynamic>));
   }
 }

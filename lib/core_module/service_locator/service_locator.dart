@@ -368,10 +368,10 @@ void _initCubits() {
 
   // Register Taxi Cubits with Services
   sl.registerFactory<TaxiAdminCubit>(
-        () => TaxiAdminCubit(sl<ITaxiBookingService>()),
+        () => TaxiAdminCubit(sl<ITaxiBookingService>(),sl<UserServices>(),sl<TaxiSettingsCubit>()),
   );
   sl.registerFactory<TaxiBookingCubit>(
-        () => TaxiBookingCubit(sl<ITaxiBookingService>(),sl<IVisitorCounterService>()),
+        () => TaxiBookingCubit(sl<ITaxiBookingService>(),sl<IVisitorCounterService>(),),
   );
   sl.registerFactory<TaxiSettingsCubit>(
         () => TaxiSettingsCubit(sl<ITaxiSettingsService>()),
