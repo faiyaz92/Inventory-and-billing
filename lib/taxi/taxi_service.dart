@@ -22,7 +22,13 @@ abstract class ITaxiBookingService {
   Future<void> acceptBooking(String bookingId, UserInfo? driver);
   Future<void> assignBooking(
       String bookingId, UserInfo driver, String? currentAcceptedByDriverId);
+
+  Future<void> unAssignBooking(
+      String bookingId,);
   Future<VisitorCounter> getVisitorCounter(String date);
+
+  Future<void>updateBookingCompletedTime(String id);
+  Future<void> updateBookingStartTime(String id);
 }
 
 class TaxiBookingServiceImpl implements ITaxiBookingService {
@@ -80,7 +86,8 @@ class TaxiBookingServiceImpl implements ITaxiBookingService {
   @override
   Future<void> acceptBooking(String bookingId, UserInfo? driver) async {
     final companyId = await _getCompanyId();
-    await _repository.acceptBooking(companyId, bookingId, driver);
+    final userInfo = await _accountRepository.getUserInfo();
+    await _repository.acceptBooking(companyId, bookingId, driver??userInfo);
   }
 
   @override
@@ -95,5 +102,24 @@ class TaxiBookingServiceImpl implements ITaxiBookingService {
   Future<VisitorCounter> getVisitorCounter(String date) async {
     final companyId = await _getCompanyId();
     return await _repository.getVisitorCounter(companyId, date);
+  }
+
+  @override
+  Future<void> unAssignBooking(String bookingId,) async {
+    final companyId = await _getCompanyId();
+    await _repository.unAssignedBooking(
+        companyId, bookingId,);
+  }
+
+  @override
+  Future<void> updateBookingCompletedTime(String id) async{
+    final companyId = await _getCompanyId();
+    await _repository.updateBookingCompletedTime(
+      companyId, id,);
+  }@override
+  Future<void> updateBookingStartTime(String id) async{
+    final companyId = await _getCompanyId();
+    await _repository.updateBookingStartTime(
+      companyId, id,);
   }
 }

@@ -106,7 +106,7 @@ class TaxiSettingsRepositoryImpl implements ITaxiSettingsRepository {
   @override
   Future<void> addTaxiType(String companyId, TaxiType type) async {
     final dto = TaxiTypeDto.fromModel(type);
-    await _pathProvider.getTaxiTypesCollectionRef(companyId).add(dto.toFirestore());
+    await _pathProvider.getTaxiTypesCollectionRef(companyId).doc(type.name).set(dto.toFirestore());
   }
 
   @override
@@ -117,7 +117,7 @@ class TaxiSettingsRepositoryImpl implements ITaxiSettingsRepository {
   @override
   Future<void> addTripType(String companyId, TripType type) async {
     final dto = TripTypeDto.fromModel(type);
-    await _pathProvider.getTripTypesCollectionRef(companyId).add(dto.toFirestore());
+    await _pathProvider.getTripTypesCollectionRef(companyId).doc(type.name).set(dto.toFirestore());
   }
 
   @override
@@ -128,7 +128,7 @@ class TaxiSettingsRepositoryImpl implements ITaxiSettingsRepository {
   @override
   Future<void> addServiceType(String companyId, ServiceType type) async {
     final dto = ServiceTypeDto.fromModel(type);
-    await _pathProvider.getServiceTypesCollectionRef(companyId).add(dto.toFirestore());
+    await _pathProvider.getServiceTypesCollectionRef(companyId).doc(type.name).set(dto.toFirestore());
   }
 
   @override
@@ -139,7 +139,7 @@ class TaxiSettingsRepositoryImpl implements ITaxiSettingsRepository {
   @override
   Future<void> addTripStatus(String companyId, TripStatus status) async {
     final dto = TripStatusDto.fromModel(status);
-    await _pathProvider.getTripStatusesCollectionRef(companyId).add(dto.toFirestore());
+    await _pathProvider.getTripStatusesCollectionRef(companyId).doc(status.name).set(dto.toFirestore());
   }
 
   @override

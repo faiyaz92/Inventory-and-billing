@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
+import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/taxi/taxi_booking_model.dart';
@@ -19,10 +20,12 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
   final TaxiSettingsCubit settingsCubit;
   static final _dateFormatter = DateFormat('MMM dd, yyyy');
   static final _fullDateFormatter = DateFormat('yyyy-MM-dd HH:mm');
+  final AccountRepository _accountRepository;
 
-  TaxiAdminCubit(this._service, this._userServices, this.settingsCubit)
+  TaxiAdminCubit(this._service, this._userServices, this.settingsCubit,
+      this._accountRepository)
       : super(TaxiAdminInitial()) {
-    fetchBookings();
+    // fetchBookings();
   }
 
   bool _isToday(DateTime? date) {
@@ -79,15 +82,16 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
     final statusCounts = <String, int>{};
     for (var status in settingsState.tripStatuses) {
       statusCounts[status.id] = bookings
-          .where((booking) => booking.tripStatus.toLowerCase() == status.id.toLowerCase())
+          .where((booking) =>
+              booking.tripStatus.toLowerCase() == status.id.toLowerCase())
           .length;
     }
     final todayTripCount =
         bookings.where((booking) => _isToday(booking.tripDate)).length;
     final todayCompletedTripCount = bookings
         .where((booking) =>
-    booking.tripStatus.toLowerCase() == 'completed' &&
-        _isToday(booking.completedTime))
+            booking.tripStatus.toLowerCase() == 'completed' &&
+            _isToday(booking.completedTime))
         .length;
 
     final statistics = [
@@ -143,28 +147,28 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
       'color': normalizedStatus == 'pending'
           ? Colors.orange
           : normalizedStatus == 'inprogress'
-          ? Colors.blue
-          : normalizedStatus == 'confirmed'
-          ? Colors.green
-          : AppColors.textSecondary,
+              ? Colors.blue
+              : normalizedStatus == 'confirmed'
+                  ? Colors.green
+                  : AppColors.textSecondary,
       'backgroundColor': normalizedStatus == 'pending'
           ? Colors.orange.withOpacity(0.1)
           : normalizedStatus == 'inprogress'
-          ? Colors.blue.withOpacity(0.1)
-          : normalizedStatus == 'confirmed'
-          ? Colors.green.withOpacity(0.1)
-          : Colors.transparent,
+              ? Colors.blue.withOpacity(0.1)
+              : normalizedStatus == 'confirmed'
+                  ? Colors.green.withOpacity(0.1)
+                  : Colors.transparent,
     };
   }
 
   String? getDriverNameById(String? driverId, List<UserInfo> drivers) {
     if (driverId == null || driverId.isEmpty) return null;
     return drivers
-        .firstWhere(
-          (driver) => driver.userId == driverId,
-      orElse: () => UserInfo(userId: driverId, userName: 'Unknown'),
-    )
-        .userName ??
+            .firstWhere(
+              (driver) => driver.userId == driverId,
+              orElse: () => UserInfo(userId: driverId, userName: 'Unknown'),
+            )
+            .userName ??
         'Unknown';
   }
 
@@ -180,49 +184,49 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
         return settingsState.taxiTypes
             .firstWhere(
               (type) => type.id == id,
-          orElse: () => TaxiType(
-            id: '',
-            name: 'Unknown',
-            createdAt: DateTime.now(),
-            createdBy: '',
-          ),
-        )
+              orElse: () => TaxiType(
+                id: '',
+                name: 'Unknown',
+                createdAt: DateTime.now(),
+                createdBy: '',
+              ),
+            )
             .name;
       case 'serviceType':
         return settingsState.serviceTypes
             .firstWhere(
               (type) => type.id == id,
-          orElse: () => ServiceType(
-            id: '',
-            name: 'Unknown',
-            createdAt: DateTime.now(),
-            createdBy: '',
-          ),
-        )
+              orElse: () => ServiceType(
+                id: '',
+                name: 'Unknown',
+                createdAt: DateTime.now(),
+                createdBy: '',
+              ),
+            )
             .name;
       case 'tripType':
         return settingsState.tripTypes
             .firstWhere(
               (type) => type.id == id,
-          orElse: () => TripType(
-            id: '',
-            name: 'Unknown',
-            createdAt: DateTime.now(),
-            createdBy: '',
-          ),
-        )
+              orElse: () => TripType(
+                id: '',
+                name: 'Unknown',
+                createdAt: DateTime.now(),
+                createdBy: '',
+              ),
+            )
             .name;
       case 'status':
         return settingsState.tripStatuses
             .firstWhere(
               (status) => status.id == id,
-          orElse: () => TripStatus(
-            id: '',
-            name: 'Unknown',
-            createdAt: DateTime.now(),
-            createdBy: '',
-          ),
-        )
+              orElse: () => TripStatus(
+                id: '',
+                name: 'Unknown',
+                createdAt: DateTime.now(),
+                createdBy: '',
+              ),
+            )
             .name;
       default:
         return id;
@@ -262,29 +266,29 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
       // Fetch type lists from TaxiSettingsCubit
       final settingsState = settingsCubit.state;
       final taxiTypes =
-      settingsState.taxiTypes.map((type) => type.name).toList();
+          settingsState.taxiTypes.map((type) => type.name).toList();
       final serviceTypes =
-      settingsState.serviceTypes.map((type) => type.name).toList();
+          settingsState.serviceTypes.map((type) => type.name).toList();
       final tripTypes =
-      settingsState.tripTypes.map((type) => type.name).toList();
+          settingsState.tripTypes.map((type) => type.name).toList();
       final statuses =
-      settingsState.tripStatuses.map((status) => status.name).toList();
+          settingsState.tripStatuses.map((status) => status.name).toList();
 
-      bookings.sort((a, b) => b.tripDate.compareTo(a.tripDate));
+      // bookings.sort((a, b) => b.tripDate.compareTo(a.tripDate));
       List<TaxiBooking> filteredBookings = bookings;
 
       if (startDate != null && endDate != null) {
         filteredBookings = filteredBookings.where((booking) {
-          return booking.tripDate
-              .isAfter(startDate /*.subtract(const Duration(days: 1))*/) &&
-              booking.tripDate.isBefore(endDate.add(const Duration(days: 1)));
+          return booking.createdAt
+                  .isAfter(startDate /*.subtract(const Duration(days: 1))*/) &&
+              booking.createdAt.isBefore(endDate.add(const Duration(days: 1)));
         }).toList();
       }
 
       if (status != null) {
         filteredBookings = filteredBookings
             .where((booking) =>
-        booking.tripStatus.toLowerCase() == status.toLowerCase())
+                booking.tripStatus.toLowerCase() == status.toLowerCase())
             .toList();
       }
 
@@ -316,8 +320,8 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
       if (minTotalFareAmount != null && maxTotalFareAmount != null) {
         filteredBookings = filteredBookings
             .where((booking) =>
-        booking.totalFareAmount >= minTotalFareAmount &&
-            booking.totalFareAmount <= maxTotalFareAmount)
+                booking.totalFareAmount >= minTotalFareAmount &&
+                booking.totalFareAmount <= maxTotalFareAmount)
             .toList();
       } else if (minTotalFareAmount != null) {
         filteredBookings = filteredBookings
@@ -326,7 +330,8 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
       }
 
       final showTodayStats = _shouldShowTodayStats(startDate, endDate);
-      emit(TaxiAdminInitial());
+      // emit(TaxiAdminInitial());
+      final userInfo = await _accountRepository.getUserInfo();
       emit(TaxiAdminSuccess(
           bookings: filteredBookings,
           drivers: drivers,
@@ -348,6 +353,7 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
           dateRangeLabel: _formatDateRange(startDate, endDate),
           statistics: _computeStatistics(filteredBookings, showTodayStats),
           showTodayStats: showTodayStats,
+          currentLoggedInUserId: userInfo?.userId ?? '',
           timeStamp: DateTime.now().millisecondsSinceEpoch));
     } catch (e) {
       emit(TaxiAdminError('Failed to fetch bookings: ${e.toString()}'));
@@ -359,6 +365,10 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
       emit(TaxiAdminLoading());
       try {
         await _service.updateBookingStatus(bookingId, status);
+        if (status.toLowerCase() == 'pending' ||
+            status.toLowerCase() == 'confirmed') {
+          await _service.unAssignBooking(bookingId);
+        }
         await fetchBookings(); // Refresh bookings
       } catch (e) {
         emit(
@@ -405,6 +415,26 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
       return null;
     }
   }
+
+  Future<void> unAssignedBooking(String id) async {
+    emit(TaxiAdminLoading());
+    await _service.unAssignBooking(id);
+    fetchBookings();
+  }
+
+  Future<void> startTrip(String id) async {
+    emit(TaxiAdminLoading());
+    await _service.updateBookingStatus(id, 'In-progress');
+    await _service.updateBookingStartTime(id);
+    fetchBookings();
+  }
+
+  Future<void> finishTrip(String id) async {
+    emit(TaxiAdminLoading());
+    await _service.updateBookingStatus(id, 'Completed');
+    await _service.updateBookingCompletedTime(id);
+    fetchBookings();
+  }
 }
 
 abstract class TaxiAdminState extends Equatable {
@@ -440,6 +470,7 @@ class TaxiAdminSuccess extends TaxiAdminState {
   final List<Map<String, dynamic>> statistics;
   final bool showTodayStats;
   final int timeStamp;
+  final String currentLoggedInUserId;
 
   const TaxiAdminSuccess({
     required this.bookings,
@@ -463,32 +494,34 @@ class TaxiAdminSuccess extends TaxiAdminState {
     required this.dateRangeLabel,
     required this.statistics,
     required this.showTodayStats,
+    required this.currentLoggedInUserId,
   });
 
   @override
   List<Object> get props => [
-    bookings,
-    drivers,
-    taxiTypes,
-    serviceTypes,
-    tripTypes,
-    statuses,
-    startDate ?? Object(),
-    endDate ?? Object(),
-    status ?? '',
-    taxiTypeId ?? '',
-    serviceTypeId ?? '',
-    tripTypeId ?? '',
-    acceptedByDriverId ?? '',
-    minTotalFareAmount ?? 0.0,
-    maxTotalFareAmount ?? double.infinity,
-    todayVisitorCount,
-    groupedBookings,
-    dateRangeLabel,
-    statistics,
-    showTodayStats,
-    timeStamp
-  ];
+        bookings,
+        drivers,
+        taxiTypes,
+        serviceTypes,
+        tripTypes,
+        statuses,
+        startDate ?? Object(),
+        endDate ?? Object(),
+        status ?? '',
+        taxiTypeId ?? '',
+        serviceTypeId ?? '',
+        tripTypeId ?? '',
+        acceptedByDriverId ?? '',
+        minTotalFareAmount ?? 0.0,
+        maxTotalFareAmount ?? double.infinity,
+        todayVisitorCount,
+        groupedBookings,
+        dateRangeLabel,
+        statistics,
+        showTodayStats,
+        timeStamp,
+        currentLoggedInUserId
+      ];
 }
 
 class TaxiAdminError extends TaxiAdminState {

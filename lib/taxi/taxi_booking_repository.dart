@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/core_module/services/firestore_provider.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/taxi/taxi_booking_model.dart';
@@ -21,26 +22,32 @@ abstract class ITaxiBookingRepository {
       });
   Future<void> updateBookingStatus(String companyId, String bookingId, String status);
   Future<void> acceptBooking(String companyId, String bookingId, UserInfo? driver);
-  Future<void> assignBooking(
-      String companyId, String bookingId, UserInfo driver, String? currentAcceptedByDriverId);
+  Future<void> assignBooking(String companyId, String bookingId, UserInfo driver, String? currentAcceptedByDriverId);
   Future<VisitorCounter> getVisitorCounter(String companyId, String date);
   Future<void> updateVisitorCounter(String companyId, String date);
+  Future<void> unAssignedBooking(String companyId, String bookingId);
+  Future<void> updateBookingCompletedTime(String companyId, String id);
+  Future<void> updateBookingStartTime(String companyId, String id);
 }
 
 class TaxiBookingRepositoryImpl implements ITaxiBookingRepository {
   final IFirestorePathProvider _pathProvider;
+  final AccountRepository _accountRepository;
 
-  TaxiBookingRepositoryImpl(this._pathProvider);
+  TaxiBookingRepositoryImpl(this._pathProvider, this._accountRepository);
 
   @override
   Future<void> createBooking(String companyId, TaxiBooking booking) async {
     final dto = TaxiBookingDto.fromModel(booking);
-    await _pathProvider.getTaxiBookingsCollectionRef(companyId).add(dto.toFirestore());
+    await _pathProvider
+        .getTaxiBookingsCollectionRef(companyId)
+        .add(dto.toFirestore());
   }
 
   @override
   Future<List<TaxiBooking>> getBookings(
-      String companyId, {
+      String companyId,
+      {
         String? bookingId,
         String? status,
         DateTime? startDate,
@@ -52,20 +59,26 @@ class TaxiBookingRepositoryImpl implements ITaxiBookingRepository {
         double? minTotalFareAmount,
         double? maxTotalFareAmount,
       }) async {
-    Query<Object?> query = _pathProvider.getTaxiBookingsCollectionRef(companyId);
+    Query<Object?> query =
+    _pathProvider.getTaxiBookingsCollectionRef(companyId);
 
     if (bookingId != null) {
-      final doc = await _pathProvider.getTaxiBookingsCollectionRef(companyId).doc(bookingId).get();      if (doc.exists) {
+      final doc = await _pathProvider
+          .getTaxiBookingsCollectionRef(companyId)
+          .doc(bookingId)
+          .get();
+      if (doc.exists) {
         return [
           TaxiBooking.fromDto(
-            TaxiBookingDto.fromFirestore(doc.data() as Map<String, dynamic>, doc.id),
+            TaxiBookingDto.fromFirestore(
+                doc.data() as Map<String, dynamic>, doc.id),
           )
         ];
       }
       return [];
     }
 
-    if (status != null) {
+   /* if (status != null) {
       query = query.where('tripStatus', isEqualTo: status);
     }
     if (startDate != null) {
@@ -91,37 +104,51 @@ class TaxiBookingRepositoryImpl implements ITaxiBookingRepository {
     }
     if (acceptedByDriverId != null) {
       query = query.where('acceptedByUserId', isEqualTo: acceptedByDriverId);
-    }
-    if (minTotalFareAmount != null) {
-      query = query.where('totalFareAmount', isGreaterThanOrEqualTo: minTotalFareAmount);
+    }*/
+   /* if (minTotalFareAmount != null) {
+      query = query.where('totalFareAmount',
+          isGreaterThanOrEqualTo: minTotalFareAmount);
     }
     if (maxTotalFareAmount != null) {
-      query = query.where('totalFareAmount', isLessThanOrEqualTo: maxTotalFareAmount);
-    }
+      query = query.where('totalFareAmount',
+          isLessThanOrEqualTo: maxTotalFareAmount);
+    }*/
 
     final snapshot = await query.get();
     return snapshot.docs.map((doc) {
       return TaxiBooking.fromDto(
-        TaxiBookingDto.fromFirestore(doc.data() as Map<String, dynamic>, doc.id),
+        TaxiBookingDto.fromFirestore(
+            doc.data() as Map<String, dynamic>, doc.id),
       );
     }).toList();
   }
 
   @override
-  Future<void> updateBookingStatus(String companyId, String bookingId, String status) async {
+  Future<void> updateBookingStatus(
+      String companyId, String bookingId, String status) async {
+    final userInfo = await _accountRepository.getUserInfo();
+    final updates = {
+      'tripStatus': status,
+      'lastUpdated': Timestamp.fromDate(DateTime.now()),
+      'lastUpdatedBy': userInfo?.userId,
+    };
     await _pathProvider
         .getTaxiBookingsCollectionRef(companyId)
         .doc(bookingId)
-        .update({'tripStatus': status});
+        .update(updates);
   }
 
   @override
-  Future<void> acceptBooking(String companyId, String bookingId, UserInfo? driver) async {
+  Future<void> acceptBooking(
+      String companyId, String bookingId, UserInfo? driver) async {
+    final userInfo = await _accountRepository.getUserInfo();
     final updates = {
       'accepted': driver != null,
-      'tripStatus': driver != null ? 'confirmed' : 'pending',
       'acceptedByUserId': driver != null ? driver.userId ?? '' : '',
       'acceptedByUserName': driver != null ? driver.userName ?? '' : '',
+      'tripStatus': 'Accepted',
+      'lastUpdated': Timestamp.fromDate(DateTime.now()),
+      'lastUpdatedBy': userInfo?.userId,
     };
     await _pathProvider
         .getTaxiBookingsCollectionRef(companyId)
@@ -136,6 +163,7 @@ class TaxiBookingRepositoryImpl implements ITaxiBookingRepository {
       UserInfo driver,
       String? currentAcceptedByDriverId,
       ) async {
+    final userInfo = await _accountRepository.getUserInfo();
     final docRef = _pathProvider.getTaxiBookingsCollectionRef(companyId).doc(bookingId);
     await _pathProvider.firestore.runTransaction((transaction) async {
       final snapshot = await transaction.get(docRef);
@@ -144,22 +172,28 @@ class TaxiBookingRepositoryImpl implements ITaxiBookingRepository {
       }
       final currentData = snapshot.data() as Map<String, dynamic>;
       final currentDriverId = currentData['acceptedByUserId'] as String?;
-      if (currentAcceptedByDriverId != null && currentDriverId != currentAcceptedByDriverId) {
+      if (currentAcceptedByDriverId != null &&
+          currentDriverId != currentAcceptedByDriverId) {
         throw Exception('Driver assignment conflict');
       }
       transaction.update(docRef, {
         'accepted': true,
         'acceptedByUserId': driver.userId ?? '',
         'acceptedByUserName': driver.userName ?? '',
-        'tripStatus': 'confirmed',
+        'tripStatus': 'Accepted',
+        'lastUpdated': Timestamp.fromDate(DateTime.now()),
+        'lastUpdatedBy': userInfo?.userId,
       });
     });
   }
 
   @override
-  Future<VisitorCounter> getVisitorCounter(String companyId, String date) async {
-    final snapshot =
-    await _pathProvider.getVisitorCountersCollectionRef(companyId).doc(date).get();
+  Future<VisitorCounter> getVisitorCounter(
+      String companyId, String date) async {
+    final snapshot = await _pathProvider
+        .getVisitorCountersCollectionRef(companyId)
+        .doc(date)
+        .get();
     if (!snapshot.exists) {
       return VisitorCounter(
         count: 0,
@@ -193,5 +227,50 @@ class TaxiBookingRepositoryImpl implements ITaxiBookingRepository {
         });
       }
     });
+  }
+
+  @override
+  Future<void> unAssignedBooking(String companyId, String bookingId) async {
+    final userInfo = await _accountRepository.getUserInfo();
+    final updates = {
+      'accepted': false,
+      'acceptedByUserId': null,
+      'acceptedByUserName': null,
+      'tripStatus': 'Pending',
+      'lastUpdated': Timestamp.fromDate(DateTime.now()),
+      'lastUpdatedBy': userInfo?.userId,
+    };
+    await _pathProvider
+        .getTaxiBookingsCollectionRef(companyId)
+        .doc(bookingId)
+        .update(updates);
+  }
+
+  @override
+  Future<void> updateBookingCompletedTime(String companyId, String id) async {
+    final userInfo = await _accountRepository.getUserInfo();
+    final updates = {
+      'completedTime': Timestamp.fromDate(DateTime.now()),
+      'lastUpdated': Timestamp.fromDate(DateTime.now()),
+      'lastUpdatedBy': userInfo?.userId,
+    };
+    await _pathProvider
+        .getTaxiBookingsCollectionRef(companyId)
+        .doc(id)
+        .update(updates);
+  }
+
+  @override
+  Future<void> updateBookingStartTime(String companyId, String id) async {
+    final userInfo = await _accountRepository.getUserInfo();
+    final updates = {
+      'actualStartTime': Timestamp.fromDate(DateTime.now()),
+      'lastUpdated': Timestamp.fromDate(DateTime.now()),
+      'lastUpdatedBy': userInfo?.userId,
+    };
+    await _pathProvider
+        .getTaxiBookingsCollectionRef(companyId)
+        .doc(id)
+        .update(updates);
   }
 }

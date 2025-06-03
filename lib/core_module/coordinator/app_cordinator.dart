@@ -383,4 +383,22 @@ class AppCoordinator implements Coordinator {
   Future<dynamic> navigateToTaxiBookingsAdminPage() {
     return _router.push(const TaxiBookingsAdminRoute());
   }
+
+  @override
+  Future<dynamic> navigateToDriverListPage() {
+    return _router.push(const DriverListRoute());
+  }
+
+  @override
+  Future<dynamic> navigateToDriverPerformanceDetailsPage({required String driverId}) {
+    return _router.push(DriverPerformanceDetailsRoute(driverId: driverId));
+  }
+
+  @override
+  Future<dynamic> navigateToTaxiCompanyPerformancePage() {
+    return _router.push(const TaxiCompanyPerformanceRoute());
+  } @override
+  Future<dynamic> navigateToTaxiVisitorCounterPage() {
+    return _router.push(const VisitorCounterRoute());
+  }
 }

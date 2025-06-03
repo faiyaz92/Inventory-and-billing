@@ -42,12 +42,17 @@ import 'package:requirment_gathering_app/super_admin_module/data/tenant_company.
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/presentation/add_tenant_company/add_tenant_company_page.dart';
 import 'package:requirment_gathering_app/super_admin_module/presentation/dashboard/super_admin_page.dart';
+import 'package:requirment_gathering_app/taxi/driver_list.dart';
+import 'package:requirment_gathering_app/taxi/driver_performance_details_page.dart';
 import 'package:requirment_gathering_app/taxi/taxi_admin_cubit.dart';
+import 'package:requirment_gathering_app/taxi/taxi_bookinf_admin_details_page.dart';
 import 'package:requirment_gathering_app/taxi/taxi_booking_admin_panel_page.dart';
 import 'package:requirment_gathering_app/taxi/taxi_booking_cubit.dart';
 import 'package:requirment_gathering_app/taxi/taxi_booking_page.dart';
+import 'package:requirment_gathering_app/taxi/taxi_company_performance_page.dart';
 import 'package:requirment_gathering_app/taxi/taxi_setting_cubit.dart';
 import 'package:requirment_gathering_app/taxi/taxi_setting_page.dart';
+import 'package:requirment_gathering_app/taxi/visitor_counter_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_details_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_panel_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/cart_dashboard_page.dart';
@@ -196,16 +201,24 @@ class AppRouter extends RootStackRouter {
               );
             }),
             path: '/taxi-settings'),
-       /* AutoRoute(
-            page: PageInfo(TaxiBookingsAdminRoute.name, builder: (data) {
-              return BlocProvider(
-                create: (context) => sl<TaxiAdminCubit>(),
-                child: const TaxiBookingsAdminPage(),
-              );
-            }),
-            path: '/taxi-bookings-admin'),*/
+
 
     AutoRoute(page: TaxiBookingsAdminRoute.page, ),
-
+    AutoRoute(
+      page: DriverListRoute.page,
+      path: '/driver-list',
+    ),
+    AutoRoute(
+      page: DriverPerformanceDetailsRoute.page,
+      path: '/driver-performance-details',
+    ),
+    AutoRoute(
+      page: TaxiCompanyPerformanceRoute.page,
+      path: '/taxi-performancePage',
+    ),
+    AutoRoute(
+      path: '/visitor-counter',
+      page: VisitorCounterRoute.page,
+    ),
   ];
 }
