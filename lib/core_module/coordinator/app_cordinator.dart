@@ -361,14 +361,18 @@ class AppCoordinator implements Coordinator {
 
   @override
   Future<dynamic> navigateToCompanyPerformancePage() =>
-      _router.push(const CompanyPerformanceRoute());@override
+      _router.push(const CompanyPerformanceRoute());
+
+  @override
   Future<dynamic> navigateToProductPerformanceListPage() =>
       _router.push(const ProductTrendingListRoute());
+
   // File: core_module/coordinator/app_coordinator.dart
   @override
   Future<dynamic> navigateToUserLedgerPage({required UserInfo user}) {
     return _router.push(UserLedgerRoute(user: user));
   }
+
   @override
   Future<dynamic> navigateToTaxiBookingPage() {
     return _router.push(const TaxiBookingRoute());
@@ -390,15 +394,23 @@ class AppCoordinator implements Coordinator {
   }
 
   @override
-  Future<dynamic> navigateToDriverPerformanceDetailsPage({required String driverId}) {
+  Future<dynamic> navigateToDriverPerformanceDetailsPage(
+      {required String driverId}) {
     return _router.push(DriverPerformanceDetailsRoute(driverId: driverId));
   }
 
   @override
   Future<dynamic> navigateToTaxiCompanyPerformancePage() {
     return _router.push(const TaxiCompanyPerformanceRoute());
-  } @override
+  }
+
+  @override
   Future<dynamic> navigateToTaxiVisitorCounterPage() {
     return _router.push(const VisitorCounterRoute());
+  }
+
+  @override
+  Future<dynamic> navigateToBookingDetailsPage({required String bookingId}) {
+    return _router.push(TaxiBookingDetailsRoute(bookingId: bookingId));
   }
 }

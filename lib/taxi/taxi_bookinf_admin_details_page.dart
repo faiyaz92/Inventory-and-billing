@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
@@ -8,6 +9,7 @@ import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/custom_loading_dialog.dart';
 import 'package:requirment_gathering_app/taxi/taxi_admin_cubit.dart';
 import 'package:requirment_gathering_app/taxi/taxi_booking_model.dart';
+import 'package:requirment_gathering_app/taxi/trip_status_model.dart';
 
 @RoutePage()
 class TaxiBookingDetailsPage extends StatefulWidget {
@@ -22,11 +24,12 @@ class TaxiBookingDetailsPage extends StatefulWidget {
 class _TaxiBookingDetailsPageState extends State<TaxiBookingDetailsPage> {
   late final TaxiAdminCubit _taxiAdminCubit;
   TaxiBooking? _booking;
+  var _isNeedToUpdate =false;
 
   @override
   void initState() {
     super.initState();
-    _taxiAdminCubit = sl<TaxiAdminCubit>();
+    _taxiAdminCubit = sl<TaxiAdminCubit>()..fetchSettings();
     _fetchBookingDetails();
   }
 
@@ -40,43 +43,90 @@ class _TaxiBookingDetailsPageState extends State<TaxiBookingDetailsPage> {
   }
 
   void _showStatusDialog(TaxiBooking booking) {
-    final statusController = TextEditingController(text: booking.tripStatus);
+    String? initialStatus = booking.tripStatus;
+    final tripStatuses = _taxiAdminCubit.getSettings().tripStatuses;
+    final uniqueStatuses = <String, TripStatus>{};
+    for (var status in tripStatuses) {
+      uniqueStatuses[status.id] = status;
+    }
+    final statusList = uniqueStatuses.values.toList();
+
+    if (!statusList.any((status) => status.id == initialStatus)) {
+      initialStatus = statusList.isNotEmpty ? statusList.first.id : null;
+    }
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Update Status'),
-        content: DropdownButtonFormField<String>(
-          decoration: const InputDecoration(
-            labelText: 'Trip Status',
-            border: OutlineInputBorder(),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Update Status'),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
-          value: statusController.text,
-          items: const [
-            DropdownMenuItem(value: 'pending', child: Text('Pending')),
-            DropdownMenuItem(value: 'confirmed', child: Text('Confirmed')),
-            DropdownMenuItem(value: 'inprogress', child: Text('In Progress')),
-            DropdownMenuItem(value: 'completed', child: Text('Completed')),
-            DropdownMenuItem(value: 'cancelled', child: Text('Cancelled')),
-            DropdownMenuItem(value: 'declined', child: Text('Declined')),
-          ],
-          onChanged: (value) => statusController.text = value ?? 'pending',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel',
-                style: TextStyle(color: AppColors.textSecondary)),
-          ),
-          TextButton(
-            onPressed: () {
-              _taxiAdminCubit.updateBookingStatus(booking.id, statusController.text);
-              Navigator.pop(context);
-              _fetchBookingDetails();
+          content: statusList.isEmpty
+              ? const Text('No trip statuses available')
+              : DropdownButtonFormField<String>(
+            decoration: InputDecoration(
+              labelText: 'Trip Status',
+              filled: true,
+              fillColor: AppColors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: AppColors.textSecondary.withOpacity(0.3),
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: AppColors.textSecondary.withOpacity(0.3),
+                ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16, vertical: 12),
+            ),
+            value: initialStatus,
+            items: statusList
+                .map((status) => DropdownMenuItem<String>(
+              value: status.id,
+              child: Text(status.name),
+            ))
+                .toList(),
+            onChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  initialStatus = value;
+                });
+              }
             },
-            child: const Text('Update',
-                style: TextStyle(color: AppColors.primary)),
+            validator: (value) =>
+            value == null ? 'Please select a status' : null,
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+            ),
+            TextButton(
+              onPressed: initialStatus == null
+                  ? null
+                  : () async{
+             await   _taxiAdminCubit.updateBookingStatus(
+                    booking.id, initialStatus!);
+                _isNeedToUpdate =true;
+                Navigator.pop(context);
+                _fetchBookingDetails();
+              },
+              child: const Text(
+                'Update',
+                style: TextStyle(color: AppColors.primary),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -90,10 +140,28 @@ class _TaxiBookingDetailsPageState extends State<TaxiBookingDetailsPage> {
           if (state is TaxiAdminSuccess) {
             return AlertDialog(
               title: const Text('Assign Driver'),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               content: DropdownButtonFormField<String>(
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Select Driver',
-                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: AppColors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: AppColors.textSecondary.withOpacity(0.3),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: AppColors.textSecondary.withOpacity(0.3),
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 12),
                 ),
                 value: selectedDriverId,
                 items: state.drivers
@@ -107,22 +175,26 @@ class _TaxiBookingDetailsPageState extends State<TaxiBookingDetailsPage> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel',
-                      style: TextStyle(color: AppColors.textSecondary)),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
                 ),
                 TextButton(
                   onPressed: () {
                     if (selectedDriverId != null) {
-                      final selectedDriver = state.drivers
-                          .firstWhere((driver) => driver.userId == selectedDriverId);
+                      final selectedDriver = state.drivers.firstWhere(
+                              (driver) => driver.userId == selectedDriverId);
                       _taxiAdminCubit.assignBooking(
                           booking.id, selectedDriver, booking.acceptedByDriverId);
                       Navigator.pop(context);
                       _fetchBookingDetails();
                     }
                   },
-                  child: const Text('Assign',
-                      style: TextStyle(color: AppColors.primary)),
+                  child: const Text(
+                    'Assign',
+                    style: TextStyle(color: AppColors.primary),
+                  ),
                 ),
               ],
             );
@@ -186,9 +258,11 @@ class _TaxiBookingDetailsPageState extends State<TaxiBookingDetailsPage> {
     );
   }
 
-  Widget _buildBookingDetails(TaxiBooking booking) {
+  Widget _buildBookingDetails(TaxiBooking booking, TaxiAdminSuccess state) {
     final statusStyles = _taxiAdminCubit.getStatusColors(booking.tripStatus);
     final dateFormatter = DateFormat('MMM dd, yyyy');
+    final fullDateFormatter = DateFormat('MMM dd, yyyy HH:mm');
+
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
@@ -220,6 +294,35 @@ class _TaxiBookingDetailsPageState extends State<TaxiBookingDetailsPage> {
                           color: AppColors.textPrimary,
                         ),
                       ),
+                      GestureDetector(
+                        onTap: () {
+                          Clipboard.setData(
+                              ClipboardData(text: booking.mobileNumber));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Phone number copied!'),
+                              duration: Duration(seconds: 1),
+                            ),
+                          );
+                        },
+                        child: Row(
+                          children: [
+                            const Icon(Icons.phone,
+                                size: 14, color: AppColors.primary),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${booking.countryCode}${booking.mobileNumber}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(Icons.copy,
+                                size: 12, color: AppColors.textSecondary),
+                          ],
+                        ),
+                      ),
                       Text(
                         'Driver: ${booking.acceptedByDriverName ?? "Unassigned"}',
                         style: const TextStyle(
@@ -239,7 +342,8 @@ class _TaxiBookingDetailsPageState extends State<TaxiBookingDetailsPage> {
                       onPressed: () => _showStatusDialog(booking),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.person_add, color: AppColors.primary),
+                      icon: const Icon(Icons.person_add,
+                          color: AppColors.primary),
                       onPressed: () => _showDriverAssignDialog(booking),
                     ),
                   ],
@@ -257,7 +361,7 @@ class _TaxiBookingDetailsPageState extends State<TaxiBookingDetailsPage> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                'Trip Date: ${dateFormatter.format(booking.tripDate)}',
+                'Trip Date: ${_taxiAdminCubit.formatTripDate(booking.tripDate)}',
                 style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,
@@ -318,24 +422,34 @@ class _TaxiBookingDetailsPageState extends State<TaxiBookingDetailsPage> {
                   _buildTableRow(
                     'Trip Start Time',
                     booking.tripStartTime,
+                    backgroundColor: AppColors.highLightOrange,
+                    valueColor: AppColors.red,
+                    isBold: true,
                   ),
                   _buildTableRow(
                     'Actual Start Time',
                     booking.actualStartTime != null
-                        ? DateFormat('MMM dd, yyyy HH:mm')
-                        .format(booking.actualStartTime!)
+                        ? fullDateFormatter.format(booking.actualStartTime!)
                         : 'N/A',
                   ),
                   _buildTableRow(
                     'Completed Time',
                     booking.completedTime != null
-                        ? DateFormat('MMM dd, yyyy HH:mm')
-                        .format(booking.completedTime!)
+                        ? fullDateFormatter.format(booking.completedTime!)
                         : 'N/A',
                   ),
                   _buildTableRow(
+                    'Created At',
+                    fullDateFormatter.format(booking.createdAt),
+                  ),
+                  _buildTableRow(
+                    'Last Updated At',
+                    fullDateFormatter.format(booking.lastUpdatedAt),
+                  ),
+                  _buildTableRow(
                     'Status',
-                    booking.tripStatus,
+                    _taxiAdminCubit.getDisplayName(
+                        id: booking.tripStatus, type: 'status'),
                     valueColor: statusStyles['color'],
                     backgroundColor: statusStyles['backgroundColor'],
                     valueWeight: booking.tripStatus.toLowerCase() == 'pending' ||
@@ -345,15 +459,18 @@ class _TaxiBookingDetailsPageState extends State<TaxiBookingDetailsPage> {
                   ),
                   _buildTableRow(
                     'Trip Type',
-                    booking.tripTypeId,
+                    _taxiAdminCubit.getDisplayName(
+                        id: booking.tripTypeId, type: 'tripType'),
                   ),
                   _buildTableRow(
                     'Taxi Type',
-                    booking.taxiTypeId,
+                    _taxiAdminCubit.getDisplayName(
+                        id: booking.taxiTypeId, type: 'taxiType'),
                   ),
                   _buildTableRow(
                     'Service Type',
-                    booking.serviceTypeId,
+                    _taxiAdminCubit.getDisplayName(
+                        id: booking.serviceTypeId, type: 'serviceType'),
                   ),
                   _buildTableRow(
                     'Additional Info',
@@ -361,6 +478,13 @@ class _TaxiBookingDetailsPageState extends State<TaxiBookingDetailsPage> {
                         ? 'None'
                         : booking.additionalInfo,
                     maxLines: 3,
+                  ),
+                  _buildTableRow(
+                    'Trip Booking Date',
+                    _taxiAdminCubit.formatTripDate(booking.tripDate),
+                    backgroundColor: AppColors.highLightOrange,
+                    valueColor: AppColors.red,
+                    isBold: true,
                   ),
                   _buildTableRow(
                     'Fare',
@@ -377,59 +501,132 @@ class _TaxiBookingDetailsPageState extends State<TaxiBookingDetailsPage> {
               ),
             ),
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    _taxiAdminCubit.acceptBooking(booking.id, null);
-                    _fetchBookingDetails();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.green,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+            if (booking.tripStatus.toLowerCase() == 'confirmed' ||
+                booking.tripStatus.toLowerCase() == 'pending')
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      _taxiAdminCubit.acceptBooking(booking.id, null);
+                      _fetchBookingDetails();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.green,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: const Text(
+                      'Accept',
+                      style: TextStyle(color: AppColors.white, fontSize: 12),
+                    ),
                   ),
-                  child: const Text(
-                    'Accept',
-                    style: TextStyle(color: AppColors.white, fontSize: 14),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () async {
+                    await  _taxiAdminCubit.updateBookingStatus(booking.id, 'Declined');
+                      _isNeedToUpdate =true;
+
+                      _fetchBookingDetails();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.red,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                    ),
+                    child: const Text(
+                      'Decline',
+                      style: TextStyle(color: AppColors.white, fontSize: 12),
+                    ),
+                  ),
+                ],
+              )
+            else if (booking.accepted &&
+                booking.tripStatus.toLowerCase() == 'accepted' &&
+                state.currentLoggedInUserId == booking.acceptedByDriverId)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      await _taxiAdminCubit.unAssignedBooking(booking.id);
+                      _fetchBookingDetails();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.red,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                    ),
+                    child: const Text(
+                      'Not Assign',
+                      style: TextStyle(color: AppColors.white, fontSize: 12),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () async {
+                      await _taxiAdminCubit.startTrip(booking.id);
+                      _fetchBookingDetails();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.green,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                    ),
+                    child: const Text(
+                      'Start Trip',
+                      style: TextStyle(color: AppColors.white, fontSize: 12),
+                    ),
+                  ),
+                ],
+              )
+            else if (booking.accepted &&
+                  booking.tripStatus.toLowerCase() == 'in-progress' &&
+                  state.currentLoggedInUserId == booking.acceptedByDriverId)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      await _taxiAdminCubit.finishTrip(booking.id);
+                      _fetchBookingDetails();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.green,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                    ),
+                    child: const Text(
+                      'Finish Trip',
+                      style: TextStyle(color: AppColors.white, fontSize: 12),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () {
-                    _taxiAdminCubit.updateBookingStatus(booking.id, 'declined');
-                    _fetchBookingDetails();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.red,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                  child: const Text(
-                    'Decline',
-                    style: TextStyle(color: AppColors.white, fontSize: 14),
-                  ),
-                ),
-              ],
-            ),
           ],
         ),
       ),
     );
   }
-
-
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: _taxiAdminCubit,
       child: Scaffold(
-        appBar: const CustomAppBar(title: 'Booking Details'),
+        appBar: const CustomAppBar(title: 'Booking Details',),
         body: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -448,11 +645,12 @@ class _TaxiBookingDetailsPageState extends State<TaxiBookingDetailsPage> {
                   return const CustomLoadingDialog(message: 'Loading Booking...');
                 } else if (state is TaxiAdminError) {
                   return Center(child: Text('Error: ${state.message}'));
-                } else {
+                } else if (state is TaxiAdminSuccess) {
                   return SingleChildScrollView(
-                    child: _buildBookingDetails(_booking!),
+                    child: _buildBookingDetails(_booking!, state),
                   );
                 }
+                return const SizedBox.shrink();
               },
             ),
           ),

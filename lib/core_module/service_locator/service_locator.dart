@@ -372,8 +372,8 @@ void _initCubits() {
 
   // Register Taxi Cubits with Services
   sl.registerFactory<TaxiAdminCubit>(
-    () => TaxiAdminCubit(sl<ITaxiBookingService>(), sl<UserServices>(),
-        sl<TaxiSettingsCubit>(), sl<AccountRepository>()),
+    () => TaxiAdminCubit(sl<ITaxiBookingService>(),
+        sl<ITaxiSettingsService>(),  sl<UserServices>(), sl<AccountRepository>()),
   );
   sl.registerFactory<TaxiBookingCubit>(
     () => TaxiBookingCubit(

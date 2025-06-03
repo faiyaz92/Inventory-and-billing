@@ -256,7 +256,7 @@ class _VisitorCounterPageState extends State<VisitorCounterPage> {
         'label': 'Total Visitors',
         'value': totalVisitors.toString(),
         'color': AppColors.textPrimary,
-        'highlight': AppColors.primaryLight,
+        'highlight': AppColors.blue.withOpacity(0.3),
       },
     ];
 

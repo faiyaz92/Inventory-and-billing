@@ -9,23 +9,40 @@ import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart'
 import 'package:requirment_gathering_app/taxi/taxi_booking_model.dart';
 import 'package:requirment_gathering_app/taxi/taxi_service.dart';
 import 'package:requirment_gathering_app/taxi/taxi_service_type_model.dart';
-import 'package:requirment_gathering_app/taxi/taxi_setting_cubit.dart';
+import 'package:requirment_gathering_app/taxi/taxi_setting_model.dart';
+import 'package:requirment_gathering_app/taxi/taxi_setting_service.dart';
 import 'package:requirment_gathering_app/taxi/taxi_type_model.dart';
 import 'package:requirment_gathering_app/taxi/trip_status_model.dart';
 import 'package:requirment_gathering_app/taxi/trip_type_model.dart';
 
 class TaxiAdminCubit extends Cubit<TaxiAdminState> {
-  final ITaxiBookingService _service;
+  final ITaxiBookingService _bookingService;
+  final ITaxiSettingsService _settingsService;
   final UserServices _userServices;
-  final TaxiSettingsCubit settingsCubit;
+  final AccountRepository _accountRepository;
   static final _dateFormatter = DateFormat('MMM dd, yyyy');
   static final _fullDateFormatter = DateFormat('yyyy-MM-dd HH:mm');
-  final AccountRepository _accountRepository;
+  late TaxiSettings _settings; // Transient variable to store settings
 
-  TaxiAdminCubit(this._service, this._userServices, this.settingsCubit,
-      this._accountRepository)
-      : super(TaxiAdminInitial()) {
-    // fetchBookings();
+  TaxiAdminCubit(
+    this._bookingService,
+    this._settingsService,
+    this._userServices,
+    this._accountRepository,
+  ) : super(TaxiAdminInitial()) {
+  }
+
+  Future<void> fetchSettings() async {
+    try {
+      _settings = await _settingsService.getSettings();
+    } catch (e) {
+      // Handle error silently or emit an error state if needed
+      emit(TaxiAdminError('Failed to fetch settings: ${e.toString()}'));
+    }
+  }
+
+  TaxiSettings getSettings() {
+    return _settings;
   }
 
   bool _isToday(DateTime? date) {
@@ -73,14 +90,18 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
 
   List<Map<String, dynamic>> _computeStatistics(
       List<TaxiBooking> bookings, bool showTodayStats) {
+    final settings = _settings;
+    if (settings == null) {
+      return []; // Return empty statistics if settings are not available
+    }
+
     final totalBookings = bookings.length;
     final totalFare = bookings.fold<double>(
         0.0, (sum, booking) => sum + booking.totalFareAmount);
     final newBookings =
         bookings.where((booking) => _isToday(booking.createdAt)).length;
-    final settingsState = settingsCubit.state;
     final statusCounts = <String, int>{};
-    for (var status in settingsState.tripStatuses) {
+    for (var status in settings.tripStatuses) {
       statusCounts[status.id] = bookings
           .where((booking) =>
               booking.tripStatus.toLowerCase() == status.id.toLowerCase())
@@ -107,7 +128,7 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
         'color': AppColors.textPrimary,
         'highlight': true
       },
-      ...settingsState.tripStatuses.map((status) {
+      ...settings.tripStatuses.map((status) {
         final count = statusCounts[status.id] ?? 0;
         return {
           'label': status.name,
@@ -174,14 +195,14 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
 
   String getDisplayName({
     required String? id,
-    required String type, // 'taxiType', 'serviceType', 'tripType', or 'status'
+    required String type,
   }) {
-    final settingsState = settingsCubit.state;
-    if (id == null) return 'Unknown';
+    final settings = _settings;
+    if (settings == null || id == null) return 'Unknown';
 
     switch (type) {
       case 'taxiType':
-        return settingsState.taxiTypes
+        return settings.taxiTypes
             .firstWhere(
               (type) => type.id == id,
               orElse: () => TaxiType(
@@ -193,7 +214,7 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
             )
             .name;
       case 'serviceType':
-        return settingsState.serviceTypes
+        return settings.serviceTypes
             .firstWhere(
               (type) => type.id == id,
               orElse: () => ServiceType(
@@ -205,7 +226,7 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
             )
             .name;
       case 'tripType':
-        return settingsState.tripTypes
+        return settings.tripTypes
             .firstWhere(
               (type) => type.id == id,
               orElse: () => TripType(
@@ -217,7 +238,7 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
             )
             .name;
       case 'status':
-        return settingsState.tripStatuses
+        return settings.tripStatuses
             .firstWhere(
               (status) => status.id == id,
               orElse: () => TripStatus(
@@ -245,8 +266,19 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
     double? maxTotalFareAmount,
   }) async {
     emit(TaxiAdminLoading());
+    _settings = await _settingsService.getSettings();
     try {
-      final bookings = await _service.getBookings(
+      // Fetch settings if not already fetched
+      if (_settings == null) {
+        _settings = await _settingsService.getSettings();
+      }
+      final settings = _settings;
+      if (settings == null) {
+        emit(TaxiAdminError('Failed to fetch settings'));
+        return;
+      }
+
+      final bookings = await _bookingService.getBookings(
         status: status,
         startDate: startDate,
         endDate: endDate,
@@ -261,26 +293,21 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
       final today = DateTime.now();
       final todayKey =
           '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
-      final visitorCounter = await _service.getVisitorCounter(todayKey);
+      final visitorCounter = await _bookingService.getVisitorCounter(todayKey);
 
-      // Fetch type lists from TaxiSettingsCubit
-      final settingsState = settingsCubit.state;
-      final taxiTypes =
-          settingsState.taxiTypes.map((type) => type.name).toList();
+      // Extract type lists from settings
+      final taxiTypes = settings.taxiTypes.map((type) => type.name).toList();
       final serviceTypes =
-          settingsState.serviceTypes.map((type) => type.name).toList();
-      final tripTypes =
-          settingsState.tripTypes.map((type) => type.name).toList();
+          settings.serviceTypes.map((type) => type.name).toList();
+      final tripTypes = settings.tripTypes.map((type) => type.name).toList();
       final statuses =
-          settingsState.tripStatuses.map((status) => status.name).toList();
+          settings.tripStatuses.map((status) => status.name).toList();
 
-      // bookings.sort((a, b) => b.tripDate.compareTo(a.tripDate));
       List<TaxiBooking> filteredBookings = bookings;
 
       if (startDate != null && endDate != null) {
         filteredBookings = filteredBookings.where((booking) {
-          return booking.createdAt
-                  .isAfter(startDate /*.subtract(const Duration(days: 1))*/) &&
+          return booking.createdAt.isAfter(startDate) &&
               booking.createdAt.isBefore(endDate.add(const Duration(days: 1)));
         }).toList();
       }
@@ -330,31 +357,31 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
       }
 
       final showTodayStats = _shouldShowTodayStats(startDate, endDate);
-      // emit(TaxiAdminInitial());
       final userInfo = await _accountRepository.getUserInfo();
       emit(TaxiAdminSuccess(
-          bookings: filteredBookings,
-          drivers: drivers,
-          taxiTypes: taxiTypes,
-          serviceTypes: serviceTypes,
-          tripTypes: tripTypes,
-          statuses: statuses,
-          startDate: startDate,
-          endDate: endDate,
-          status: status,
-          taxiTypeId: taxiTypeId,
-          serviceTypeId: serviceTypeId,
-          tripTypeId: tripTypeId,
-          acceptedByDriverId: acceptedByDriverId,
-          minTotalFareAmount: minTotalFareAmount,
-          maxTotalFareAmount: maxTotalFareAmount,
-          todayVisitorCount: visitorCounter.count,
-          groupedBookings: _groupBookingsByDate(filteredBookings),
-          dateRangeLabel: _formatDateRange(startDate, endDate),
-          statistics: _computeStatistics(filteredBookings, showTodayStats),
-          showTodayStats: showTodayStats,
-          currentLoggedInUserId: userInfo?.userId ?? '',
-          timeStamp: DateTime.now().millisecondsSinceEpoch));
+        bookings: filteredBookings,
+        drivers: drivers,
+        taxiTypes: taxiTypes,
+        serviceTypes: serviceTypes,
+        tripTypes: tripTypes,
+        statuses: statuses,
+        startDate: startDate,
+        endDate: endDate,
+        status: status,
+        taxiTypeId: taxiTypeId,
+        serviceTypeId: serviceTypeId,
+        tripTypeId: tripTypeId,
+        acceptedByDriverId: acceptedByDriverId,
+        minTotalFareAmount: minTotalFareAmount,
+        maxTotalFareAmount: maxTotalFareAmount,
+        todayVisitorCount: visitorCounter.count,
+        groupedBookings: _groupBookingsByDate(filteredBookings),
+        dateRangeLabel: _formatDateRange(startDate, endDate),
+        statistics: _computeStatistics(filteredBookings, showTodayStats),
+        showTodayStats: showTodayStats,
+        currentLoggedInUserId: userInfo?.userId ?? '',
+        timeStamp: DateTime.now().millisecondsSinceEpoch,
+      ));
     } catch (e) {
       emit(TaxiAdminError('Failed to fetch bookings: ${e.toString()}'));
     }
@@ -364,12 +391,12 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
     if (state is TaxiAdminSuccess) {
       emit(TaxiAdminLoading());
       try {
-        await _service.updateBookingStatus(bookingId, status);
+        await _bookingService.updateBookingStatus(bookingId, status);
         if (status.toLowerCase() == 'pending' ||
             status.toLowerCase() == 'confirmed') {
-          await _service.unAssignBooking(bookingId);
+          await _bookingService.unAssignBooking(bookingId);
         }
-        await fetchBookings(); // Refresh bookings
+        await fetchBookings();
       } catch (e) {
         emit(
             TaxiAdminError('Failed to update booking status: ${e.toString()}'));
@@ -381,8 +408,8 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
     if (state is TaxiAdminSuccess) {
       emit(TaxiAdminLoading());
       try {
-        await _service.acceptBooking(bookingId, driver);
-        await fetchBookings(); // Refresh bookings
+        await _bookingService.acceptBooking(bookingId, driver);
+        await fetchBookings();
       } catch (e) {
         emit(TaxiAdminError('Failed to accept booking: ${e.toString()}'));
       }
@@ -394,9 +421,9 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
     if (state is TaxiAdminSuccess) {
       emit(TaxiAdminLoading());
       try {
-        await _service.assignBooking(
+        await _bookingService.assignBooking(
             bookingId, driver, currentAcceptedByDriverId);
-        await fetchBookings(); // Refresh bookings
+        await fetchBookings();
       } catch (e) {
         emit(TaxiAdminError('Failed to assign booking: ${e.toString()}'));
       }
@@ -405,7 +432,7 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
 
   Future<TaxiBooking?> fetchBookingById(String bookingId) async {
     try {
-      final bookings = await _service.getBookings(bookingId: bookingId);
+      final bookings = await _bookingService.getBookings(bookingId: bookingId);
       if (bookings.isNotEmpty) {
         return bookings.first;
       }
@@ -418,22 +445,52 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
 
   Future<void> unAssignedBooking(String id) async {
     emit(TaxiAdminLoading());
-    await _service.unAssignBooking(id);
-    fetchBookings();
+    await _bookingService.unAssignBooking(id);
+    await fetchBookings();
   }
 
   Future<void> startTrip(String id) async {
     emit(TaxiAdminLoading());
-    await _service.updateBookingStatus(id, 'In-progress');
-    await _service.updateBookingStartTime(id);
-    fetchBookings();
+    await _bookingService.updateBookingStatus(id, 'In-progress');
+    await _bookingService.updateBookingStartTime(id);
+    await fetchBookings();
   }
 
   Future<void> finishTrip(String id) async {
     emit(TaxiAdminLoading());
-    await _service.updateBookingStatus(id, 'Completed');
-    await _service.updateBookingCompletedTime(id);
-    fetchBookings();
+    await _bookingService.updateBookingStatus(id, 'Completed');
+    await _bookingService.updateBookingCompletedTime(id);
+    await fetchBookings();
+  }
+
+  // Method to refresh settings if needed (e.g., if settings might have changed)
+  Future<void> refreshSettings() async {
+    await fetchSettings();
+    if (state is TaxiAdminSuccess) {
+      await fetchBookings(); // Refresh bookings to reflect updated settings
+    }
+  }
+  String formatTripDate(DateTime tripDate) {
+    final DateTime now = DateTime.now();
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DateTime tomorrow = today.add(const Duration(days: 1));
+
+    String day = tripDate.day.toString().padLeft(2, '0');
+    String month = tripDate.month.toString().padLeft(2, '0');
+    String year = tripDate.year.toString();
+    String formattedDate = '$day-$month-$year';
+
+    if (tripDate.year == today.year &&
+        tripDate.month == today.month &&
+        tripDate.day == today.day) {
+      return "Today, $formattedDate";
+    } else if (tripDate.year == tomorrow.year &&
+        tripDate.month == tomorrow.month &&
+        tripDate.day == tomorrow.day) {
+      return "Tomorrow, $formattedDate";
+    } else {
+      return formattedDate;
+    }
   }
 }
 

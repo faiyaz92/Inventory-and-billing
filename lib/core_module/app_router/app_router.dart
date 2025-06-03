@@ -219,6 +219,9 @@ class AppRouter extends RootStackRouter {
     AutoRoute(
       path: '/visitor-counter',
       page: VisitorCounterRoute.page,
+    ), AutoRoute(
+
+      page: TaxiBookingDetailsRoute.page,
     ),
   ];
 }
