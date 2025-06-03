@@ -274,7 +274,7 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
       }
       final settings = _settings;
       if (settings == null) {
-        emit(TaxiAdminError('Failed to fetch settings'));
+        emit(const TaxiAdminError('Failed to fetch settings'));
         return;
       }
 
@@ -387,22 +387,22 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
     }
   }
 
-  Future<void> updateBookingStatus(String bookingId, String status) async {
-    if (state is TaxiAdminSuccess) {
-      emit(TaxiAdminLoading());
-      try {
-        await _bookingService.updateBookingStatus(bookingId, status);
-        if (status.toLowerCase() == 'pending' ||
-            status.toLowerCase() == 'confirmed') {
-          await _bookingService.unAssignBooking(bookingId);
-        }
-        await fetchBookings();
-      } catch (e) {
-        emit(
-            TaxiAdminError('Failed to update booking status: ${e.toString()}'));
-      }
-    }
-  }
+  // Future<void> updateBookingStatus(String bookingId, String status) async {
+  //   if (state is TaxiAdminSuccess) {
+  //     emit(TaxiAdminLoading());
+  //     try {
+  //       await _bookingService.updateBookingStatus(bookingId, status);
+  //       if (status.toLowerCase() == 'pending' ||
+  //           status.toLowerCase() == 'confirmed') {
+  //         await _bookingService.unAssignBooking(bookingId);
+  //       }
+  //       await fetchBookings();
+  //     } catch (e) {
+  //       emit(
+  //           TaxiAdminError('Failed to update booking status: ${e.toString()}'));
+  //     }
+  //   }
+  // }
 
   Future<void> acceptBooking(String bookingId, UserInfo? driver) async {
     if (state is TaxiAdminSuccess) {
@@ -410,6 +410,17 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
       try {
         await _bookingService.acceptBooking(bookingId, driver);
         await fetchBookings();
+      } catch (e) {
+        emit(TaxiAdminError('Failed to accept booking: ${e.toString()}'));
+      }
+    }
+  }
+  Future<void> acceptBookingFromPage(String bookingId, UserInfo? driver) async {
+    if (state is TaxiAdminSuccess) {
+      emit(TaxiAdminLoading());
+      try {
+        await _bookingService.acceptBooking(bookingId, driver);
+        await fetchBookingById(bookingId);
       } catch (e) {
         emit(TaxiAdminError('Failed to accept booking: ${e.toString()}'));
       }
@@ -431,19 +442,28 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
   }
 
   Future<TaxiBooking?> fetchBookingById(String bookingId) async {
+    emit(TaxiAdminLoading());
     try {
       final bookings = await _bookingService.getBookings(bookingId: bookingId);
       if (bookings.isNotEmpty) {
-        return bookings.first;
+        final booking = bookings.first;
+        final drivers = await _userServices.getUsersFromTenantCompany();
+        final userInfo = await _accountRepository.getUserInfo();
+        emit(TaxiAdminSingleBookingSuccess(
+          booking: booking,
+          drivers: drivers,
+          currentLoggedInUserId: userInfo?.userId ?? '',
+        ));
+        return booking;
+      } else {
+        emit(const TaxiAdminError('Booking not found'));
+        return null;
       }
-      return null;
     } catch (e) {
       emit(TaxiAdminError('Failed to fetch booking: ${e.toString()}'));
       return null;
     }
-  }
-
-  Future<void> unAssignedBooking(String id) async {
+  }  Future<void> unAssignedBooking(String id) async {
     emit(TaxiAdminLoading());
     await _bookingService.unAssignBooking(id);
     await fetchBookings();
@@ -490,6 +510,36 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
       return "Tomorrow, $formattedDate";
     } else {
       return formattedDate;
+    }
+  }
+  Future<void> updateBookingStatus(String bookingId, String status) async {
+    emit(TaxiAdminLoading());
+    try {
+      await _bookingService.updateBookingStatus(bookingId, status);
+      if (status.toLowerCase() == 'pending' || status.toLowerCase() == 'confirmed') {
+        await _bookingService.unAssignBooking(bookingId);
+      }
+
+      // Check if current state is for single booking
+      if (state is TaxiAdminSingleBookingSuccess) {
+        final booking = await _bookingService.getBookings(bookingId: bookingId);
+        if (booking.isNotEmpty) {
+          final drivers = await _userServices.getUsersFromTenantCompany();
+          final userInfo = await _accountRepository.getUserInfo();
+          emit(TaxiAdminSingleBookingSuccess(
+            booking: booking.first,
+            drivers: drivers,
+            currentLoggedInUserId: userInfo?.userId ?? '',
+          ));
+        } else {
+          emit(const TaxiAdminError('Booking not found'));
+        }
+      } else {
+        // For admin page, refresh all bookings
+        await fetchBookings();
+      }
+    } catch (e) {
+      emit(TaxiAdminError('Failed to update booking status: ${e.toString()}'));
     }
   }
 }
@@ -588,4 +638,18 @@ class TaxiAdminError extends TaxiAdminState {
 
   @override
   List<Object> get props => [message];
+}
+class TaxiAdminSingleBookingSuccess extends TaxiAdminState {
+  final TaxiBooking booking;
+  final List<UserInfo> drivers;
+  final String currentLoggedInUserId;
+
+  const TaxiAdminSingleBookingSuccess({
+    required this.booking,
+    required this.drivers,
+    required this.currentLoggedInUserId,
+  });
+
+  @override
+  List<Object> get props => [booking, drivers, currentLoggedInUserId];
 }
