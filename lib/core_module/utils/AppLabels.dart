@@ -4,8 +4,8 @@ class AppLabels {
   static const String saveButtonText = "Save";
 
   // Company Fields
-  static const String companyNameLabel = "Company Name";
-  static const String companyNameHint = "Enter company name";
+  static const String companyNameLabel = "Site owner name";
+  static const String companyNameHint = "Enter site owner name";
   static const String addressLabel = "Address";
   static const String addressHint = "Enter address";
   static const String emailLabel = "Email";
@@ -27,7 +27,7 @@ class AppLabels {
   static const String cityLabel = "City";
   static const String cityHint = "Select city";
   static const String sourceLabel = "Source";
-  static const String businessTypeLabel = "BusinessType";
+  static const String businessTypeLabel = "Site Type";
   static const String sourceHint = "Select source";
   static const String priorityLabel = "Priority";
   static const String priorityHint = "Select priority";
@@ -142,5 +142,66 @@ class AppLabels {
   // Dropdown Labels
   static const String selectYear = "Select Year";
   static const String noDataMessage = "No data available";
+// AppBar Titles
+  static const String overallStockTitle = 'Overall Stock';
+  static const String stockListTitle = 'Stock List';
+  static const String cartHomeTitle = 'Shopping Cart';
+  static const String wishlistTitle = 'Wishlist';
+  static const String orderListTitle = 'Orders';
+  static const String settingsTitle = 'Settings';
+  static const String adminPanelTitle = 'Admin Panel';
 
+  // General Labels
+  static const String searchProducts = 'Search Products';
+  static const String totalStock = 'Total Stock';
+  static const String store = 'Store';
+  static const String stock = 'Stock';
+  static const String noStockAvailable = 'No stock available';
+  static const String noProductsFound = 'No products found';
+  static const String error = 'Error';
+  static const String selectStore = 'Select Store';
+  static const String addStock = 'Add Stock';
+  static const String transferStock = 'Transfer Stock';
+  static const String quantityToAdd = 'Quantity to Add';
+  static const String quantityToTransfer = 'Quantity to Transfer';
+  static const String transferToStore = 'Transfer to Store';
+  static const String invalidSelection = 'Invalid quantity or store selection';
+
+  // Shopping Cart Specific Labels
+  static const String checkout = 'Checkout';
+  static const String previewOrder = 'Preview Order';
+  static const String placeOrder = 'Place Order';
+  static const String yourCartIsEmpty = 'Your cart is empty';
+
+  static const String orderDetailsTitle = 'Order Details';
+  static const String checkoutTitle = 'Checkout';
+  static const String previewOrderTitle = 'Preview Order';
+  static const String placeOrderTitle = 'Place Order';
+  static const String adminOrderDetailsTitle = 'Admin Order Details';
+
+  // General Labels
+
+  static const String yourWishlistIsEmpty = 'Your wishlist is empty';
+  static const String noOrdersFound = 'No orders found';
+
+  // Shopping Cart Specific Labels
+  static const String confirmOrder = 'Confirm Order';
+  static const String orderSummary = 'Order Summary';
+  static const String orderStatistics = 'Order Statistics';
+  static const String allOrders = 'All Orders';
+  static const String pendingOrders = 'Pending Orders';
+  static const String completedOrders = 'Completed Orders';
+  static const String itemsLabel = 'Items';
+  static const String updateStatusLabel = 'Update Status';
+  static const String setDeliveryDateLabel = 'Set Delivery Date';
+  static const String orderPlacedSuccessfully = 'Order placed successfully!';
+  static const String status = "Status";
+  static const String total = "Total";
+  static const String placedOn = "Placed On";
+  static const String items = "Items";
+  static const String updateStatus = "Update Status";
+  static const String setDeliveryDate = "Set Delivery Date";
+  static const String red = "Red";
+  static const String white = "White";
+  static const String black87 = "Black87";
 }

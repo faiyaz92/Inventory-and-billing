@@ -9,6 +9,7 @@ import 'package:requirment_gathering_app/core_module/service_locator/service_loc
 
 import '../main.mocks.dart';
 
+
 void main() {
   late MockSplashCubit mockSplashCubit;
   late MockCoordinator mockCoordinator;
@@ -36,7 +37,7 @@ void main() {
       MaterialApp(
         home: BlocProvider<SplashCubit>(
           create: (_) => mockSplashCubit,
-          child: const SplashScreen(),
+          child: const SplashScreenPage(),
         ),
       ),
     );
@@ -57,7 +58,7 @@ void main() {
       MaterialApp(
         home: BlocProvider<SplashCubit>(
           create: (_) => mockSplashCubit,
-          child: SplashScreen(
+          child: SplashScreenPage(
             onDelayComplete: () async {
               mockSplashCubit.checkSession();
             },
@@ -80,7 +81,7 @@ void main() {
       MaterialApp(
         home: BlocProvider<SplashCubit>(
           create: (_) => mockSplashCubit,
-          child: SplashScreen(
+          child: SplashScreenPage(
             onDelayComplete: () async {
               mockSplashCubit.checkSession();
             },

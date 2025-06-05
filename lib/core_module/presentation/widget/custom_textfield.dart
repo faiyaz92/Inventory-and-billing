@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:requirment_gathering_app/core_module/utils/text_styles.dart';
 
 class CustomTextField extends StatelessWidget {
-  final TextEditingController controller;
+  final TextEditingController? controller;
+  final String? initialValue;
   final FocusNode? focusNode;
   final String labelText;
   final String hintText;
@@ -12,66 +13,100 @@ class CustomTextField extends StatelessWidget {
   final Widget? suffixIcon;
   final TextInputAction? textInputAction;
   final int? maxLength;
+  final int? maxLines;
   final void Function(String)? onChanged;
   final void Function(String)? onFieldSubmitted;
   final TextCapitalization textCapitalization;
-  final TextStyle? labelStyle; // Optional label style
-  final TextStyle? hintStyle; // Optional hint style
+  final TextStyle? labelStyle;
+  final TextStyle? hintStyle;
+  final TextInputType? keyboardType;
+  final bool enabled;
+  final EdgeInsets? contentPadding;
+  final InputDecoration? decoration; // New parameter for custom decoration
 
   const CustomTextField({
     super.key,
-    required this.controller,
+    this.controller,
+    this.initialValue,
     this.focusNode,
     required this.labelText,
     required this.hintText,
-    this.prefixIcon,
     this.obscureText = false,
     this.errorText,
+    this.prefixIcon,
     this.suffixIcon,
     this.textInputAction,
     this.maxLength,
+    this.maxLines = 1,
     this.onChanged,
     this.onFieldSubmitted,
     this.textCapitalization = TextCapitalization.none,
-    this.labelStyle, // Pass custom label style if needed
-    this.hintStyle, // Pass custom hint style if needed
+    this.labelStyle,
+    this.hintStyle,
+    this.keyboardType,
+    this.enabled = true,
+    this.contentPadding,
+    this.decoration, // Add to constructor
   });
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
       controller: controller,
+      initialValue: controller == null ? initialValue : null,
       focusNode: focusNode,
       obscureText: obscureText,
       textInputAction: textInputAction,
       onChanged: onChanged,
-      onSubmitted: onFieldSubmitted,
+      onFieldSubmitted: onFieldSubmitted,
       maxLength: maxLength,
+      maxLines: maxLines,
       textCapitalization: textCapitalization,
-      style: defaultTextStyle(), // Use global default text style
-      decoration: InputDecoration(
+      keyboardType: keyboardType,
+      enabled: enabled,
+      style: defaultTextStyle(fontSize: 14),
+      decoration: decoration ?? InputDecoration(
         labelText: labelText,
         hintText: hintText,
-        labelStyle: labelStyle ?? defaultTextStyle(fontSize: 14, fontWeight: FontWeight.normal), // Default or custom label style
-        hintStyle: hintStyle ?? defaultTextStyle(fontSize: 14, color: Colors.grey), // Default or custom hint style
+        labelStyle: labelStyle ??
+            defaultTextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: enabled ? Colors.black87 : Colors.grey,
+            ),
+        hintStyle: hintStyle ??
+            defaultTextStyle(
+              fontSize: 14,
+              color: Colors.grey,
+            ),
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
         errorText: errorText,
-        counterText: '',
+        counterText: maxLength != null ? '' : null,
+        contentPadding: contentPadding ?? const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[400]!),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[400]!),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.blue),
+          borderSide: const BorderSide(color: Colors.blue, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.red),
+          borderSide: const BorderSide(color: Colors.red, width: 1.5),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.red),
+          borderSide: const BorderSide(color: Colors.red, width: 2),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[300]!),
         ),
       ),
     );

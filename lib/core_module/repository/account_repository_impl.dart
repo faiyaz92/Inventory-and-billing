@@ -11,6 +11,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'account_repository.dart';
 
+import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:requirment_gathering_app/core_module/services/firestore_provider.dart';
+import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart' as uInfo;
+import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'account_repository.dart';
+
 class AccountRepositoryImpl implements AccountRepository {
   final FirebaseAuth _firebaseAuth;
   final IFirestorePathProvider _firestorePathProvider;
@@ -19,16 +31,13 @@ class AccountRepositoryImpl implements AccountRepository {
 
   @override
   Future<UserInfoDto> signIn(String email, String password) async {
-    UserCredential userCredential =
-        await _firebaseAuth.signInWithEmailAndPassword(
+    UserCredential userCredential = await _firebaseAuth.signInWithEmailAndPassword(
       email: email,
       password: password,
     );
     String userId = userCredential.user!.uid;
 
-    // ✅ Check if the user is a Super Admin
-    DocumentSnapshot superAdminSnapshot =
-        await _firestorePathProvider.superAdminPath.doc(userId).get();
+    DocumentSnapshot superAdminSnapshot = await _firestorePathProvider.superAdminPath.doc(userId).get();
 
     if (superAdminSnapshot.exists) {
       UserInfoDto userInfo = UserInfoDto(
@@ -44,7 +53,6 @@ class AccountRepositoryImpl implements AccountRepository {
       return userInfo;
     }
 
-    // ✅ If not a Super Admin, check if they exist in any Tenant Company
     QuerySnapshot query = await _firestorePathProvider
         .getCommonUsersPath()
         .where('userId', isEqualTo: userId)
@@ -54,16 +62,12 @@ class AccountRepositoryImpl implements AccountRepository {
     if (query.docs.isEmpty) {
       throw Exception("User not found in any Tenant Company.");
     }
-    //
-    // ✅ Convert Firestore data to DTO
-    UserInfoDto userInfo =
-        UserInfoDto.fromMap(query.docs.first.data() as Map<String, dynamic>);
+
+    UserInfoDto userInfo = UserInfoDto.fromMap(query.docs.first.data() as Map<String, dynamic>);
     await _storeUserInfo(uInfo.UserInfo.fromDto(userInfo));
     return userInfo;
-    // return UserInfoDto(userId: '', email: '', role: Role.SUPER_ADMIN);
   }
 
-  // ✅ Store user info in SharedPreferences
   @override
   Future<void> _storeUserInfo(uInfo.UserInfo userInfo) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -91,4 +95,10 @@ class AccountRepositoryImpl implements AccountRepository {
   bool isUserLoggedIn() {
     return _firebaseAuth.currentUser != null;
   }
+
+  @override
+  Future<void> resetPassword(String email) async {
+    await _firebaseAuth.sendPasswordResetEmail(email: email);
+  }
 }
+

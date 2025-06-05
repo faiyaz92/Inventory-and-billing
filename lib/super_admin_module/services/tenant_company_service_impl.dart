@@ -1,4 +1,3 @@
-
 import 'package:requirment_gathering_app/super_admin_module/data/tenant_company.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/tenant_company_dto.dart';
 import 'package:requirment_gathering_app/super_admin_module/repository/tenant_company_repository.dart';
@@ -10,7 +9,12 @@ class TenantCompanyServiceImpl implements TenantCompanyService {
   TenantCompanyServiceImpl(this._tenantCompanyRepository);
 
   @override
-  Future<void> createTenantCompany(TenantCompany company, String password) async {
+  Future<void> createTenantCompany(
+      TenantCompany company,
+      String password, {
+        required String adminUsername,
+        required String adminName,
+      }) async {
     final dto = TenantCompanyDto(
       companyId: company.id ?? '',
       name: company.name,
@@ -24,7 +28,12 @@ class TenantCompanyServiceImpl implements TenantCompanyService {
       address: company.address,
     );
 
-    await _tenantCompanyRepository.createTenantCompany(dto, password);
+    await _tenantCompanyRepository.createTenantCompany(
+      dto,
+      password,
+      adminUsername: adminUsername,
+      adminName: adminName,
+    );
   }
 
   @override

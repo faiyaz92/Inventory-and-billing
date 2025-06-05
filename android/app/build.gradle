@@ -42,11 +42,11 @@ android {
 
     defaultConfig {
         applicationId "com.example.requirment_gathering_app"
-        minSdkVersion flutter.minSdkVersion  // Ensure this is >= 21
+        minSdkVersion 23 // Already set correctly for firebase_auth
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
-        multiDexEnabled true  // Enable multidex
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -61,6 +61,7 @@ flutter {
 }
 
 dependencies {
-    implementation 'androidx.multidex:multidex:2.0.1'  // Add this dependency
+    implementation 'androidx.multidex:multidex:2.0.1'
 }
+
 apply plugin: 'com.google.gms.google-services'

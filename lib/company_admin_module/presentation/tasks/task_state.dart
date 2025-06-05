@@ -1,5 +1,3 @@
-
-
 import 'package:equatable/equatable.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/task/task_model.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
@@ -16,11 +14,12 @@ class TaskLoading extends TaskState {}
 class TaskLoaded extends TaskState {
   final List<TaskModel> tasks;
   final List<UserInfo> users;
+  final bool isLoading;
 
-  TaskLoaded(this.tasks, this.users);
+  TaskLoaded(this.tasks, this.users,{this.isLoading=false});
 
   @override
-  List<Object> get props => [tasks, users];
+  List<Object> get props => [tasks, users,isLoading];
 }
 
 class TaskError extends TaskState {
@@ -31,6 +30,7 @@ class TaskError extends TaskState {
   @override
   List<Object> get props => [message];
 }
+
 class TaskSettingsLoaded extends TaskState {
   final List<String> taskStatuses;
 

@@ -8,10 +8,7 @@ class AuthServiceImpl implements AuthService {
 
   @override
   Future<void> signIn(String email, String password) async {
-    await _accountRepository.signIn(
-       email,
-       password,
-    );
+    await _accountRepository.signIn(email, password);
   }
 
   @override
@@ -21,6 +18,11 @@ class AuthServiceImpl implements AuthService {
 
   @override
   bool isUserLoggedIn() {
-    return _accountRepository.isUserLoggedIn(); // Check if the user is logged in
+    return _accountRepository.isUserLoggedIn();
+  }
+
+  @override
+  Future<void> resetPassword(String email) async {
+    await _accountRepository.resetPassword(email);
   }
 }

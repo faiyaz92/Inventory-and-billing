@@ -7,6 +7,7 @@ class CompanySettingDto {
   final Map<String, List<String>> countryCityMap;
   final List<String> businessTypes;
   final List<String> taskStatuses;
+  final Map<String, List<String>> purposeTypeMap; // New: Purpose -> Types mapping
 
   CompanySettingDto({
     required this.sources,
@@ -15,6 +16,7 @@ class CompanySettingDto {
     required this.countryCityMap,
     required this.businessTypes,
     required this.taskStatuses,
+    required this.purposeTypeMap,
   });
 
   factory CompanySettingDto.fromMap(Map<String, dynamic> map) {
@@ -27,6 +29,9 @@ class CompanySettingDto {
       ) ?? {},
       businessTypes: List<String>.from(map['businessTypes'] ?? []),
       taskStatuses: List<String>.from(map['taskStatuses'] ?? []),
+      purposeTypeMap: (map['purposeTypeMap'] as Map<String, dynamic>?)?.map(
+            (key, value) => MapEntry(key, List<String>.from(value)),
+      ) ?? {'Material': [], 'Labor': []},
     );
   }
 
@@ -38,6 +43,7 @@ class CompanySettingDto {
       'countryCityMap': countryCityMap,
       'businessTypes': businessTypes,
       'taskStatuses': taskStatuses,
+      'purposeTypeMap': purposeTypeMap,
     };
   }
 
@@ -49,6 +55,7 @@ class CompanySettingDto {
       countryCityMap: countryCityMap,
       businessTypes: businessTypes,
       taskStatuses: taskStatuses,
+      purposeTypeMap: purposeTypeMap,
     );
   }
 
@@ -60,6 +67,7 @@ class CompanySettingDto {
       countryCityMap: uiModel.countryCityMap,
       businessTypes: uiModel.businessTypes,
       taskStatuses: uiModel.taskStatuses,
+      purposeTypeMap: uiModel.purposeTypeMap,
     );
   }
 }
