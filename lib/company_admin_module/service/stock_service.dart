@@ -31,7 +31,8 @@ class StockServiceImpl implements StockService {
     if (companyId.isEmpty) {
       throw Exception('Company ID not found');
     }
-    final stockDtos = await stockRepository.getStock(companyId, storeId);
+    final stockDtos = await stockRepository.getStock(
+        companyId, storeId.isEmpty ? userInfo?.storeId : storeId); // if not store id then it will fetch from own store
     return stockDtos
         .map((dto) => StockModel(
               id: dto.id,

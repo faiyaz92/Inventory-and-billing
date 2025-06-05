@@ -164,12 +164,12 @@ class AccountLedgerCubit extends Cubit<AccountLedgerState> {
     emit(AccountLedgerLoading());
     try {
       if (amount <= 0) {
-        emit(TransactionAddFailed("Amount must be greater than 0"));
+        emit(const TransactionAddFailed("Amount must be greater than 0"));
         return;
       }
 
       if (remarks != null && remarks.length > 500) {
-        emit(TransactionAddFailed("Remarks cannot exceed 500 characters"));
+        emit(const TransactionAddFailed("Remarks cannot exceed 500 characters"));
         return;
       }
       final loggedInInfo = await _accountRepository.getUserInfo();
@@ -221,7 +221,7 @@ class AccountLedgerCubit extends Cubit<AccountLedgerState> {
       );
       await _accountLedgerService.updateLedger(ledgerId, updatedLedger);
       await _accountLedgerService.addTransaction(ledgerId, transaction);
-      emit(TransactionAddSuccess("Transaction added successfully"));
+      emit(const TransactionSuccess("Transaction added successfully"));
       await fetchLedger(ledgerId);
     } catch (e) {
       emit(TransactionAddFailed("Failed to add transaction: $e"));
@@ -245,8 +245,9 @@ class AccountLedgerCubit extends Cubit<AccountLedgerState> {
         currentProfit: 0.0,
         totalPaymentReceived: 0.0,
       );
-      await _accountLedgerService.createLedger(company, newLedger);
-      emit(AccountLedgerSuccess("Ledger created successfully!"));
+     String ledgerId =await _accountLedgerService.createLedger(newLedger);
+     await _companyService.updateCompany(company.id, company.copyWith(accountLedgerId: ledgerId));
+      emit(const AccountLedgerSuccess("Ledger created successfully!"));
     } catch (e) {
       emit(AccountLedgerError("Ledger creation failed: $e"));
     }
@@ -256,7 +257,7 @@ class AccountLedgerCubit extends Cubit<AccountLedgerState> {
     emit(AccountLedgerLoading());
     try {
       await _accountLedgerService.deleteTransaction(ledgerId, transaction.transactionId!);
-      emit(AccountLedgerSuccess("Transaction deleted successfully!"));
+      emit(const AccountLedgerSuccess("Transaction deleted successfully!"));
       await fetchLedger(ledgerId);
     } catch (e) {
       emit(AccountLedgerError("Failed to delete transaction: $e"));

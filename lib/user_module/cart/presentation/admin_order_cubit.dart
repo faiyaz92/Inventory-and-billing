@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/store_services.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
@@ -17,6 +19,7 @@ class AdminOrderListFetchLoading extends AdminOrderState {}
 class AdminOrderListFetchSuccess extends AdminOrderState {
   final List<Order> orders;
   final List<UserInfo> users;
+  final List<StoreDto> stores; // Added
   final DateTime? startDate;
   final DateTime? endDate;
   final DateTime? expectedDeliveryStartDate;
@@ -24,6 +27,12 @@ class AdminOrderListFetchSuccess extends AdminOrderState {
   final String? status;
   final String? orderTakenBy;
   final String? orderDeliveredBy;
+  final String? storeId; // Added
+  final DateTime? actualDeliveryStartDate; // Added
+  final DateTime? actualDeliveryEndDate; // Added
+  final String? userId; // Added
+  final double? minTotalAmount; // Added
+  final double? maxTotalAmount; // Added
   final Map<String, List<Order>> groupedOrders;
   final String dateRangeLabel;
   final String expectedDeliveryRangeLabel;
@@ -33,6 +42,7 @@ class AdminOrderListFetchSuccess extends AdminOrderState {
   AdminOrderListFetchSuccess({
     required this.orders,
     required this.users,
+    required this.stores, // Added
     this.startDate,
     this.endDate,
     this.expectedDeliveryStartDate,
@@ -40,6 +50,12 @@ class AdminOrderListFetchSuccess extends AdminOrderState {
     this.status,
     this.orderTakenBy,
     this.orderDeliveredBy,
+    this.storeId, // Added
+    this.actualDeliveryStartDate, // Added
+    this.actualDeliveryEndDate, // Added
+    this.userId, // Added
+    this.minTotalAmount, // Added
+    this.maxTotalAmount, // Added
     required this.groupedOrders,
     required this.dateRangeLabel,
     required this.expectedDeliveryRangeLabel,
@@ -47,7 +63,6 @@ class AdminOrderListFetchSuccess extends AdminOrderState {
     required this.showTodayStats,
   });
 }
-
 class AdminOrderListFetchError extends AdminOrderState {
   final String message;
   AdminOrderListFetchError(this.message);
@@ -64,6 +79,7 @@ class AdminOrderFetchSuccess extends AdminOrderState {
   final double totalTax;
   final String orderDateFormatted;
   final String? expectedDeliveryDateFormatted;
+  final String? orderDeliveryDateFormatted; // Added
   final String? orderTakenByName;
   final String? lastUpdatedByName;
   final String? responsibleForDeliveryName;
@@ -77,12 +93,16 @@ class AdminOrderFetchSuccess extends AdminOrderState {
     required this.totalTax,
     required this.orderDateFormatted,
     this.expectedDeliveryDateFormatted,
+    this.orderDeliveryDateFormatted, // Added
     this.orderTakenByName,
     this.lastUpdatedByName,
     this.responsibleForDeliveryName,
     this.orderDeliveredByName,
   });
 }
+
+
+
 
 class AdminOrderFetchError extends AdminOrderState {
   final String message;
@@ -128,12 +148,14 @@ class AdminOrderSetDeliveredByError extends AdminOrderState {
 class AdminOrderCubit extends Cubit<AdminOrderState> {
   final IOrderService orderService;
   final UserServices employeeServices;
+  final StoreService storeService;
   static final _dateFormatter = DateFormat('MMM dd, yyyy');
   static final _fullDateFormatter = DateFormat('yyyy-MM-dd HH:mm');
 
   AdminOrderCubit({
     required this.orderService,
     required this.employeeServices,
+    required this.storeService,
   }) : super(AdminOrderInitial());
 
   bool _isToday(DateTime? date) {
@@ -312,17 +334,25 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
     DateTime? expectedDeliveryEndDate,
     String? orderTakenBy,
     String? orderDeliveredBy,
+    String? storeId,
+    DateTime? actualDeliveryStartDate,
+    DateTime? actualDeliveryEndDate,
+    String? userId,
+    double? minTotalAmount,
+    double? maxTotalAmount,
   }) async {
     emit(AdminOrderListFetchLoading());
     try {
       final orders = await orderService.getAllOrders();
+      final users = await employeeServices.getUsersFromTenantCompany(storeId: storeId);
+      final stores = await storeService.getStores();
+
       orders.sort((a, b) => b.orderDate.compareTo(a.orderDate));
       List<Order> filteredOrders = orders;
 
       if (startDate != null && endDate != null) {
         filteredOrders = filteredOrders.where((order) {
-          return order.orderDate
-              .isAfter(startDate.subtract(const Duration(days: 1))) &&
+          return order.orderDate.isAfter(startDate/*.subtract(const Duration(days: 1))*/) &&
               order.orderDate.isBefore(endDate.add(const Duration(days: 1)));
         }).toList();
       }
@@ -355,11 +385,34 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
             .toList();
       }
 
-      final users = await employeeServices.getUsersFromTenantCompany();
+      if (storeId != null) {
+        filteredOrders = filteredOrders.where((order) => order.storeId == storeId).toList();
+      }
+
+      if (actualDeliveryStartDate != null && actualDeliveryEndDate != null) {
+        filteredOrders = filteredOrders.where((order) {
+          if (order.orderDeliveryDate == null) return false;
+          return order.orderDeliveryDate!.isAfter(
+              actualDeliveryStartDate.subtract(const Duration(days: 1))) &&
+              order.orderDeliveryDate!.isBefore(
+                  actualDeliveryEndDate.add(const Duration(days: 1)));
+        }).toList();
+      }
+
+      if (userId != null) {
+        filteredOrders = filteredOrders.where((order) => order.userId == userId).toList();
+      }
+
+      if (minTotalAmount != null && maxTotalAmount != null) {
+        filteredOrders = filteredOrders.where((order) =>
+        order.totalAmount >= minTotalAmount && order.totalAmount <= maxTotalAmount).toList();
+      }
+
       final showTodayStats = _shouldShowTodayStats(startDate, endDate);
       emit(AdminOrderListFetchSuccess(
         orders: filteredOrders,
         users: users,
+        stores: stores,
         startDate: startDate,
         endDate: endDate,
         expectedDeliveryStartDate: expectedDeliveryStartDate,
@@ -367,10 +420,16 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
         status: status,
         orderTakenBy: orderTakenBy,
         orderDeliveredBy: orderDeliveredBy,
+        storeId: storeId,
+        actualDeliveryStartDate: actualDeliveryStartDate,
+        actualDeliveryEndDate: actualDeliveryEndDate,
+        userId: userId,
+        minTotalAmount: minTotalAmount,
+        maxTotalAmount: maxTotalAmount,
         groupedOrders: _groupOrdersByDate(filteredOrders),
         dateRangeLabel: _formatDateRange(startDate, endDate),
-        expectedDeliveryRangeLabel:
-        _formatExpectedDeliveryRange(expectedDeliveryStartDate, expectedDeliveryEndDate),
+        expectedDeliveryRangeLabel: _formatExpectedDeliveryRange(
+            expectedDeliveryStartDate, expectedDeliveryEndDate),
         statistics: _computeStatistics(filteredOrders, showTodayStats),
         showTodayStats: showTodayStats,
       ));
@@ -395,6 +454,9 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
         expectedDeliveryDateFormatted: order.expectedDeliveryDate != null
             ? _fullDateFormatter.format(order.expectedDeliveryDate!)
             : null,
+        orderDeliveryDateFormatted: order.orderDeliveryDate != null // Added
+            ? _fullDateFormatter.format(order.orderDeliveryDate!)
+            : null,
         orderTakenByName: getUserNameById(order.orderTakenBy, users),
         lastUpdatedByName: getUserNameById(order.lastUpdatedBy, users),
         responsibleForDeliveryName:
@@ -405,7 +467,6 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
       emit(AdminOrderFetchError('Failed to fetch order: ${e.toString()}'));
     }
   }
-
   Future<void> updateOrderStatus(String orderId, String status) async {
     emit(AdminOrderUpdateStatusLoading());
     try {
@@ -457,6 +518,86 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
     } catch (e) {
       emit(AdminOrderSetResponsibleError(
           'Failed to set responsible for delivery: ${e.toString()}'));
+    }
+  }
+
+  Future<void> fetchOrdersForEntity(String entityType, String entityId, DateTime startDate, DateTime endDate) async {
+    emit(AdminOrderListFetchLoading());
+    try {
+      final orders = await orderService.getAllOrders();
+      final users = await employeeServices.getUsersFromTenantCompany();
+      final stores = await storeService.getStores();
+
+      List<Order> filteredOrders = orders.where((order) {
+        return order.orderDate.isAfter(startDate.subtract(const Duration(days: 1))) &&
+            order.orderDate.isBefore(endDate.add(const Duration(days: 1)));
+      }).toList();
+
+      switch (entityType) {
+        case 'salesman':
+          filteredOrders = filteredOrders.where((order) => order.orderTakenBy == entityId).toList();
+          break;
+        case 'deliveryman':
+          filteredOrders = filteredOrders.where((order) => order.orderDeliveredBy == entityId).toList();
+          break;
+        case 'store':
+          filteredOrders = filteredOrders.where((order) => order.storeId == entityId).toList();
+          break;
+        case 'customer':
+          filteredOrders = filteredOrders.where((order) => order.userId == entityId).toList();
+          break;
+      }
+
+      emit(AdminOrderListFetchSuccess(
+        orders: filteredOrders,
+        users: users,
+        stores: stores,
+        startDate: startDate,
+        endDate: endDate,
+        groupedOrders: _groupOrdersByDate(filteredOrders),
+        dateRangeLabel: _formatDateRange(startDate, endDate),
+        expectedDeliveryRangeLabel: _formatExpectedDeliveryRange(null, null),
+        statistics: _computeStatistics(filteredOrders, false),
+        showTodayStats: false,
+      ));
+    } catch (e) {
+      emit(AdminOrderListFetchError('Failed to fetch orders: $e'));
+    }
+  }
+  Future<String> fetchEntityName(String entityType, String entityId) async {
+    try {
+      final state = this.state;
+      List<UserInfo> users = [];
+      List<StoreDto> stores = [];
+
+      if (state is AdminOrderListFetchSuccess) {
+        users = state.users;
+        stores = state.stores;
+      } else {
+        users = await employeeServices.getUsersFromTenantCompany();
+        stores = await storeService.getStores();
+      }
+
+      switch (entityType.toLowerCase()) {
+        case 'customer':
+        case 'salesman':
+        case 'deliveryman':
+          final user = users.firstWhere(
+                (user) => user.userId == entityId,
+            orElse: () => UserInfo(userId: entityId, userName: entityId),
+          );
+          return user.name ?? entityId;
+        case 'store':
+          final store = stores.firstWhere(
+                (store) => store.storeId == entityId,
+            orElse: () => StoreDto(storeId: entityId, name: entityId, createdBy: '', createdAt: DateTime.timestamp()),
+          );
+          return store.name;
+        default:
+          return entityId;
+      }
+    } catch (e) {
+      return entityId; // Fallback to entityId on error
     }
   }
 }

@@ -1,4 +1,5 @@
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_dto.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
 import 'package:requirment_gathering_app/user_module/cart/repo/order_repository.dart';
@@ -31,8 +32,9 @@ class OrderService implements IOrderService {
   @override
   Future<List<Order>> getAllOrders() async {
     final userInfo = await accountRepository.getUserInfo();
-    final orderDtos =
-        await orderRepository.getAllOrders(userInfo?.companyId ?? '');
+    final orderDtos = await orderRepository.getAllOrders(
+        userInfo?.companyId ?? '',
+        userInfo?.role == Role.COMPANY_ADMIN ? null : userInfo?.storeId);
     return orderDtos.map((dto) => Order.fromDto(dto)).toList();
   }
 

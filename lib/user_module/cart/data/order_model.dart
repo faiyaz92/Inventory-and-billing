@@ -14,6 +14,7 @@ class Order {
   final String? orderDeliveredBy;
   final String? responsibleForDelivery;
   final String? lastUpdatedBy; // Added for last updated by
+  final String? storeId; // New field
 
   Order({
     required this.id,
@@ -29,6 +30,7 @@ class Order {
     this.orderDeliveredBy,
     this.responsibleForDelivery,
     this.lastUpdatedBy,
+     this.storeId, // New field
   });
 
   factory Order.fromDto(OrderDto dto) {
@@ -46,6 +48,7 @@ class Order {
       orderDeliveredBy: dto.orderDeliveredBy,
       responsibleForDelivery: dto.responsibleForDelivery,
       lastUpdatedBy: dto.lastUpdatedBy,
+      storeId: dto.storeId, // New field
     );
   }
 }

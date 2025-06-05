@@ -5,8 +5,16 @@ import 'package:requirment_gathering_app/company_admin_module/repositories/trans
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 
 abstract class TransactionService {
-  Future<List<TransactionModel>> getTransactions(String storeId);
-
+  Future<List<TransactionModel>> getTransactions(
+      String storeId, {
+        String? userId,
+        String? fromStoreId,
+        String? toStoreId,
+        DateTime? startDate,
+        DateTime? endDate,
+        required int page,
+        required int pageSize,
+      });
 
   Future<void> createBilling(TransactionModel transaction);
 
@@ -25,45 +33,69 @@ class TransactionServiceImpl implements TransactionService {
   });
 
   @override
-  Future<List<TransactionModel>> getTransactions(String storeId) async {
+  Future<List<TransactionModel>> getTransactions(
+      String storeId, {
+        String? userId,
+        String? fromStoreId,
+        String? toStoreId,
+        DateTime? startDate,
+        DateTime? endDate,
+        required int page,
+        required int pageSize,
+      }) async {
     final userInfo = await accountRepository.getUserInfo();
+    final companyId = userInfo?.companyId ?? '';
+
+    // Fetch transactions with pagination
     final transactionDtos = await transactionRepository.getTransactions(
-        userInfo?.companyId ?? '', storeId);
-    final allTransactions =
-        transactionDtos.map((dto) => TransactionModel.fromDto(dto)).toList();
+      companyId,
+      storeId,
+      userId: userId,
+      fromStoreId: fromStoreId,
+      toStoreId: toStoreId,
+      startDate: startDate,
+      endDate: endDate,
+      page: page,
+      pageSize: pageSize,
+    );
 
-    print('Fetching transactions for storeId: $storeId');
-    print('Total transactions before filtering: ${allTransactions.length}');
-
-    // Filter transactions based on type and store relevance
+    final allTransactions = transactionDtos.map((dto) => TransactionModel.fromDto(dto)).toList();
+    // Apply existing type-based filtering
     final filteredTransactions = allTransactions.where((transaction) {
+      bool isMatch = false;
       if (transaction.type == 'out' ||
           transaction.type == 'add' ||
           transaction.type == 'billing') {
-        // Show 'out', 'add', and 'billing' transactions in the source store (fromStoreId)
-        final isMatch = transaction.fromStoreId == storeId;
-        print(
-            'Transaction ID: ${transaction.id}, Type: ${transaction.type}, fromStoreId: ${transaction.fromStoreId}, toStoreId: ${transaction.toStoreId}, Matches: $isMatch');
-        return isMatch;
+        isMatch = transaction.fromStoreId == storeId;
       } else if (transaction.type == 'received') {
-        // Show 'received' transactions in the target store (toStoreId)
-        final isMatch = transaction.toStoreId == storeId;
-        print(
-            'Transaction ID: ${transaction.id}, Type: ${transaction.type}, fromStoreId: ${transaction.fromStoreId}, toStoreId: ${transaction.toStoreId}, Matches: $isMatch');
-        return isMatch;
+        isMatch = transaction.toStoreId == storeId;
       }
 
-      if (transaction.fromStoreId == storeId) {}
-      print(
-          'Transaction ID: ${transaction.id}, Type: ${transaction.type}, Skipped (unknown type)');
-      return false;
+      // Apply additional filters
+      if (userId != null && transaction.userId != userId) {
+        isMatch = false;
+      }
+      if (fromStoreId != null && transaction.fromStoreId != fromStoreId) {
+        isMatch = false;
+      }
+      if (toStoreId != null && transaction.toStoreId != toStoreId) {
+        isMatch = false;
+      }
+      if (startDate != null && transaction.timestamp.isBefore(startDate)) {
+        isMatch = false;
+      }
+      if (endDate != null && transaction.timestamp.isAfter(endDate)) {
+        isMatch = false;
+      }
+      return isMatch;
     }).toList();
+
+    // Sort by timestamp descending
+    filteredTransactions.sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
     print('Total transactions after filtering: ${filteredTransactions.length}');
     return filteredTransactions;
   }
-
-
 
   @override
   Future<void> createBilling(TransactionModel transaction) async {

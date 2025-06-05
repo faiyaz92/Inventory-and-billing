@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:requirment_gathering_app/core_module/app_router/app_router.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
@@ -38,7 +39,6 @@ class CartDashboardPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // GridView
                 Expanded(
                   child: GridView.count(
                     crossAxisCount: 3,
@@ -51,20 +51,114 @@ class CartDashboardPage extends StatelessWidget {
                         'Cart',
                         Icons.list,
                         Colors.blue,
-                        () => sl<Coordinator>().navigateToCartHomePage(),
+                            () => sl<Coordinator>().navigateToCartHomePage(),
                       ),
                       _buildDashboardCard(
                         context,
                         'Cart Admin',
                         Icons.receipt,
                         Colors.orange,
-                        () => sl<Coordinator>().navigateToAdminPanelPage(),
-                      ), _buildDashboardCard(
+                            () => sl<Coordinator>().navigateToAdminPanelPage(),
+                      ),
+                      _buildDashboardCard(
                         context,
-                        'Sales man order',
+                        'Salesman Orders',
                         Icons.receipt,
                         Colors.orange,
-                        () => sl<Coordinator>().navigateToSalesManOrderPage(),
+                            () => sl<Coordinator>().navigateToSalesManOrderPage(),
+                      ),
+                      _buildDashboardCard(
+                        context,
+                        'Top Salesman List',
+                        Icons.person,
+                        Colors.green,
+                            () => sl<Coordinator>().navigateToSalesmanOrderListPage(),
+                      ),
+                      _buildDashboardCard(
+                        context,
+                        'Top Delivery Man List',
+                        Icons.delivery_dining,
+                        Colors.purple,
+                            () => sl<Coordinator>().navigateToDeliveryManOrderListPage(),
+                      ),
+                      _buildDashboardCard(
+                        context,
+                        'Top Store List',
+                        Icons.store,
+                        Colors.red,
+                            () => sl<Coordinator>().navigateToStoreOrderListPage(),
+                      ),
+                      _buildDashboardCard(
+                        context,
+                        'Top Customer List',
+                        Icons.people,
+                        Colors.teal,
+                            () => sl<Coordinator>().navigateToCustomerOrderListPage(),
+                      ),
+                      _buildDashboardCard(
+                        context,
+                        'Company Performance',
+                        Icons.trending_up,
+                        Colors.blueAccent,
+                            () => sl<Coordinator>().navigateToCompanyPerformancePage(),
+                      ), _buildDashboardCard(
+                        context,
+                        'Product Performance',
+                        Icons.trending_up,
+                        Colors.blueAccent,
+                            () => sl<Coordinator>().navigateToProductPerformanceListPage(),
+                      ),
+
+                      _buildDashboardCard(
+                        context,
+                        'Taxi booking',
+                        Icons.car_rental,
+                        Colors.blueAccent,
+                            () => sl<Coordinator>().navigateToTaxiBookingPage(),
+                      ), _buildDashboardCard(
+                        context,
+                        'Taxi admin',
+                        Icons.admin_panel_settings,
+                        Colors.blueAccent,
+                            () => sl<Coordinator>().navigateToTaxiBookingsAdminPage(),
+                      ), _buildDashboardCard(
+                        context,
+                        'Taxi Setting',
+                        Icons.settings,
+                        Colors.blueAccent,
+                            () => sl<Coordinator>().navigateToTaxiSettingsPage(),
+                      ),_buildDashboardCard(
+                        context,
+                        'Driver List',
+                        Icons.settings,
+                        Colors.blueAccent,
+                            () => sl<Coordinator>().navigateToDriverListPage(),
+                      ),_buildDashboardCard(
+                        context,
+                        'Taxi Company performance',
+                        Icons.settings,
+                        Colors.blueAccent,
+                            () => sl<Coordinator>().navigateToTaxiCompanyPerformancePage(),
+                      ),_buildDashboardCard(
+                        context,
+                        'Taxi Company visitor counter',
+                        Icons.settings,
+                        Colors.blueAccent,
+                            () => sl<Coordinator>().navigateToTaxiVisitorCounterPage(),
+                      ),_buildDashboardCard(
+                        context,
+                        'Booking history',
+                        Icons.history,
+                        Colors.blueAccent,
+                            () => sl<Coordinator>().navigateToUserBookingHistory(),
+                      ),
+                      
+                      _buildDashboardCard(
+                        context,
+                        'WEB',
+                        Icons.history,
+                        Colors.blueAccent,
+                            () => sl<Coordinator>().navigateToWebApp(),
                       ),
                     ],
                   ),
@@ -78,12 +172,12 @@ class CartDashboardPage extends StatelessWidget {
   }
 
   Widget _buildDashboardCard(
-    BuildContext context,
-    String title,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
+      BuildContext context,
+      String title,
+      IconData icon,
+      Color color,
+      VoidCallback onTap,
+      ) {
     return Card(
       elevation: 4.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

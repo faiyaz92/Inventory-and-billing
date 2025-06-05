@@ -803,6 +803,169 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
         ),
         returnValue: _i5.Future<dynamic>.value(),
       ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToSalesmanOrderListPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToSalesmanOrderListPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToDeliveryManOrderListPage() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #navigateToDeliveryManOrderListPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToStoreOrderListPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToStoreOrderListPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToCustomerOrderListPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToCustomerOrderListPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToPerformanceDetailsPage({
+    required String? entityType,
+    required String? entityId,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #navigateToPerformanceDetailsPage,
+          [],
+          {
+            #entityType: entityType,
+            #entityId: entityId,
+          },
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToCompanyPerformancePage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToCompanyPerformancePage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToProductPerformanceListPage() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #navigateToProductPerformanceListPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToUserLedgerPage({required _i6.UserInfo? user}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #navigateToUserLedgerPage,
+          [],
+          {#user: user},
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToTaxiBookingPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToTaxiBookingPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToTaxiSettingsPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToTaxiSettingsPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToTaxiBookingsAdminPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToTaxiBookingsAdminPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToDriverListPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToDriverListPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToDriverPerformanceDetailsPage(
+          {required String? driverId}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #navigateToDriverPerformanceDetailsPage,
+          [],
+          {#driverId: driverId},
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToBookingDetailsPage(
+          {required String? bookingId}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #navigateToBookingDetailsPage,
+          [],
+          {#bookingId: bookingId},
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToTaxiCompanyPerformancePage() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #navigateToTaxiCompanyPerformancePage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToTaxiVisitorCounterPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToTaxiVisitorCounterPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 }
 
 /// A class which mocks [AuthService].

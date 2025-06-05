@@ -39,7 +39,7 @@ class AdminOrderDetailsPage extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: BlocListener<AdminOrderCubit, AdminOrderState>(
                 listenWhen: (previous, current) =>
-                    current is AdminOrderFetchError ||
+                current is AdminOrderFetchError ||
                     current is AdminOrderUpdateStatusError ||
                     current is AdminOrderSetDeliveryDateError ||
                     current is AdminOrderSetResponsibleError ||
@@ -98,7 +98,7 @@ class AdminOrderDetailsPage extends StatelessWidget {
                 },
                 child: BlocBuilder<AdminOrderCubit, AdminOrderState>(
                   buildWhen: (previous, current) =>
-                      current is AdminOrderFetchLoading ||
+                  current is AdminOrderFetchLoading ||
                       current is AdminOrderFetchSuccess ||
                       current is AdminOrderFetchError,
                   builder: (context, state) {
@@ -204,12 +204,13 @@ class AdminOrderDetailsPage extends StatelessWidget {
               _buildTableRow('Ordered By', state.order.userName,
                   isBold: true, valueColor: AppColors.textPrimary),
               _buildTableRow(
-                  'Order Taken By', state.orderTakenByName ?? 'No Assigned'),
+                  'Order Taken By', state.orderTakenByName ?? 'Not Assigned'),
+              _buildTableRow('Store ID', state.order.storeId ?? 'Not Provided'), // Added
               if (state.lastUpdatedByName != null)
                 _buildTableRow('Last Updated By', state.lastUpdatedByName!),
               _buildTableRow(
                 'Status',
-                state.order.status,
+                state.order.status.capitalize(),
                 isBold: true,
                 valueColor: AppColors.textPrimary,
                 backgroundColor: AppColors.primary.withOpacity(0.1),
@@ -218,6 +219,8 @@ class AdminOrderDetailsPage extends StatelessWidget {
               if (state.expectedDeliveryDateFormatted != null)
                 _buildTableRow(
                     'Expected Delivery', state.expectedDeliveryDateFormatted!),
+              if (state.orderDeliveryDateFormatted != null) // Added
+                _buildTableRow('Delivered On', state.orderDeliveryDateFormatted!),
               if (state.responsibleForDeliveryName != null)
                 _buildTableRow('Responsible for Delivery',
                     state.responsibleForDeliveryName!),
@@ -248,20 +251,20 @@ class AdminOrderDetailsPage extends StatelessWidget {
   }
 
   TableRow _buildTableRow(
-    String label,
-    String value, {
-    bool isBold = false,
-    FontWeight valueWeight = FontWeight.normal,
-    Color? valueColor = AppColors.textSecondary,
-    Color? backgroundColor,
-    BorderRadius? borderRadius,
-  }) {
+      String label,
+      String value, {
+        bool isBold = false,
+        FontWeight valueWeight = FontWeight.normal,
+        Color? valueColor = AppColors.textSecondary,
+        Color? backgroundColor,
+        BorderRadius? borderRadius,
+      }) {
     return TableRow(
       decoration: backgroundColor != null || borderRadius != null
           ? BoxDecoration(
-              color: backgroundColor,
-              borderRadius: borderRadius,
-            )
+        color: backgroundColor,
+        borderRadius: borderRadius,
+      )
           : null,
       children: [
         Padding(
@@ -352,9 +355,9 @@ class AdminOrderDetailsPage extends StatelessWidget {
                   child: Text('Not Assigned'),
                 ),
                 ...state.users.map((user) => DropdownMenuItem(
-                      value: user.userId,
-                      child: Text(user.userName ?? 'Unknown'),
-                    )),
+                  value: user.userId,
+                  child: Text(user.userName ?? 'Unknown'),
+                )),
               ],
               onChanged: (value) {
                 context

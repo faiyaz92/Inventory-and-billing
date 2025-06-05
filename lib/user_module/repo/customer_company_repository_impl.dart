@@ -21,17 +21,17 @@ class CustomerCompanyRepositoryImpl implements CustomerCompanyRepository {
   }
 
   @override
-  Future<Either<Exception, void>> addCompany(PartnerDto company) async {
+  Future<Either<Exception, String>> addCompany(PartnerDto company) async {
     try {
       final currentUser = await userInfo;
       if (currentUser == null || currentUser.companyId == null) {
         return Left(Exception("User not associated with any company."));
       }
 
-      await _pathProvider
+     final companyId =await _pathProvider
           .getCustomerCompanyRef(currentUser.companyId!)
           .add(company.toMap());
-      return const Right(null);
+      return  Right(companyId.id);
     } on FirebaseException catch (e) {
       return Left(Exception("Firestore error adding company: ${e.message}"));
     } catch (e) {
@@ -40,7 +40,7 @@ class CustomerCompanyRepositoryImpl implements CustomerCompanyRepository {
   }
 
   @override
-  Future<Either<Exception, void>> updateCompany(String id, PartnerDto company) async {
+  Future<Either<Exception, String>> updateCompany(String id, PartnerDto company) async {
     try {
       final currentUser = await userInfo;
       if (currentUser == null || currentUser.companyId == null) {
@@ -50,7 +50,7 @@ class CustomerCompanyRepositoryImpl implements CustomerCompanyRepository {
       await _pathProvider
           .getSingleCustomerCompanyRef(currentUser.companyId!, id)
           .update(company.toMap());
-      return const Right(null);
+      return  Right(id);
     } on FirebaseException catch (e) {
       return Left(Exception("Firestore error updating company: ${e.message}"));
     } catch (e) {

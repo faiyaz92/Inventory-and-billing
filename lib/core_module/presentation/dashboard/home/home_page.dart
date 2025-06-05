@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/home_cubit.dart';
+import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
+import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 
 @RoutePage()
@@ -77,7 +79,8 @@ class HomePage extends StatelessWidget {
                             // TODO: Implement purchase flow (e.g., navigate to subscription page)
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Contact support to purchase a subscription.'),
+                                content: Text(
+                                    'Contact support to purchase a subscription.'),
                               ),
                             );
                           },
@@ -295,6 +298,89 @@ class HomePage extends StatelessWidget {
           },
         ),
       ]);
+    } else if (role == Role.STORE_ADMIN) {
+      gridItems.addAll([
+        _buildGridItem(
+          icon: Icons.store,
+          label: 'My store',
+          color: Colors.orangeAccent,
+          onTap: () {
+            sl<Coordinator>().navigateToStoreDetailsPage('');
+          },
+        ),
+        _buildGridItem(
+          icon: Icons.store,
+          label: 'Store List',
+          color: Colors.pink,
+          onTap: () {
+            sl<Coordinator>().navigateToStoresListPage();
+          },
+        ),
+        _buildGridItem(
+          icon: Icons.web_asset,
+          label: 'Stock List',
+          color: Colors.blueAccent,
+          onTap: () {
+            sl<Coordinator>().navigateToStockListPage();
+          },
+        ),
+        _buildGridItem(
+          icon: Icons.store,
+          label: 'Over all stock',
+          color: Colors.pink,
+          onTap: () {
+            sl<Coordinator>().navigateToOverAllStockPage();
+          },
+        ),
+        _buildGridItem(
+          icon: Icons.store,
+          label: 'Store Attendance',
+          color: Colors.pink,
+          onTap: () {
+            sl<Coordinator>().navigateToAttendancePage();
+          },
+        ),
+        _buildGridItem(
+          icon: Icons.add_task_outlined,
+          label: 'Add Task',
+          color: Colors.blue,
+          onTap: () {
+            sl<Coordinator>().navigateToAddTaskPage();
+          },
+        ),
+        _buildGridItem(
+          icon: Icons.task,
+          label: 'Task List',
+          color: Colors.green,
+          onTap: () {
+            sl<Coordinator>().navigateToTaskListPage();
+          },
+        ),
+        _buildGridItem(
+          icon: Icons.manage_accounts,
+          label: 'Add Customer',
+          color: Colors.pink,
+          onTap: () {
+            sl<Coordinator>().navigateToAddUserPage();
+          },
+        ),
+        _buildGridItem(
+          icon: Icons.manage_accounts,
+          label: 'Billing Customer',
+          color: Colors.pink,
+          onTap: () {
+            sl<Coordinator>().navigateToBillingPage();
+          },
+        ),
+        _buildGridItem(
+          icon: Icons.shopping_cart,
+          label: 'Cart Management',
+          color: Colors.pink,
+          onTap: () {
+            sl<Coordinator>().navigateToCartDashboard();
+          },
+        ),
+      ]);
     } else {
       gridItems.addAll([
         _buildGridItem(
@@ -387,7 +473,16 @@ class HomePage extends StatelessWidget {
         ),
       ]);
     }
-
+    gridItems.add(_buildGridItem(
+      icon: Icons.account_balance,
+      label: 'User ledger',
+      color: Colors.deepPurple,
+      onTap: () async {
+        final user = await sl<AccountRepository>().getUserInfo();
+        user?.copyWith(accountLedgerId: '1q3XGuMfV9LunYhnKDh8');
+        sl<Coordinator>().navigateToUserLedgerPage(user: user?.copyWith(accountLedgerId: '1q3XGuMfV9LunYhnKDh8') ?? UserInfo());
+      },
+    ));
     return gridItems;
   }
 

@@ -38,7 +38,6 @@ class InventoryDashboardPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 // GridView
                 Expanded(
                   child: GridView.count(
@@ -52,56 +51,71 @@ class InventoryDashboardPage extends StatelessWidget {
                         'Stock List',
                         Icons.list,
                         Colors.blue,
-                            () => sl<Coordinator>().navigateToStockListPage(),
+                        () => sl<Coordinator>().navigateToStockListPage(),
                       ),
-
                       _buildDashboardCard(
                         context,
                         'Billing',
                         Icons.receipt,
                         Colors.orange,
-                            () => sl<Coordinator>().navigateToBillingPage(),
+                        () => sl<Coordinator>().navigateToBillingPage(),
                       ),
                       _buildDashboardCard(
                         context,
                         'Sales Report',
                         Icons.bar_chart,
                         Colors.purple,
-                            () => sl<Coordinator>().navigateToSalesReportPage(),
+                        () => sl<Coordinator>().navigateToSalesReportPage(),
                       ),
                       _buildDashboardCard(
                         context,
                         'Transactions',
                         Icons.account_balance,
                         Colors.teal,
-                            () => sl<Coordinator>().navigateToTransactionsPage(),
+                        () => sl<Coordinator>().navigateToTransactionsPage(),
                       ),
                       _buildDashboardCard(
                         context,
                         'Add Customer',
                         Icons.person_add,
                         Colors.red,
-                            () => sl<Coordinator>().navigateToAddUserPage(),
+                        () => sl<Coordinator>().navigateToAddUserPage(),
                       ),
                       _buildDashboardCard(
                         context,
                         'Store List',
                         Icons.store,
                         Colors.indigo,
-                            () => sl<Coordinator>().navigateToStoresListPage(),
+                        () => sl<Coordinator>().navigateToStoresListPage(),
                       ),
                       _buildDashboardCard(
                         context,
                         'Add Store',
                         Icons.add_business,
                         Colors.amber,
-                            () => sl<Coordinator>().navigateToAddStorePage(),
-                      ),_buildDashboardCard(
+                        () => sl<Coordinator>().navigateToAddStorePage(),
+                      ),
+                      _buildDashboardCard(
                         context,
                         'Over all stock',
                         Icons.food_bank,
                         Colors.green,
-                            () => sl<Coordinator>().navigateToOverAllStockPage(),
+                        () => sl<Coordinator>().navigateToOverAllStockPage(),
+                      ),
+                      _buildDashboardCard(
+                        context,
+                        'My Store',
+                        Icons.food_bank,
+                        Colors.green,
+                        () => sl<Coordinator>().navigateToStoreDetailsPage(
+                            ''), //no store id means own store id
+                      ),
+                      _buildDashboardCard(
+                        context,
+                        'Store attendance',
+                        Icons.food_bank,
+                        Colors.green,
+                        () => sl<Coordinator>().navigateToAttendancePage(), //no store id means own store id
                       ),
                     ],
                   ),
@@ -115,12 +129,12 @@ class InventoryDashboardPage extends StatelessWidget {
   }
 
   Widget _buildDashboardCard(
-      BuildContext context,
-      String title,
-      IconData icon,
-      Color color,
-      VoidCallback onTap,
-      ) {
+    BuildContext context,
+    String title,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
     return Card(
       elevation: 4.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

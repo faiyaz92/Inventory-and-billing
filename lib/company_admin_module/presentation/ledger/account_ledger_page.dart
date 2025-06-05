@@ -47,10 +47,10 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
                   (current is TransactionPopupOpened &&
                       current.isInitialOpen &&
                       !_isPopupOpen) ||
-                  current is TransactionAddSuccess ||
+                  current is TransactionSuccess ||
                   current is TransactionAddFailed,
               listener: (context, state) {
-                if (state is TransactionAddSuccess) {
+                if (state is TransactionSuccess) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(state.message ?? '')),
                   );

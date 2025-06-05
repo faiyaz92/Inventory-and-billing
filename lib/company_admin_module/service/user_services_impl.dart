@@ -1,7 +1,8 @@
 import 'package:intl/intl.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/attendance/attendance_dto.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/attendance/attendance_model.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart' show UserServices;
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart'
+    show UserServices;
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.dart';
@@ -14,15 +15,16 @@ class UserServiceImpl implements UserServices {
   UserServiceImpl(this._tenantCompanyRepository, this._accountRepository);
 
   @override
-  Future<void> addUserToCompany(UserInfo userInfo, String password) async {
+  Future<String> addUserToCompany(UserInfo userInfo, String password) async {
     final loggedInUserInfo = await _accountRepository.getUserInfo();
     userInfo = userInfo.copyWith(
       companyId: loggedInUserInfo?.companyId ?? '',
       latitude: userInfo.latitude ?? 0.0,
       longitude: userInfo.longitude ?? 0.0,
       dailyWage: userInfo.dailyWage ?? 500.0,
+      storeId: userInfo.storeId, // Include storeId
     );
-    await _tenantCompanyRepository.addUserToCompany(userInfo.toDto(), password);
+   return await _tenantCompanyRepository.addUserToCompany(userInfo.toDto(), password);
   }
 
   @override
@@ -34,7 +36,8 @@ class UserServiceImpl implements UserServices {
     }
 
     // Fetch existing user data from repository
-    final existingUser = await _tenantCompanyRepository.getUser(userInfo.userId!, companyId);
+    final existingUser =
+        await _tenantCompanyRepository.getUser(userInfo.userId!, companyId);
     if (existingUser == null) {
       throw Exception("User does not exist.");
     }
@@ -42,7 +45,8 @@ class UserServiceImpl implements UserServices {
     // Merge provided userInfo with existing data
     final updatedUserInfo = UserInfoDto(
       userId: userInfo.userId ?? existingUser.userId,
-      companyId: existingUser.companyId, // Preserve existing companyId
+      companyId: existingUser.companyId,
+      // Preserve existing companyId
       name: userInfo.name ?? existingUser.name,
       email: userInfo.email ?? existingUser.email,
       userName: userInfo.userName ?? existingUser.userName,
@@ -50,6 +54,7 @@ class UserServiceImpl implements UserServices {
       latitude: userInfo.latitude ?? existingUser.latitude,
       longitude: userInfo.longitude ?? existingUser.longitude,
       dailyWage: userInfo.dailyWage ?? existingUser.dailyWage,
+      storeId: userInfo.storeId ?? existingUser.storeId, // Include storeId
     );
 
     await _tenantCompanyRepository.updateUser(
@@ -77,16 +82,18 @@ class UserServiceImpl implements UserServices {
   }
 
   @override
-  Future<List<UserInfo>> getUsersFromTenantCompany() async {
+  Future<List<UserInfo>> getUsersFromTenantCompany({String? storeId}) async {
     final userInfo = await _accountRepository.getUserInfo();
-    final userDtos = await _tenantCompanyRepository.getUsersFromTenantCompany(userInfo?.companyId ?? '');
+    final userDtos = await _tenantCompanyRepository
+        .getUsersFromTenantCompany(userInfo?.companyId ?? '', storeId: storeId);
     return userDtos.map((dto) => UserInfo.fromDto(dto)).toList();
   }
 
   @override
   Future<void> deleteUser(String userId) async {
     final userInfo = await _accountRepository.getUserInfo();
-    await _tenantCompanyRepository.deleteUser(userId, userInfo?.companyId ?? '');
+    await _tenantCompanyRepository.deleteUser(
+        userId, userInfo?.companyId ?? '');
   }
 
   @override
@@ -105,10 +112,12 @@ class UserServiceImpl implements UserServices {
   }
 
   @override
-  Future<List<AttendanceModel>> getAttendance(String userId, String month) async {
+  Future<List<AttendanceModel>> getAttendance(
+      String userId, String month) async {
     final userInfo = await _accountRepository.getUserInfo();
     final companyId = userInfo?.companyId ?? '';
-    final attendanceDTOs = await _tenantCompanyRepository.getAttendance(userId, companyId, month);
+    final attendanceDTOs =
+        await _tenantCompanyRepository.getAttendance(userId, companyId, month);
     return attendanceDTOs.map((dto) {
       return AttendanceModel(
         date: DateFormat('dd-MM-yyyy').format(DateTime.parse(dto.date)),
@@ -118,21 +127,26 @@ class UserServiceImpl implements UserServices {
   }
 
   @override
-  Future<void> recordSalaryPayment(String userId, double amount, String month) async {
+  Future<void> recordSalaryPayment(
+      String userId, double amount, String month) async {
     final userInfo = await _accountRepository.getUserInfo();
     final companyId = userInfo?.companyId ?? '';
-    await _tenantCompanyRepository.recordSalaryPayment(userId, companyId, amount, month);
+    await _tenantCompanyRepository.recordSalaryPayment(
+        userId, companyId, amount, month);
   }
 
   @override
-  Future<void> recordAdvanceSalary(String userId, double amount, String date) async {
+  Future<void> recordAdvanceSalary(
+      String userId, double amount, String date) async {
     final userInfo = await _accountRepository.getUserInfo();
     final companyId = userInfo?.companyId ?? '';
-    await _tenantCompanyRepository.recordAdvanceSalary(userId, companyId, amount, date);
+    await _tenantCompanyRepository.recordAdvanceSalary(
+        userId, companyId, amount, date);
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getLedger(String userId, String? month) async {
+  Future<List<Map<String, dynamic>>> getLedger(
+      String userId, String? month) async {
     final userInfo = await _accountRepository.getUserInfo();
     final companyId = userInfo?.companyId ?? '';
     return await _tenantCompanyRepository.getLedger(userId, companyId, month);
@@ -142,16 +156,21 @@ class UserServiceImpl implements UserServices {
   Future<double> getPayableSalary(String userId) async {
     final userInfo = await _accountRepository.getUserInfo();
     final companyId = userInfo?.companyId ?? '';
-    final salaryHistory = await _tenantCompanyRepository.getSalaryHistory(userId, companyId);
-    double unpaidTotal = salaryHistory.where((h) => !(h['paid'] as bool)).fold(0.0, (sum, h) => sum + (h['totalEarned'] as double));
+    final salaryHistory =
+        await _tenantCompanyRepository.getSalaryHistory(userId, companyId);
+    double unpaidTotal = salaryHistory
+        .where((h) => !(h['paid'] as bool))
+        .fold(0.0, (sum, h) => sum + (h['totalEarned'] as double));
 
     final currentMonth = DateTime.now().toIso8601String().substring(0, 7);
     final attendance = await getAttendance(userId, currentMonth);
-    final user = (await getUsersFromTenantCompany()).firstWhere((u) => u.userId == userId);
+    final user = (await getUsersFromTenantCompany())
+        .firstWhere((u) => u.userId == userId);
     final dailyWage = user.dailyWage ?? 500.0;
     int presentDays = attendance.where((a) => a.status == 'present').length;
     int halfDays = attendance.where((a) => a.status == 'half_day').length;
-    double currentMonthSalary = (presentDays * dailyWage) + (halfDays * dailyWage / 2);
+    double currentMonthSalary =
+        (presentDays * dailyWage) + (halfDays * dailyWage / 2);
 
     return unpaidTotal + currentMonthSalary;
   }
@@ -159,10 +178,14 @@ class UserServiceImpl implements UserServices {
   @override
   Future<double> getAdvanceBalance(String userId) async {
     final ledger = await getLedger(userId, null);
-    double totalAdvances = ledger.where((e) => e['type'] == 'advance').fold(0.0, (sum, e) => sum + (e['amount'] as double));
+    double totalAdvances = ledger
+        .where((e) => e['type'] == 'advance')
+        .fold(0.0, (sum, e) => sum + (e['amount'] as double));
     final userInfo = await _accountRepository.getUserInfo();
-    final salaryHistory = await _tenantCompanyRepository.getSalaryHistory(userId, userInfo?.companyId ?? '');
-    double totalEarned = salaryHistory.fold(0.0, (sum, h) => sum + (h['totalEarned'] as double));
+    final salaryHistory = await _tenantCompanyRepository.getSalaryHistory(
+        userId, userInfo?.companyId ?? '');
+    double totalEarned =
+        salaryHistory.fold(0.0, (sum, h) => sum + (h['totalEarned'] as double));
     return totalAdvances - totalEarned > 0 ? totalAdvances - totalEarned : 0.0;
   }
 

@@ -50,6 +50,7 @@ class TransactionDto {
       'toStoreId': toStoreId,
       'customerId': customerId,
       'timestamp': timestamp.toIso8601String(),
+      // 'timestamp': Timestamp.fromDate(timestamp),
       'userName': userName, // Added
       'userId': userId,     // Added
     };

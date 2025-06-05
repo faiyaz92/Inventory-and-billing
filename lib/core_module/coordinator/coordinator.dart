@@ -1,3 +1,4 @@
+import 'package:flutter/src/widgets/framework.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/category.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/sub_category.dart';
@@ -104,5 +105,23 @@ abstract class Coordinator {
   Future<dynamic> navigateToCartDashboard();
   Future<dynamic> navigateToSalesManOrderPage();
   Future<dynamic> navigateToSimpleEmployeeList();
-
+  // New Navigation Methods
+  Future<dynamic> navigateToSalesmanOrderListPage();
+  Future<dynamic> navigateToDeliveryManOrderListPage();
+  Future<dynamic> navigateToStoreOrderListPage();
+  Future<dynamic> navigateToCustomerOrderListPage();
+  Future<dynamic> navigateToPerformanceDetailsPage({required String entityType, required String entityId});
+  Future<dynamic> navigateToCompanyPerformancePage();
+  Future<dynamic> navigateToProductPerformanceListPage();
+  Future<dynamic> navigateToUserLedgerPage({required UserInfo user});
+  Future<dynamic> navigateToTaxiBookingPage();
+  Future<dynamic> navigateToTaxiSettingsPage();
+  Future<dynamic> navigateToTaxiBookingsAdminPage();
+  Future<dynamic> navigateToDriverListPage();
+  Future<dynamic> navigateToDriverPerformanceDetailsPage({required String driverId});
+  Future<dynamic> navigateToBookingDetailsPage({required String bookingId});
+  Future<dynamic> navigateToTaxiCompanyPerformancePage();
+  Future<dynamic> navigateToTaxiVisitorCounterPage();
+  Future<dynamic> navigateToUserBookingHistory();
+  Future<dynamic> navigateToWebApp();
 }

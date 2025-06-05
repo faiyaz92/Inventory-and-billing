@@ -130,7 +130,7 @@ class TaskCubit extends Cubit<TaskState> {
         taskId: task.taskId ?? '',
         assignedToUserName: _getUserNameById(task.assignedTo ?? '', users),
         createdBy: task.createdBy ?? currentUserId,
-        lastUpdateTime: DateTime.now(),
+        lastUpdateTime: DateTime.now() ,
         lastUpdatedBy: currentUserId,
         lastUpdatedByUserName: currentUserName,
       );
