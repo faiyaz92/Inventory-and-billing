@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
-
+import 'package:auto_route/annotations.dart';
+@RoutePage()
 class SuperAdminPage extends StatelessWidget {
   const SuperAdminPage({Key? key}) : super(key: key);
 

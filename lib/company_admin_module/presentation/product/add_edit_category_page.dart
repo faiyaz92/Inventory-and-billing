@@ -1,3 +1,4 @@
+import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/category.dart';
@@ -5,6 +6,7 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/produ
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/add_edit_category_state.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 
+@RoutePage()
 class AddEditCategoryPage extends StatefulWidget {
   final Category? category; // If editing, category will be passed
 
@@ -22,7 +24,8 @@ class _AddEditCategoryPageState extends State<AddEditCategoryPage> {
   @override
   void initState() {
     super.initState();
-    _categoryCubit = sl<CategoryCubit>();  // Initialize _categoryCubit using service locator
+    _categoryCubit =
+        sl<CategoryCubit>(); // Initialize _categoryCubit using service locator
 
     if (widget.category != null) {
       _nameController.text = widget.category!.name ?? '';
@@ -51,12 +54,14 @@ class _AddEditCategoryPageState extends State<AddEditCategoryPage> {
       child: BlocListener<CategoryCubit, CategoryState>(
         listener: (context, state) {
           if (state is CategoryError) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.errorMessage)));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(state.errorMessage)));
           }
         },
         child: Scaffold(
           appBar: AppBar(
-            title: Text(widget.category == null ? 'Add Category' : 'Edit Category'),
+            title: Text(
+                widget.category == null ? 'Add Category' : 'Edit Category'),
           ),
           body: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -66,13 +71,17 @@ class _AddEditCategoryPageState extends State<AddEditCategoryPage> {
                 children: [
                   TextFormField(
                     controller: _nameController,
-                    decoration: const InputDecoration(labelText: 'Category Name'),
-                    validator: (value) => value!.isEmpty ? 'Enter category name' : null,
+                    decoration:
+                        const InputDecoration(labelText: 'Category Name'),
+                    validator: (value) =>
+                        value!.isEmpty ? 'Enter category name' : null,
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: _saveCategory,
-                    child: Text(widget.category == null ? 'Add Category' : 'Update Category'),
+                    child: Text(widget.category == null
+                        ? 'Add Category'
+                        : 'Update Category'),
                   ),
                 ],
               ),

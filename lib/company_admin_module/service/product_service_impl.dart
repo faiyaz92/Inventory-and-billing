@@ -8,9 +8,9 @@ class ProductServiceImpl implements ProductService {
   final ProductRepository productRepository;
   final AccountRepository _accountRepository;
 
-  ProductServiceImpl(this._accountRepository,
-      {required this.productRepository});
+  ProductServiceImpl(this._accountRepository, {required this.productRepository});
 
+  @override
   Future<List<Product>> fetchProducts() async {
     final userInfo = await _accountRepository.getUserInfo();
     if (userInfo == null || userInfo.companyId == null) {
@@ -18,15 +18,12 @@ class ProductServiceImpl implements ProductService {
     }
 
     final productsDTO = await productRepository.getProducts(userInfo.companyId!);
-    // Mapping from DTO to Domain Model in the service layer
     return productsDTO.map((dto) => dto.toDomainModel()).toList();
   }
-
 
   @override
   Future<void> addNewProduct(Product product) async {
     final userInfo = await _accountRepository.getUserInfo();
-
     final dto = ProductDTO.fromDomainModel(product);
     return productRepository.addProduct(userInfo?.companyId ?? '', dto);
   }
@@ -41,8 +38,6 @@ class ProductServiceImpl implements ProductService {
   @override
   Future<void> removeProduct(String productId) async {
     final userInfo = await _accountRepository.getUserInfo();
-
-    return productRepository.deleteProduct(
-        userInfo?.companyId ?? '', productId);
+    return productRepository.deleteProduct(userInfo?.companyId ?? '', productId);
   }
 }

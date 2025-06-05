@@ -4,9 +4,10 @@ class Product {
   final double price;
   final int stock;
   final String category;
-  final String categoryId; // Added category ID for future reference
-  final String subcategoryId; // Added subcategory ID for future reference
-  final String subcategoryName; // Added subcategory name
+  final String categoryId;
+  final String subcategoryId;
+  final String subcategoryName;
+  final double tax; // New field for tax percentage
 
   Product({
     required this.id,
@@ -14,8 +15,9 @@ class Product {
     required this.price,
     required this.stock,
     required this.category,
-    required this.categoryId,  // Store category ID
-    required this.subcategoryId, // Store subcategory ID
-    required this.subcategoryName, // Store subcategory name
+    required this.categoryId,
+    required this.subcategoryId,
+    required this.subcategoryName,
+    required this.tax,
   });
 }

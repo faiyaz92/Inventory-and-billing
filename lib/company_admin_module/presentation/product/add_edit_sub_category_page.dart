@@ -1,3 +1,4 @@
+import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/category.dart';
@@ -6,9 +7,11 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/produ
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/add_edit_category_state.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 
+@RoutePage()
 class AddEditSubcategoryPage extends StatefulWidget {
   final Subcategory? subcategory; // If editing, subcategory will be passed
-  final Category category; // Pass the entire category object instead of just categoryId
+  final Category
+      category; // Pass the entire category object instead of just categoryId
 
   const AddEditSubcategoryPage({
     Key? key,
@@ -28,7 +31,8 @@ class _AddEditSubcategoryPageState extends State<AddEditSubcategoryPage> {
   @override
   void initState() {
     super.initState();
-    _categoryCubit = sl<CategoryCubit>(); // Initialize _categoryCubit using service locator
+    _categoryCubit =
+        sl<CategoryCubit>(); // Initialize _categoryCubit using service locator
 
     if (widget.subcategory != null) {
       _nameController.text = widget.subcategory!.name ?? '';
@@ -41,11 +45,12 @@ class _AddEditSubcategoryPageState extends State<AddEditSubcategoryPage> {
 
       if (widget.subcategory == null) {
         // Adding new subcategory
-        _categoryCubit.addSubcategory(widget.category.id??'', subcategory); // Use manually initialized cubit
+        _categoryCubit.addSubcategory(widget.category.id ?? '',
+            subcategory); // Use manually initialized cubit
       } else {
         // Updating existing subcategory
-        _categoryCubit.updateSubcategory(
-            widget.category.id??'', widget.subcategory!.id ?? '', subcategory);
+        _categoryCubit.updateSubcategory(widget.category.id ?? '',
+            widget.subcategory!.id ?? '', subcategory);
       }
       Navigator.pop(context); // Navigate back
     }
@@ -54,7 +59,8 @@ class _AddEditSubcategoryPageState extends State<AddEditSubcategoryPage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<CategoryCubit>(
-      create: (_) => _categoryCubit, // Provide the cubit for future children widgets
+      create: (_) => _categoryCubit,
+      // Provide the cubit for future children widgets
       child: BlocListener<CategoryCubit, CategoryState>(
         listener: (context, state) {
           if (state is CategoryError) {
@@ -73,20 +79,21 @@ class _AddEditSubcategoryPageState extends State<AddEditSubcategoryPage> {
             child: Form(
               key: _formKey,
               child: Column(
-                children: [  Text(
-                  'Category: ${widget.category.name}', // Display category name
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold, // Make the text prominent
+                children: [
+                  Text(
+                    'Category: ${widget.category.name}', // Display category name
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold, // Make the text prominent
+                    ),
                   ),
-                ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _nameController,
                     decoration:
-                    const InputDecoration(labelText: 'Subcategory Name'),
+                        const InputDecoration(labelText: 'Subcategory Name'),
                     validator: (value) =>
-                    value!.isEmpty ? 'Enter subcategory name' : null,
+                        value!.isEmpty ? 'Enter subcategory name' : null,
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(

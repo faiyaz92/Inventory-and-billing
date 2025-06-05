@@ -1,22 +1,16 @@
-import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.dart';
-import 'package:requirment_gathering_app/user_module/data/company.dart';
 import 'package:dartz/dartz.dart';
+import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.dart';
+import 'package:requirment_gathering_app/user_module/data/partner_dto.dart';
 
 abstract class CustomerCompanyRepository {
-  Future<Either<Exception, void>> addCompany(Company company); // Accepts a UI Model
-  Future<Either<Exception, void>> updateCompany(String id, Company company); // Accepts a UI Model for updates
-  Future<Either<Exception, void>> deleteCompany(String id); // Deletes a company by ID
-  Future<Either<Exception, Company>> getCompany(String id); // Returns a UI Model by ID
-  Future<Either<Exception, List<Company>>> getAllCompanies(); // Returns a list of UI Models
-
-  // New method to check the uniqueness of the company name
+  Future<Either<Exception, String>> addCompany(PartnerDto company);
+  Future<Either<Exception, String>> updateCompany(String id, PartnerDto company);
+  Future<Either<Exception, void>> deleteCompany(String id);
+  Future<Either<Exception, PartnerDto>> getCompany(String id);
+  Future<Either<Exception, List<PartnerDto>>> getAllCompanies();
   Future<Either<Exception, bool>> isCompanyNameUnique(String companyName);
-
-  Future<Either<Exception, List<Company>>> getFilteredCompanies(
+  Future<Either<Exception, List<PartnerDto>>> getFilteredCompanies(
       String? country, String? city, String? businessType);
-
-  Future<Either<Exception, List<Company>>> saveCompaniesBulk(
-      List<Company> companies); // Returns a map of successful and failed companies
-
-  Future<List<UserInfoDto>> getUsersFromOwnCompany();
+  Future<Either<Exception, List<PartnerDto>>> saveCompaniesBulk(List<PartnerDto> companies);
+  Future<Either<Exception, List<UserInfoDto>>> getUsersFromOwnCompany();
 }

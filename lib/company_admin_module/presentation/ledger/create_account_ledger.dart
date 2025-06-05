@@ -1,9 +1,11 @@
+import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/account_ledger_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/account_ledger_state.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 
+@RoutePage()
 class CreateLedgerPage extends StatelessWidget {
   final String companyId;
   final String customerCompanyId;
@@ -42,16 +44,16 @@ class _CreateLedgerView extends StatefulWidget {
 class _CreateLedgerViewState extends State<_CreateLedgerView> {
   final TextEditingController _outstandingController = TextEditingController();
   final TextEditingController _promiseAmountController =
-  TextEditingController();
+      TextEditingController();
   DateTime? _promiseDate;
 
   void _createLedger(BuildContext context) {
     final double totalOutstanding =
         double.tryParse(_outstandingController.text) ?? 0.0;
     final double? promiseAmount =
-    double.tryParse(_promiseAmountController.text);
+        double.tryParse(_promiseAmountController.text);
 
-   /* context.read<AccountLedgerCubit>().createLedger(
+    /* context.read<AccountLedgerCubit>().createLedger(
       widget.companyId,
       widget.customerCompanyId,
       totalOutstanding,
@@ -68,12 +70,14 @@ class _CreateLedgerViewState extends State<_CreateLedgerView> {
         listener: (context, state) {
           if (state is AccountLedgerSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: Colors.green),
+              SnackBar(
+                  content: Text(state.message), backgroundColor: Colors.green),
             );
             Navigator.pop(context); // ✅ Ledger create hone ke baad back jao
           } else if (state is AccountLedgerError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+              SnackBar(
+                  content: Text(state.message), backgroundColor: Colors.red),
             );
           }
         },
@@ -121,9 +125,9 @@ class _CreateLedgerViewState extends State<_CreateLedgerView> {
                 state is AccountLedgerLoading
                     ? const CircularProgressIndicator()
                     : ElevatedButton(
-                  onPressed: () => _createLedger(context),
-                  child: const Text("Create Ledger"),
-                ),
+                        onPressed: () => _createLedger(context),
+                        child: const Text("Create Ledger"),
+                      ),
               ],
             ),
           );

@@ -1,10 +1,12 @@
+import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/add_edit_category_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/add_edit_category_state.dart';
-import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
+import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 
+@RoutePage()
 class CategoriesWithSubcategoriesPage extends StatefulWidget {
   const CategoriesWithSubcategoriesPage({Key? key}) : super(key: key);
 
@@ -26,7 +28,7 @@ class _CategoriesWithSubcategoriesPageState
 
   @override
   void dispose() {
-    _categoryCubit.close();  // Close the cubit when the widget is disposed
+    _categoryCubit.close(); // Close the cubit when the widget is disposed
     super.dispose();
   }
 
@@ -97,7 +99,9 @@ class _CategoriesWithSubcategoriesPageState
                                 icon: const Icon(Icons.edit),
                                 onPressed: () {
                                   // Navigate to Edit Category Page using Coordinator
-                                  sl<Coordinator>().navigateToAddEditCategoryPage(category: category);
+                                  sl<Coordinator>()
+                                      .navigateToAddEditCategoryPage(
+                                          category: category);
                                 },
                               ),
                               IconButton(
@@ -108,11 +112,15 @@ class _CategoriesWithSubcategoriesPageState
                                     context: context,
                                     builder: (context) => AlertDialog(
                                       title: const Text('Delete Category'),
-                                      content: const Text('Are you sure you want to delete this category?'),
+                                      content: const Text(
+                                          'Are you sure you want to delete this category?'),
                                       actions: [
                                         TextButton(
                                           onPressed: () {
-                                            context.read<CategoryCubit>().deleteCategory( category.id ?? '');
+                                            context
+                                                .read<CategoryCubit>()
+                                                .deleteCategory(
+                                                    category.id ?? '');
                                             Navigator.pop(context);
                                           },
                                           child: const Text('Yes'),
@@ -144,7 +152,8 @@ class _CategoriesWithSubcategoriesPageState
                                       icon: const Icon(Icons.edit),
                                       onPressed: () {
                                         // Navigate to Edit Subcategory Page using Coordinator
-                                        sl<Coordinator>().navigateToAddEditSubcategoryPage(
+                                        sl<Coordinator>()
+                                            .navigateToAddEditSubcategoryPage(
                                           subcategory: sub,
                                           category: category,
                                         );
@@ -153,10 +162,12 @@ class _CategoriesWithSubcategoriesPageState
                                     IconButton(
                                       icon: const Icon(Icons.delete),
                                       onPressed: () {
-                                        context.read<CategoryCubit>().deleteSubcategory(
-                                          category.id ?? '',
-                                          sub.id ?? '',
-                                        );
+                                        context
+                                            .read<CategoryCubit>()
+                                            .deleteSubcategory(
+                                              category.id ?? '',
+                                              sub.id ?? '',
+                                            );
                                       },
                                     ),
                                   ],
@@ -170,7 +181,8 @@ class _CategoriesWithSubcategoriesPageState
                           child: ElevatedButton(
                             onPressed: () {
                               // Navigate to Add Subcategory Page using Coordinator
-                              sl<Coordinator>().navigateToAddEditSubcategoryPage(
+                              sl<Coordinator>()
+                                  .navigateToAddEditSubcategoryPage(
                                 category: category,
                               );
                             },
@@ -194,4 +206,3 @@ class _CategoriesWithSubcategoriesPageState
     );
   }
 }
-

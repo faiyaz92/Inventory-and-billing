@@ -1,65 +1,134 @@
-
+import 'package:equatable/equatable.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 
-class UserInfoDto {
-  final String? userId;
-  final String? email;
-  final Role? role;
+class UserInfoDto extends Equatable {
+  final String userId;
   final String? companyId;
-  final String? name;
-  final String? userName;
+  final String name;
+  final String email;
+  final String userName;
+  final Role role;
+  final UserType? userType; // New field
+  final double? latitude;
+  final double? longitude;
+  final double? dailyWage;
+  final String? storeId;
+  final String? accountLedgerId;
 
-  UserInfoDto({
-    this.userId,
-    this.email,
-    this.role,
+  const UserInfoDto({
+    required this.userId,
     this.companyId,
-    this.name,
-    this.userName,
+    required this.name,
+    required this.email,
+    required this.userName,
+    required this.role,
+    this.userType, // New field
+    this.latitude,
+    this.longitude,
+    this.dailyWage,
+    this.storeId,
+    this.accountLedgerId,
   });
 
-  /// 🔹 Convert Firestore data to UserInfoDto
-  factory UserInfoDto.fromMap(Map<String, dynamic>? map) {
-    if (map == null) return UserInfoDto(); // ✅ Prevent null crashes
-
+  factory UserInfoDto.fromMap(Map<String, dynamic> map) {
     return UserInfoDto(
-      userId: map['userId'],
-      email: map['email'],
-      role: map['role'] != null ? RoleExtension.fromString(map['role']) : null, // ✅ Handles missing role safely
-      companyId: map['companyId'],
-      name: map['name'],
-      userName: map['userName'],
+      userId: map['userId'] as String,
+      companyId: map['companyId'] as String?,
+      name: map['name'] as String,
+      email: map['email'] as String,
+      userName: map['userName'] as String,
+      role: RoleExtension.fromString(map['role'] as String),
+      userType: map.containsKey('userType')
+          ? UserTypeExtension.fromString(map['userType'] as String)
+          : UserType.Employee,
+      // New field
+      latitude: (map['latitude'] as num?)?.toDouble(),
+      longitude: (map['longitude'] as num?)?.toDouble(),
+      dailyWage: (map['dailyWage'] as num?)?.toDouble() ?? 500.0,
+      storeId: map['storeId'] as String?,
+      accountLedgerId: map['accountLedgerId'] as String?,
     );
   }
 
-  /// 🔹 Convert DTO to Firestore Map
   Map<String, dynamic> toMap() {
     return {
       'userId': userId,
-      'email': email,
-      'role': role?.name, // ✅ Avoids null role issues
       'companyId': companyId,
       'name': name,
+      'email': email,
       'userName': userName,
+      'role': role.name,
+      'userType': userType, // New field
+      'latitude': latitude,
+      'longitude': longitude,
+      'dailyWage': dailyWage,
+      'storeId': storeId,
+      'accountLedgerId': accountLedgerId,
     };
   }
 
-  /// 🔹 Create a copy with modifications
+  Map<String, dynamic> toPartialMap() {
+    final map = <String, dynamic>{};
+    map['userId'] = userId; // Always include userId
+    if (companyId != null) map['companyId'] = companyId;
+    if (name != null) map['name'] = name;
+    if (email != null) map['email'] = email;
+    if (userName != null) map['userName'] = userName;
+    if (role != null) map['role'] = role.name;
+    if (userType != null) map['userType'] = userType; // New field
+    if (latitude != null) map['latitude'] = latitude;
+    if (longitude != null) map['longitude'] = longitude;
+    if (dailyWage != null) map['dailyWage'] = dailyWage;
+    if (storeId != null) map['storeId'] = storeId;
+    if (accountLedgerId != null) map['accountLedgerId'] = accountLedgerId;
+    return map;
+  }
+
   UserInfoDto copyWith({
     String? userId,
-    String? email,
-    Role? role,
     String? companyId,
     String? name,
+    String? email,
     String? userName,
+    Role? role,
+    UserType? userType, // New field
+    double? latitude,
+    double? longitude,
+    double? dailyWage,
+    String? storeId,
+    String? accountLedgerId,
   }) {
     return UserInfoDto(
       userId: userId ?? this.userId,
-      email: email ?? this.email,
-      role: role ?? this.role,
       companyId: companyId ?? this.companyId,
       name: name ?? this.name,
+      email: email ?? this.email,
       userName: userName ?? this.userName,
+      role: role ?? this.role,
+      userType: userType ?? this.userType,
+      // New field
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      dailyWage: dailyWage ?? this.dailyWage,
+      storeId: storeId ?? this.storeId,
+      accountLedgerId: accountLedgerId ?? this.accountLedgerId,
     );
   }
+
+  @override
+  List<Object?> get props => [
+        userId,
+        companyId,
+        name,
+        email,
+        userName,
+        role,
+        userType, // New field
+        latitude,
+        longitude,
+        dailyWage,
+        storeId,
+        accountLedgerId,
+      ];
 }

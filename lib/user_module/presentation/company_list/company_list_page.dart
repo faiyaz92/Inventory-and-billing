@@ -1,36 +1,74 @@
+import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
+import 'package:requirment_gathering_app/core_module/presentation/widget/custom_textfield.dart';
+import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
 import 'package:requirment_gathering_app/core_module/utils/text_styles.dart';
+import 'package:requirment_gathering_app/user_module/data/company_settings.dart';
+import 'package:requirment_gathering_app/user_module/data/partner.dart';
 import 'package:requirment_gathering_app/user_module/presentation/add_company/add_company_state.dart';
 import 'package:requirment_gathering_app/user_module/presentation/add_company/customer_company_cubit.dart';
 import 'package:requirment_gathering_app/user_module/presentation/company_list/filter_section.dart';
-import 'package:requirment_gathering_app/user_module/data/company.dart';
-import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 
+@RoutePage()
 class CompanyListPage extends StatelessWidget {
   const CompanyListPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => sl<CustomerCompanyCubit>()
-        ..loadCompanySettings()
-        ..loadCompanies(),
-      child: BlocBuilder<CustomerCompanyCubit, CompanyState>(
+      create: (_) => sl<PartnerCubit>()
+        ..loadCompanies()
+        ..filterByCompanyType("Site"),
+      child: BlocBuilder<PartnerCubit, CompanyState>(
+        buildWhen: (previous, current) =>
+            current is LoadingState ||
+            current is CompaniesLoadedState ||
+            current is CompaniesFilteredState ||
+            current is CompaniesSortedState ||
+            current is CompanyDeletedState ||
+            current is FilterToggledState ||
+            current is CompanyDataState,
         builder: (context, state) {
-          final cubit = context.read<CustomerCompanyCubit>();
+          final cubit = context.read<PartnerCubit>();
+          List<Partner> companies = [];
+          List<Partner> originalCompanies = [];
+          bool isFilterVisible = false;
+          CompanySettingsUi? settings;
+          Partner? currentCompany;
+
+          if (state is CompaniesLoadedState) {
+            companies = state.companies;
+            originalCompanies = state.originalCompanies;
+          } else if (state is CompaniesFilteredState) {
+            companies = state.companies;
+            originalCompanies = state.originalCompanies;
+          } else if (state is CompaniesSortedState) {
+            companies = state.companies;
+            originalCompanies = state.originalCompanies;
+          } else if (state is CompanyDeletedState) {
+            companies = state.companies;
+            originalCompanies = state.originalCompanies;
+          } else if (state is FilterToggledState) {
+            companies = state.companies;
+            originalCompanies = state.originalCompanies;
+            isFilterVisible = state.isFilterVisible;
+          } else if (state is CompanyDataState) {
+            settings = state.settings;
+            currentCompany = state.company;
+            isFilterVisible = state.isFilterVisible;
+          }
 
           return Scaffold(
             body: CustomScrollView(
               slivers: [
-                // Collapsible Filter Section
                 SliverAppBar(
                   pinned: false,
                   floating: false,
-                  expandedHeight: state.isFilterVisible ? 436+68 : 76,
+                  expandedHeight: isFilterVisible ? 436 + 68 : 76,
                   flexibleSpace: FlexibleSpaceBar(
                     background: Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -43,22 +81,12 @@ class CompanyListPage extends StatelessWidget {
                               Expanded(
                                 child: SizedBox(
                                   height: 60,
-                                  child: TextField(
+                                  child: CustomTextField(
+                                    labelText: AppLabels.searchHint,
+                                    hintText: AppLabels.searchHint,
+                                    prefixIcon: const Icon(Icons.search),
+                                    textInputAction: TextInputAction.search,
                                     onChanged: cubit.searchCompanies,
-                                    decoration: InputDecoration(
-                                      prefixIcon: const Icon(Icons.search),
-                                      hintText: AppLabels.searchHint,
-                                      border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(30.0),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(30.0),
-                                        borderSide: const BorderSide(
-                                            color: Colors.blue),
-                                      ),
-                                    ),
                                   ),
                                 ),
                               ),
@@ -69,9 +97,7 @@ class CompanyListPage extends StatelessWidget {
                                 onPressed: () => cubit.toggleFilterVisibility(),
                               ),
                               TextButton(
-                                onPressed: () {
-                                  cubit.clearFilters();
-                                },
+                                onPressed: () => cubit.clearFilters(),
                                 style: TextButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 12.0, vertical: 6.0),
@@ -88,7 +114,7 @@ class CompanyListPage extends StatelessWidget {
                               ),
                             ],
                           ),
-                          if (state.isFilterVisible)
+                          if (isFilterVisible)
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: FiltersSection(
@@ -109,7 +135,7 @@ class CompanyListPage extends StatelessWidget {
                                   cubit.applyGeneralFilters();
                                 },
                                 onEmailRepliedSelected: (value) {
-                                  cubit.updateEmailReplied(value);
+                                  cubit.updateRepliedTo(value);
                                   cubit.applyGeneralFilters();
                                 },
                                 onPrioritySelected: (value) {
@@ -124,31 +150,21 @@ class CompanyListPage extends StatelessWidget {
                                   cubit.sortCompaniesBy(value);
                                 },
                                 onClearFilters: cubit.clearFilters,
-                                countries: state
-                                        .company?.settings?.countryCityMap.keys
-                                        .toList() ??
-                                    [],
-                                cities: cubit.getCitiesForCountry(
-                                    state.company?.country),
-                                interestLevels: const [
-                                  '0-20',
-                                  '21-40',
-                                  '41-60',
-                                  '61-80',
-                                  '81-100'
-                                ],
-                                priorities:
-                                    state.company?.settings?.priorities ?? [],
-                                sources: state.company?.settings?.sources ?? [],
-                                company: state.company,
-                                onBusinessTypeSelected:
-                                    (String? businessType) {
-                                  cubit.updateBusinessType(businessType);
-                                  cubit.applyGeneralFilters();
-                                    },
-                                businessTypes:
-                                    state.company?.settings?.businessTypes ??
+                                countries:
+                                    settings?.countryCityMap.keys.toList() ??
                                         [],
+                                cities: cubit.getCitiesForCountry(
+                                    currentCompany?.country),
+                                interestLevels: List.generate(
+                                    11, (index) => '${index * 10}%'),
+                                priorities: settings?.priorities ?? [],
+                                sources: settings?.sources ?? [],
+                                company: currentCompany,
+                                onBusinessTypeSelected: (value) {
+                                  cubit.updateBusinessType(value);
+                                  cubit.applyGeneralFilters();
+                                },
+                                businessTypes: settings?.businessTypes ?? [],
                               ),
                             ),
                         ],
@@ -156,25 +172,21 @@ class CompanyListPage extends StatelessWidget {
                     ),
                   ),
                 ),
-
-                // Sticky Company Count
                 SliverPersistentHeader(
                   pinned: true,
                   delegate: _StickyHeaderDelegate(
-                    companyCount: state.companies.length,
-                    totalCompanyCount: state.originalCompanies.length,
+                    companyCount: companies.length,
+                    totalCompanyCount: originalCompanies.length,
                   ),
                 ),
-
-                // Loading or Empty State
-                if (state.isLoading)
+                if (state is LoadingState)
                   const SliverFillRemaining(
                     hasScrollBody: false,
                     child: Center(
                       child: CircularProgressIndicator(),
                     ),
                   )
-                else if (state.companies.isEmpty)
+                else if (companies.isEmpty)
                   const SliverFillRemaining(
                     hasScrollBody: false,
                     child: Center(
@@ -185,14 +197,13 @@ class CompanyListPage extends StatelessWidget {
                     ),
                   )
                 else
-                  // Company List Section
                   SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
-                        final company = state.companies[index];
+                        final company = companies[index];
                         return _buildCompanyListTile(context, cubit, company);
                       },
-                      childCount: state.companies.length,
+                      childCount: companies.length,
                     ),
                   ),
               ],
@@ -204,7 +215,7 @@ class CompanyListPage extends StatelessWidget {
   }
 
   Widget _buildCompanyListTile(
-      BuildContext context, CustomerCompanyCubit cubit, Company company) {
+      BuildContext context, PartnerCubit cubit, Partner company) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       elevation: 4.0,
@@ -216,83 +227,6 @@ class CompanyListPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Row: Labels and Squares
-            /*  Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Expanded(
-                  child: Column(
-                    children: [
-                      Text(
-                        AppLabels.interestLevelLabel,
-                        style: const TextStyle(fontSize: 10),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 4),
-                      StatusSquare(
-                        text: company.interestLevel ?? AppLabels.notAvailable,
-                        backgroundColor: cubit.getInterestLevelColor(company.interestLevel),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    children: [
-                      Text(
-                        AppLabels.priorityLabel,
-                        style: const TextStyle(fontSize: 10),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 4),
-                      StatusSquare(
-                        text: company.priority ?? AppLabels.notAvailable,
-                        backgroundColor: cubit.getPriorityColor(company.priority),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    children: [
-                      Text(
-                        AppLabels.emailSentLabel,
-                        style: const TextStyle(fontSize: 10),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 4),
-                      StatusSquare(
-                        text: company.emailSent
-                            ? AppLabels.emailSentYesLabel
-                            : AppLabels.emailSentNoLabel,
-                        backgroundColor: cubit.getEmailSentColor(company.emailSent),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    children: [
-                      Text(
-                        AppLabels.theyRepliedLabel,
-                        style: const TextStyle(fontSize: 10),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 4),
-                      StatusSquare(
-                        text: company.theyReplied
-                            ? AppLabels.emailSentYesLabel
-                            : AppLabels.emailSentNoLabel,
-                        backgroundColor: cubit.getRepliedColor(company.theyReplied),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),*/
-
-            // Details and Action Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -350,7 +284,7 @@ class CompanyListPage extends StatelessWidget {
   }
 
   Widget _buildDetailedBox(String label, String? value) {
-    final displayValue = sl<CustomerCompanyCubit>().validateValue(value);
+    final displayValue = sl<PartnerCubit>().validateValue(value);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -375,13 +309,13 @@ class CompanyListPage extends StatelessWidget {
                       value != null &&
                       value.trim().isNotEmpty)
                   ? () async {
-                      await sl<CustomerCompanyCubit>().launchUrl("mailto:$value");
+                      await sl<PartnerCubit>().launchUrl("mailto:$value");
                     }
                   : (label == AppLabels.contactNumberLabel &&
                           value != null &&
                           value.trim().isNotEmpty)
                       ? () async {
-                          await sl<CustomerCompanyCubit>().launchUrl("tel:$value");
+                          await sl<PartnerCubit>().launchUrl("tel:$value");
                         }
                       : null,
               child: Text(
@@ -425,7 +359,7 @@ class CompanyListPage extends StatelessWidget {
   }
 
   void _showDeleteConfirmation(
-      BuildContext context, CustomerCompanyCubit cubit, Company company) {
+      BuildContext context, PartnerCubit cubit, Partner company) {
     showDialog(
       context: context,
       builder: (context) {
@@ -442,7 +376,7 @@ class CompanyListPage extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                cubit.deleteCompany(company.id);
+                cubit.deleteCompany(company.id!);
                 Navigator.of(context).pop();
               },
               child: const Text(AppLabels.deleteButtonText),
@@ -464,15 +398,16 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  double get minExtent => 25; // Minimum height of the sticky header
+  double get minExtent => 25;
+
   @override
-  double get maxExtent => 25; // Maximum height
+  double get maxExtent => 25;
 
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: Colors.blue, // Background color
+      color: Colors.blue,
       padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
       alignment: Alignment.centerLeft,
       child: Text(
@@ -485,6 +420,6 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
-    return true; // Ensures updates when company count changes
+    return true;
   }
 }

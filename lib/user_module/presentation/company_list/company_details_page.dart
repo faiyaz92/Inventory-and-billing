@@ -1,3 +1,4 @@
+import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/account_ledger_cubit.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
@@ -7,12 +8,13 @@ import 'package:requirment_gathering_app/core_module/service_locator/service_loc
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
 import 'package:requirment_gathering_app/core_module/utils/text_styles.dart';
-import 'package:requirment_gathering_app/user_module/data/company.dart';
+import 'package:requirment_gathering_app/user_module/data/partner.dart';
 import 'package:requirment_gathering_app/user_module/presentation/add_company/customer_company_cubit.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+@RoutePage()
 class CompanyDetailsPage extends StatelessWidget {
-  final Company company;
+  final Partner company;
 
   const CompanyDetailsPage({Key? key, required this.company}) : super(key: key);
 
@@ -20,7 +22,7 @@ class CompanyDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: AppLabels.companyListTitle,
+        title: /*AppLabels.companyListTitle*/'Site details',
         automaticallyImplyLeading: true,
         actions: [
           IconButton(
@@ -109,7 +111,7 @@ class CompanyDetailsPage extends StatelessWidget {
   }
 
   Future<String> _createAccountLedger(
-      BuildContext context, Company company) async {
+      BuildContext context, Partner company) async {
     final ledgerCubit = sl<AccountLedgerCubit>();
 
     try {
@@ -131,12 +133,12 @@ class CompanyDetailsPage extends StatelessWidget {
     }
   }
 
-  void _goToAccountLedger(BuildContext context, Company company) {
+  void _goToAccountLedger(BuildContext context, Partner company) {
     sl<Coordinator>().navigateToAccountLedgerPage(company: company);
   }
 
   Widget _buildDetailRow(String label, String? value) {
-    final displayValue = sl<CustomerCompanyCubit>().validateValue(value);
+    final displayValue = sl<PartnerCubit>().validateValue(value);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -170,7 +172,7 @@ class CompanyDetailsPage extends StatelessWidget {
   }
 
   Widget _buildClickableDetailRow(String label, String? value) {
-    final displayValue = sl<CustomerCompanyCubit>().validateValue(value);
+    final displayValue = sl<PartnerCubit>().validateValue(value);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -330,8 +332,7 @@ class CompanyDetailsPage extends StatelessWidget {
   }
 
   Widget _buildInterestLevelRow(String label, String? interestLevel) {
-    final color =
-        sl<CustomerCompanyCubit>().getInterestLevelColor(interestLevel);
+    final color = sl<PartnerCubit>().getInterestLevelColor(interestLevel);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -356,7 +357,7 @@ class CompanyDetailsPage extends StatelessWidget {
   }
 
   Widget _buildRepliedRow(String label, bool replied) {
-    final color = sl<CustomerCompanyCubit>().getRepliedColor(replied);
+    final color = sl<PartnerCubit>().getRepliedColor(replied);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -383,7 +384,7 @@ class CompanyDetailsPage extends StatelessWidget {
   }
 
   Widget _buildEmailSentRow(String label, bool emailSent) {
-    final color = sl<CustomerCompanyCubit>().getEmailSentColor(emailSent);
+    final color = sl<PartnerCubit>().getEmailSentColor(emailSent);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(

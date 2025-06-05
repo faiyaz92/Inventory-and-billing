@@ -7,7 +7,8 @@ import 'package:requirment_gathering_app/user_module/services/customer_company_s
 class CompanySettingCubit extends Cubit<CompanySettingState> {
   final CustomerCompanyService _companyService;
 
-  CompanySettingCubit(this._companyService) : super(CompanySettingState.initial());
+  CompanySettingCubit(this._companyService)
+      : super(CompanySettingState.initial());
 
   Future<void> loadSettings() async {
     emit(state.copyWith(isLoading: true));
@@ -15,19 +16,16 @@ class CompanySettingCubit extends Cubit<CompanySettingState> {
       final result = await _companyService.getSettings();
       result.fold(
         (error) {
-          // Handle the error and update the UI state
           emit(state.copyWith(
             isLoading: false,
             errorMessage: "Failed to load settings: $error",
           ));
         },
         (settings) {
-          // Handle the success case and update the state with the settings
           emit(state.copyWith(settings: settings, isLoading: false));
         },
       );
     } catch (e) {
-      // General catch for any unexpected errors
       emit(state.copyWith(
         isLoading: false,
         errorMessage: "Unexpected error: $e",
@@ -87,6 +85,50 @@ class CompanySettingCubit extends Cubit<CompanySettingState> {
         state.settings.copyWith(verifiedOn: updatedVerifiedOn));
   }
 
+  Future<void> addBusinessType(
+      String businessType, BuildContext context) async {
+    if (state.settings.businessTypes.contains(businessType)) {
+      _showSnackbar(context, "Business Type '$businessType' already exists.");
+      return;
+    }
+    final updatedBusinessTypes = List<String>.from(state.settings.businessTypes)
+      ..add(businessType);
+    await _updateSettings(
+        state.settings.copyWith(businessTypes: updatedBusinessTypes));
+  }
+
+  Future<void> removeBusinessType(String businessType) async {
+    final updatedBusinessTypes = List<String>.from(state.settings.businessTypes)
+      ..remove(businessType);
+    await _updateSettings(
+        state.settings.copyWith(businessTypes: updatedBusinessTypes));
+  }
+
+  Future<void> addTaskStatus(String status, BuildContext context) async {
+    if (state.settings.taskStatuses.contains(status)) {
+      _showSnackbar(context, "Task Status '$status' already exists.");
+      return;
+    }
+    if (List<String>.from(state.settings.taskStatuses).length <= 5) {
+      final updatedStatuses = List<String>.from(state.settings.taskStatuses)
+        ..add(status);
+      await _updateSettings(
+          state.settings.copyWith(taskStatuses: updatedStatuses));
+    } else {
+      emit(state.copyWith(
+        isSaving: false,
+        errorMessage: 'Can not add more than 5 status in free version',
+      ));
+    }
+  }
+
+  Future<void> removeTaskStatus(String status) async {
+    final updatedStatuses = List<String>.from(state.settings.taskStatuses)
+      ..remove(status);
+    await _updateSettings(
+        state.settings.copyWith(taskStatuses: updatedStatuses));
+  }
+
   Future<void> addCountry(String country, BuildContext context) async {
     if (state.settings.countryCityMap.containsKey(country)) {
       _showSnackbar(context, "Country '$country' already exists.");
@@ -138,6 +180,58 @@ class CompanySettingCubit extends Cubit<CompanySettingState> {
     await _updateSettings(state.settings.copyWith(countryCityMap: updatedMap));
   }
 
+  // New: Manage Purposes and Types
+  Future<void> addPurpose(String purpose, BuildContext context) async {
+    if (state.settings.purposeTypeMap.containsKey(purpose)) {
+      _showSnackbar(context, "Purpose '$purpose' already exists.");
+      return;
+    }
+    final updatedMap =
+        Map<String, List<String>>.from(state.settings.purposeTypeMap)
+          ..putIfAbsent(purpose, () => []);
+    await _updateSettings(state.settings.copyWith(purposeTypeMap: updatedMap));
+  }
+
+  Future<void> removePurpose(String purpose) async {
+    final updatedMap =
+        Map<String, List<String>>.from(state.settings.purposeTypeMap)
+          ..remove(purpose);
+    await _updateSettings(state.settings.copyWith(purposeTypeMap: updatedMap));
+  }
+
+  Future<void> editPurpose(
+      String oldPurpose, String newPurpose, BuildContext context) async {
+    if (state.settings.purposeTypeMap.containsKey(newPurpose)) {
+      _showSnackbar(context, "Purpose '$newPurpose' already exists.");
+      return;
+    }
+    final updatedMap =
+        Map<String, List<String>>.from(state.settings.purposeTypeMap);
+    if (updatedMap.containsKey(oldPurpose)) {
+      updatedMap[newPurpose] = updatedMap.remove(oldPurpose)!;
+    }
+    await _updateSettings(state.settings.copyWith(purposeTypeMap: updatedMap));
+  }
+
+  Future<void> addType(
+      String purpose, String type, BuildContext context) async {
+    if (state.settings.purposeTypeMap[purpose]?.contains(type) ?? false) {
+      _showSnackbar(context, "Type '$type' already exists in '$purpose'.");
+      return;
+    }
+    final updatedMap =
+        Map<String, List<String>>.from(state.settings.purposeTypeMap);
+    updatedMap[purpose]?.add(type);
+    await _updateSettings(state.settings.copyWith(purposeTypeMap: updatedMap));
+  }
+
+  Future<void> removeType(String purpose, String type) async {
+    final updatedMap =
+        Map<String, List<String>>.from(state.settings.purposeTypeMap);
+    updatedMap[purpose]?.remove(type);
+    await _updateSettings(state.settings.copyWith(purposeTypeMap: updatedMap));
+  }
+
   Future<void> _updateSettings(CompanySettingsUi updatedSettings) async {
     emit(state.copyWith(isSaving: true));
     try {
@@ -151,48 +245,9 @@ class CompanySettingCubit extends Cubit<CompanySettingState> {
     }
   }
 
-// Add Business Type
-  Future<void> addBusinessType(
-      String businessType, BuildContext context) async {
-    if (state.settings.businessTypes.contains(businessType)) {
-      _showSnackbar(context, "Business Type '$businessType' already exists.");
-      return;
-    }
-    final updatedBusinessTypes = List<String>.from(state.settings.businessTypes)
-      ..add(businessType);
-    await _updateSettings(
-        state.settings.copyWith(businessTypes: updatedBusinessTypes));
-  }
-
-  // Remove Business Type
-  Future<void> removeBusinessType(String businessType) async {
-    final updatedBusinessTypes = List<String>.from(state.settings.businessTypes)
-      ..remove(businessType);
-    await _updateSettings(
-        state.settings.copyWith(businessTypes: updatedBusinessTypes));
-  }
-
   void _showSnackbar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
   }
-  /// 🔹 Add Task Status
-  Future<void> addTaskStatus(String status, BuildContext context) async {
-    if (state.settings.taskStatuses.contains(status)) {
-      _showSnackbar(context, "Task Status '$status' already exists.");
-      return;
-    }
-    final updatedStatuses = List<String>.from(state.settings.taskStatuses)
-      ..add(status);
-    await _updateSettings(state.settings.copyWith(taskStatuses: updatedStatuses));
-  }
-
-  /// 🔹 Remove Task Status
-  Future<void> removeTaskStatus(String status) async {
-    final updatedStatuses = List<String>.from(state.settings.taskStatuses)
-      ..remove(status);
-    await _updateSettings(state.settings.copyWith(taskStatuses: updatedStatuses));
-  }
-
 }

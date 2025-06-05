@@ -20,6 +20,7 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
   static const String subcategoriesCollection = 'subcategories';
   static const String accountLedgers = 'accountLedgers';
   static const String transactions = 'transactions';
+  static const String cartsCollection = 'carts'; // New Cart Collection Constant
   FirestorePathProviderImpl(this._firestore);
 
   @override
@@ -135,6 +136,154 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
         .doc(companyDirectory)
         .collection(tenantCompanies)
         .doc(companyId)
-        .collection(subcategoriesCollection);  // Top-level subcategories collection
+        .collection(
+            subcategoriesCollection); // Top-level subcategories collection
+  }
+
+  @override
+  // New paths for Stock and Inventory
+  CollectionReference getStoresCollectionRef(String companyId) => _firestore
+      .collection(rootPath)
+      .doc(companyDirectory)
+      .collection(tenantCompanies)
+      .doc(companyId)
+      .collection('stores');
+
+  @override
+  CollectionReference getStockCollectionRef(String companyId, String storeId) =>
+      getStoresCollectionRef(companyId).doc(storeId).collection('stock');
+
+  // '${getStoresCollectionRef(companyId)}/$storeId/stock';
+
+  @override
+  CollectionReference getTransactionsCollectionRef(
+          String companyId, String storeId) =>
+      getStoresCollectionRef(companyId).doc(storeId).collection('transactions');
+
+  // '${getStoresCollectionRef(companyId)}/$storeId/transactions';
+
+  @override
+  CollectionReference getOrdersCollectionRef(String companyId) {
+    return _firestore
+        .collection(rootPath) // Root path
+        .doc(companyDirectory) // Company directory
+        .collection(tenantCompanies) // Tenant companies collection
+        .doc(companyId) // Specific company document
+        .collection('orders');
+    // return '/tenantCompanies/$companyId/orders';
+  }
+
+  @override
+  CollectionReference getCartsCollectionRef(String companyId) {
+    return _firestore
+        .collection(rootPath)
+        .doc(companyDirectory)
+        .collection(tenantCompanies)
+        .doc(companyId)
+        .collection(cartsCollection);
+  }
+
+  // Get a specific user's cart
+  @override
+  DocumentReference getUserCartRef(String companyId, String userId) {
+    return getCartsCollectionRef(companyId).doc(userId);
+  }
+
+  static const String wishlistCollection = 'wishlists';
+
+  @override
+  CollectionReference getWishlistCollectionRef(String companyId) {
+    return _firestore
+        .collection(rootPath)
+        .doc(companyDirectory)
+        .collection(tenantCompanies)
+        .doc(companyId)
+        .collection(wishlistCollection);
+  }
+
+  @override
+  DocumentReference getUserWishlistRef(String companyId, String userId) {
+    return getWishlistCollectionRef(companyId).doc(userId);
+  }
+
+  @override
+  CollectionReference getTaxiBookingsCollectionRef(String companyId) {
+    return _firestore
+        .collection(rootPath)
+        .doc(companyDirectory)
+        .collection(tenantCompanies)
+        .doc(companyId)
+        .collection('taxiBookings');
+  }
+
+  @override
+  CollectionReference getTaxiTypesCollectionRef(String companyId) {
+    return _firestore
+        .collection(rootPath)
+        .doc(companyDirectory)
+        .collection(tenantCompanies)
+        .doc(companyId)
+        .collection('settings')
+        .doc('taxiBookingSettings')
+        .collection('taxiTypes');
+  }
+
+  @override
+  CollectionReference getTripTypesCollectionRef(String companyId) {
+    return _firestore
+        .collection(rootPath)
+        .doc(companyDirectory)
+        .collection(tenantCompanies)
+        .doc(companyId)
+        .collection('settings')
+        .doc('taxiBookingSettings')
+        .collection('tripTypes');
+  }
+
+  @override
+  CollectionReference getServiceTypesCollectionRef(String companyId) {
+    return _firestore
+        .collection(rootPath)
+        .doc(companyDirectory)
+        .collection(tenantCompanies)
+        .doc(companyId)
+        .collection('settings')
+        .doc('taxiBookingSettings')
+        .collection('serviceTypes');
+  }
+
+  @override
+  CollectionReference getTripStatusesCollectionRef(String companyId) {
+    return _firestore
+        .collection(rootPath)
+        .doc(companyDirectory)
+        .collection(tenantCompanies)
+        .doc(companyId)
+        .collection('settings')
+        .doc('taxiBookingSettings')
+        .collection('tripStatuses');
+  }
+
+  @override
+  DocumentReference getTaxiBookingSettingsRef(String companyId) {
+    return _firestore
+        .collection(rootPath)
+        .doc(companyDirectory)
+        .collection(tenantCompanies)
+        .doc(companyId)
+        .collection('settings')
+        .doc('taxiBookingSettings');
+  }
+  @override
+// Visitor Counter Collection
+  CollectionReference getVisitorCountersCollectionRef(String companyId) {
+    return _firestore
+        .collection(rootPath)
+        .doc(companyDirectory)
+        .collection(tenantCompanies)
+        .doc(companyId)
+        .collection('analytics')
+        .doc('visitorCounters')
+        .collection('daily');
   }
 }

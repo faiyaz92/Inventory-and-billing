@@ -1,11 +1,13 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:requirment_gathering_app/core_module/presentation/widget/custom_button.dart';
-import 'package:requirment_gathering_app/user_module/presentation/company_settings/compaby_setting_state.dart';
-import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
-import 'package:requirment_gathering_app/user_module/presentation/company_settings/company_settings_cubit.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
+import 'package:requirment_gathering_app/core_module/presentation/widget/custom_button.dart';
+import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
+import 'package:requirment_gathering_app/user_module/presentation/company_settings/compaby_setting_state.dart';
+import 'package:requirment_gathering_app/user_module/presentation/company_settings/company_settings_cubit.dart';
 
+@RoutePage()
 class CompanySettingPage extends StatelessWidget {
   const CompanySettingPage({Key? key}) : super(key: key);
 
@@ -29,51 +31,37 @@ class CompanySettingPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildSection(
-                          title: "Sources",
-                          items: state.settings.sources,
-                          onAdd: (newSource) =>
-                              cubit.addSource(newSource, context),
-                          onDelete: (source) => cubit.removeSource(source),
-                        ),
-                        const SizedBox(height: 16),
-                        _buildSection(
+                        /*_buildSection(
                           title: "Priorities",
                           items: state.settings.priorities,
-                          onAdd: (newPriority) => cubit.addPriority(
-                            newPriority,
-                            context,
-                          ),
+                          onAdd: (newPriority) =>
+                              cubit.addPriority(newPriority, context),
                           onDelete: (priority) =>
                               cubit.removePriority(priority),
                         ),
+
                         const SizedBox(height: 16),
                         _buildSection(
-                          title: "Verified On",
-                          items: state.settings.verifiedOn,
-                          onAdd: (newPlatform) =>
-                              cubit.addVerifiedOn(newPlatform, context),
-                          onDelete: (platform) =>
-                              cubit.removeVerifiedOn(platform),
-                        ),
-                        const SizedBox(height: 16),
-                        _buildSection(
-                          title: "Business Types", // New section for business types
+                          title: "Site Types",
                           items: state.settings.businessTypes,
-                          onAdd: (newBusinessType) => cubit.addBusinessType(newBusinessType, context),
-                          onDelete: (businessType) => cubit.removeBusinessType(businessType),
-                        ),
-
+                          onAdd: (newBusinessType) =>
+                              cubit.addBusinessType(newBusinessType, context),
+                          onDelete: (businessType) =>
+                              cubit.removeBusinessType(businessType),
+                        ),*/
                         const SizedBox(height: 16),
-
                         _buildSection(
                           title: "Task Statuses",
                           items: state.settings.taskStatuses,
-                          onAdd: (newStatus) => cubit.addTaskStatus(newStatus, context),
+                          onAdd: (newStatus) =>
+                              cubit.addTaskStatus(newStatus, context),
                           onDelete: (status) => cubit.removeTaskStatus(status),
                         ),
-                        const SizedBox(height: 16),
+                        /*const SizedBox(height: 16),
                         _buildCountrySection(context, cubit, state),
+                        const SizedBox(height: 16),
+                        _buildPurposeSection(
+                            context, cubit, state), */// New section
                       ],
                     ),
                   ),
@@ -106,10 +94,8 @@ class CompanySettingPage extends StatelessWidget {
               runSpacing: 4.0,
               children: items.map((item) {
                 return Chip(
-                  label: Text(
-                    "${item[0].toUpperCase()}${item.substring(1)}",
-                    style: const TextStyle(fontSize: 14),
-                  ),
+                  label: Text("${item[0].toUpperCase()}${item.substring(1)}",
+                      style: const TextStyle(fontSize: 14)),
                   onDeleted: () => onDelete(item),
                 );
               }).toList(),
@@ -176,18 +162,13 @@ class CompanySettingPage extends StatelessWidget {
                     IconButton(
                       icon: Container(
                         decoration: BoxDecoration(
-                          color: Colors.blue, // Blue square for Edit
+                          color: Colors.blue,
                           shape: BoxShape.rectangle,
-                          borderRadius: BorderRadius.circular(
-                              4), // Slight rounding for smooth edges
+                          borderRadius: BorderRadius.circular(4),
                         ),
                         padding: const EdgeInsets.all(4.0),
-                        // Padding inside the square
-                        child: const Icon(
-                          Icons.edit,
-                          color: Colors.white, // White icon
-                          size: 24, // Smaller icon size
-                        ),
+                        child: const Icon(Icons.edit,
+                            color: Colors.white, size: 24),
                       ),
                       onPressed: () {
                         final TextEditingController editController =
@@ -226,18 +207,13 @@ class CompanySettingPage extends StatelessWidget {
                     IconButton(
                       icon: Container(
                         decoration: BoxDecoration(
-                          color: Colors.red, // Red square for Delete
+                          color: Colors.red,
                           shape: BoxShape.rectangle,
-                          borderRadius: BorderRadius.circular(
-                              4), // Slight rounding for smooth edges
+                          borderRadius: BorderRadius.circular(4),
                         ),
                         padding: const EdgeInsets.all(4.0),
-                        // Padding inside the square
-                        child: const Icon(
-                          Icons.delete,
-                          color: Colors.white, // White icon
-                          size: 24, // Smaller icon size
-                        ),
+                        child: const Icon(Icons.delete,
+                            color: Colors.white, size: 24),
                       ),
                       onPressed: () {
                         showDialog(
@@ -307,10 +283,7 @@ class CompanySettingPage extends StatelessWidget {
                             onPressed: () {
                               if (cityController.text.isNotEmpty) {
                                 cubit.addCity(
-                                  country,
-                                  cityController.text,
-                                  context,
-                                );
+                                    country, cityController.text, context);
                                 cityController.clear();
                               }
                             },
@@ -347,11 +320,203 @@ class CompanySettingPage extends StatelessWidget {
                     isLoading: state.isSaving,
                     onPressed: () {
                       if (countryController.text.isNotEmpty) {
-                        cubit.addCountry(
-                          countryController.text,
-                          context,
-                        );
+                        cubit.addCountry(countryController.text, context);
                         countryController.clear();
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPurposeSection(BuildContext context, CompanySettingCubit cubit,
+      CompanySettingState state) {
+    final TextEditingController purposeController = TextEditingController();
+    final TextEditingController typeController = TextEditingController();
+
+    return Card(
+      elevation: 4.0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("Transaction Purposes & Types",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ...state.settings.purposeTypeMap.keys.map((purpose) {
+              return ExpansionTile(
+                title: Row(
+                  children: [
+                    Expanded(child: Text(purpose)),
+                    IconButton(
+                      icon: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          shape: BoxShape.rectangle,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        padding: const EdgeInsets.all(4.0),
+                        child: const Icon(Icons.edit,
+                            color: Colors.white, size: 24),
+                      ),
+                      onPressed: () {
+                        final TextEditingController editController =
+                            TextEditingController(text: purpose);
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text("Edit Purpose"),
+                              content: TextField(
+                                controller: editController,
+                                decoration: const InputDecoration(
+                                    labelText: "New Purpose Name"),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text("Cancel"),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    if (editController.text.isNotEmpty) {
+                                      cubit.editPurpose(purpose,
+                                          editController.text, context);
+                                      Navigator.of(context).pop();
+                                    }
+                                  },
+                                  child: const Text("Save"),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    IconButton(
+                      icon: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.rectangle,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        padding: const EdgeInsets.all(4.0),
+                        child: const Icon(Icons.delete,
+                            color: Colors.white, size: 24),
+                      ),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text("Confirm Delete"),
+                              content: Text("Delete purpose '$purpose'?"),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text("Cancel"),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    cubit.removePurpose(purpose);
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text("Delete"),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Wrap(
+                      spacing: 8.0,
+                      children: state.settings.purposeTypeMap[purpose]!
+                          .map((type) => Chip(
+                                label: Text(type),
+                                onDeleted: () =>
+                                    cubit.removeType(purpose, type),
+                              ))
+                          .toList(),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: TextField(
+                              controller: typeController,
+                              textCapitalization: TextCapitalization.sentences,
+                              decoration: const InputDecoration(
+                                labelText: "Add Type",
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: CustomButton(
+                            horizontalPadding: 8,
+                            text: "Add Type",
+                            isLoading: false,
+                            onPressed: () {
+                              if (typeController.text.isNotEmpty) {
+                                cubit.addType(
+                                    purpose, typeController.text, context);
+                                typeController.clear();
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }).toList(),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: TextField(
+                      controller: purposeController,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: const InputDecoration(
+                        labelText: "Add Purpose",
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: CustomButton(
+                    text: "Add Purpose",
+                    horizontalPadding: 8,
+                    isLoading: state.isSaving,
+                    onPressed: () {
+                      if (purposeController.text.isNotEmpty) {
+                        cubit.addPurpose(purposeController.text, context);
+                        purposeController.clear();
                       }
                     },
                   ),

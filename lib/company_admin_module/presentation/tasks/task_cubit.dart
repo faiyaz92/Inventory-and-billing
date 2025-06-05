@@ -45,9 +45,12 @@ class TaskCubit extends Cubit<TaskState> {
   }
 
   /// Fetch Tasks & Set Logged-in User as Default Filter (only on first load)
-  Future<void> fetchTasks() async {
+  Future<void> fetchTasks({bool isNeedToShow=true}) async {
     try {
-      emit(TaskLoading());
+      selectedUserName =null;
+      if(isNeedToShow) {
+        emit(TaskLoading());
+      }
       final userInfo = await accountRepository.getUserInfo();
       allTasks = await _taskService.getAllTasks();
       users = await _companyOperationsService.getUsersFromTenantCompany();
@@ -59,12 +62,13 @@ class TaskCubit extends Cubit<TaskState> {
           orElse: () => UserInfo(userName: "All Users"),
         );
         selectedUserName = currentUser.userName;
-      } else if (selectedUserName == null) {
-        selectedUserName = "All Users";
+      } else {
+        selectedUserName ??= "All Users";
       }
 
       allTasks.sort(_sortTasks);
-      emit(TaskLoaded(_filterTasks(), users));
+
+      emit(TaskLoaded(_filterTasks(), users,isLoading:isNeedToShow),);
     } catch (e) {
       emit(TaskError(e.toString()));
     }
@@ -126,7 +130,7 @@ class TaskCubit extends Cubit<TaskState> {
         taskId: task.taskId ?? '',
         assignedToUserName: _getUserNameById(task.assignedTo ?? '', users),
         createdBy: task.createdBy ?? currentUserId,
-        lastUpdateTime: DateTime.now(),
+        lastUpdateTime: DateTime.now() ,
         lastUpdatedBy: currentUserId,
         lastUpdatedByUserName: currentUserName,
       );

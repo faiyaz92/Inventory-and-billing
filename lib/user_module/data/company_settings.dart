@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class CompanySettingsUi {
   final List<String> sources;
   final List<String> priorities;
@@ -5,6 +7,7 @@ class CompanySettingsUi {
   final Map<String, List<String>> countryCityMap;
   final List<String> businessTypes;
   final List<String> taskStatuses;
+  final Map<String, List<String>> purposeTypeMap; // New: Purpose -> Types mapping
 
   CompanySettingsUi({
     required this.sources,
@@ -13,6 +16,7 @@ class CompanySettingsUi {
     required this.countryCityMap,
     required this.businessTypes,
     required this.taskStatuses,
+    required this.purposeTypeMap,
   });
 
   factory CompanySettingsUi.initial() {
@@ -23,6 +27,7 @@ class CompanySettingsUi {
       countryCityMap: {},
       businessTypes: [],
       taskStatuses: [],
+      purposeTypeMap: {'Material': [], 'Labor': []}, // Default purposes
     );
   }
 
@@ -33,6 +38,7 @@ class CompanySettingsUi {
     Map<String, List<String>>? countryCityMap,
     List<String>? businessTypes,
     List<String>? taskStatuses,
+    Map<String, List<String>>? purposeTypeMap,
   }) {
     return CompanySettingsUi(
       sources: sources ?? this.sources,
@@ -41,6 +47,41 @@ class CompanySettingsUi {
       countryCityMap: countryCityMap ?? this.countryCityMap,
       businessTypes: businessTypes ?? this.businessTypes,
       taskStatuses: taskStatuses ?? this.taskStatuses,
+      purposeTypeMap: purposeTypeMap ?? this.purposeTypeMap,
     );
+  }
+
+  factory CompanySettingsUi.fromMap(Map<String, dynamic> map) {
+    return CompanySettingsUi(
+      sources: List<String>.from(map['sources'] ?? []),
+      priorities: List<String>.from(map['priorities'] ?? []),
+      verifiedOn: List<String>.from(map['verifiedOn'] ?? []),
+      countryCityMap: Map<String, List<String>>.from(
+        (map['countryCityMap'] as Map<String, dynamic>?)?.map(
+              (key, value) => MapEntry(key, List<String>.from(value)),
+        ) ??
+            {},
+      ),
+      businessTypes: List<String>.from(map['businessTypes'] ?? []),
+      taskStatuses: List<String>.from(map['taskStatuses'] ?? []),
+      purposeTypeMap: Map<String, List<String>>.from(
+        (map['purposeTypeMap'] as Map<String, dynamic>?)?.map(
+              (key, value) => MapEntry(key, List<String>.from(value)),
+        ) ??
+            {'Material': [], 'Labor': []},
+      ),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'sources': sources,
+      'priorities': priorities,
+      'verifiedOn': verifiedOn,
+      'countryCityMap': countryCityMap,
+      'businessTypes': businessTypes,
+      'taskStatuses': taskStatuses,
+      'purposeTypeMap': purposeTypeMap,
+    };
   }
 }

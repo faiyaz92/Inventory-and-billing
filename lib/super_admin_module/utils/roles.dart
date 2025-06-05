@@ -2,30 +2,35 @@ enum Role {
   SUPER_ADMIN,
   COMPANY_ADMIN,
   USER,
+  STORE_ADMIN, // Added for store admin role
 }
 
 extension RoleExtension on Role {
   String get name {
     switch (this) {
       case Role.SUPER_ADMIN:
-        return "super_admin";
+        return 'super_admin';
       case Role.COMPANY_ADMIN:
-        return "company_admin";
+        return 'company_admin';
       case Role.USER:
-        return "user";
+        return 'user';
+      case Role.STORE_ADMIN:
+        return 'store_admin';
     }
   }
 
   static Role fromString(String role) {
     switch (role) {
-      case "super_admin":
+      case 'super_admin':
         return Role.SUPER_ADMIN;
-      case "company_admin":
+      case 'company_admin':
         return Role.COMPANY_ADMIN;
-      case "user":
+      case 'user':
         return Role.USER;
+      case 'store_admin':
+        return Role.STORE_ADMIN;
       default:
-        throw Exception("Invalid role: $role");
+        throw Exception('Invalid role: $role');
     }
   }
 }

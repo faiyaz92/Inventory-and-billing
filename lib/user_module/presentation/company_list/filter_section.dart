@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
 import 'package:requirment_gathering_app/core_module/utils/text_styles.dart';
-import 'package:requirment_gathering_app/user_module/data/company.dart';
+import 'package:requirment_gathering_app/user_module/data/partner.dart';
 
 class FiltersSection extends StatelessWidget {
   final Function(String?) onCountrySelected;
@@ -22,7 +22,7 @@ class FiltersSection extends StatelessWidget {
   final List<String> priorities;
   final List<String> sources;
   final List<String> businessTypes; // List for business types
-  final Company? company;
+  final Partner? company;
 
   const FiltersSection({
     Key? key,
