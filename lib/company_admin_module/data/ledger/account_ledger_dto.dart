@@ -1,4 +1,3 @@
-
 import 'package:requirment_gathering_app/company_admin_module/data/ledger/transcation_dto.dart';
 
 class AccountLedgerDto {
@@ -56,7 +55,7 @@ class AccountLedgerDto {
       currentBaseDue: map['currentBaseDue']?.toDouble(),
       currentTotalDue: map['currentTotalDue']?.toDouble(),
       serviceChargePercentage: map['serviceChargePercentage']?.toDouble(),
-      estimatedProfit: map['estimatedProfit'].toDouble(),
+      estimatedProfit: map['estimatedProfit']?.toDouble(), // Fixed: Added null-safe handling
       currentProfit: map['currentProfit']?.toDouble(),
       totalPaymentReceived: map['totalPaymentReceived']?.toDouble(),
     );

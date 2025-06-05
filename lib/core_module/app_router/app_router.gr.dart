@@ -1137,6 +1137,38 @@ class ProductTrendingListRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [ProfilePage]
+class ProfileRoute extends PageRouteInfo<void> {
+  const ProfileRoute({List<PageRouteInfo>? children})
+    : super(ProfileRoute.name, initialChildren: children);
+
+  static const String name = 'ProfileRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const ProfilePage();
+    },
+  );
+}
+
+/// generated route for
+/// [RidePlatinumPage]
+class RidePlatinumRoute extends PageRouteInfo<void> {
+  const RidePlatinumRoute({List<PageRouteInfo>? children})
+    : super(RidePlatinumRoute.name, initialChildren: children);
+
+  static const String name = 'RidePlatinumRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const RidePlatinumPage();
+    },
+  );
+}
+
+/// generated route for
 /// [SalesReportPage]
 class SalesReportRoute extends PageRouteInfo<void> {
   const SalesReportRoute({List<PageRouteInfo>? children})
@@ -1481,6 +1513,22 @@ class TaxiBookingsAdminRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const TaxiBookingsAdminPage();
+    },
+  );
+}
+
+/// generated route for
+/// [TaxiBookingsUserPage]
+class TaxiBookingsUserRoute extends PageRouteInfo<void> {
+  const TaxiBookingsUserRoute({List<PageRouteInfo>? children})
+    : super(TaxiBookingsUserRoute.name, initialChildren: children);
+
+  static const String name = 'TaxiBookingsUserRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const TaxiBookingsUserPage();
     },
   );
 }

@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:requirment_gathering_app/core_module/app_router/app_router.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
@@ -144,6 +145,20 @@ class CartDashboardPage extends StatelessWidget {
                         Icons.settings,
                         Colors.blueAccent,
                             () => sl<Coordinator>().navigateToTaxiVisitorCounterPage(),
+                      ),_buildDashboardCard(
+                        context,
+                        'Booking history',
+                        Icons.history,
+                        Colors.blueAccent,
+                            () => sl<Coordinator>().navigateToUserBookingHistory(),
+                      ),
+                      
+                      _buildDashboardCard(
+                        context,
+                        'WEB',
+                        Icons.history,
+                        Colors.blueAccent,
+                            () => sl<Coordinator>().navigateToWebApp(),
                       ),
                     ],
                   ),

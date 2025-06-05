@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/dashboard/dashboard_cubit.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/home_page.dart';
+import 'package:requirment_gathering_app/core_module/presentation/login/profile_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/user_module/presentation/company_list/company_list_page.dart';
@@ -53,6 +54,7 @@ class _DashboardPageState extends State<DashboardPage> {
               final pages = [
                 const HomePage(),
                 const CompanyListPage(),
+                const ProfilePage(),
               ];
               final index = state is DashboardTabState ? state.index : 0;
               return pages[index];
@@ -72,6 +74,10 @@ class _DashboardPageState extends State<DashboardPage> {
                   BottomNavigationBarItem(
                     icon: Icon(Icons.business),
                     label: 'Sites',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.person),
+                    label: 'Profile',
                   ),
                 ],
               );

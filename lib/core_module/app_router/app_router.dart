@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:requirment_gathering_app/company_admin_module/data/ledger/user_ledger_page.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/category.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/sub_category.dart';
@@ -35,6 +35,7 @@ import 'package:requirment_gathering_app/core_module/presentation/dashboard/dash
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/home_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/forgot_password_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/login_page.dart';
+import 'package:requirment_gathering_app/core_module/presentation/login/profile_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/splash_screen.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/super_admin_module/ai_module/presentation/ai_company_list_page.dart';
@@ -49,9 +50,11 @@ import 'package:requirment_gathering_app/taxi/taxi_bookinf_admin_details_page.da
 import 'package:requirment_gathering_app/taxi/taxi_booking_admin_panel_page.dart';
 import 'package:requirment_gathering_app/taxi/taxi_booking_cubit.dart';
 import 'package:requirment_gathering_app/taxi/taxi_booking_page.dart';
+import 'package:requirment_gathering_app/taxi/taxi_booking_web_page.dart';
 import 'package:requirment_gathering_app/taxi/taxi_company_performance_page.dart';
 import 'package:requirment_gathering_app/taxi/taxi_setting_cubit.dart';
 import 'package:requirment_gathering_app/taxi/taxi_setting_page.dart';
+import 'package:requirment_gathering_app/taxi/taxi_user_booking_history.dart';
 import 'package:requirment_gathering_app/taxi/visitor_counter_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_details_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_panel_page.dart';
@@ -222,6 +225,12 @@ class AppRouter extends RootStackRouter {
     ), AutoRoute(
 
       page: TaxiBookingDetailsRoute.page,
+    ), AutoRoute(
+
+      page: TaxiBookingsUserRoute.page,
+    ), AutoRoute(
+
+      page: RidePlatinumRoute.page,
     ),
   ];
 }

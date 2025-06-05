@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
-import 'package:requirment_gathering_app/company_admin_module/data/ledger/user_ledger_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/stock_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/store_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/transaction_cubit.dart';
@@ -43,6 +43,7 @@ import 'package:requirment_gathering_app/core_module/presentation/dashboard/dash
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/home_cubit.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/forgot_password_cubit.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/login_cubit.dart';
+import 'package:requirment_gathering_app/core_module/presentation/login/profile_cubit.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/splash_cubit.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository_impl.dart';
@@ -68,6 +69,7 @@ import 'package:requirment_gathering_app/taxi/taxi_service.dart';
 import 'package:requirment_gathering_app/taxi/taxi_setting_cubit.dart';
 import 'package:requirment_gathering_app/taxi/taxi_setting_repository.dart';
 import 'package:requirment_gathering_app/taxi/taxi_setting_service.dart';
+import 'package:requirment_gathering_app/taxi/taxi_user_cubit.dart';
 import 'package:requirment_gathering_app/taxi/visitor_counter_cubit.dart';
 import 'package:requirment_gathering_app/taxi/visitor_counter_service.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_cubit.dart';
@@ -387,6 +389,12 @@ void _initCubits() {
   sl.registerFactory<VisitorCounterCubit>(
         () => VisitorCounterCubit(sl<IVisitorCounterService>()),
   );
+  sl.registerFactory(() => ProfileCubit(accountRepository: sl<AccountRepository>()));
+  sl.registerFactory<TaxiUserCubit>(() => TaxiUserCubit(
+    sl<ITaxiBookingService>(),
+    sl<ITaxiSettingsService>(),
+    sl<AccountRepository>(),
+  ));
 }
 
 /// **5. Initialize App Navigation & Coordinator**

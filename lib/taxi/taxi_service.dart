@@ -6,6 +6,7 @@ import 'package:requirment_gathering_app/taxi/visitior_counter_model.dart';
 
 abstract class ITaxiBookingService {
   Future<void> createBooking(TaxiBooking booking);
+
   Future<List<TaxiBooking>> getBookings({
     String? bookingId,
     String? status,
@@ -17,17 +18,24 @@ abstract class ITaxiBookingService {
     String? acceptedByDriverId,
     double? minTotalFareAmount,
     double? maxTotalFareAmount,
+    String? userId,
   });
+
   Future<void> updateBookingStatus(String bookingId, String status);
+
   Future<void> acceptBooking(String bookingId, UserInfo? driver);
+
   Future<void> assignBooking(
       String bookingId, UserInfo driver, String? currentAcceptedByDriverId);
 
   Future<void> unAssignBooking(
-      String bookingId,);
+    String bookingId,
+  );
+
   Future<VisitorCounter> getVisitorCounter(String date);
 
-  Future<void>updateBookingCompletedTime(String id);
+  Future<void> updateBookingCompletedTime(String id);
+
   Future<void> updateBookingStartTime(String id);
 }
 
@@ -45,7 +53,10 @@ class TaxiBookingServiceImpl implements ITaxiBookingService {
   @override
   Future<void> createBooking(TaxiBooking booking) async {
     final companyId = await _getCompanyId();
-    await _repository.createBooking(companyId, booking);
+    final userInfo = await _accountRepository.getUserInfo();
+
+    await _repository.createBooking(
+        companyId, booking.copyWith(bookedByUserId: userInfo?.userId ?? ''));
   }
 
   @override
@@ -60,6 +71,7 @@ class TaxiBookingServiceImpl implements ITaxiBookingService {
     String? acceptedByDriverId,
     double? minTotalFareAmount,
     double? maxTotalFareAmount,
+    String? userId,
   }) async {
     final companyId = await _getCompanyId();
     return await _repository.getBookings(
@@ -87,12 +99,12 @@ class TaxiBookingServiceImpl implements ITaxiBookingService {
   Future<void> acceptBooking(String bookingId, UserInfo? driver) async {
     final companyId = await _getCompanyId();
     final userInfo = await _accountRepository.getUserInfo();
-    await _repository.acceptBooking(companyId, bookingId, driver??userInfo);
+    await _repository.acceptBooking(companyId, bookingId, driver ?? userInfo);
   }
 
   @override
-  Future<void> assignBooking(
-      String bookingId, UserInfo driver, String? currentAcceptedByDriverId) async {
+  Future<void> assignBooking(String bookingId, UserInfo driver,
+      String? currentAcceptedByDriverId) async {
     final companyId = await _getCompanyId();
     await _repository.assignBooking(
         companyId, bookingId, driver, currentAcceptedByDriverId);
@@ -105,21 +117,31 @@ class TaxiBookingServiceImpl implements ITaxiBookingService {
   }
 
   @override
-  Future<void> unAssignBooking(String bookingId,) async {
+  Future<void> unAssignBooking(
+    String bookingId,
+  ) async {
     final companyId = await _getCompanyId();
     await _repository.unAssignedBooking(
-        companyId, bookingId,);
+      companyId,
+      bookingId,
+    );
   }
 
   @override
-  Future<void> updateBookingCompletedTime(String id) async{
+  Future<void> updateBookingCompletedTime(String id) async {
     final companyId = await _getCompanyId();
     await _repository.updateBookingCompletedTime(
-      companyId, id,);
-  }@override
-  Future<void> updateBookingStartTime(String id) async{
+      companyId,
+      id,
+    );
+  }
+
+  @override
+  Future<void> updateBookingStartTime(String id) async {
     final companyId = await _getCompanyId();
     await _repository.updateBookingStartTime(
-      companyId, id,);
+      companyId,
+      id,
+    );
   }
 }

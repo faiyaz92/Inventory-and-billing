@@ -27,6 +27,7 @@ class TaxiBooking extends Equatable {
   final DateTime? actualStartTime;
   final DateTime? completedTime;
   final String tripStartTime;
+  final String? bookedByUserId; // Added optional bookedByUserId
 
   const TaxiBooking({
     required this.id,
@@ -54,6 +55,7 @@ class TaxiBooking extends Equatable {
     required this.createdAt,
     required this.lastUpdatedBy,
     required this.lastUpdatedAt,
+    this.bookedByUserId, // Added to constructor
   });
 
   TaxiBooking copyWith({
@@ -82,6 +84,7 @@ class TaxiBooking extends Equatable {
     DateTime? createdAt,
     String? lastUpdatedBy,
     DateTime? lastUpdatedAt,
+    String? bookedByUserId, // Added to copyWith
   }) {
     return TaxiBooking(
       id: id ?? this.id,
@@ -109,6 +112,7 @@ class TaxiBooking extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       lastUpdatedBy: lastUpdatedBy ?? this.lastUpdatedBy,
       lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
+      bookedByUserId: bookedByUserId ?? this.bookedByUserId,
     );
   }
 
@@ -132,13 +136,14 @@ class TaxiBooking extends Equatable {
       actualStartTime: dto.actualStartTime,
       tripStatus: dto.tripStatus,
       accepted: dto.accepted,
-      acceptedByDriverId: dto.acceptedByUserId,
-      acceptedByDriverName: dto.acceptedByUserName,
+      acceptedByDriverId: dto.acceptedByDriverId,
+      acceptedByDriverName: dto.acceptedByDriverName, // Fixed typo
       completedTime: dto.completedTime,
       totalFareAmount: dto.totalFareAmount,
       createdAt: dto.createdAt,
       lastUpdatedBy: dto.lastUpdatedBy,
       lastUpdatedAt: dto.lastUpdatedAt,
+      bookedByUserId: dto.bookedByUserId, // Added
     );
   }
 
@@ -169,6 +174,7 @@ class TaxiBooking extends Equatable {
     createdAt,
     lastUpdatedBy,
     lastUpdatedAt,
+    bookedByUserId, // Added to props
   ];
 }
 
@@ -191,13 +197,14 @@ class TaxiBookingDto {
   final DateTime? actualStartTime;
   final String tripStatus;
   final bool accepted;
-  final String? acceptedByUserId;
-  final String? acceptedByUserName;
+  final String? acceptedByDriverId;
+  final String? acceptedByDriverName; // Fixed typo
   final DateTime? completedTime;
   final double totalFareAmount;
   final DateTime createdAt;
   final String lastUpdatedBy;
   final DateTime lastUpdatedAt;
+  final String? bookedByUserId; // Added optional bookedByUserId
 
   TaxiBookingDto({
     required this.id,
@@ -218,13 +225,14 @@ class TaxiBookingDto {
     this.actualStartTime,
     required this.tripStatus,
     required this.accepted,
-    this.acceptedByUserId,
-    this.acceptedByUserName,
+    this.acceptedByDriverId,
+    this.acceptedByDriverName, // Fixed typo
     this.completedTime,
     required this.totalFareAmount,
     required this.createdAt,
     required this.lastUpdatedBy,
     required this.lastUpdatedAt,
+    this.bookedByUserId, // Added to constructor
   });
 
   factory TaxiBookingDto.fromFirestore(Map<String, dynamic> data, String docId) {
@@ -247,13 +255,14 @@ class TaxiBookingDto {
       actualStartTime: (data['actualStartTime'] as Timestamp?)?.toDate(),
       tripStatus: data['tripStatus'] as String? ?? 'pending',
       accepted: data['accepted'] as bool? ?? false,
-      acceptedByUserId: data['acceptedByUserId'] as String?,
-      acceptedByUserName: data['acceptedByUserName'] as String?,
+      acceptedByDriverId: data['acceptedByDriverId'] as String?, // Fixed to use correct field
+      acceptedByDriverName: data['acceptedByDriverName'] as String?, // Fixed to use correct field
       completedTime: (data['completedTime'] as Timestamp?)?.toDate(),
       totalFareAmount: (data['totalFareAmount'] as num?)?.toDouble() ?? 0.0,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       lastUpdatedBy: data['lastUpdatedBy'] as String? ?? '',
       lastUpdatedAt: (data['lastUpdatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      bookedByUserId: data['bookedByUserId'] as String?, // Added
     );
   }
 
@@ -276,13 +285,14 @@ class TaxiBookingDto {
       'actualStartTime': actualStartTime != null ? Timestamp.fromDate(actualStartTime!) : null,
       'tripStatus': tripStatus,
       'accepted': accepted,
-      'acceptedByUserId': acceptedByUserId,
-      'acceptedByUserName': acceptedByUserName,
+      'acceptedByDriverId': acceptedByDriverId, // Fixed
+      'acceptedByDriverName': acceptedByDriverName, // Fixed
       'completedTime': completedTime != null ? Timestamp.fromDate(completedTime!) : null,
       'totalFareAmount': totalFareAmount,
       'createdAt': Timestamp.fromDate(createdAt),
       'lastUpdatedBy': lastUpdatedBy,
       'lastUpdatedAt': Timestamp.fromDate(lastUpdatedAt),
+      'bookedByUserId': bookedByUserId, // Added
     };
   }
 
@@ -306,13 +316,14 @@ class TaxiBookingDto {
       actualStartTime: model.actualStartTime,
       tripStatus: model.tripStatus,
       accepted: model.accepted,
-      acceptedByUserId: model.acceptedByDriverId,
-      acceptedByUserName: model.acceptedByDriverName,
+      acceptedByDriverId: model.acceptedByDriverId, // Fixed
+      acceptedByDriverName: model.acceptedByDriverName, // Fixed
       completedTime: model.completedTime,
       totalFareAmount: model.totalFareAmount,
       createdAt: model.createdAt,
       lastUpdatedBy: model.lastUpdatedBy,
       lastUpdatedAt: model.lastUpdatedAt,
+      bookedByUserId: model.bookedByUserId, // Added
     );
   }
 }

@@ -7,26 +7,39 @@ import 'package:requirment_gathering_app/taxi/visitior_counter_model.dart';
 
 abstract class ITaxiBookingRepository {
   Future<void> createBooking(String companyId, TaxiBooking booking);
+
   Future<List<TaxiBooking>> getBookings(
-      String companyId, {
-        String? bookingId,
-        String? status,
-        DateTime? startDate,
-        DateTime? endDate,
-        String? taxiTypeId,
-        String? serviceTypeId,
-        String? tripTypeId,
-        String? acceptedByDriverId,
-        double? minTotalFareAmount,
-        double? maxTotalFareAmount,
-      });
-  Future<void> updateBookingStatus(String companyId, String bookingId, String status);
-  Future<void> acceptBooking(String companyId, String bookingId, UserInfo? driver);
-  Future<void> assignBooking(String companyId, String bookingId, UserInfo driver, String? currentAcceptedByDriverId);
+    String companyId, {
+    String? userId,
+    String? bookingId,
+    String? status,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? taxiTypeId,
+    String? serviceTypeId,
+    String? tripTypeId,
+    String? acceptedByDriverId,
+    double? minTotalFareAmount,
+    double? maxTotalFareAmount,
+  });
+
+  Future<void> updateBookingStatus(
+      String companyId, String bookingId, String status);
+
+  Future<void> acceptBooking(
+      String companyId, String bookingId, UserInfo? driver);
+
+  Future<void> assignBooking(String companyId, String bookingId,
+      UserInfo driver, String? currentAcceptedByDriverId);
+
   Future<VisitorCounter> getVisitorCounter(String companyId, String date);
+
   Future<void> updateVisitorCounter(String companyId, String date);
+
   Future<void> unAssignedBooking(String companyId, String bookingId);
+
   Future<void> updateBookingCompletedTime(String companyId, String id);
+
   Future<void> updateBookingStartTime(String companyId, String id);
 }
 
@@ -46,21 +59,21 @@ class TaxiBookingRepositoryImpl implements ITaxiBookingRepository {
 
   @override
   Future<List<TaxiBooking>> getBookings(
-      String companyId,
-      {
-        String? bookingId,
-        String? status,
-        DateTime? startDate,
-        DateTime? endDate,
-        String? taxiTypeId,
-        String? serviceTypeId,
-        String? tripTypeId,
-        String? acceptedByDriverId,
-        double? minTotalFareAmount,
-        double? maxTotalFareAmount,
-      }) async {
+    String companyId, {
+    String? userId,
+    String? bookingId,
+    String? status,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? taxiTypeId,
+    String? serviceTypeId,
+    String? tripTypeId,
+    String? acceptedByDriverId,
+    double? minTotalFareAmount,
+    double? maxTotalFareAmount,
+  }) async {
     Query<Object?> query =
-    _pathProvider.getTaxiBookingsCollectionRef(companyId);
+        _pathProvider.getTaxiBookingsCollectionRef(companyId);
 
     if (bookingId != null) {
       final doc = await _pathProvider
@@ -77,23 +90,25 @@ class TaxiBookingRepositoryImpl implements ITaxiBookingRepository {
       }
       return [];
     }
-
-   /* if (status != null) {
+    if (userId != null) {
+      query = query.where('bookedByUserId', isEqualTo: userId);
+    }
+    /*   if (status != null) {
       query = query.where('tripStatus', isEqualTo: status);
     }
     if (startDate != null) {
       query = query.where(
-        'tripDate',
+        'createdAt',
         isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
       );
     }
     if (endDate != null) {
       query = query.where(
-        'tripDate',
+        'createdAt',
         isLessThanOrEqualTo: Timestamp.fromDate(endDate),
       );
     }
-    if (taxiTypeId != null) {
+   if (taxiTypeId != null) {
       query = query.where('taxiTypeId', isEqualTo: taxiTypeId);
     }
     if (serviceTypeId != null) {
@@ -105,7 +120,7 @@ class TaxiBookingRepositoryImpl implements ITaxiBookingRepository {
     if (acceptedByDriverId != null) {
       query = query.where('acceptedByUserId', isEqualTo: acceptedByDriverId);
     }*/
-   /* if (minTotalFareAmount != null) {
+    /* if (minTotalFareAmount != null) {
       query = query.where('totalFareAmount',
           isGreaterThanOrEqualTo: minTotalFareAmount);
     }
@@ -158,13 +173,14 @@ class TaxiBookingRepositoryImpl implements ITaxiBookingRepository {
 
   @override
   Future<void> assignBooking(
-      String companyId,
-      String bookingId,
-      UserInfo driver,
-      String? currentAcceptedByDriverId,
-      ) async {
+    String companyId,
+    String bookingId,
+    UserInfo driver,
+    String? currentAcceptedByDriverId,
+  ) async {
     final userInfo = await _accountRepository.getUserInfo();
-    final docRef = _pathProvider.getTaxiBookingsCollectionRef(companyId).doc(bookingId);
+    final docRef =
+        _pathProvider.getTaxiBookingsCollectionRef(companyId).doc(bookingId);
     await _pathProvider.firestore.runTransaction((transaction) async {
       final snapshot = await transaction.get(docRef);
       if (!snapshot.exists) {
@@ -208,7 +224,8 @@ class TaxiBookingRepositoryImpl implements ITaxiBookingRepository {
 
   @override
   Future<void> updateVisitorCounter(String companyId, String date) async {
-    final ref = _pathProvider.getVisitorCountersCollectionRef(companyId).doc(date);
+    final ref =
+        _pathProvider.getVisitorCountersCollectionRef(companyId).doc(date);
     await _pathProvider.firestore.runTransaction((transaction) async {
       final snapshot = await transaction.get(ref);
       if (!snapshot.exists) {

@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/home_cubit.dart';
+import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
+import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 
 @RoutePage()
@@ -303,8 +305,7 @@ class HomePage extends StatelessWidget {
           label: 'My store',
           color: Colors.orangeAccent,
           onTap: () {
-            sl<Coordinator>().navigateToStoreDetailsPage(
-                '');
+            sl<Coordinator>().navigateToStoreDetailsPage('');
           },
         ),
         _buildGridItem(
@@ -314,7 +315,8 @@ class HomePage extends StatelessWidget {
           onTap: () {
             sl<Coordinator>().navigateToStoresListPage();
           },
-        ),_buildGridItem(
+        ),
+        _buildGridItem(
           icon: Icons.web_asset,
           label: 'Stock List',
           color: Colors.blueAccent,
@@ -330,7 +332,6 @@ class HomePage extends StatelessWidget {
             sl<Coordinator>().navigateToOverAllStockPage();
           },
         ),
-
         _buildGridItem(
           icon: Icons.store,
           label: 'Store Attendance',
@@ -355,7 +356,6 @@ class HomePage extends StatelessWidget {
             sl<Coordinator>().navigateToTaskListPage();
           },
         ),
-
         _buildGridItem(
           icon: Icons.manage_accounts,
           label: 'Add Customer',
@@ -473,7 +473,16 @@ class HomePage extends StatelessWidget {
         ),
       ]);
     }
-
+    gridItems.add(_buildGridItem(
+      icon: Icons.account_balance,
+      label: 'User ledger',
+      color: Colors.deepPurple,
+      onTap: () async {
+        final user = await sl<AccountRepository>().getUserInfo();
+        user?.copyWith(accountLedgerId: '1q3XGuMfV9LunYhnKDh8');
+        sl<Coordinator>().navigateToUserLedgerPage(user: user?.copyWith(accountLedgerId: '1q3XGuMfV9LunYhnKDh8') ?? UserInfo());
+      },
+    ));
     return gridItems;
   }
 

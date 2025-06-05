@@ -1070,6 +1070,8 @@ class _TaxiBookingsAdminPageState extends State<TaxiBookingsAdminPage> {
       child: InkWell(
         onTap: () async{
          final result = await sl<Coordinator>().navigateToBookingDetailsPage(bookingId: booking.id);
+         // _taxiAdminCubit.fetchBookings();
+
          if(result){
            _taxiAdminCubit.fetchBookings();
          }
@@ -1277,24 +1279,6 @@ class _TaxiBookingsAdminPageState extends State<TaxiBookingsAdminPage> {
                   children: [
                     ElevatedButton(
                       onPressed: () {
-                        _taxiAdminCubit.acceptBooking(booking.id, null);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.green,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                      ),
-                      child: const Text(
-                        'Accept',
-                        style: TextStyle(color: AppColors.white, fontSize: 12),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: () {
                         _taxiAdminCubit.updateBookingStatus(
                             booking.id, 'Declined');
                       },
@@ -1308,6 +1292,25 @@ class _TaxiBookingsAdminPageState extends State<TaxiBookingsAdminPage> {
                       ),
                       child: const Text(
                         'Decline',
+                        style: TextStyle(color: AppColors.white, fontSize: 12),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+
+                    ElevatedButton(
+                      onPressed: () {
+                        _taxiAdminCubit.acceptBooking(booking.id, null);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.green,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                      ),
+                      child: const Text(
+                        'Accept',
                         style: TextStyle(color: AppColors.white, fontSize: 12),
                       ),
                     ),

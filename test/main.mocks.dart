@@ -937,6 +937,18 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
       ) as _i5.Future<dynamic>);
 
   @override
+  _i5.Future<dynamic> navigateToBookingDetailsPage(
+          {required String? bookingId}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #navigateToBookingDetailsPage,
+          [],
+          {#bookingId: bookingId},
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
   _i5.Future<dynamic> navigateToTaxiCompanyPerformancePage() =>
       (super.noSuchMethod(
         Invocation.method(

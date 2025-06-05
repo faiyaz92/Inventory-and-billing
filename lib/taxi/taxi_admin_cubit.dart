@@ -29,8 +29,7 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
     this._settingsService,
     this._userServices,
     this._accountRepository,
-  ) : super(TaxiAdminInitial()) {
-  }
+  ) : super(TaxiAdminInitial());
 
   Future<void> fetchSettings() async {
     try {
@@ -297,11 +296,9 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
 
       // Extract type lists from settings
       final taxiTypes = settings.taxiTypes.map((type) => type.name).toList();
-      final serviceTypes =
-          settings.serviceTypes.map((type) => type.name).toList();
+      final serviceTypes = settings.serviceTypes.map((type) => type.name).toList();
       final tripTypes = settings.tripTypes.map((type) => type.name).toList();
-      final statuses =
-          settings.tripStatuses.map((status) => status.name).toList();
+      final statuses = settings.tripStatuses.map((status) => status.name).toList();
 
       List<TaxiBooking> filteredBookings = bookings;
 
@@ -314,8 +311,7 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
 
       if (status != null) {
         filteredBookings = filteredBookings
-            .where((booking) =>
-                booking.tripStatus.toLowerCase() == status.toLowerCase())
+            .where((booking) => booking.tripStatus.toLowerCase() == status.toLowerCase())
             .toList();
       }
 
@@ -339,22 +335,24 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
 
       if (acceptedByDriverId != null) {
         filteredBookings = filteredBookings
-            .where(
-                (booking) => booking.acceptedByDriverId == acceptedByDriverId)
+            .where((booking) => booking.acceptedByDriverId == acceptedByDriverId)
             .toList();
       }
 
       if (minTotalFareAmount != null && maxTotalFareAmount != null) {
         filteredBookings = filteredBookings
             .where((booking) =>
-                booking.totalFareAmount >= minTotalFareAmount &&
-                booking.totalFareAmount <= maxTotalFareAmount)
+        booking.totalFareAmount >= minTotalFareAmount &&
+            booking.totalFareAmount <= maxTotalFareAmount)
             .toList();
       } else if (minTotalFareAmount != null) {
         filteredBookings = filteredBookings
             .where((booking) => booking.totalFareAmount >= minTotalFareAmount)
             .toList();
       }
+
+      // Sort bookings by createdAt in descending order (latest first)
+      filteredBookings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
       final showTodayStats = _shouldShowTodayStats(startDate, endDate);
       final userInfo = await _accountRepository.getUserInfo();
@@ -416,7 +414,7 @@ class TaxiAdminCubit extends Cubit<TaxiAdminState> {
     }
   }
   Future<void> acceptBookingFromPage(String bookingId, UserInfo? driver) async {
-    if (state is TaxiAdminSuccess) {
+    if (state is TaxiAdminSingleBookingSuccess) {
       emit(TaxiAdminLoading());
       try {
         await _bookingService.acceptBooking(bookingId, driver);
