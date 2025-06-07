@@ -916,6 +916,16 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
       ) as _i5.Future<dynamic>);
 
   @override
+  _i5.Future<dynamic> navigateToTaxiBookingsAdminDarkPage() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #navigateToTaxiBookingsAdminDarkPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
   _i5.Future<dynamic> navigateToDriverListPage() => (super.noSuchMethod(
         Invocation.method(
           #navigateToDriverListPage,
@@ -949,6 +959,18 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
       ) as _i5.Future<dynamic>);
 
   @override
+  _i5.Future<dynamic> navigateToBookingDetailsDarkPage(
+          {required String? bookingId}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #navigateToBookingDetailsDarkPage,
+          [],
+          {#bookingId: bookingId},
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
   _i5.Future<dynamic> navigateToTaxiCompanyPerformancePage() =>
       (super.noSuchMethod(
         Invocation.method(
@@ -962,6 +984,33 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
   _i5.Future<dynamic> navigateToTaxiVisitorCounterPage() => (super.noSuchMethod(
         Invocation.method(
           #navigateToTaxiVisitorCounterPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToUserBookingHistory() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToUserBookingHistory,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToWebApp() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToWebApp,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToTodaysTaxiBookingsPage() => (super.noSuchMethod(
+        Invocation.method(
+          #navigateToTodaysTaxiBookingsPage,
           [],
         ),
         returnValue: _i5.Future<dynamic>.value(),

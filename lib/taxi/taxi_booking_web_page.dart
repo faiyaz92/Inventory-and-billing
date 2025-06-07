@@ -36,13 +36,14 @@ class _RidePlatinumPageState extends State<RidePlatinumPage> {
   DateTime? _date = DateTime.now();
   String? _startTime = TimeOfDay.now().toString();
   double _distance = 10.0;
-late final TaxiSettingsCubit _taxiSettingsCubit;
-late final TaxiBookingCubit _taxiBookingCubit;
+  late final TaxiSettingsCubit _taxiSettingsCubit;
+  late final TaxiBookingCubit _taxiBookingCubit;
+
   @override
   void initState() {
     super.initState();
-    _taxiSettingsCubit= sl<TaxiSettingsCubit>()..fetchSettings();
-    _taxiBookingCubit= sl<TaxiBookingCubit>();
+    _taxiSettingsCubit = sl<TaxiSettingsCubit>()..fetchSettings();
+    _taxiBookingCubit = sl<TaxiBookingCubit>();
   }
 
   @override
@@ -102,67 +103,6 @@ late final TaxiBookingCubit _taxiBookingCubit;
                         ),
                       ),
                     ],
-                  ),
-                ],
-              ),
-            ),
-            // Hero Section
-            Container(
-              padding: EdgeInsets.all(basePadding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'RIDE PLATINUM',
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.bold,
-                      fontSize: 48 * scaleFactor,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: 8 * scaleFactor),
-                  Text(
-                    'Sydney’s premier luxury transport service for every journey.',
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 16 * scaleFactor,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: basePadding),
-                  Container(
-                    width: double.infinity,
-                    height: 300 * scaleFactor,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      image: const DecorationImage(
-                        image: AssetImage('assets/car_image.jpg'),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: basePadding),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFFC107),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        padding: EdgeInsets.symmetric(horizontal: 32 * scaleFactor, vertical: 12 * scaleFactor),
-                      ),
-                      child: Text(
-                        'BOOK YOUR RIDE',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16 * scaleFactor,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
                   ),
                 ],
               ),
@@ -271,7 +211,7 @@ late final TaxiBookingCubit _taxiBookingCubit;
                               children: [
                                 Expanded(
                                   flex: 1,
-                                  child: _buildTextField(_countryCode, 'COUNTRY CODE', validator: (value) => value!.isEmpty ? 'Required' : null),
+                                  child: _buildTextField(_countryCode, 'CODE', validator: (value) => value!.isEmpty ? 'Required' : null),
                                 ),
                                 SizedBox(width: basePadding),
                                 Expanded(
@@ -459,7 +399,7 @@ late final TaxiBookingCubit _taxiBookingCubit;
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _buildServiceCard('PRIVATE PARTY TRANSPORT', Icons.party_mode, scaleFactor),
-                      _buildServiceCard('CHAUFFEUR SERVICES', Icons.directions_car, scaleFactor),
+                      _buildServiceCard('CHAUFFEUR\nSERVICES', Icons.directions_car, scaleFactor),
                     ],
                   ),
                 ],
@@ -639,7 +579,9 @@ late final TaxiBookingCubit _taxiBookingCubit;
   Widget _buildDropdownField({
     required String? value,
     required String label,
-    required List<DropdownMenuItem<String>> items,
+    required
+
+    List<DropdownMenuItem<String>> items,
     required ValueChanged<String?> onChanged,
     required String? Function(String?)? validator,
   }) {

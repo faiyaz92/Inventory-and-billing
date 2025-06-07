@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/home_cubit.dart';
-import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
+import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
-import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 
 @RoutePage()
@@ -76,7 +75,6 @@ class HomePage extends StatelessWidget {
                             ),
                           ),
                           onPressed: () {
-                            // TODO: Implement purchase flow (e.g., navigate to subscription page)
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text(
@@ -109,6 +107,7 @@ class HomePage extends StatelessWidget {
             final List<Widget> gridItems = _buildGridItemsForRole(
               context: context,
               role: state.role,
+              userName: state.userName, // Pass userName for the welcome message
             );
 
             return Scaffold(
@@ -168,6 +167,16 @@ class HomePage extends StatelessWidget {
             );
           } else if (state is HomeError) {
             return Scaffold(
+              appBar: CustomAppBar(
+                title: 'Home Dashboard',
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: () => sl<Coordinator>().navigateToAddStockPage(),
+                    tooltip: 'Add Stock',
+                  ),
+                ],
+              ),
               body: Center(
                 child: Text(
                   "Error: ${state.message}",
@@ -176,7 +185,18 @@ class HomePage extends StatelessWidget {
               ),
             );
           }
-          return const Scaffold();
+          return Scaffold(
+            appBar: CustomAppBar(
+              title: 'Home Dashboard',
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: () => sl<Coordinator>().navigateToAddStockPage(),
+                  tooltip: 'Add Stock',
+                ),
+              ],
+            ),
+          );
         },
       ),
     );
@@ -185,304 +205,84 @@ class HomePage extends StatelessWidget {
   List<Widget> _buildGridItemsForRole({
     required BuildContext context,
     required Role role,
+    required String userName,
   }) {
     final List<Widget> gridItems = [];
 
-    if (role == Role.SUPER_ADMIN) {
-      gridItems.add(
-        _buildGridItem(
-          icon: Icons.admin_panel_settings,
-          label: 'Super Admin',
-          color: Colors.cyan,
-          onTap: () {
-            sl<Coordinator>().navigateToSuperAdminPage();
-          },
-        ),
-      );
-    } else if (role == Role.COMPANY_ADMIN) {
-      gridItems.addAll([
-        _buildGridItem(
-          icon: Icons.admin_panel_settings,
-          label: 'Company Admin',
-          color: Colors.deepPurple,
-          onTap: () {
-            sl<Coordinator>().navigateToCompanyAdminPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.add_task_outlined,
-          label: 'Add Task',
-          color: Colors.blue,
-          onTap: () {
-            sl<Coordinator>().navigateToAddTaskPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.task,
-          label: 'Task List',
-          color: Colors.green,
-          onTap: () {
-            sl<Coordinator>().navigateToTaskListPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.business,
-          label: 'Add Site',
-          color: Colors.orange,
-          onTap: () {
-            sl<Coordinator>().navigateToAddCompanyPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.add_business,
-          label: 'Site List',
-          color: Colors.purple,
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Site List Coming Soon!"),
-              ),
-            );
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.business,
-          label: 'Add Supplier',
-          color: Colors.red,
-          onTap: () {
-            sl<Coordinator>().navigateToAddEditSupplierPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.add_business,
-          label: 'Supplier List',
-          color: Colors.teal,
-          onTap: () {
-            sl<Coordinator>().navigateToSupplierListPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.lightbulb,
-          label: 'Add Strategy',
-          color: Colors.amber,
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Add Strategy Coming Soon!"),
-              ),
-            );
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.settings,
-          label: 'Company Settings',
-          color: Colors.indigo,
-          onTap: () {
-            sl<Coordinator>().navigateToCompanySettingsPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.manage_accounts,
-          label: 'Product Management',
-          color: Colors.pink,
-          onTap: () {
-            sl<Coordinator>().navigateToProductManagementPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.manage_accounts,
-          label: 'Cart Management',
-          color: Colors.pink,
-          onTap: () {
-            sl<Coordinator>().navigateToCartDashboard();
-          },
-        ),
-      ]);
-    } else if (role == Role.STORE_ADMIN) {
-      gridItems.addAll([
-        _buildGridItem(
-          icon: Icons.store,
-          label: 'My store',
-          color: Colors.orangeAccent,
-          onTap: () {
-            sl<Coordinator>().navigateToStoreDetailsPage('');
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.store,
-          label: 'Store List',
-          color: Colors.pink,
-          onTap: () {
-            sl<Coordinator>().navigateToStoresListPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.web_asset,
-          label: 'Stock List',
-          color: Colors.blueAccent,
-          onTap: () {
-            sl<Coordinator>().navigateToStockListPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.store,
-          label: 'Over all stock',
-          color: Colors.pink,
-          onTap: () {
-            sl<Coordinator>().navigateToOverAllStockPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.store,
-          label: 'Store Attendance',
-          color: Colors.pink,
-          onTap: () {
-            sl<Coordinator>().navigateToAttendancePage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.add_task_outlined,
-          label: 'Add Task',
-          color: Colors.blue,
-          onTap: () {
-            sl<Coordinator>().navigateToAddTaskPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.task,
-          label: 'Task List',
-          color: Colors.green,
-          onTap: () {
-            sl<Coordinator>().navigateToTaskListPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.manage_accounts,
-          label: 'Add Customer',
-          color: Colors.pink,
-          onTap: () {
-            sl<Coordinator>().navigateToAddUserPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.manage_accounts,
-          label: 'Billing Customer',
-          color: Colors.pink,
-          onTap: () {
-            sl<Coordinator>().navigateToBillingPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.shopping_cart,
-          label: 'Cart Management',
-          color: Colors.pink,
-          onTap: () {
-            sl<Coordinator>().navigateToCartDashboard();
-          },
-        ),
-      ]);
-    } else {
-      gridItems.addAll([
-        _buildGridItem(
-          icon: Icons.add_task_outlined,
-          label: 'Add Task',
-          color: Colors.blue,
-          onTap: () {
-            sl<Coordinator>().navigateToAddTaskPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.task,
-          label: 'Task List',
-          color: Colors.green,
-          onTap: () {
-            sl<Coordinator>().navigateToTaskListPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.business,
-          label: 'Add Site',
-          color: Colors.orange,
-          onTap: () {
-            sl<Coordinator>().navigateToAddCompanyPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.add_business,
-          label: 'Site List',
-          color: Colors.purple,
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Site List Coming Soon!"),
-              ),
-            );
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.business,
-          label: 'Add Supplier',
-          color: Colors.red,
-          onTap: () {
-            sl<Coordinator>().navigateToAddEditSupplierPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.add_business,
-          label: 'Supplier List',
-          color: Colors.teal,
-          onTap: () {
-            sl<Coordinator>().navigateToSupplierListPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.lightbulb,
-          label: 'Add Strategy',
-          color: Colors.amber,
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Add Strategy Coming Soon!"),
-              ),
-            );
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.settings,
-          label: 'Company Settings',
-          color: Colors.indigo,
-          onTap: () {
-            sl<Coordinator>().navigateToCompanySettingsPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.manage_accounts,
-          label: 'Product Management',
-          color: Colors.pink,
-          onTap: () {
-            sl<Coordinator>().navigateToProductManagementPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.manage_accounts,
-          label: 'Cart Management',
-          color: Colors.pink,
-          onTap: () {
-            sl<Coordinator>().navigateToCartDashboard();
-          },
-        ),
-      ]);
-    }
-    gridItems.add(_buildGridItem(
-      icon: Icons.account_balance,
-      label: 'User ledger',
-      color: Colors.deepPurple,
-      onTap: () async {
-        final user = await sl<AccountRepository>().getUserInfo();
-        user?.copyWith(accountLedgerId: '1q3XGuMfV9LunYhnKDh8');
-        sl<Coordinator>().navigateToUserLedgerPage(user: user?.copyWith(accountLedgerId: '1q3XGuMfV9LunYhnKDh8') ?? UserInfo());
-      },
-    ));
+    // Role-specific tiles
+
+    // Add all tiles from CartDashboardPage for all roles
+    gridItems.addAll([
+      _buildGridItem(
+        icon: Icons.admin_panel_settings_outlined,
+        label: 'Taxi admin',
+        color: Colors.orange,
+        onTap: () => sl<Coordinator>().navigateToTaxiBookingsAdminPage(),
+      ),
+      _buildGridItem(
+        icon: Icons.local_taxi,
+        label: 'Taxi booking',
+        color: Colors.blue,
+        onTap: () => sl<Coordinator>().navigateToTaxiBookingPage(),
+      ),
+      _buildGridItem(
+        icon: Icons.tune,
+        label: 'Taxi Setting',
+        color: Colors.green,
+        onTap: () => sl<Coordinator>().navigateToTaxiSettingsPage(),
+      ),
+      _buildGridItem(
+        icon: Icons.people_alt,
+        label: 'Driver List',
+        color: Colors.purple,
+        onTap: () => sl<Coordinator>().navigateToDriverListPage(),
+      ),
+      _buildGridItem(
+        icon: Icons.trending_up,
+        label: 'Taxi Company performance',
+        color: Colors.teal,
+        onTap: () => sl<Coordinator>().navigateToTaxiCompanyPerformancePage(),
+      ),
+      _buildGridItem(
+        icon: Icons.traffic,
+        label: 'Taxi Company visitor counter',
+        color: Colors.red,
+        onTap: () => sl<Coordinator>().navigateToTaxiVisitorCounterPage(),
+      ),
+      _buildGridItem(
+        icon: Icons.history_toggle_off,
+        label: 'Booking history',
+        color: Colors.amber,
+        onTap: () => sl<Coordinator>().navigateToUserBookingHistory(),
+      ),
+      _buildGridItem(
+        icon: Icons.web,
+        label: 'WEB',
+        color: Colors.indigo,
+        onTap: () => sl<Coordinator>().navigateToWebApp(),
+      ),
+      _buildGridItem(
+        icon: Icons.nights_stay,
+        label: 'Taxi admin dark',
+        color: Colors.blueGrey,
+        onTap: () => sl<Coordinator>().navigateToTaxiBookingsAdminDarkPage(),
+      ),
+      _buildGridItem(
+        icon: Icons.admin_panel_settings,
+        label: 'Company Admin',
+        color: Colors.deepPurple,
+        onTap: () {
+          sl<Coordinator>().navigateToCompanyAdminPage();
+        },
+      ),
+      _buildGridItem(
+        icon: Icons.today,
+        label: "Today's Booking",
+        color: Colors.cyan,
+        onTap: () => sl<Coordinator>().navigateToTodaysTaxiBookingsPage(),
+      ),
+    ]);
+
     return gridItems;
   }
 

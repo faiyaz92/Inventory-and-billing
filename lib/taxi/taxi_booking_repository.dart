@@ -118,7 +118,7 @@ class TaxiBookingRepositoryImpl implements ITaxiBookingRepository {
       query = query.where('tripTypeId', isEqualTo: tripTypeId);
     }
     if (acceptedByDriverId != null) {
-      query = query.where('acceptedByUserId', isEqualTo: acceptedByDriverId);
+      query = query.where('acceptedByDriverId', isEqualTo: acceptedByDriverId);
     }*/
     /* if (minTotalFareAmount != null) {
       query = query.where('totalFareAmount',
@@ -159,8 +159,8 @@ class TaxiBookingRepositoryImpl implements ITaxiBookingRepository {
     final userInfo = await _accountRepository.getUserInfo();
     final updates = {
       'accepted': driver != null,
-      'acceptedByUserId': driver != null ? driver.userId ?? '' : '',
-      'acceptedByUserName': driver != null ? driver.userName ?? '' : '',
+      'acceptedByDriverId': driver != null ? driver.userId ?? '' : '',
+      'acceptedByDriverName': driver != null ? driver.userName ?? '' : '',
       'tripStatus': 'Accepted',
       'lastUpdated': Timestamp.fromDate(DateTime.now()),
       'lastUpdatedBy': userInfo?.userId,
@@ -187,15 +187,15 @@ class TaxiBookingRepositoryImpl implements ITaxiBookingRepository {
         throw Exception('Booking not found');
       }
       final currentData = snapshot.data() as Map<String, dynamic>;
-      final currentDriverId = currentData['acceptedByUserId'] as String?;
+      final currentDriverId = currentData['acceptedByDriverId'] as String?;
       if (currentAcceptedByDriverId != null &&
           currentDriverId != currentAcceptedByDriverId) {
         throw Exception('Driver assignment conflict');
       }
       transaction.update(docRef, {
         'accepted': true,
-        'acceptedByUserId': driver.userId ?? '',
-        'acceptedByUserName': driver.userName ?? '',
+        'acceptedByDriverId': driver.userId ?? '',
+        'acceptedByDriverName': driver.userName ?? '',
         'tripStatus': 'Accepted',
         'lastUpdated': Timestamp.fromDate(DateTime.now()),
         'lastUpdatedBy': userInfo?.userId,
@@ -251,8 +251,8 @@ class TaxiBookingRepositoryImpl implements ITaxiBookingRepository {
     final userInfo = await _accountRepository.getUserInfo();
     final updates = {
       'accepted': false,
-      'acceptedByUserId': null,
-      'acceptedByUserName': null,
+      'acceptedByDriverId': null,
+      'acceptedByDriverName': null,
       'tripStatus': 'Pending',
       'lastUpdated': Timestamp.fromDate(DateTime.now()),
       'lastUpdatedBy': userInfo?.userId,

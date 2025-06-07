@@ -34,54 +34,85 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => _profileCubit,
-      child: BlocListener<ProfileCubit, ProfileState>(
-        listener: (context, state) {
-          if (state.message != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message!)),
-            );
-          }
-          if (state.error != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.error!)),
-            );
-          }
-          if (state.logoutRequested) {
-            context.read<DashboardCubit>().logout();
-          }
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Theme.of(context).primaryColor.withOpacity(0.1),
-                Theme.of(context).primaryColor.withOpacity(0.3),
-              ],
-            ),
+    final double scaleFactor = MediaQuery.of(context).size.width > 600 ? 1.2 : 1.0;
+    final double basePadding = 16.0 * scaleFactor;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF1C2526), // Match TaxiBookingPage background
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF2A2F32), // Darker shade to align with TaxiBookingPage
+              Color(0xFF1C2526), // Primary background color
+            ],
           ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: BlocBuilder<ProfileCubit, ProfileState>(
-                builder: (context, state) {
-                  if (state.isLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildProfileCard(context, state.userInfo),
-                      const SizedBox(height: 16),
-                      Expanded(
-                        child: _buildOptionsList(context, state.userInfo),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.all(basePadding),
+            child: BlocProvider(
+              create: (context) => _profileCubit,
+              child: BlocListener<ProfileCubit, ProfileState>(
+                listener: (context, state) {
+                  if (state.message != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          state.message!,
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 16 * scaleFactor,
+                            color: const Color(0xFFE4E4E7),
+                          ),
+                        ),
+                        backgroundColor: const Color(0xFF2A2F32),
                       ),
-                    ],
-                  );
+                    );
+                  }
+                  if (state.error != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          state.error!,
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 16 * scaleFactor,
+                            color: const Color(0xFFE4E4E7),
+                          ),
+                        ),
+                        backgroundColor: const Color(0xFF2A2F32),
+                      ),
+                    );
+                  }
+                  if (state.logoutRequested) {
+                    context.read<DashboardCubit>().logout();
+                  }
                 },
+                child: BlocBuilder<ProfileCubit, ProfileState>(
+                  builder: (context, state) {
+                    if (state.isLoading) {
+                      return Center(
+                        child: CircularProgressIndicator(
+                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFACC15)), // Match accent
+                          strokeWidth: 5 * scaleFactor,
+                        ),
+                      );
+                    }
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildProfileCard(context, state.userInfo, scaleFactor, basePadding),
+                        SizedBox(height: basePadding),
+                        Expanded(
+                          child: _buildOptionsList(context, state.userInfo, scaleFactor, basePadding),
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ),
             ),
           ),
@@ -90,85 +121,90 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildProfileCard(BuildContext context, UserInfo? userInfo) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
+  Widget _buildProfileCard(BuildContext context, UserInfo? userInfo, double scaleFactor, double basePadding) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2F32), // Match TaxiBookingPage card background
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF27272A)),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor:
-                      Theme.of(context).primaryColor.withOpacity(0.2),
-                  child: Text(
-                    userInfo?.name?.isNotEmpty == true
-                        ? userInfo!.name![0].toUpperCase()
-                        : 'U',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor,
-                    ),
+      padding: EdgeInsets.all(basePadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 30 * scaleFactor,
+                backgroundColor: const Color(0xFFFACC15).withOpacity(0.2), // Match accent
+                child: Text(
+                  userInfo?.name?.isNotEmpty == true
+                      ? userInfo!.name![0].toUpperCase()
+                      : 'U',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 24 * scaleFactor,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFFFACC15), // Match accent
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    userInfo?.name ?? 'User Profile',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+              ),
+              SizedBox(width: basePadding),
+              Expanded(
+                child: Text(
+                  userInfo?.name ?? 'User Profile',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 18 * scaleFactor,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFFE4E4E7), // Match TaxiBookingPage text
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
+              ),
+            ],
+          ),
+          SizedBox(height: basePadding * 0.75),
+          _buildProfileRow(
+            icon: Icons.email,
+            label: 'Email',
+            value: userInfo?.email ?? 'N/A',
+            scaleFactor: scaleFactor,
+          ),
+          SizedBox(height: basePadding * 0.5),
+          _buildProfileRow(
+            icon: Icons.work,
+            label: 'Role',
+            value: userInfo?.role?.name ?? 'N/A',
+            scaleFactor: scaleFactor,
+          ),
+          if (userInfo?.userType != null) ...[
+            SizedBox(height: basePadding * 0.5),
             _buildProfileRow(
-              icon: Icons.email,
-              label: 'Email',
-              value: userInfo?.email ?? 'N/A',
+              icon: Icons.category,
+              label: 'User Type',
+              value: userInfo?.userType?.name ?? 'N/A',
+              scaleFactor: scaleFactor,
             ),
-            const SizedBox(height: 8),
-            _buildProfileRow(
-              icon: Icons.work,
-              label: 'Role',
-              value: userInfo?.role?.name ?? 'N/A',
-            ),
-            if (userInfo?.userType != null) ...[
-              const SizedBox(height: 8),
-              _buildProfileRow(
-                icon: Icons.category,
-                label: 'User Type',
-                value: userInfo?.userType?.name ?? 'N/A',
-              ),
-            ],
-            if (userInfo?.dailyWage != null) ...[
-              const SizedBox(height: 8),
-              _buildProfileRow(
-                icon: Icons.attach_money,
-                label: 'Daily Wage',
-                value: '\$${userInfo?.dailyWage?.toStringAsFixed(2)}',
-              ),
-            ],
-            if (userInfo?.storeId != null) ...[
-              const SizedBox(height: 8),
-              _buildProfileRow(
-                icon: Icons.store,
-                label: 'Store ID',
-                value: userInfo?.storeId ?? 'N/A',
-              ),
-            ],
           ],
-        ),
+          if (userInfo?.dailyWage != null) ...[
+            SizedBox(height: basePadding * 0.5),
+            _buildProfileRow(
+              icon: Icons.attach_money,
+              label: 'Daily Wage',
+              value: '\$${userInfo?.dailyWage?.toStringAsFixed(2)}',
+              scaleFactor: scaleFactor,
+            ),
+          ],
+          if (userInfo?.storeId != null) ...[
+            SizedBox(height: basePadding * 0.5),
+            _buildProfileRow(
+              icon: Icons.store,
+              label: 'Store ID',
+              value: userInfo?.storeId ?? 'N/A',
+              scaleFactor: scaleFactor,
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -177,25 +213,28 @@ class _ProfilePageState extends State<ProfilePage> {
     required IconData icon,
     required String label,
     required String value,
+    required double scaleFactor,
   }) {
     return Row(
       children: [
-        Icon(icon, color: Colors.grey[600], size: 20),
-        const SizedBox(width: 8),
+        Icon(icon, color: const Color(0xFFB0B0B0), size: 20 * scaleFactor), // Match TaxiBookingPage label
+        SizedBox(width: 8 * scaleFactor),
         Text(
           '$label: ',
           style: TextStyle(
-            fontSize: 16,
+            fontFamily: 'Poppins',
+            fontSize: 16 * scaleFactor,
             fontWeight: FontWeight.w500,
-            color: Colors.grey[600],
+            color: const Color(0xFFB0B0B0), // Match TaxiBookingPage label
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.black87,
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 16 * scaleFactor,
+              color: const Color(0xFFE4E4E7), // Match TaxiBookingPage text
             ),
             overflow: TextOverflow.ellipsis,
           ),
@@ -204,7 +243,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildOptionsList(BuildContext context, UserInfo? userInfo) {
+  Widget _buildOptionsList(BuildContext context, UserInfo? userInfo, double scaleFactor, double basePadding) {
     return ListView(
       children: [
         _buildListTile(
@@ -212,19 +251,31 @@ class _ProfilePageState extends State<ProfilePage> {
           icon: Icons.receipt,
           title: 'My Orders',
           onTap: () => context.read<DashboardCubit>().updateIndex(1),
+          scaleFactor: scaleFactor,
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: basePadding * 0.75),
         _buildListTile(
           context: context,
           icon: Icons.settings,
           title: 'Settings',
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Settings page not implemented')),
+              SnackBar(
+                content: Text(
+                  'Settings page not implemented',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 16 * scaleFactor,
+                    color: const Color(0xFFE4E4E7),
+                  ),
+                ),
+                backgroundColor: const Color(0xFF2A2F32),
+              ),
             );
           },
+          scaleFactor: scaleFactor,
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: basePadding * 0.75),
         _buildListTile(
           context: context,
           icon: Icons.lock_reset,
@@ -234,17 +285,29 @@ class _ProfilePageState extends State<ProfilePage> {
               sl<Coordinator>().navigateToForgotPasswordPage();
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Email not available')),
+                SnackBar(
+                  content: Text(
+                    'Email not available',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 16 * scaleFactor,
+                      color: const Color(0xFFE4E4E7),
+                    ),
+                  ),
+                  backgroundColor: const Color(0xFF2A2F32),
+                ),
               );
             }
           },
+          scaleFactor: scaleFactor,
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: basePadding * 0.75),
         _buildListTile(
           context: context,
           icon: Icons.logout,
           title: 'Logout',
-          onTap: () => _showLogoutConfirmationDialog(context),
+          onTap: () => _showLogoutConfirmationDialog(context, scaleFactor, basePadding),
+          scaleFactor: scaleFactor,
         ),
       ],
     );
@@ -255,84 +318,131 @@ class _ProfilePageState extends State<ProfilePage> {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
+    required double scaleFactor,
   }) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2F32), // Match TaxiBookingPage card background
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF27272A)),
       ),
       child: ListTile(
         leading: Icon(
           icon,
-          color: Theme.of(context).primaryColor,
-          size: 24,
+          color: const Color(0xFFFACC15), // Match TaxiBookingPage accent
+          size: 24 * scaleFactor,
         ),
         title: Text(
           title,
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontSize: 16 * scaleFactor,
             fontWeight: FontWeight.w500,
-            color: Colors.black87,
+            color: const Color(0xFFE4E4E7), // Match TaxiBookingPage text
           ),
         ),
         trailing: Icon(
           Icons.arrow_forward,
-          color: Theme.of(context).primaryColor,
+          color: const Color(0xFFFACC15), // Match TaxiBookingPage accent
+          size: 24 * scaleFactor,
         ),
         onTap: onTap,
       ),
     );
   }
 
-  void _showLogoutConfirmationDialog(BuildContext context) {
+  void _showLogoutConfirmationDialog(BuildContext context, double scaleFactor, double basePadding) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => Dialog(
+        backgroundColor: const Color(0xFF18181B), // Match TaxiBookingPage dialog background
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(24.0),
         ),
-        backgroundColor: Colors.white,
-        title: const Text(
-          'Confirm Logout',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
+        child: Container(
+          padding: EdgeInsets.all(basePadding),
+          decoration: BoxDecoration(
+            border: Border.all(color: const Color(0xFF27272A)), // Match TaxiBookingPage dialog border
+            borderRadius: BorderRadius.circular(24.0),
           ),
-        ),
-        content: const Text(
-          'Are you sure you want to logout?',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.black54,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              'No',
-              style: TextStyle(
-                fontSize: 16,
-                color: Theme.of(context).primaryColor,
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Confirm Logout',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24 * scaleFactor,
+                  color: const Color(0xFFFACC15), // Match TaxiBookingPage accent
+                ),
               ),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+              SizedBox(height: 16 * scaleFactor),
+              Text(
+                'Are you sure you want to logout?',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 16 * scaleFactor,
+                  color: const Color(0xFFE4E4E7), // Match TaxiBookingPage text
+                ),
               ),
-            ),
-            onPressed: () {
-              Navigator.of(context).pop();
-              _profileCubit.initiateLogout();
-            },
-            child: const Text('Yes'),
+              SizedBox(height: 24 * scaleFactor),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(
+                      'No',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 16 * scaleFactor,
+                        color: const Color(0xFFE4E4E7), // Match TaxiBookingPage text
+                      ),
+                    ),
+                    style: TextButton.styleFrom(
+                      backgroundColor: const Color(0xFF27272A), // Match TaxiBookingPage dialog cancel button
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16 * scaleFactor,
+                        vertical: 8 * scaleFactor,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24.0),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 16 * scaleFactor),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      _profileCubit.initiateLogout();
+                    },
+                    child: Text(
+                      'Yes',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 16 * scaleFactor,
+                        color: Colors.black,
+                      ),
+                    ),
+                    style: TextButton.styleFrom(
+                      backgroundColor: const Color(0xFFFACC15), // Match TaxiBookingPage button
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16 * scaleFactor,
+                        vertical: 8 * scaleFactor,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24.0),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

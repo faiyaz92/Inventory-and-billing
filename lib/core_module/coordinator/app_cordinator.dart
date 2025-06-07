@@ -389,6 +389,11 @@ class AppCoordinator implements Coordinator {
   }
 
   @override
+  Future<dynamic> navigateToTaxiBookingsAdminDarkPage() {
+    return _router.push(const TaxiBookingsAdminDarkRoute());
+  }
+
+  @override
   Future<dynamic> navigateToDriverListPage() {
     return _router.push(const DriverListRoute());
   }
@@ -412,11 +417,25 @@ class AppCoordinator implements Coordinator {
   @override
   Future<dynamic> navigateToBookingDetailsPage({required String bookingId}) {
     return _router.push(TaxiBookingDetailsRoute(bookingId: bookingId));
-  }@override
+  }
+
+  @override
+  Future<dynamic> navigateToBookingDetailsDarkPage(
+      {required String bookingId}) {
+    return _router.push(TaxiBookingDetailsDarkRoute(bookingId: bookingId));
+  }
+
+  @override
   Future<dynamic> navigateToUserBookingHistory() {
     return _router.push(const TaxiBookingsUserRoute());
-  }@override
+  }
+
+  @override
   Future<dynamic> navigateToWebApp() {
     return _router.push(const RidePlatinumRoute());
+  }
+  @override
+  Future<dynamic> navigateToTodaysTaxiBookingsPage() {
+    return _router.push(const TodaysTaxiBookingsRoute());
   }
 }

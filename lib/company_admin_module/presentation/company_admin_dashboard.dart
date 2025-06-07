@@ -44,14 +44,7 @@ class CompanyAdminPage extends StatelessWidget {
                           sl<Coordinator>().navigateToAddUserPage();
                         },
                       ),
-                      _buildGridItem(
-                        icon: Icons.monetization_on_sharp,
-                        label: 'User salary List',
-                        color: Colors.orangeAccent,
-                        onTap: () {
-                          sl<Coordinator>().navigateToUserListPage();
-                        },
-                      ), _buildGridItem(
+                     _buildGridItem(
                         icon: Icons.list,
                         label: 'User List',
                         color: Colors.green,
@@ -59,54 +52,8 @@ class CompanyAdminPage extends StatelessWidget {
                           sl<Coordinator>().navigateToSimpleEmployeeList();
                         },
                       ),
-                      _buildGridItem(
-                        icon: Icons.task,
-                        label: 'Add Task',
-                        color: Colors.orange,
-                        onTap: () {
-                          sl<Coordinator>().navigateToAddTaskPage();
-                        },
-                      ),
-                      _buildGridItem(
-                        icon: Icons.task,
-                        label: 'Task List',
-                        color: Colors.purple,
-                        onTap: () {
-                          sl<Coordinator>().navigateToTaskListPage();
-                        },
-                      ),
-                      _buildGridItem(
-                        icon: Icons.add_chart,
-                        label: 'Attendance',
-                        color: Colors.lightGreen,
-                        onTap: () {
-                          sl<Coordinator>().navigateToAttendancePage();
-                        },
-                      ),
-                      _buildGridItem(
-                        icon: Icons.security,
-                        label: 'Manage Roles',
-                        color: Colors.red,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Manage Roles Coming Soon!"),
-                            ),
-                          );
-                        },
-                      ),
-                      _buildGridItem(
-                        icon: Icons.bar_chart,
-                        label: 'Reports',
-                        color: Colors.teal,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Reports Coming Soon!"),
-                            ),
-                          );
-                        },
-                      ),
+
+
                     ],
                   ),
                 ),

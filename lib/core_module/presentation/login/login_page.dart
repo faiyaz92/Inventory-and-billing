@@ -22,23 +22,27 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     passwordController.text = 'Faiyaz@123';
+    final double scaleFactor = MediaQuery.of(context).size.width > 600 ? 1.2 : 1.0;
+    final double basePadding = 16.0 * scaleFactor;
+
     return Scaffold(
+      backgroundColor: const Color(0xFF1C2526), // Match TaxiBookingPage background
       body: Stack(
         children: [
           // Gradient background
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
                 colors: [
-                  Theme.of(context).primaryColor.withOpacity(0.1),
-                  Theme.of(context).primaryColor.withOpacity(0.3),
+                  Color(0xFF2A2F32), // Darker shade to align with TaxiBookingPage
+                  Color(0xFF1C2526), // Primary background color
                 ],
               ),
             ),
           ),
-          // Scattered icons
+          // Scattered icons (adjusted for theme)
           // _buildScatteredIcons(context),
           // Main content
           BlocProvider(
@@ -48,7 +52,7 @@ class LoginPage extends StatelessWidget {
                 if (state is LoginSuccess) {
                   sl.get<AppRouter>().replace(const DashboardRoute());
                 } else if (state is LoginFailure) {
-                  _showErrorDialog(context, "Login Error", state.error);
+                  _showErrorDialog(context, "Login Error", state.error, scaleFactor, basePadding);
                 }
               },
               builder: (context, state) {
@@ -67,180 +71,210 @@ class LoginPage extends StatelessWidget {
                       child: Center(
                         child: SingleChildScrollView(
                           child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Card(
-                              elevation: 4,
-                              shape: RoundedRectangleBorder(
+                            padding: EdgeInsets.all(basePadding),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF2A2F32), // Match TaxiBookingPage card background
                                 borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFF27272A)),
                               ),
-                              color: Colors.white,
-                              child: Padding(
-                                padding: const EdgeInsets.all(24.0),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      "Welcome Back",
-                                      style: TextStyle(
-                                        fontSize: 28,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black87,
-                                      ),
+                              padding: EdgeInsets.all(basePadding * 1.5),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Welcome Back",
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins', // Match TaxiBookingPage font
+                                      fontSize: 28 * scaleFactor,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFFE4E4E7), // Match TaxiBookingPage text
                                     ),
-                                    const SizedBox(height: 24),
-                                    CustomTextField(
-                                      controller: emailController,
-                                      focusNode: emailFocusNode,
+                                  ),
+                                  SizedBox(height: basePadding),
+                                  CustomTextField(
+                                    controller: emailController,
+                                    focusNode: emailFocusNode,
+                                    labelText: "Email",
+                                    hintText: "Enter your email",
+                                    prefixIcon: const Icon(Icons.email, color: Color(0xFFB0B0B0)),
+                                    errorText: emailError,
+                                    textInputAction: TextInputAction.next,
+                                    onFieldSubmitted: (value) {
+                                      FocusScope.of(context).requestFocus(passwordFocusNode);
+                                    },
+                                    onChanged: (value) => context.read<LoginCubit>().validateEmail(value),
+                                    decoration: InputDecoration(
                                       labelText: "Email",
                                       hintText: "Enter your email",
-                                      prefixIcon: const Icon(Icons.email),
-                                      errorText: emailError,
-                                      textInputAction: TextInputAction.next,
-                                      onFieldSubmitted: (value) {
-                                        FocusScope.of(context).requestFocus(passwordFocusNode);
-                                      },
-                                      onChanged: (value) => context.read<LoginCubit>().validateEmail(value),
-                                      decoration: InputDecoration(
-                                        labelText: "Email",
-                                        hintText: "Enter your email",
-                                        prefixIcon: const Icon(Icons.email),
-                                        labelStyle: TextStyle(
-                                          color: Theme.of(context).primaryColor,
-                                          fontSize: 16.0,
-                                        ),
-                                        filled: true,
-                                        fillColor: Colors.grey[100],
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8.0),
-                                          borderSide: BorderSide(color: Colors.grey[400]!),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8.0),
-                                          borderSide: BorderSide(color: Colors.grey[400]!),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8.0),
-                                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                                        ),
+                                      prefixIcon: const Icon(Icons.email, color: Color(0xFFB0B0B0)),
+                                      labelStyle: TextStyle(
+                                        fontFamily: 'Poppins',
+                                        color: const Color(0xFFB0B0B0), // Match TaxiBookingPage label
+                                        fontSize: 14 * scaleFactor,
+                                      ),
+                                      filled: true,
+                                      fillColor: const Color(0xFF1C2526), // Match TaxiBookingPage input background
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: const BorderSide(color: Color(0xFF27272A)),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: const BorderSide(color: Color(0xFF27272A)),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: const BorderSide(color: Color(0xFFFACC15)), // Match accent
+                                      ),
+                                      errorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: const BorderSide(color: Colors.red),
+                                      ),
+                                      focusedErrorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: const BorderSide(color: Colors.red),
+                                      ),
+                                      hintStyle: TextStyle(
+                                        fontFamily: 'Poppins',
+                                        fontSize: 16 * scaleFactor,
+                                        color: const Color(0xFFE4E4E7).withOpacity(0.6),
                                       ),
                                     ),
-                                    const SizedBox(height: 16),
-                                    ValueListenableBuilder<bool>(
-                                      valueListenable: isPasswordVisible,
-                                      builder: (context, value, child) {
-                                        return CustomTextField(
-                                          controller: passwordController,
-                                          focusNode: passwordFocusNode,
+                                  ),
+                                  SizedBox(height: basePadding),
+                                  ValueListenableBuilder<bool>(
+                                    valueListenable: isPasswordVisible,
+                                    builder: (context, value, child) {
+                                      return CustomTextField(
+                                        controller: passwordController,
+                                        focusNode: passwordFocusNode,
+                                        labelText: "Password",
+                                        hintText: "Enter your password",
+                                        prefixIcon: const Icon(Icons.lock, color: Color(0xFFB0B0B0)),
+                                        obscureText: !value,
+                                        errorText: passwordError,
+                                        suffixIcon: IconButton(
+                                          icon: Icon(
+                                            value ? Icons.visibility : Icons.visibility_off,
+                                            color: const Color(0xFFB0B0B0), // Match TaxiBookingPage label
+                                          ),
+                                          onPressed: () {
+                                            isPasswordVisible.value = !value;
+                                          },
+                                        ),
+                                        textInputAction: TextInputAction.done,
+                                        onFieldSubmitted: (value) {
+                                          final email = emailController.text.trim();
+                                          final password = passwordController.text.trim();
+                                          context.read<LoginCubit>().login(email, password);
+                                        },
+                                        onChanged: (value) => context.read<LoginCubit>().validatePassword(value),
+                                        decoration: InputDecoration(
                                           labelText: "Password",
                                           hintText: "Enter your password",
-                                          prefixIcon: const Icon(Icons.lock),
-                                          obscureText: !value,
-                                          errorText: passwordError,
+                                          prefixIcon: const Icon(Icons.lock, color: Color(0xFFB0B0B0)),
                                           suffixIcon: IconButton(
                                             icon: Icon(
                                               value ? Icons.visibility : Icons.visibility_off,
+                                              color: const Color(0xFFB0B0B0),
                                             ),
                                             onPressed: () {
                                               isPasswordVisible.value = !value;
                                             },
                                           ),
-                                          textInputAction: TextInputAction.done,
-                                          onFieldSubmitted: (value) {
+                                          labelStyle: TextStyle(
+                                            fontFamily: 'Poppins',
+                                            color: const Color(0xFFB0B0B0), // Match TaxiBookingPage label
+                                            fontSize: 14 * scaleFactor,
+                                          ),
+                                          filled: true,
+                                          fillColor: const Color(0xFF1C2526), // Match TaxiBookingPage input background
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8.0),
+                                            borderSide: const BorderSide(color: Color(0xFF27272A)),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8.0),
+                                            borderSide: const BorderSide(color: Color(0xFF27272A)),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8.0),
+                                            borderSide: const BorderSide(color: Color(0xFFFACC15)), // Match accent
+                                          ),
+                                          errorBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8.0),
+                                            borderSide: const BorderSide(color: Colors.red),
+                                          ),
+                                          focusedErrorBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8.0),
+                                            borderSide: const BorderSide(color: Colors.red),
+                                          ),
+                                          hintStyle: TextStyle(
+                                            fontFamily: 'Poppins',
+                                            fontSize: 16 * scaleFactor,
+                                            color: const Color(0xFFE4E4E7).withOpacity(0.6),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  SizedBox(height: basePadding * 0.5),
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: TextButton(
+                                      onPressed: () {
+                                        sl.get<Coordinator>().navigateToForgotPasswordPage();
+                                      },
+                                      child: Text(
+                                        "Forgot Password?",
+                                        style: TextStyle(
+                                          fontFamily: 'Poppins',
+                                          color: const Color(0xFFFACC15), // Match TaxiBookingPage accent
+                                          fontSize: 14 * scaleFactor,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: basePadding * 1.5),
+                                  Center(
+                                    child: BlocBuilder<LoginCubit, LoginState>(
+                                      builder: (context, state) {
+                                        if (state is LoginLoading) {
+                                          return CircularProgressIndicator(
+                                            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFACC15)), // Match accent
+                                            strokeWidth: 5 * scaleFactor,
+                                          );
+                                        }
+                                        return ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(0xFFFACC15), // Match TaxiBookingPage button
+                                            foregroundColor: Colors.black, // Match TaxiBookingPage button text
+                                            padding: EdgeInsets.symmetric(
+                                              vertical: 12 * scaleFactor,
+                                              horizontal: 32 * scaleFactor,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(8.0),
+                                            ),
+                                            textStyle: TextStyle(
+                                              fontFamily: 'Poppins',
+                                              fontSize: 16 * scaleFactor,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          onPressed: () {
                                             final email = emailController.text.trim();
                                             final password = passwordController.text.trim();
                                             context.read<LoginCubit>().login(email, password);
                                           },
-                                          onChanged: (value) => context.read<LoginCubit>().validatePassword(value),
-                                          decoration: InputDecoration(
-                                            labelText: "Password",
-                                            hintText: "Enter your password",
-                                            prefixIcon: const Icon(Icons.lock),
-                                            suffixIcon: IconButton(
-                                              icon: Icon(
-                                                value ? Icons.visibility : Icons.visibility_off,
-                                              ),
-                                              onPressed: () {
-                                                isPasswordVisible.value = !value;
-                                              },
-                                            ),
-                                            labelStyle: TextStyle(
-                                              color: Theme.of(context).primaryColor,
-                                              fontSize: 16.0,
-                                            ),
-                                            filled: true,
-                                            fillColor: Colors.grey[100],
-                                            border: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(8.0),
-                                              borderSide: BorderSide(color: Colors.grey[400]!),
-                                            ),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(8.0),
-                                              borderSide: BorderSide(color: Colors.grey[400]!),
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(8.0),
-                                              borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                                            ),
-                                          ),
+                                          child: const Text("Login"),
                                         );
                                       },
                                     ),
-                                    const SizedBox(height: 8),
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: TextButton(
-                                        onPressed: () {
-                                          sl.get<Coordinator>().navigateToForgotPasswordPage();
-                                        },
-                                        child: Text(
-                                          "Forgot Password?",
-                                          style: TextStyle(
-                                            color: Theme.of(context).primaryColor,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 24),
-                                    Center(
-                                      child: BlocBuilder<LoginCubit, LoginState>(
-                                        builder: (context, state) {
-                                          if (state is LoginLoading) {
-                                            return CircularProgressIndicator(
-                                              valueColor: AlwaysStoppedAnimation<Color>(
-                                                Theme.of(context).primaryColor,
-                                              ),
-                                            );
-                                          }
-                                          return ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Theme.of(context).primaryColor,
-                                              foregroundColor: Colors.white,
-                                              padding: const EdgeInsets.symmetric(
-                                                vertical: 16.0,
-                                                horizontal: 64.0,
-                                              ),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(8.0),
-                                              ),
-                                              textStyle: const TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            onPressed: () {
-                                              final email = emailController.text.trim();
-                                              final password = passwordController.text.trim();
-                                              context.read<LoginCubit>().login(email, password);
-                                            },
-                                            child: const Text("Login"),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -248,31 +282,41 @@ class LoginPage extends StatelessWidget {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
+                      padding: EdgeInsets.only(bottom: basePadding),
                       child: Column(
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.business, color: Colors.grey[700], size: 30),
-                              const SizedBox(width: 8),
+                              Icon(
+                                Icons.local_taxi, // Match TaxiBookingPage footer icon
+                                color: const Color(0xFFB0B0B0), // Match TaxiBookingPage label
+                                size: 24 * scaleFactor,
+                              ),
+                              SizedBox(width: 8 * scaleFactor),
                               Text(
                                 "Powered by Easy2Solutions",
                                 style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.grey[700],
+                                  fontFamily: 'Poppins', // Match TaxiBookingPage font
+                                  fontSize: 16 * scaleFactor,
+                                  color: const Color(0xFFB0B0B0), // Match TaxiBookingPage label
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              Icon(Icons.code, color: Colors.grey[700], size: 30),
+                              SizedBox(width: 8 * scaleFactor),
+                              Icon(
+                                Icons.directions_car, // Match TaxiBookingPage footer icon
+                                color: const Color(0xFFB0B0B0), // Match TaxiBookingPage label
+                                size: 24 * scaleFactor,
+                              ),
                             ],
                           ),
                           Text(
                             "Version 1.0.0",
                             style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[700],
+                              fontFamily: 'Poppins',
+                              fontSize: 12 * scaleFactor,
+                              color: const Color(0xFFB0B0B0), // Match TaxiBookingPage label
                             ),
                           ),
                         ],
@@ -291,24 +335,15 @@ class LoginPage extends StatelessWidget {
   Widget _buildScatteredIcons(BuildContext context) {
     final random = Random();
     final icons = [
-      Icons.person_outline,
-      Icons.task_alt,
-      Icons.event,
-      Icons.access_time,
-      Icons.group,
-      Icons.check_circle_outline,
-      Icons.admin_panel_settings,
-      Icons.add_task_outlined,
-      Icons.task,
-      Icons.business,
-      Icons.add_business,
-      Icons.lightbulb,
-      Icons.settings,
-      Icons.manage_accounts,
+      Icons.local_taxi,
+      Icons.directions_car,
+      Icons.flight,
+      Icons.party_mode,
+      Icons.favorite, // Icons from TaxiBookingPage services
     ];
     final size = MediaQuery.of(context).size;
     return Stack(
-      children: List.generate(50, (index) {
+      children: List.generate(20, (index) {
         final icon = icons[random.nextInt(icons.length)];
         final x = random.nextDouble() * size.width;
         final y = random.nextDouble() * size.height;
@@ -321,7 +356,7 @@ class LoginPage extends StatelessWidget {
             child: Icon(
               icon,
               size: iconSize,
-              color: Colors.grey[700],
+              color: const Color(0xFFB0B0B0), // Match TaxiBookingPage label color
             ),
           ),
         );
@@ -329,24 +364,74 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  void _showErrorDialog(BuildContext context, String title, String message) {
+  void _showErrorDialog(BuildContext context, String title, String message, double scaleFactor, double basePadding) {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text(title),
-          content: Text(message),
+        return Dialog(
+          backgroundColor: const Color(0xFF18181B), // Match TaxiBookingPage dialog background
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(24.0),
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text("OK"),
+          child: Container(
+            padding: EdgeInsets.all(basePadding),
+            decoration: BoxDecoration(
+              border: Border.all(color: const Color(0xFF27272A)), // Match TaxiBookingPage dialog border
+              borderRadius: BorderRadius.circular(24.0),
             ),
-          ],
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontFamily: 'Poppins', // Match TaxiBookingPage font
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24 * scaleFactor,
+                    color: const Color(0xFFFACC15), // Match TaxiBookingPage accent
+                  ),
+                ),
+                SizedBox(height: 16 * scaleFactor),
+                Text(
+                  message,
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 16 * scaleFactor,
+                    color: const Color(0xFFE4E4E7), // Match TaxiBookingPage text
+                  ),
+                ),
+                SizedBox(height: 24 * scaleFactor),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(
+                        'OK',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 16 * scaleFactor,
+                          color: Colors.black,
+                        ),
+                      ),
+                      style: TextButton.styleFrom(
+                        backgroundColor: const Color(0xFFFACC15), // Match TaxiBookingPage button
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16 * scaleFactor,
+                          vertical: 8 * scaleFactor,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24.0),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         );
       },
     );

@@ -53,7 +53,6 @@ class _DashboardPageState extends State<DashboardPage> {
             builder: (context, state) {
               final pages = [
                 const HomePage(),
-                const CompanyListPage(),
                 const ProfilePage(),
               ];
               final index = state is DashboardTabState ? state.index : 0;
@@ -70,10 +69,6 @@ class _DashboardPageState extends State<DashboardPage> {
                   BottomNavigationBarItem(
                     icon: Icon(Icons.home),
                     label: 'Home',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.business),
-                    label: 'Sites',
                   ),
                   BottomNavigationBarItem(
                     icon: Icon(Icons.person),

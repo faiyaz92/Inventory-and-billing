@@ -1448,6 +1448,47 @@ class TaskListRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [TaxiBookingDetailsDarkPage]
+class TaxiBookingDetailsDarkRoute
+    extends PageRouteInfo<TaxiBookingDetailsDarkRouteArgs> {
+  TaxiBookingDetailsDarkRoute({
+    Key? key,
+    required String bookingId,
+    List<PageRouteInfo>? children,
+  }) : super(
+         TaxiBookingDetailsDarkRoute.name,
+         args: TaxiBookingDetailsDarkRouteArgs(key: key, bookingId: bookingId),
+         initialChildren: children,
+       );
+
+  static const String name = 'TaxiBookingDetailsDarkRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<TaxiBookingDetailsDarkRouteArgs>();
+      return TaxiBookingDetailsDarkPage(
+        key: args.key,
+        bookingId: args.bookingId,
+      );
+    },
+  );
+}
+
+class TaxiBookingDetailsDarkRouteArgs {
+  const TaxiBookingDetailsDarkRouteArgs({this.key, required this.bookingId});
+
+  final Key? key;
+
+  final String bookingId;
+
+  @override
+  String toString() {
+    return 'TaxiBookingDetailsDarkRouteArgs{key: $key, bookingId: $bookingId}';
+  }
+}
+
+/// generated route for
 /// [TaxiBookingDetailsPage]
 class TaxiBookingDetailsRoute
     extends PageRouteInfo<TaxiBookingDetailsRouteArgs> {
@@ -1497,6 +1538,22 @@ class TaxiBookingRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const TaxiBookingPage();
+    },
+  );
+}
+
+/// generated route for
+/// [TaxiBookingsAdminDarkPage]
+class TaxiBookingsAdminDarkRoute extends PageRouteInfo<void> {
+  const TaxiBookingsAdminDarkRoute({List<PageRouteInfo>? children})
+    : super(TaxiBookingsAdminDarkRoute.name, initialChildren: children);
+
+  static const String name = 'TaxiBookingsAdminDarkRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const TaxiBookingsAdminDarkPage();
     },
   );
 }
@@ -1561,6 +1618,22 @@ class TaxiSettingsRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const TaxiSettingsPage();
+    },
+  );
+}
+
+/// generated route for
+/// [TodaysTaxiBookingsPage]
+class TodaysTaxiBookingsRoute extends PageRouteInfo<void> {
+  const TodaysTaxiBookingsRoute({List<PageRouteInfo>? children})
+    : super(TodaysTaxiBookingsRoute.name, initialChildren: children);
+
+  static const String name = 'TodaysTaxiBookingsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const TodaysTaxiBookingsPage();
     },
   );
 }
