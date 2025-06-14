@@ -14,6 +14,10 @@ class TaxiSettings {
   final List<TripType> tripTypes;
   final List<ServiceType> serviceTypes;
   final List<TripStatus> tripStatuses;
+  final String? mapApiKey; // Added mapApiKey
+  final String? twilioAccountSid; // Added twilioAccountSid
+  final String? twilioAuthToken; // Added twilioAuthToken
+  final String? twilioWhatsAppNumber; // Added twilioWhatsAppNumber
 
   TaxiSettings({
     required this.perKmFareRate,
@@ -25,6 +29,10 @@ class TaxiSettings {
     required this.tripTypes,
     required this.serviceTypes,
     required this.tripStatuses,
+    this.mapApiKey,
+    this.twilioAccountSid,
+    this.twilioAuthToken,
+    this.twilioWhatsAppNumber,
   });
 
   factory TaxiSettings.fromDto(TaxiSettingsDto dto) {
@@ -38,6 +46,10 @@ class TaxiSettings {
       tripTypes: dto.tripTypes.map((dto) => TripType.fromDto(dto)).toList(),
       serviceTypes: dto.serviceTypes.map((dto) => ServiceType.fromDto(dto)).toList(),
       tripStatuses: dto.tripStatuses.map((dto) => TripStatus.fromDto(dto)).toList(),
+      mapApiKey: dto.mapApiKey, // Added to fromDto
+      twilioAccountSid: dto.twilioAccountSid, // Added to fromDto
+      twilioAuthToken: dto.twilioAuthToken, // Added to fromDto
+      twilioWhatsAppNumber: dto.twilioWhatsAppNumber, // Added to fromDto
     );
   }
 
@@ -51,6 +63,10 @@ class TaxiSettings {
     List<TripType>? tripTypes,
     List<ServiceType>? serviceTypes,
     List<TripStatus>? tripStatuses,
+    String? mapApiKey,
+    String? twilioAccountSid,
+    String? twilioAuthToken,
+    String? twilioWhatsAppNumber,
   }) {
     return TaxiSettings(
       perKmFareRate: perKmFareRate ?? this.perKmFareRate,
@@ -63,6 +79,10 @@ class TaxiSettings {
       tripTypes: tripTypes ?? this.tripTypes,
       serviceTypes: serviceTypes ?? this.serviceTypes,
       tripStatuses: tripStatuses ?? this.tripStatuses,
+      mapApiKey: mapApiKey ?? this.mapApiKey, // Added to copyWith
+      twilioAccountSid: twilioAccountSid ?? this.twilioAccountSid, // Added to copyWith
+      twilioAuthToken: twilioAuthToken ?? this.twilioAuthToken, // Added to copyWith
+      twilioWhatsAppNumber: twilioWhatsAppNumber ?? this.twilioWhatsAppNumber, // Added to copyWith
     );
   }
 }
@@ -77,6 +97,10 @@ class TaxiSettingsDto {
   final List<TripTypeDto> tripTypes;
   final List<ServiceTypeDto> serviceTypes;
   final List<TripStatusDto> tripStatuses;
+  final String? mapApiKey; // Added mapApiKey
+  final String? twilioAccountSid; // Added twilioAccountSid
+  final String? twilioAuthToken; // Added twilioAuthToken
+  final String? twilioWhatsAppNumber; // Added twilioWhatsAppNumber
 
   TaxiSettingsDto({
     required this.perKmFareRate,
@@ -88,6 +112,10 @@ class TaxiSettingsDto {
     required this.tripTypes,
     required this.serviceTypes,
     required this.tripStatuses,
+    this.mapApiKey,
+    this.twilioAccountSid,
+    this.twilioAuthToken,
+    this.twilioWhatsAppNumber,
   });
 
   factory TaxiSettingsDto.fromFirestore({
@@ -100,14 +128,18 @@ class TaxiSettingsDto {
     return TaxiSettingsDto(
       perKmFareRate: (settingsData['perKmFareRate'] as num?)?.toDouble() ?? 10.0,
       minimumFare: (settingsData['minimumFare'] as num?)?.toDouble() ?? 50.0,
-      whatsappNotificationFareThreshold: (settingsData['whatsappNotificationFareThreshold'] as num?)
-          ?.toDouble() ?? 200.0,
+      whatsappNotificationFareThreshold:
+      (settingsData['whatsappNotificationFareThreshold'] as num?)?.toDouble() ?? 200.0,
       updatedAt: (settingsData['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedBy: settingsData['updatedBy'] ?? '',
       taxiTypes: taxiTypes,
       tripTypes: tripTypes,
       serviceTypes: serviceTypes,
       tripStatuses: tripStatuses,
+      mapApiKey: settingsData['mapApiKey'] as String?, // Added to fromFirestore
+      twilioAccountSid: settingsData['twilioAccountSid'] as String?, // Added to fromFirestore
+      twilioAuthToken: settingsData['twilioAuthToken'] as String?, // Added to fromFirestore
+      twilioWhatsAppNumber: settingsData['twilioWhatsAppNumber'] as String?, // Added to fromFirestore
     );
   }
 
@@ -122,6 +154,10 @@ class TaxiSettingsDto {
       tripTypes: model.tripTypes.map((type) => TripTypeDto.fromModel(type)).toList(),
       serviceTypes: model.serviceTypes.map((type) => ServiceTypeDto.fromModel(type)).toList(),
       tripStatuses: model.tripStatuses.map((status) => TripStatusDto.fromModel(status)).toList(),
+      mapApiKey: model.mapApiKey, // Added to fromModel
+      twilioAccountSid: model.twilioAccountSid, // Added to fromModel
+      twilioAuthToken: model.twilioAuthToken, // Added to fromModel
+      twilioWhatsAppNumber: model.twilioWhatsAppNumber, // Added to fromModel
     );
   }
 
@@ -132,6 +168,10 @@ class TaxiSettingsDto {
       'whatsappNotificationFareThreshold': whatsappNotificationFareThreshold,
       'updatedAt': Timestamp.fromDate(updatedAt),
       'updatedBy': updatedBy,
+      'mapApiKey': mapApiKey, // Added to toFirestore
+      'twilioAccountSid': twilioAccountSid, // Added to toFirestore
+      'twilioAuthToken': twilioAuthToken, // Added to toFirestore
+      'twilioWhatsAppNumber': twilioWhatsAppNumber, // Added to toFirestore
     };
   }
 }

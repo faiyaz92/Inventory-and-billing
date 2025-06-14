@@ -23,7 +23,6 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
     super.initState();
   }
 
-  // Update the build method in _TaxiSettingsPageState to include V3 option
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,8 +64,8 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
       body: _uiVersion == 'v1'
           ? _buildV1(context)
           : _uiVersion == 'v2'
-          ? _buildV2(context)
-          : _buildV3(context),
+              ? _buildV2(context)
+              : _buildV3(context),
     );
   }
 
@@ -190,12 +189,12 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
                     ),
                     padding: const EdgeInsets.all(4.0),
                     child:
-                    const Icon(Icons.delete, color: Colors.white, size: 16),
+                        const Icon(Icons.delete, color: Colors.white, size: 16),
                   ),
                   deleteButtonTooltipMessage: "Delete $item",
                   side: BorderSide.none,
                   backgroundColor:
-                  Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                      Theme.of(context).colorScheme.primary.withOpacity(0.1),
                 );
               }).toList(),
             ),
@@ -241,11 +240,19 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
   Widget _buildFareSettingsSectionV1(
       BuildContext context, TaxiSettingsCubit cubit, TaxiSettingsState state) {
     final perKmFareController =
-    TextEditingController(text: state.settings.perKmFareRate.toString());
+        TextEditingController(text: state.settings.perKmFareRate.toString());
     final minimumFareController =
-    TextEditingController(text: state.settings.minimumFare.toString());
+        TextEditingController(text: state.settings.minimumFare.toString());
     final whatsappThresholdController = TextEditingController(
         text: state.settings.whatsappNotificationFareThreshold.toString());
+    final mapApiKeyController =
+        TextEditingController(text: state.settings.mapApiKey ?? '');
+    final twilioAccountSidController =
+        TextEditingController(text: state.settings.twilioAccountSid ?? '');
+    final twilioAuthTokenController =
+        TextEditingController(text: state.settings.twilioAuthToken ?? '');
+    final twilioWhatsAppNumberController =
+        TextEditingController(text: state.settings.twilioWhatsAppNumber ?? '');
 
     return Card(
       elevation: 4.0,
@@ -286,6 +293,39 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
                 border: OutlineInputBorder(),
               ),
             ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: mapApiKeyController,
+              decoration: const InputDecoration(
+                labelText: "Map API Key",
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: twilioAccountSidController,
+              decoration: const InputDecoration(
+                labelText: "Twilio Account SID",
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: twilioAuthTokenController,
+              decoration: const InputDecoration(
+                labelText: "Twilio Auth Token",
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: twilioWhatsAppNumberController,
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(
+                labelText: "Twilio WhatsApp Number",
+                border: OutlineInputBorder(),
+              ),
+            ),
             const SizedBox(height: 16),
             Align(
               alignment: Alignment.centerRight,
@@ -300,7 +340,21 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
                         perKmFareRate: double.parse(perKmFareController.text),
                         minimumFare: double.parse(minimumFareController.text),
                         whatsappNotificationFareThreshold:
-                        double.parse(whatsappThresholdController.text),
+                            double.parse(whatsappThresholdController.text),
+                        mapApiKey: mapApiKeyController.text.isEmpty
+                            ? null
+                            : mapApiKeyController.text,
+                        twilioAccountSid:
+                            twilioAccountSidController.text.isEmpty
+                                ? null
+                                : twilioAccountSidController.text,
+                        twilioAuthToken: twilioAuthTokenController.text.isEmpty
+                            ? null
+                            : twilioAuthTokenController.text,
+                        twilioWhatsAppNumber:
+                            twilioWhatsAppNumberController.text.isEmpty
+                                ? null
+                                : twilioWhatsAppNumberController.text,
                         updatedAt: DateTime.now(),
                         updatedBy: 'admin',
                         taxiTypes: state.taxiTypes,
@@ -324,8 +378,8 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
     );
   }
 
-  void _showDeleteDialogV1(
-      BuildContext context, String item, String title, Function(String) onDelete) {
+  void _showDeleteDialogV1(BuildContext context, String item, String title,
+      Function(String) onDelete) {
     showDialog(
       context: context,
       builder: (context) {
@@ -389,8 +443,8 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
                     ),
                     child: const Text(
                       'Retry',
-                      style: TextStyle(fontSize: 14,
-                          fontWeight: FontWeight.w600),
+                      style:
+                          TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
@@ -398,73 +452,74 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
             );
           }
           return SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                  _buildFareSettingsSectionV2(context, cubit, state),
-              const SizedBox(height: 16),
-              _buildSectionV2(
-                title: "Taxi Types",
-                items: state.taxiTypes.map((type) => type.name).toList(),
-                onAdd: (name) => cubit.addTaxiType(name, context),
-                onEdit: (oldName, newName) =>
-                    cubit.editTaxiType(oldName, newName, context),
-                onDelete: (name) {
-                  final id = state.taxiTypes
-                      .firstWhere((type) => type.name == name)
-                      .id;
-                  cubit.deleteTaxiType(id);
-                },
-                context: context,
-              ),
-              const SizedBox(height: 16),
-              _buildSectionV2(
-                title: "Trip Types",
-                items: state.tripTypes.map((type) => type.name).toList(),
-                onAdd: (name) => cubit.addTripType(name, context),
-                onEdit: (oldName, newName) =>
-                    cubit.editTripType(oldName, newName, context),
-                onDelete: (name) {
-                  final id = state.tripTypes
-                      .firstWhere((type) => type.name == name)
-                      .id;
-                  cubit.deleteTripType(id);
-                },
-                context: context,
-              ),
-              const SizedBox(height: 16),
-              _buildSectionV2(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildFareSettingsSectionV2(context, cubit, state),
+                const SizedBox(height: 16),
+                _buildSectionV2(
+                  title: "Taxi Types",
+                  items: state.taxiTypes.map((type) => type.name).toList(),
+                  onAdd: (name) => cubit.addTaxiType(name, context),
+                  onEdit: (oldName, newName) =>
+                      cubit.editTaxiType(oldName, newName, context),
+                  onDelete: (name) {
+                    final id = state.taxiTypes
+                        .firstWhere((type) => type.name == name)
+                        .id;
+                    cubit.deleteTaxiType(id);
+                  },
+                  context: context,
+                ),
+                const SizedBox(height: 16),
+                _buildSectionV2(
+                  title: "Trip Types",
+                  items: state.tripTypes.map((type) => type.name).toList(),
+                  onAdd: (name) => cubit.addTripType(name, context),
+                  onEdit: (oldName, newName) =>
+                      cubit.editTripType(oldName, newName, context),
+                  onDelete: (name) {
+                    final id = state.tripTypes
+                        .firstWhere((type) => type.name == name)
+                        .id;
+                    cubit.deleteTripType(id);
+                  },
+                  context: context,
+                ),
+                const SizedBox(height: 16),
+                _buildSectionV2(
                   title: "Service Types",
                   items: state.serviceTypes.map((type) => type.name).toList(),
                   onAdd: (name) => cubit.addServiceType(name, context),
                   onEdit: (oldName, newName) =>
                       cubit.editServiceType(oldName, newName, context),
                   onDelete: (name) {
-                  final  id = state.serviceTypes
-                  .firstWhere((type) => type.name == name)
-              .id;
-          cubit.deleteServiceType(id);
-        },
-          context: context,
-          ),
-          const SizedBox(height: 16),
-          _buildSectionV2(
-          title: "Trip Statuses",
-          items: state.tripStatuses.map((status) => status.name).toList(),
-          onAdd: (name) => cubit.addTripStatus(name, context),
-          onEdit: (oldName, newName) =>
-          cubit.editTripStatus(oldName, newName, context),
-          onDelete: (name) {
-          final id = state.tripStatuses
-              .firstWhere((status) => status.name == name)
-              .id;
-          cubit.deleteTripStatus(id);
-          },
-          context: context,
-          ),
-          ],
-          ),
+                    final id = state.serviceTypes
+                        .firstWhere((type) => type.name == name)
+                        .id;
+                    cubit.deleteServiceType(id);
+                  },
+                  context: context,
+                ),
+                const SizedBox(height: 16),
+                _buildSectionV2(
+                  title: "Trip Statuses",
+                  items:
+                      state.tripStatuses.map((status) => status.name).toList(),
+                  onAdd: (name) => cubit.addTripStatus(name, context),
+                  onEdit: (oldName, newName) =>
+                      cubit.editTripStatus(oldName, newName, context),
+                  onDelete: (name) {
+                    final id = state.tripStatuses
+                        .firstWhere((status) => status.name == name)
+                        .id;
+                    cubit.deleteTripStatus(id);
+                  },
+                  context: context,
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -520,7 +575,8 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
                         shape: BoxShape.circle,
                       ),
                       padding: const EdgeInsets.all(4.0),
-                      child: const Icon(Icons.close, color: Colors.white, size: 16),
+                      child: const Icon(Icons.close,
+                          color: Colors.white, size: 16),
                     ),
                     deleteButtonTooltipMessage: "Delete $item",
                     backgroundColor: Colors.white.withOpacity(0.15),
@@ -528,7 +584,8 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
                       borderRadius: BorderRadius.circular(12),
                       side: BorderSide(color: Colors.white.withOpacity(0.4)),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                 );
               }).toList(),
@@ -551,15 +608,18 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
                         fillColor: Colors.white.withOpacity(0.1),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+                          borderSide:
+                              BorderSide(color: Colors.white.withOpacity(0.2)),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+                          borderSide:
+                              BorderSide(color: Colors.white.withOpacity(0.2)),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFFFD700)),
+                          borderSide:
+                              const BorderSide(color: Color(0xFFFFD700)),
                         ),
                       ),
                     ),
@@ -584,7 +644,8 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
                     ),
                     child: const Text(
                       'Add',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                      style:
+                          TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -599,11 +660,19 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
   Widget _buildFareSettingsSectionV2(
       BuildContext context, TaxiSettingsCubit cubit, TaxiSettingsState state) {
     final perKmFareController =
-    TextEditingController(text: state.settings.perKmFareRate.toString());
+        TextEditingController(text: state.settings.perKmFareRate.toString());
     final minimumFareController =
-    TextEditingController(text: state.settings.minimumFare.toString());
+        TextEditingController(text: state.settings.minimumFare.toString());
     final whatsappThresholdController = TextEditingController(
         text: state.settings.whatsappNotificationFareThreshold.toString());
+    final mapApiKeyController =
+        TextEditingController(text: state.settings.mapApiKey ?? '');
+    final twilioAccountSidController =
+        TextEditingController(text: state.settings.twilioAccountSid ?? '');
+    final twilioAuthTokenController =
+        TextEditingController(text: state.settings.twilioAuthToken ?? '');
+    final twilioWhatsAppNumberController =
+        TextEditingController(text: state.settings.twilioWhatsAppNumber ?? '');
 
     return Card(
       elevation: 0,
@@ -697,17 +766,140 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: mapApiKeyController,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: "Map API Key",
+                labelStyle: const TextStyle(color: Colors.white70),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.1),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFFFD700)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: twilioAccountSidController,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: "Twilio Account SID",
+                labelStyle: const TextStyle(color: Colors.white70),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.1),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFFFD700)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: twilioAuthTokenController,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: "Twilio Auth Token",
+                labelStyle: const TextStyle(color: Colors.white70),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.1),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFFFD700)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: twilioWhatsAppNumberController,
+              keyboardType: TextInputType.phone,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: "Twilio WhatsApp Number",
+                labelStyle: const TextStyle(color: Colors.white70),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.1),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFFFD700)),
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
             Align(
               alignment: Alignment.centerRight,
               child: ElevatedButton(
                 onPressed: () {
                   try {
+                    final phoneRegex = RegExp(r'^\+?[1-9]\d{1,14}$');
+                    if (twilioWhatsAppNumberController.text.isNotEmpty &&
+                        !phoneRegex
+                            .hasMatch(twilioWhatsAppNumberController.text)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text(
+                              "Invalid Twilio WhatsApp number format"),
+                          backgroundColor: Colors.redAccent,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      );
+                      return;
+                    }
                     final settings = TaxiSettings(
                       perKmFareRate: double.parse(perKmFareController.text),
                       minimumFare: double.parse(minimumFareController.text),
                       whatsappNotificationFareThreshold:
-                      double.parse(whatsappThresholdController.text),
+                          double.parse(whatsappThresholdController.text),
+                      mapApiKey: mapApiKeyController.text.isEmpty
+                          ? null
+                          : mapApiKeyController.text,
+                      twilioAccountSid: twilioAccountSidController.text.isEmpty
+                          ? null
+                          : twilioAccountSidController.text,
+                      twilioAuthToken: twilioAuthTokenController.text.isEmpty
+                          ? null
+                          : twilioAuthTokenController.text,
+                      twilioWhatsAppNumber:
+                          twilioWhatsAppNumberController.text.isEmpty
+                              ? null
+                              : twilioWhatsAppNumberController.text,
                       updatedAt: DateTime.now(),
                       updatedBy: 'admin',
                       taxiTypes: state.taxiTypes,
@@ -735,22 +927,23 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
                 child: state.isSaving
                     ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.black,
-                  ),
-                )
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.black,
+                        ),
+                      )
                     : const Text(
-                  'Save',
-                  style: TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w600),
-                ),
+                        'Save',
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600),
+                      ),
               ),
             ),
           ],
@@ -759,14 +952,15 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
     );
   }
 
-  void _showDeleteDialogV2(
-      BuildContext context, String item, String title, Function(String) onDelete) {
+  void _showDeleteDialogV2(BuildContext context, String item, String title,
+      Function(String) onDelete) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           backgroundColor: const Color(0xFF1E1E2D),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: const Text(
             'Confirm Delete',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
@@ -799,14 +993,10 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
     );
   }
 
-
-
-
-// V3 UI implementation
   Widget _buildV3(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF121212),
+      decoration: const BoxDecoration(
+        color: Color(0xFF121212),
       ),
       child: BlocBuilder<TaxiSettingsCubit, TaxiSettingsState>(
         builder: (context, state) {
@@ -832,11 +1022,13 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                     ),
                     child: const Text(
                       'Retry',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                      style:
+                          TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
@@ -897,7 +1089,8 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
                 const SizedBox(height: 16),
                 _buildSectionV3(
                   title: "Trip Statuses",
-                  items: state.tripStatuses.map((status) => status.name).toList(),
+                  items:
+                      state.tripStatuses.map((status) => status.name).toList(),
                   onAdd: (name) => cubit.addTripStatus(name, context),
                   onEdit: (oldName, newName) =>
                       cubit.editTripStatus(oldName, newName, context),
@@ -978,7 +1171,8 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
                         shape: BoxShape.circle,
                       ),
                       padding: const EdgeInsets.all(4.0),
-                      child: const Icon(Icons.close, color: Colors.white, size: 16),
+                      child: const Icon(Icons.close,
+                          color: Colors.white, size: 16),
                     ),
                     deleteButtonTooltipMessage: "Delete $item",
                     backgroundColor: const Color(0xFF26A69A).withOpacity(0.2),
@@ -986,7 +1180,8 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
                       borderRadius: BorderRadius.circular(12),
                       side: BorderSide(color: Colors.white.withOpacity(0.3)),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                 );
               }).toList(),
@@ -1009,19 +1204,23 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
                         fillColor: Colors.white.withOpacity(0.05),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                          borderSide:
+                              BorderSide(color: Colors.white.withOpacity(0.1)),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                          borderSide:
+                              BorderSide(color: Colors.white.withOpacity(0.1)),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFF26A69A)),
+                          borderSide:
+                              const BorderSide(color: Color(0xFF26A69A)),
                         ),
                         errorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE57373)),
+                          borderSide:
+                              const BorderSide(color: Color(0xFFE57373)),
                         ),
                       ),
                     ),
@@ -1058,7 +1257,8 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
                     ),
                     child: const Text(
                       'Add',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                      style:
+                          TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -1073,11 +1273,19 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
   Widget _buildFareSettingsSectionV3(
       BuildContext context, TaxiSettingsCubit cubit, TaxiSettingsState state) {
     final perKmFareController =
-    TextEditingController(text: state.settings.perKmFareRate.toString());
+        TextEditingController(text: state.settings.perKmFareRate.toString());
     final minimumFareController =
-    TextEditingController(text: state.settings.minimumFare.toString());
+        TextEditingController(text: state.settings.minimumFare.toString());
     final whatsappThresholdController = TextEditingController(
         text: state.settings.whatsappNotificationFareThreshold.toString());
+    final mapApiKeyController =
+        TextEditingController(text: state.settings.mapApiKey ?? '');
+    final twilioAccountSidController =
+        TextEditingController(text: state.settings.twilioAccountSid ?? '');
+    final twilioAuthTokenController =
+        TextEditingController(text: state.settings.twilioAuthToken ?? '');
+    final twilioWhatsAppNumberController =
+        TextEditingController(text: state.settings.twilioWhatsAppNumber ?? '');
 
     return Card(
       elevation: 0,
@@ -1194,17 +1402,156 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: mapApiKeyController,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: "Map API Key",
+                labelStyle: const TextStyle(color: Colors.white70),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.05),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFF26A69A)),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE57373)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: twilioAccountSidController,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: "Twilio Account SID",
+                labelStyle: const TextStyle(color: Colors.white70),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.05),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFF26A69A)),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE57373)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: twilioAuthTokenController,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: "Twilio Auth Token",
+                labelStyle: const TextStyle(color: Colors.white70),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.05),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFF26A69A)),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE57373)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: twilioWhatsAppNumberController,
+              keyboardType: TextInputType.phone,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: "Twilio WhatsApp Number",
+                labelStyle: const TextStyle(color: Colors.white70),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.05),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFF26A69A)),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE57373)),
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
             Align(
               alignment: Alignment.centerRight,
               child: ElevatedButton(
                 onPressed: () {
                   try {
+                    final phoneRegex = RegExp(r'^\+?[1-9]\d{1,14}$');
+                    if (twilioWhatsAppNumberController.text.isNotEmpty &&
+                        !phoneRegex
+                            .hasMatch(twilioWhatsAppNumberController.text)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text(
+                              "Invalid Twilio WhatsApp number format"),
+                          backgroundColor: const Color(0xFFE57373),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      );
+                      return;
+                    }
                     final settings = TaxiSettings(
                       perKmFareRate: double.parse(perKmFareController.text),
                       minimumFare: double.parse(minimumFareController.text),
                       whatsappNotificationFareThreshold:
-                      double.parse(whatsappThresholdController.text),
+                          double.parse(whatsappThresholdController.text),
+                      mapApiKey: mapApiKeyController.text.isEmpty
+                          ? null
+                          : mapApiKeyController.text,
+                      twilioAccountSid: twilioAccountSidController.text.isEmpty
+                          ? null
+                          : twilioAccountSidController.text,
+                      twilioAuthToken: twilioAuthTokenController.text.isEmpty
+                          ? null
+                          : twilioAuthTokenController.text,
+                      twilioWhatsAppNumber:
+                          twilioWhatsAppNumberController.text.isEmpty
+                              ? null
+                              : twilioWhatsAppNumberController.text,
                       updatedAt: DateTime.now(),
                       updatedBy: 'admin',
                       taxiTypes: state.taxiTypes,
@@ -1232,22 +1579,24 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   elevation: 2,
                 ),
                 child: state.isSaving
                     ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
                     : const Text(
-                  'Save',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                ),
+                        'Save',
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600),
+                      ),
               ),
             ),
           ],
@@ -1256,14 +1605,15 @@ class _TaxiSettingsPageState extends State<TaxiSettingsPage> {
     );
   }
 
-  void _showDeleteDialogV3(
-      BuildContext context, String item, String title, Function(String) onDelete) {
+  void _showDeleteDialogV3(BuildContext context, String item, String title,
+      Function(String) onDelete) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           backgroundColor: const Color(0xFF121212),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: const Text(
             'Confirm Delete',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),

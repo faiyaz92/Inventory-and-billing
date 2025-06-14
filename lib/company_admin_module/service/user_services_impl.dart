@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/attendance/attendance_dto.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/attendance/attendance_model.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/fcm_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart'
     show UserServices;
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
@@ -11,20 +12,23 @@ import 'package:requirment_gathering_app/super_admin_module/repository/tenant_co
 class UserServiceImpl implements UserServices {
   final ITenantCompanyRepository _tenantCompanyRepository;
   final AccountRepository _accountRepository;
+  final FCMService _fcmService;
 
-  UserServiceImpl(this._tenantCompanyRepository, this._accountRepository);
+  UserServiceImpl(this._tenantCompanyRepository, this._accountRepository, this._fcmService);
 
   @override
   Future<String> addUserToCompany(UserInfo userInfo, String password) async {
     final loggedInUserInfo = await _accountRepository.getUserInfo();
+    final fcmToken = await _fcmService.registerFCMToken();
     userInfo = userInfo.copyWith(
       companyId: loggedInUserInfo?.companyId ?? '',
       latitude: userInfo.latitude ?? 0.0,
       longitude: userInfo.longitude ?? 0.0,
       dailyWage: userInfo.dailyWage ?? 500.0,
-      storeId: userInfo.storeId, // Include storeId
+      storeId: userInfo.storeId,
+      fcmToken: fcmToken,
     );
-   return await _tenantCompanyRepository.addUserToCompany(userInfo.toDto(), password);
+    return await _tenantCompanyRepository.addUserToCompany(userInfo.toDto(), password);
   }
 
   @override
@@ -35,18 +39,16 @@ class UserServiceImpl implements UserServices {
       throw Exception("User ID is missing. Cannot update user.");
     }
 
-    // Fetch existing user data from repository
-    final existingUser =
-        await _tenantCompanyRepository.getUser(userInfo.userId!, companyId);
+    final existingUser = await _tenantCompanyRepository.getUser(userInfo.userId!, companyId);
     if (existingUser == null) {
       throw Exception("User does not exist.");
     }
 
-    // Merge provided userInfo with existing data
+    final fcmToken = await _fcmService.registerFCMToken();
+
     final updatedUserInfo = UserInfoDto(
       userId: userInfo.userId ?? existingUser.userId,
       companyId: existingUser.companyId,
-      // Preserve existing companyId
       name: userInfo.name ?? existingUser.name,
       email: userInfo.email ?? existingUser.email,
       userName: userInfo.userName ?? existingUser.userName,
@@ -54,7 +56,8 @@ class UserServiceImpl implements UserServices {
       latitude: userInfo.latitude ?? existingUser.latitude,
       longitude: userInfo.longitude ?? existingUser.longitude,
       dailyWage: userInfo.dailyWage ?? existingUser.dailyWage,
-      storeId: userInfo.storeId ?? existingUser.storeId, // Include storeId
+      storeId: userInfo.storeId ?? existingUser.storeId,
+      fcmToken: fcmToken ?? existingUser.fcmToken,
     );
 
     await _tenantCompanyRepository.updateUser(
@@ -117,7 +120,7 @@ class UserServiceImpl implements UserServices {
     final userInfo = await _accountRepository.getUserInfo();
     final companyId = userInfo?.companyId ?? '';
     final attendanceDTOs =
-        await _tenantCompanyRepository.getAttendance(userId, companyId, month);
+    await _tenantCompanyRepository.getAttendance(userId, companyId, month);
     return attendanceDTOs.map((dto) {
       return AttendanceModel(
         date: DateFormat('dd-MM-yyyy').format(DateTime.parse(dto.date)),
@@ -157,7 +160,7 @@ class UserServiceImpl implements UserServices {
     final userInfo = await _accountRepository.getUserInfo();
     final companyId = userInfo?.companyId ?? '';
     final salaryHistory =
-        await _tenantCompanyRepository.getSalaryHistory(userId, companyId);
+    await _tenantCompanyRepository.getSalaryHistory(userId, companyId);
     double unpaidTotal = salaryHistory
         .where((h) => !(h['paid'] as bool))
         .fold(0.0, (sum, h) => sum + (h['totalEarned'] as double));
@@ -185,7 +188,7 @@ class UserServiceImpl implements UserServices {
     final salaryHistory = await _tenantCompanyRepository.getSalaryHistory(
         userId, userInfo?.companyId ?? '');
     double totalEarned =
-        salaryHistory.fold(0.0, (sum, h) => sum + (h['totalEarned'] as double));
+    salaryHistory.fold(0.0, (sum, h) => sum + (h['totalEarned'] as double));
     return totalAdvances - totalEarned > 0 ? totalAdvances - totalEarned : 0.0;
   }
 

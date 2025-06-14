@@ -9,12 +9,14 @@ class UserInfoDto extends Equatable {
   final String email;
   final String userName;
   final Role role;
-  final UserType? userType; // New field
+  final UserType? userType;
   final double? latitude;
   final double? longitude;
   final double? dailyWage;
   final String? storeId;
   final String? accountLedgerId;
+  final String? fcmToken;
+  final String? mobileNumber; // Added mobile number field
 
   const UserInfoDto({
     required this.userId,
@@ -23,12 +25,14 @@ class UserInfoDto extends Equatable {
     required this.email,
     required this.userName,
     required this.role,
-    this.userType, // New field
+    this.userType,
     this.latitude,
     this.longitude,
     this.dailyWage,
     this.storeId,
     this.accountLedgerId,
+    this.fcmToken,
+    this.mobileNumber,
   });
 
   factory UserInfoDto.fromMap(Map<String, dynamic> map) {
@@ -42,12 +46,13 @@ class UserInfoDto extends Equatable {
       userType: map.containsKey('userType')
           ? UserTypeExtension.fromString(map['userType'] as String)
           : UserType.Employee,
-      // New field
       latitude: (map['latitude'] as num?)?.toDouble(),
       longitude: (map['longitude'] as num?)?.toDouble(),
       dailyWage: (map['dailyWage'] as num?)?.toDouble() ?? 500.0,
       storeId: map['storeId'] as String?,
       accountLedgerId: map['accountLedgerId'] as String?,
+      fcmToken: map['fcmToken'] as String?,
+      mobileNumber: map['mobileNumber'] as String?, // Added to fromMap
     );
   }
 
@@ -59,29 +64,33 @@ class UserInfoDto extends Equatable {
       'email': email,
       'userName': userName,
       'role': role.name,
-      'userType': userType, // New field
+      'userType': userType?.name,
       'latitude': latitude,
       'longitude': longitude,
       'dailyWage': dailyWage,
       'storeId': storeId,
       'accountLedgerId': accountLedgerId,
+      'fcmToken': fcmToken,
+      'mobileNumber': mobileNumber, // Added to toMap
     };
   }
 
   Map<String, dynamic> toPartialMap() {
     final map = <String, dynamic>{};
-    map['userId'] = userId; // Always include userId
+    map['userId'] = userId;
     if (companyId != null) map['companyId'] = companyId;
     if (name != null) map['name'] = name;
     if (email != null) map['email'] = email;
     if (userName != null) map['userName'] = userName;
     if (role != null) map['role'] = role.name;
-    if (userType != null) map['userType'] = userType; // New field
+    if (userType != null) map['userType'] = userType?.name;
     if (latitude != null) map['latitude'] = latitude;
     if (longitude != null) map['longitude'] = longitude;
     if (dailyWage != null) map['dailyWage'] = dailyWage;
     if (storeId != null) map['storeId'] = storeId;
     if (accountLedgerId != null) map['accountLedgerId'] = accountLedgerId;
+    if (fcmToken != null) map['fcmToken'] = fcmToken;
+    if (mobileNumber != null) map['mobileNumber'] = mobileNumber; // Added to toPartialMap
     return map;
   }
 
@@ -92,12 +101,14 @@ class UserInfoDto extends Equatable {
     String? email,
     String? userName,
     Role? role,
-    UserType? userType, // New field
+    UserType? userType,
     double? latitude,
     double? longitude,
     double? dailyWage,
     String? storeId,
     String? accountLedgerId,
+    String? fcmToken,
+    String? mobileNumber,
   }) {
     return UserInfoDto(
       userId: userId ?? this.userId,
@@ -107,28 +118,31 @@ class UserInfoDto extends Equatable {
       userName: userName ?? this.userName,
       role: role ?? this.role,
       userType: userType ?? this.userType,
-      // New field
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       dailyWage: dailyWage ?? this.dailyWage,
       storeId: storeId ?? this.storeId,
       accountLedgerId: accountLedgerId ?? this.accountLedgerId,
+      fcmToken: fcmToken ?? this.fcmToken,
+      mobileNumber: mobileNumber ?? this.mobileNumber, // Added to copyWith
     );
   }
 
   @override
   List<Object?> get props => [
-        userId,
-        companyId,
-        name,
-        email,
-        userName,
-        role,
-        userType, // New field
-        latitude,
-        longitude,
-        dailyWage,
-        storeId,
-        accountLedgerId,
-      ];
+    userId,
+    companyId,
+    name,
+    email,
+    userName,
+    role,
+    userType,
+    latitude,
+    longitude,
+    dailyWage,
+    storeId,
+    accountLedgerId,
+    fcmToken,
+    mobileNumber, // Added to props
+  ];
 }

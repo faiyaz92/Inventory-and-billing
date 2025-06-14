@@ -31,11 +31,11 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
 
   @override
   Future<void> createTenantCompany(
-    TenantCompanyDto dto,
-    String password, {
-    required String adminUsername,
-    required String adminName,
-  }) async {
+      TenantCompanyDto dto,
+      String password, {
+        required String adminUsername,
+        required String adminName,
+      }) async {
     final userInfo = await _accountRepository.getUserInfo();
     String? superAdminId = userInfo?.userId;
     if (superAdminId == null) {
@@ -132,7 +132,7 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
   @override
   Future<List<TenantCompanyDto>> getTenantCompanies() async {
     final snapshot =
-        await _firestoreProvider.basePath.collection('tenantCompanies').get();
+    await _firestoreProvider.basePath.collection('tenantCompanies').get();
     return snapshot.docs
         .map((doc) => TenantCompanyDto.fromMap(doc.data()))
         .toList();
@@ -191,17 +191,13 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
       QuerySnapshot querySnapshot;
 
       if (storeId != null && storeId.isNotEmpty) {
-        // Filter by provided storeId, regardless of role
         querySnapshot = await usersRef
             .where('storeId', isEqualTo: storeId)
             .get();
       } else {
-        // No storeId provided, use existing role-based logic
         if (loggedInUserRole == Role.COMPANY_ADMIN) {
-          // COMPANY_ADMIN sees all users in the company
           querySnapshot = await usersRef.get();
         } else {
-          // Other roles (USER, STORE_ADMIN, SUPER_ADMIN) see only users with the same storeId
           if (loggedInUserStoreId == null || loggedInUserStoreId.isEmpty) {
             throw Exception('Logged-in user has no store ID assigned.');
           }
@@ -367,7 +363,7 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
     }).toList();
 
     final userSnapshot =
-        await _firestoreProvider.getTenantUserRef(companyId, userId).get();
+    await _firestoreProvider.getTenantUserRef(companyId, userId).get();
     final userData = userSnapshot.data() as Map<String, dynamic>;
     final dailyWage = (userData['dailyWage'] as num?)?.toDouble() ?? 500.0;
     int presentDays = models.where((model) => model.status == 'present').length;

@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
-import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/stock_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/store_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/transaction_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/account_ledger_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/add_edit_category_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/admin_product_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/tasks/task_cubit.dart';
@@ -25,6 +25,7 @@ import 'package:requirment_gathering_app/company_admin_module/repositories/trans
 import 'package:requirment_gathering_app/company_admin_module/service/account_ledger_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/category_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/category_service_impl.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/fcm_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/product_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/product_service_impl.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/stock_service.dart';
@@ -181,8 +182,9 @@ void _initRepositories() {
         firestorePathProvider: sl<IFirestorePathProvider>(),
       ));
 
-  sl.registerLazySingleton<ITaxiBookingRepository>(
-      () => TaxiBookingRepositoryImpl(sl<IFirestorePathProvider>(),sl<AccountRepository>()));
+  sl.registerLazySingleton<ITaxiBookingRepository>(() =>
+      TaxiBookingRepositoryImpl(
+          sl<IFirestorePathProvider>(), sl<AccountRepository>()));
   sl.registerLazySingleton<ITaxiSettingsRepository>(
       () => TaxiSettingsRepositoryImpl(sl<IFirestorePathProvider>()));
 }
@@ -191,7 +193,8 @@ void _initRepositories() {
 void _initServices() {
   sl.registerLazySingleton<AuthService>(
       () => AuthServiceImpl(sl<AccountRepository>()));
-
+  sl.registerLazySingleton<FCMService>(
+          () => FCMService(sl<AccountRepository>(), sl<IFirestorePathProvider>()));
   sl.registerLazySingleton<CustomerCompanyService>(
     () => CustomerCompanyServiceImpl(
       sl<CustomerCompanyRepository>(),
@@ -209,8 +212,10 @@ void _initServices() {
     () => userSerivceImpl.UserServiceImpl(
       sl<ITenantCompanyRepository>(),
       sl<AccountRepository>(),
+      sl<FCMService>(),
     ),
   );
+
   sl.registerLazySingleton<TaskService>(
       () => TaskServiceImpl(sl<TaskRepository>(), sl<AccountRepository>()));
 
@@ -310,6 +315,7 @@ void _initCubits() {
         sl<UserServices>(),
         sl<StoreService>(),
         sl<IAccountLedgerService>(),
+        sl<FCMService>(),
       ));
   sl.registerFactory(() => TaskCubit(sl<TaskService>(), sl<UserServices>(),
       sl<CustomerCompanyService>(), sl<AccountRepository>()));
@@ -374,8 +380,8 @@ void _initCubits() {
 
   // Register Taxi Cubits with Services
   sl.registerFactory<TaxiAdminCubit>(
-    () => TaxiAdminCubit(sl<ITaxiBookingService>(),
-        sl<ITaxiSettingsService>(),  sl<UserServices>(), sl<AccountRepository>()),
+    () => TaxiAdminCubit(sl<ITaxiBookingService>(), sl<ITaxiSettingsService>(),
+        sl<UserServices>(), sl<AccountRepository>()),
   );
   sl.registerFactory<TaxiBookingCubit>(
     () => TaxiBookingCubit(
@@ -387,14 +393,15 @@ void _initCubits() {
     () => TaxiSettingsCubit(sl<ITaxiSettingsService>()),
   );
   sl.registerFactory<VisitorCounterCubit>(
-        () => VisitorCounterCubit(sl<IVisitorCounterService>()),
+    () => VisitorCounterCubit(sl<IVisitorCounterService>()),
   );
-  sl.registerFactory(() => ProfileCubit(accountRepository: sl<AccountRepository>()));
+  sl.registerFactory(
+      () => ProfileCubit(accountRepository: sl<AccountRepository>()));
   sl.registerFactory<TaxiUserCubit>(() => TaxiUserCubit(
-    sl<ITaxiBookingService>(),
-    sl<ITaxiSettingsService>(),
-    sl<AccountRepository>(),
-  ));
+        sl<ITaxiBookingService>(),
+        sl<ITaxiSettingsService>(),
+        sl<AccountRepository>(),
+      ));
 }
 
 /// **5. Initialize App Navigation & Coordinator**

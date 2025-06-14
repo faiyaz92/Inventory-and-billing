@@ -51,6 +51,7 @@ class _AddUserViewState extends State<_AddUserView> {
   final TextEditingController userNameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController dailyWageController = TextEditingController();
+  final TextEditingController mobileNumberController = TextEditingController(); // Added mobile number controller
   Role? _selectedRole;
   String? _selectedStoreId;
   bool isEditing = false;
@@ -64,9 +65,10 @@ class _AddUserViewState extends State<_AddUserView> {
       emailController.text = widget.user?.email ?? '';
       userNameController.text = widget.user?.userName ?? '';
       dailyWageController.text = widget.user?.dailyWage?.toString() ?? '500.0';
+      mobileNumberController.text = widget.user?.mobileNumber ?? ''; // Initialize mobile number
       _selectedRole = widget.user?.role;
       _selectedStoreId = widget.user?.storeId;
-      print('initState (editing): _selectedStoreId = $_selectedStoreId');
+      print('initState (editing): _selectedStoreId = $_selectedStoreId, mobileNumber = ${mobileNumberController.text}');
     }
     print('AddUserView initState: _selectedStoreId = $_selectedStoreId, isEditing = $isEditing');
   }
@@ -78,6 +80,7 @@ class _AddUserViewState extends State<_AddUserView> {
     userNameController.dispose();
     passwordController.dispose();
     dailyWageController.dispose();
+    mobileNumberController.dispose(); // Dispose mobile number controller
     super.dispose();
   }
 
@@ -87,6 +90,7 @@ class _AddUserViewState extends State<_AddUserView> {
     userNameController.clear();
     passwordController.clear();
     dailyWageController.clear();
+    mobileNumberController.clear(); // Clear mobile number
     setState(() {
       _selectedRole = null;
       _selectedStoreId = null;
@@ -156,7 +160,6 @@ class _AddUserViewState extends State<_AddUserView> {
                 child: BlocListener<StoreCubit, StoreState>(
                   listener: (context, storeState) {
                     if (storeState is StoreLoaded && !isEditing && _selectedStoreId == null) {
-                      // Validate defaultStoreId
                       final validStoreId = storeState.stores.any((store) => store.storeId == storeState.defaultStoreId)
                           ? storeState.defaultStoreId
                           : storeState.stores.isNotEmpty
@@ -290,6 +293,45 @@ class _AddUserViewState extends State<_AddUserView> {
                                     style: const TextStyle(fontSize: 16.0),
                                     validator: (value) =>
                                     value!.isEmpty ? "Username is required" : null,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                  child: TextFormField(
+                                    controller: mobileNumberController,
+                                    decoration: InputDecoration(
+                                      labelText: "Mobile Number",
+                                      labelStyle: TextStyle(
+                                        color: Theme.of(context).primaryColor,
+                                        fontSize: 16.0,
+                                      ),
+                                      filled: true,
+                                      fillColor: Colors.grey[100],
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: BorderSide(color: Colors.grey[400]!),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: BorderSide(color: Colors.grey[400]!),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                      ),
+                                    ),
+                                    keyboardType: TextInputType.phone,
+                                    style: const TextStyle(fontSize: 16.0),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return "Mobile number is required";
+                                      }
+                                      final phoneRegex = RegExp(r'^\+?[1-9]\d{1,14}$');
+                                      if (!phoneRegex.hasMatch(value)) {
+                                        return "Enter a valid mobile number";
+                                      }
+                                      return null;
+                                    },
                                   ),
                                 ),
                                 Padding(
@@ -481,9 +523,10 @@ class _AddUserViewState extends State<_AddUserView> {
                                           userName: userNameController.text.trim(),
                                           dailyWage: double.tryParse(dailyWageController.text.trim()),
                                           storeId: _selectedStoreId ?? defaultStoreId,
+                                          mobileNumber: mobileNumberController.text.trim(), // Added mobile number
                                         );
 
-                                        print('Submitting userInfo with storeId = ${userInfo.storeId}');
+                                        print('Submitting userInfo with storeId = ${userInfo.storeId}, mobileNumber = ${userInfo.mobileNumber}');
 
                                         if (isEditing) {
                                           context.read<AddUserCubit>().updateUser(userInfo);
