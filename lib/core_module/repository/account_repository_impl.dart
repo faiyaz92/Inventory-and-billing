@@ -48,7 +48,7 @@ class AccountRepositoryImpl implements AccountRepository {
         name: '',
         userName: '',
       );
-
+      final i=userInfo;
       await _storeUserInfo(uInfo.UserInfo.fromDto(userInfo));
       return userInfo;
     }

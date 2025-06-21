@@ -45,12 +45,12 @@ class _SplashScreenPageState extends State<SplashScreenPage> with SingleTickerPr
     final locationService = sl<LocationUpdateService>();
     final fcmService = sl<FCMService>();
 
-    await fcmService.initialize();
-
-    final hasPermission = await permissionHandler.requestLocationPermissions(context);
-    if (hasPermission) {
-      await locationService.initializeService();
-    }
+    // await fcmService.initialize();
+    //
+    // final hasPermission = await permissionHandler.requestLocationPermissions(context);
+    // if (hasPermission) {
+    //   await locationService.initializeService();
+    // }
   }
 
   void _startSplashDelay() {

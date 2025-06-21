@@ -21,7 +21,11 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    passwordController.text = '111111';
+    emailController.text = 'naeem.zaz@gmail.com';
+
     passwordController.text = 'Faiyaz@123';
+    emailController.text = 'faiyaz.meghreji@gmail.com';
     final double scaleFactor = MediaQuery.of(context).size.width > 600 ? 1.2 : 1.0;
     final double basePadding = 16.0 * scaleFactor;
 

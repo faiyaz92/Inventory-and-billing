@@ -25,7 +25,9 @@ class SplashCubit extends Cubit<SplashState> {
     // emit(NavigateToLogin());
 
     if (isLoggedIn) {
-      emit(NavigateToDashboard());
+      emit(NavigateToLogin());
+
+      // emit(NavigateToDashboard());
     } else {
       emit(NavigateToLogin());
     }

@@ -43,14 +43,14 @@ class UserInfoDto extends Equatable {
       email: map['email'] as String,
       userName: map['userName'] as String,
       role: RoleExtension.fromString(map['role'] as String),
-      userType: map.containsKey('userType')
-          ? UserTypeExtension.fromString(map['userType'] as String)
-          : UserType.Employee,
-      latitude: (map['latitude'] as num?)?.toDouble(),
-      longitude: (map['longitude'] as num?)?.toDouble(),
-      dailyWage: (map['dailyWage'] as num?)?.toDouble() ?? 500.0,
-      storeId: map['storeId'] as String?,
-      accountLedgerId: map['accountLedgerId'] as String?,
+      // userType: map.containsKey('userType')
+      //     ? UserTypeExtension.fromString(map['userType'] as String)
+      //     : UserType.Employee,
+      // latitude: (map['latitude'] as num?)?.toDouble(),
+      // longitude: (map['longitude'] as num?)?.toDouble(),
+      // dailyWage: (map['dailyWage'] as num?)?.toDouble() ?? 500.0,
+      // storeId: map['storeId'] as String?,
+      // accountLedgerId: map['accountLedgerId'] as String?,
       fcmToken: map['fcmToken'] as String?,
       mobileNumber: map['mobileNumber'] as String?, // Added to fromMap
     );
