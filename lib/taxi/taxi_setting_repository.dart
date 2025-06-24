@@ -33,48 +33,96 @@ class TaxiSettingsRepositoryImpl implements ITaxiSettingsRepository {
 
   TaxiSettingsRepositoryImpl(this._pathProvider);
 
+  // @override
+  // Future<TaxiSettings> getSettings(String companyId) async {
+  //   try {
+  //     // Fetch settings document
+  //     final settingsSnapshot =
+  //     await _pathProvider.getTaxiBookingSettingsRef(companyId).get();
+  //     final settingsData = settingsSnapshot.exists
+  //         ? settingsSnapshot.data() as Map<String, dynamic>
+  //         : {};
+  //
+  //     // Fetch subcollections
+  //     final taxiTypesSnapshot =
+  //     await _pathProvider.getTaxiTypesCollectionRef(companyId).get();
+  //     final tripTypesSnapshot =
+  //     await _pathProvider.getTripTypesCollectionRef(companyId).get();
+  //     final serviceTypesSnapshot =
+  //     await _pathProvider.getServiceTypesCollectionRef(companyId).get();
+  //     final tripStatusesSnapshot =
+  //     await _pathProvider.getTripStatusesCollectionRef(companyId).get();
+  //
+  //     final taxiTypes = taxiTypesSnapshot.docs
+  //         .map((doc) =>
+  //         TaxiTypeDto.fromFirestore(doc, doc.data() as Map<String, dynamic>))
+  //         .toList();
+  //     final tripTypes = tripTypesSnapshot.docs
+  //         .map((doc) => TripTypeDto.fromFirestore(doc))
+  //         .toList();
+  //     final serviceTypes = serviceTypesSnapshot.docs
+  //         .map((doc) => ServiceTypeDto.fromFirestore(doc))
+  //         .toList();
+  //     final tripStatuses = tripStatusesSnapshot.docs
+  //         .map((doc) => TripStatusDto.fromFirestore(doc))
+  //         .toList();
+  //
+  //     return TaxiSettings.fromDto(TaxiSettingsDto.fromFirestore(
+  //       settingsData: settingsData as Map<String, dynamic>,
+  //       taxiTypes: taxiTypes,
+  //       tripTypes: tripTypes,
+  //       serviceTypes: serviceTypes,
+  //       tripStatuses: tripStatuses,
+  //     ));
+  //   } catch (e) {
+  //     throw Exception('Failed to fetch taxi settings: $e');
+  //   }
+  // }
   @override
   Future<TaxiSettings> getSettings(String companyId) async {
-    // Fetch settings document
-    final settingsSnapshot =
-        await _pathProvider.getTaxiBookingSettingsRef(companyId).get();
-    final settingsData = settingsSnapshot.exists
-        ? settingsSnapshot.data() as Map<String, dynamic>
-        : {};
+    try {
+      // Fetch settings document
+      final settingsSnapshot =
+      await _pathProvider.getTaxiBookingSettingsRef(companyId).get();
+      final settingsData = settingsSnapshot.exists
+          ? (settingsSnapshot.data() as Map).cast<String, dynamic>()
+          : <String, dynamic>{};
 
-    // Fetch subcollections
-    final taxiTypesSnapshot =
-        await _pathProvider.getTaxiTypesCollectionRef(companyId).get();
-    final tripTypesSnapshot =
-        await _pathProvider.getTripTypesCollectionRef(companyId).get();
-    final serviceTypesSnapshot =
-        await _pathProvider.getServiceTypesCollectionRef(companyId).get();
-    final tripStatusesSnapshot =
-        await _pathProvider.getTripStatusesCollectionRef(companyId).get();
+      // Fetch subcollections
+      final taxiTypesSnapshot =
+      await _pathProvider.getTaxiTypesCollectionRef(companyId).get();
+      final tripTypesSnapshot =
+      await _pathProvider.getTripTypesCollectionRef(companyId).get();
+      final serviceTypesSnapshot =
+      await _pathProvider.getServiceTypesCollectionRef(companyId).get();
+      final tripStatusesSnapshot =
+      await _pathProvider.getTripStatusesCollectionRef(companyId).get();
 
-    final taxiTypes = taxiTypesSnapshot.docs
-        .map((doc) =>
-            TaxiTypeDto.fromFirestore(doc, doc.data() as Map<String, dynamic>))
-        .toList();
-    final tripTypes = tripTypesSnapshot.docs
-        .map((doc) => TripTypeDto.fromFirestore(doc))
-        .toList();
-    final serviceTypes = serviceTypesSnapshot.docs
-        .map((doc) => ServiceTypeDto.fromFirestore(doc))
-        .toList();
-    final tripStatuses = tripStatusesSnapshot.docs
-        .map((doc) => TripStatusDto.fromFirestore(doc))
-        .toList();
+      final taxiTypes = taxiTypesSnapshot.docs
+          .map((doc) =>
+          TaxiTypeDto.fromFirestore(doc, (doc.data() as Map).cast<String, dynamic>()))
+          .toList();
+      final tripTypes = tripTypesSnapshot.docs
+          .map((doc) => TripTypeDto.fromFirestore(doc))
+          .toList();
+      final serviceTypes = serviceTypesSnapshot.docs
+          .map((doc) => ServiceTypeDto.fromFirestore(doc))
+          .toList();
+      final tripStatuses = tripStatusesSnapshot.docs
+          .map((doc) => TripStatusDto.fromFirestore(doc))
+          .toList();
 
-    return TaxiSettings.fromDto(TaxiSettingsDto.fromFirestore(
-      settingsData: settingsData as Map<String, dynamic>,
-      taxiTypes: taxiTypes,
-      tripTypes: tripTypes,
-      serviceTypes: serviceTypes,
-      tripStatuses: tripStatuses,
-    ));
+      return TaxiSettings.fromDto(TaxiSettingsDto.fromFirestore(
+        settingsData: settingsData,
+        taxiTypes: taxiTypes,
+        tripTypes: tripTypes,
+        serviceTypes: serviceTypes,
+        tripStatuses: tripStatuses,
+      ));
+    } catch (e) {
+      throw Exception('Failed to fetch taxi settings: $e');
+    }
   }
-
   @override
   Future<void> updateSettings(String companyId, TaxiSettings settings) async {
     final dto = TaxiSettingsDto(
