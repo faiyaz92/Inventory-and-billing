@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/inventory/stock_model.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/product_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/stock_service.dart';
 
 class OverallStockState {
@@ -34,7 +33,7 @@ class OverallStockState {
 class ProductStock {
   final String productId;
   final String productName;
-  int totalStock; // Removed 'final' to make it mutable
+  int totalStock; // Non-final as in original
   final Map<String, int> storeStocks;
   final Map<String, String> storeNames;
 
@@ -49,12 +48,9 @@ class ProductStock {
 
 class OverallStockCubit extends Cubit<OverallStockState> {
   final StockService stockService;
-  final ProductService productService;
-  Map<String, String> productNameCache = {};
 
   OverallStockCubit({
     required this.stockService,
-    required this.productService,
   }) : super(OverallStockState(productStocks: []));
 
   Future<void> loadOverallStock() async {
@@ -68,10 +64,6 @@ class OverallStockCubit extends Cubit<OverallStockState> {
         final stockItems = await stockService.getStock(store.storeId);
         allStockItems.addAll(stockItems);
       }
-
-      // Cache product names
-      final products = await productService.fetchProducts();
-      productNameCache = {for (var p in products) p.id: p.name};
 
       // Aggregate stock by product
       final productStocks = _aggregateStockByProduct(allStockItems, storeNames);
@@ -89,10 +81,9 @@ class OverallStockCubit extends Cubit<OverallStockState> {
     final Map<String, ProductStock> productMap = {};
     for (final stock in stockItems) {
       if (!productMap.containsKey(stock.productId)) {
-        final productName = productNameCache[stock.productId] ?? 'Unknown';
         productMap[stock.productId] = ProductStock(
           productId: stock.productId,
-          productName: productName,
+          productName: stock.name ?? 'Unknown', // Use name from StockModel
           totalStock: 0,
           storeStocks: {},
           storeNames: storeNames,

@@ -114,14 +114,4 @@ abstract class Coordinator {
   Future<dynamic> navigateToCompanyPerformancePage();
   Future<dynamic> navigateToProductPerformanceListPage();
   Future<dynamic> navigateToUserLedgerPage({required UserInfo user});
-  Future<dynamic> navigateToTaxiBookingPage();
-  Future<dynamic> navigateToTaxiSettingsPage();
-  Future<dynamic> navigateToTaxiBookingsAdminPage();
-  Future<dynamic> navigateToDriverListPage();
-  Future<dynamic> navigateToDriverPerformanceDetailsPage({required String driverId});
-  Future<dynamic> navigateToBookingDetailsPage({required String bookingId});
-  Future<dynamic> navigateToTaxiCompanyPerformancePage();
-  Future<dynamic> navigateToTaxiVisitorCounterPage();
-  Future<dynamic> navigateToUserBookingHistory();
-  Future<dynamic> navigateToWebApp();
 }

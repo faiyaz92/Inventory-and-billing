@@ -1,4 +1,3 @@
-import 'package:requirment_gathering_app/company_admin_module/data/product/product_dto.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart';
 
 abstract class ProductService {

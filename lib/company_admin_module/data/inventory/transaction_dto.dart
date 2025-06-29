@@ -9,8 +9,9 @@ class TransactionDto {
   final String? toStoreId;
   final String? customerId;
   final DateTime timestamp;
-  final String userName; // Added
-  final String userId;   // Added
+  final String userName;
+  final String userId;
+  final String? remarks; // Added
 
   TransactionDto({
     required this.id,
@@ -23,6 +24,7 @@ class TransactionDto {
     required this.timestamp,
     required this.userName,
     required this.userId,
+    this.remarks,
   });
 
   factory TransactionDto.fromFirestore(DocumentSnapshot doc) {
@@ -36,8 +38,9 @@ class TransactionDto {
       toStoreId: data['toStoreId'],
       customerId: data['customerId'],
       timestamp: DateTime.parse(data['timestamp']),
-      userName: data['userName'] ?? 'Unknown User', // Added with default
-      userId: data['userId'] ?? 'unknown',          // Added with default
+      userName: data['userName'] ?? 'Unknown User',
+      userId: data['userId'] ?? 'unknown',
+      remarks: data['remarks'], // Added
     );
   }
 
@@ -50,9 +53,9 @@ class TransactionDto {
       'toStoreId': toStoreId,
       'customerId': customerId,
       'timestamp': timestamp.toIso8601String(),
-      // 'timestamp': Timestamp.fromDate(timestamp),
-      'userName': userName, // Added
-      'userId': userId,     // Added
+      'userName': userName,
+      'userId': userId,
+      'remarks': remarks, // Added
     };
   }
 }

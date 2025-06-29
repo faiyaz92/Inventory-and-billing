@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:requirment_gathering_app/core_module/app_router/app_router.dart'
     show AppRouter;
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
-import 'package:requirment_gathering_app/taxi/taxi_booking_web_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

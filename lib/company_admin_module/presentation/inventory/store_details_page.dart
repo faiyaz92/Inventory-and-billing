@@ -28,7 +28,6 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
     super.initState();
   }
 
-  // Dialog to add stock
   void _showAddStockDialog(BuildContext context, StockModel stock) {
     int quantity = 0;
     final _formKey = GlobalKey<FormState>();
@@ -94,7 +93,84 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
     );
   }
 
-  // Dialog to transfer stock to another store
+  void _showSubtractStockDialog(BuildContext context, StockModel stock) {
+    int quantity = 0;
+    String? remarks;
+    final _formKey = GlobalKey<FormState>();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: const Text('Subtract Stock'),
+          content: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Quantity to Subtract',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) => quantity = int.tryParse(value) ?? 0,
+                  validator: (value) {
+                    if (value == null || value.isEmpty)
+                      return 'Please enter quantity';
+                    if (int.tryParse(value) == null || int.parse(value) <= 0) {
+                      return 'Please enter a valid quantity';
+                    }
+                    if (int.parse(value) > stock.quantity) {
+                      return 'Quantity exceeds available stock';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Remarks (Optional)',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  onChanged: (value) => remarks = value.isEmpty ? null : value,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  _stockCubit.subtractStock(stock, quantity, remarks: remarks);
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text(AppLabels.saveButtonText),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showTransferStockDialog(
       BuildContext context, StockModel stock, List<StoreDto> stores) {
     String? selectedStoreId;
@@ -207,7 +283,6 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Welcome Card
                   BlocBuilder<StockCubit, StockState>(
                     builder: (context, state) {
                       String storeName = 'Store';
@@ -217,7 +292,8 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                           orElse: () => StoreDto(
                               storeId: widget.storeId,
                               name: 'Store',
-                              createdBy: '', createdAt: DateTime.timestamp()),
+                              createdBy: '',
+                              createdAt: DateTime.now()),
                         );
                         storeName = store.name;
                       }
@@ -245,7 +321,6 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                     },
                   ),
                   const SizedBox(height: 24),
-                  // Stock List
                   Expanded(
                     child: BlocConsumer<StockCubit, StockState>(
                       listener: (context, state) {
@@ -348,7 +423,7 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                                   size: 36,
                                 ),
                                 title: Text(
-                                  stock.name,
+                                  stock.name ?? 'Unknown',
                                   style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -375,11 +450,22 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                                     ),
                                     IconButton(
                                       icon: Icon(
+                                        Icons.remove,
+                                        color: Theme.of(context).primaryColor,
+                                      ),
+                                      onPressed: () => _showSubtractStockDialog(
+                                          context, stock),
+                                      tooltip: 'Subtract Stock',
+                                    ),
+                                    IconButton(
+                                      icon: Icon(
                                         Icons.swap_horiz,
                                         color: Theme.of(context).primaryColor,
                                       ),
                                       onPressed: () => _showTransferStockDialog(
-                                          context, stock, stores as List<StoreDto>),
+                                          context,
+                                          stock,
+                                          stores as List<StoreDto>),
                                       tooltip: 'Transfer Stock',
                                     ),
                                   ],

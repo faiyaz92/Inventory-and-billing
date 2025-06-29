@@ -108,58 +108,6 @@ class CartDashboardPage extends StatelessWidget {
                         Colors.blueAccent,
                             () => sl<Coordinator>().navigateToProductPerformanceListPage(),
                       ),
-
-                      _buildDashboardCard(
-                        context,
-                        'Taxi booking',
-                        Icons.car_rental,
-                        Colors.blueAccent,
-                            () => sl<Coordinator>().navigateToTaxiBookingPage(),
-                      ), _buildDashboardCard(
-                        context,
-                        'Taxi admin',
-                        Icons.admin_panel_settings,
-                        Colors.blueAccent,
-                            () => sl<Coordinator>().navigateToTaxiBookingsAdminPage(),
-                      ), _buildDashboardCard(
-                        context,
-                        'Taxi Setting',
-                        Icons.settings,
-                        Colors.blueAccent,
-                            () => sl<Coordinator>().navigateToTaxiSettingsPage(),
-                      ),_buildDashboardCard(
-                        context,
-                        'Driver List',
-                        Icons.settings,
-                        Colors.blueAccent,
-                            () => sl<Coordinator>().navigateToDriverListPage(),
-                      ),_buildDashboardCard(
-                        context,
-                        'Taxi Company performance',
-                        Icons.settings,
-                        Colors.blueAccent,
-                            () => sl<Coordinator>().navigateToTaxiCompanyPerformancePage(),
-                      ),_buildDashboardCard(
-                        context,
-                        'Taxi Company visitor counter',
-                        Icons.settings,
-                        Colors.blueAccent,
-                            () => sl<Coordinator>().navigateToTaxiVisitorCounterPage(),
-                      ),_buildDashboardCard(
-                        context,
-                        'Booking history',
-                        Icons.history,
-                        Colors.blueAccent,
-                            () => sl<Coordinator>().navigateToUserBookingHistory(),
-                      ),
-                      
-                      _buildDashboardCard(
-                        context,
-                        'WEB',
-                        Icons.history,
-                        Colors.blueAccent,
-                            () => sl<Coordinator>().navigateToWebApp(),
-                      ),
                     ],
                   ),
                 ),

@@ -28,7 +28,6 @@ class _StockListPageState extends State<StockListPage> {
     super.initState();
   }
 
-  // Dialog to add stock
   void _showAddStockDialog(BuildContext context, StockModel stock) {
     int quantity = 0;
     showDialog(
@@ -68,7 +67,56 @@ class _StockListPageState extends State<StockListPage> {
     );
   }
 
-  // Dialog to transfer stock to another store
+  void _showSubtractStockDialog(BuildContext context, StockModel stock) {
+    int quantity = 0;
+    String? remarks;
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Subtract Stock'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                decoration: const InputDecoration(labelText: 'Quantity to Subtract'),
+                keyboardType: TextInputType.number,
+                onChanged: (value) => quantity = int.tryParse(value) ?? 0,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                decoration: const InputDecoration(labelText: 'Remarks (Optional)'),
+                onChanged: (value) => remarks = value.isEmpty ? null : value,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (quantity > 0 && quantity <= stock.quantity) {
+                  _stockCubit.subtractStock(stock, quantity, remarks: remarks);
+                  Navigator.pop(context);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Invalid quantity'),
+                      backgroundColor: AppColors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Text(AppLabels.saveButtonText),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showTransferStockDialog(BuildContext context, StockModel stock, List<StoreDto> stores) {
     String? selectedStoreId;
     int quantity = 0;
@@ -185,7 +233,6 @@ class _StockListPageState extends State<StockListPage> {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-
                           Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: CustomDropdown(
@@ -256,7 +303,7 @@ class _StockListPageState extends State<StockListPage> {
                                       size: 36,
                                     ),
                                     title: Text(
-                                      stock.name,
+                                      stock.name ?? 'Unknown',
                                       style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
@@ -279,6 +326,14 @@ class _StockListPageState extends State<StockListPage> {
                                           ),
                                           onPressed: () => _showAddStockDialog(context, stock),
                                           tooltip: 'Add Stock',
+                                        ),
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.remove,
+                                            color: Theme.of(context).primaryColor,
+                                          ),
+                                          onPressed: () => _showSubtractStockDialog(context, stock),
+                                          tooltip: 'Subtract Stock',
                                         ),
                                         IconButton(
                                           icon: Icon(

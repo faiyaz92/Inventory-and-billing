@@ -8,7 +8,6 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/produ
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/product_state.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
-import 'package:requirment_gathering_app/core_module/presentation/widget/custom_drop_down_widget.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
@@ -103,22 +102,48 @@ class _AddStockPageState extends State<AddStockPage> {
 
                     return Column(
                       children: [
-                        CustomDropdown(
-                          labelText: 'Store',
-                          selectedValue: _selectedStoreId,
-                          items: stores.map((store) => store.storeId).toList(),
+                        DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            labelText: 'Store',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          ),
+                          value: _selectedStoreId,
+                          items: stores.map((store) => DropdownMenuItem<String>(
+                            value: store.storeId,
+                            child: Text(store.name),
+                          )).toList(),
                           onChanged: (value) => setState(() => _selectedStoreId = value),
                           validator: (value) => value == null ? 'Please select a store' : null,
                         ),
-                        CustomDropdown(
-                          labelText: 'Product',
-                          selectedValue: _selectedProductId,
-                          items: products.map((product) => product.id).toList(),
+                        const SizedBox(height: 16),
+                        DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            labelText: 'Product',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          ),
+                          value: _selectedProductId,
+                          items: products.map((product) => DropdownMenuItem<String>(
+                            value: product.id,
+                            child: Text(product.name),
+                          )).toList(),
                           onChanged: (value) => setState(() => _selectedProductId = value),
                           validator: (value) => value == null ? 'Please select a product' : null,
                         ),
+                        const SizedBox(height: 16),
                         TextFormField(
-                          decoration: const InputDecoration(labelText: 'Quantity'),
+                          decoration: InputDecoration(
+                            labelText: 'Quantity',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          ),
                           keyboardType: TextInputType.number,
                           onChanged: (value) => setState(() => _quantity = int.tryParse(value) ?? 0),
                           validator: (value) {
@@ -135,7 +160,6 @@ class _AddStockPageState extends State<AddStockPage> {
                         ElevatedButton(
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
-                              // Fetch the selected Product
                               final selectedProduct = products.firstWhere(
                                     (product) => product.id == _selectedProductId,
                                 orElse: () => Product(
@@ -157,18 +181,26 @@ class _AddStockPageState extends State<AddStockPage> {
                                 storeId: _selectedStoreId!,
                                 quantity: _quantity,
                                 lastUpdated: DateTime.now(),
-                                name: null, // Let StockCubit map
-                                price: null,
+                                name: selectedProduct.name,
+                                price: selectedProduct.price,
                                 stock: null,
-                                category: null,
-                                categoryId: null,
-                                subcategoryId: null,
-                                subcategoryName: null,
-                                tax: null,
+                                category: selectedProduct.category,
+                                categoryId: selectedProduct.categoryId,
+                                subcategoryId: selectedProduct.subcategoryId,
+                                subcategoryName: selectedProduct.subcategoryName,
+                                tax: selectedProduct.tax,
                               );
                               _stockCubit.addStock(stock, product: selectedProduct);
                             }
                           },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).primaryColor,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
                           child: const Text(AppLabels.saveButtonText),
                         ),
                       ],

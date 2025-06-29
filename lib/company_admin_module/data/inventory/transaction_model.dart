@@ -2,15 +2,16 @@ import 'package:requirment_gathering_app/company_admin_module/data/inventory/tra
 
 class TransactionModel {
   final String id;
-  final String type; // 'transfer' or 'billing'
+  final String type;
   final String productId;
   final int quantity;
   final String fromStoreId;
-  final String? toStoreId; // Null for billing
-  final String? customerId; // Null for transfer
+  final String? toStoreId;
+  final String? customerId;
   final DateTime timestamp;
-  final String userName; // Added to store the username of the user
-  final String userId;   // Added to store the user ID of the user
+  final String userName;
+  final String userId;
+  final String? remarks; // Added
 
   TransactionModel({
     required this.id,
@@ -23,6 +24,7 @@ class TransactionModel {
     required this.timestamp,
     required this.userName,
     required this.userId,
+    this.remarks,
   });
 
   factory TransactionModel.fromDto(TransactionDto dto) {
@@ -35,8 +37,9 @@ class TransactionModel {
       toStoreId: dto.toStoreId,
       customerId: dto.customerId,
       timestamp: dto.timestamp,
-      userName: dto.userName, // Added
-      userId: dto.userId,     // Added
+      userName: dto.userName,
+      userId: dto.userId,
+      remarks: dto.remarks, // Added
     );
   }
 
@@ -50,8 +53,9 @@ class TransactionModel {
       toStoreId: toStoreId,
       customerId: customerId,
       timestamp: timestamp,
-      userName: userName, // Added
-      userId: userId,     // Added
+      userName: userName,
+      userId: userId,
+      remarks: remarks, // Added
     );
   }
 }
