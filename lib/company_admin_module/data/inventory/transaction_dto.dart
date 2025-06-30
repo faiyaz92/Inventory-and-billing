@@ -4,6 +4,7 @@ class TransactionDto {
   final String id;
   final String type;
   final String productId;
+  final String productName; // Added
   final int quantity;
   final String fromStoreId;
   final String? toStoreId;
@@ -11,12 +12,13 @@ class TransactionDto {
   final DateTime timestamp;
   final String userName;
   final String userId;
-  final String? remarks; // Added
+  final String? remarks;
 
   TransactionDto({
     required this.id,
     required this.type,
     required this.productId,
+    required this.productName, // Added
     required this.quantity,
     required this.fromStoreId,
     this.toStoreId,
@@ -33,14 +35,15 @@ class TransactionDto {
       id: doc.id,
       type: data['type'] ?? '',
       productId: data['productId'] ?? '',
+      productName: data['productName'] ?? 'Unknown', // Added with default
       quantity: data['quantity'] ?? 0,
       fromStoreId: data['fromStoreId'] ?? '',
       toStoreId: data['toStoreId'],
       customerId: data['customerId'],
-      timestamp: DateTime.parse(data['timestamp']),
+      timestamp: DateTime.parse(data['timestamp'] ?? DateTime.now().toIso8601String()),
       userName: data['userName'] ?? 'Unknown User',
       userId: data['userId'] ?? 'unknown',
-      remarks: data['remarks'], // Added
+      remarks: data['remarks'],
     );
   }
 
@@ -48,6 +51,7 @@ class TransactionDto {
     return {
       'type': type,
       'productId': productId,
+      'productName': productName, // Added
       'quantity': quantity,
       'fromStoreId': fromStoreId,
       'toStoreId': toStoreId,
@@ -55,7 +59,7 @@ class TransactionDto {
       'timestamp': timestamp.toIso8601String(),
       'userName': userName,
       'userId': userId,
-      'remarks': remarks, // Added
+      'remarks': remarks,
     };
   }
 }

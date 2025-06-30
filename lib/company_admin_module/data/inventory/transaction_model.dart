@@ -4,6 +4,7 @@ class TransactionModel {
   final String id;
   final String type;
   final String productId;
+  final String productName; // Added
   final int quantity;
   final String fromStoreId;
   final String? toStoreId;
@@ -11,12 +12,13 @@ class TransactionModel {
   final DateTime timestamp;
   final String userName;
   final String userId;
-  final String? remarks; // Added
+  final String? remarks;
 
   TransactionModel({
     required this.id,
     required this.type,
     required this.productId,
+    required this.productName, // Added
     required this.quantity,
     required this.fromStoreId,
     this.toStoreId,
@@ -32,6 +34,7 @@ class TransactionModel {
       id: dto.id,
       type: dto.type,
       productId: dto.productId,
+      productName: dto.productName, // Added
       quantity: dto.quantity,
       fromStoreId: dto.fromStoreId,
       toStoreId: dto.toStoreId,
@@ -39,7 +42,7 @@ class TransactionModel {
       timestamp: dto.timestamp,
       userName: dto.userName,
       userId: dto.userId,
-      remarks: dto.remarks, // Added
+      remarks: dto.remarks,
     );
   }
 
@@ -48,6 +51,7 @@ class TransactionModel {
       id: id,
       type: type,
       productId: productId,
+      productName: productName, // Added
       quantity: quantity,
       fromStoreId: fromStoreId,
       toStoreId: toStoreId,
@@ -55,7 +59,7 @@ class TransactionModel {
       timestamp: timestamp,
       userName: userName,
       userId: userId,
-      remarks: remarks, // Added
+      remarks: remarks,
     );
   }
 }

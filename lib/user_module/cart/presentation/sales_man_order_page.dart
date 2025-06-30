@@ -422,9 +422,9 @@ class SalesmanOrderPage extends StatelessWidget {
                                             color: AppColors.textSecondary
                                                 .withOpacity(0.3)),
                                       ),
-                                      columnWidths: {
-                                        0: const FlexColumnWidth(3),
-                                        1: const FlexColumnWidth(2),
+                                      columnWidths: const {
+                                        0: FlexColumnWidth(3),
+                                        1: FlexColumnWidth(2),
                                       },
                                       children: [
                                         TableRow(
@@ -627,9 +627,9 @@ class SalesmanOrderPage extends StatelessWidget {
                                         color: AppColors.textSecondary
                                             .withOpacity(0.3)),
                                   ),
-                                  columnWidths: {
-                                    0: const FlexColumnWidth(3),
-                                    1: const FlexColumnWidth(2),
+                                  columnWidths: const {
+                                    0: FlexColumnWidth(3),
+                                    1: FlexColumnWidth(2),
                                   },
                                   children: [
                                     TableRow(

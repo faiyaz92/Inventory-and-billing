@@ -3,9 +3,9 @@ import 'package:requirment_gathering_app/company_admin_module/data/inventory/sto
 import 'package:requirment_gathering_app/company_admin_module/data/inventory/transaction_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/stock_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/transaction_service.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 
 abstract class StockState {}
@@ -59,12 +59,13 @@ class StockCubit extends Cubit<StockState> {
     }
   }
 
-  Future<void> addStock(StockModel stock, {Product? product, String? remarks}) async {
+  Future<void> addStock(StockModel stock,
+      {Product? product, String? remarks}) async {
     emit(StockLoading());
     try {
       final existingStocks = await stockService.getStock(stock.storeId);
       final existingStock = existingStocks.firstWhere(
-            (item) => item.productId == stock.productId,
+        (item) => item.productId == stock.productId,
         orElse: () => StockModel(
           id: '${stock.productId}_${stock.storeId}',
           productId: stock.productId,
@@ -94,7 +95,8 @@ class StockCubit extends Cubit<StockState> {
         category: product?.category ?? existingStock.category,
         categoryId: product?.categoryId ?? existingStock.categoryId,
         subcategoryId: product?.subcategoryId ?? existingStock.subcategoryId,
-        subcategoryName: product?.subcategoryName ?? existingStock.subcategoryName,
+        subcategoryName:
+            product?.subcategoryName ?? existingStock.subcategoryName,
         tax: product?.tax ?? existingStock.tax,
       );
 
@@ -117,6 +119,7 @@ class StockCubit extends Cubit<StockState> {
         userName: userInfo['userName']!,
         userId: userInfo['userId']!,
         remarks: remarks,
+        productName: stock.name ?? '',
       );
       await transactionService.addTransaction(transaction);
 
@@ -126,12 +129,13 @@ class StockCubit extends Cubit<StockState> {
     }
   }
 
-  Future<void> subtractStock(StockModel stock, int quantity, {String? remarks}) async {
+  Future<void> subtractStock(StockModel stock, int quantity,
+      {String? remarks}) async {
     emit(StockLoading());
     try {
       final stockItems = await stockService.getStock(stock.storeId);
       final existingStock = stockItems.firstWhere(
-            (item) => item.id == stock.id,
+        (item) => item.id == stock.id,
         orElse: () => stock,
       );
 
@@ -169,6 +173,8 @@ class StockCubit extends Cubit<StockState> {
         userName: userInfo['userName']!,
         userId: userInfo['userId']!,
         remarks: remarks,
+        productName: stock.name ?? '',
+
       );
       await transactionService.addTransaction(transaction);
 
@@ -178,12 +184,13 @@ class StockCubit extends Cubit<StockState> {
     }
   }
 
-  Future<void> updateStock(StockModel stock, {Product? product, String? remarks}) async {
+  Future<void> updateStock(StockModel stock,
+      {Product? product, String? remarks}) async {
     emit(StockLoading());
     try {
       final stockItems = await stockService.getStock(stock.storeId);
       final existingStock = stockItems.firstWhere(
-            (item) => item.id == stock.id,
+        (item) => item.id == stock.id,
         orElse: () => StockModel(
           id: stock.id,
           productId: stock.productId,
@@ -212,9 +219,14 @@ class StockCubit extends Cubit<StockState> {
         price: product?.price ?? stock.price ?? existingStock.price,
         stock: null,
         category: product?.category ?? stock.category ?? existingStock.category,
-        categoryId: product?.categoryId ?? stock.categoryId ?? existingStock.categoryId,
-        subcategoryId: product?.subcategoryId ?? stock.subcategoryId ?? existingStock.subcategoryId,
-        subcategoryName: product?.subcategoryName ?? stock.subcategoryName ?? existingStock.subcategoryName,
+        categoryId:
+            product?.categoryId ?? stock.categoryId ?? existingStock.categoryId,
+        subcategoryId: product?.subcategoryId ??
+            stock.subcategoryId ??
+            existingStock.subcategoryId,
+        subcategoryName: product?.subcategoryName ??
+            stock.subcategoryName ??
+            existingStock.subcategoryName,
         tax: product?.tax ?? stock.tax ?? existingStock.tax,
       );
       await stockService.updateStock(updatedStock);
@@ -233,6 +245,8 @@ class StockCubit extends Cubit<StockState> {
           userName: userInfo['userName']!,
           userId: userInfo['userId']!,
           remarks: remarks,
+          productName: stock.name ?? '',
+
         );
         await transactionService.addTransaction(transaction);
       }
@@ -243,7 +257,9 @@ class StockCubit extends Cubit<StockState> {
     }
   }
 
-  Future<void> transferStock(StockModel stock, String targetStoreId, int quantity, { String? remarks}) async {
+  Future<void> transferStock(
+      StockModel stock, String targetStoreId, int quantity,
+      {String? remarks}) async {
     emit(StockLoading());
     try {
       final updatedSourceStock = StockModel(
@@ -265,7 +281,7 @@ class StockCubit extends Cubit<StockState> {
 
       final existingStock = await stockService.getStock(targetStoreId);
       final existingTargetStock = existingStock.firstWhere(
-            (item) => item.productId == stock.productId,
+        (item) => item.productId == stock.productId,
         orElse: () => StockModel(
           id: '${stock.productId}_$targetStoreId',
           productId: stock.productId,
@@ -295,7 +311,8 @@ class StockCubit extends Cubit<StockState> {
         category: stock.category ?? existingTargetStock.category,
         categoryId: stock.categoryId ?? existingTargetStock.categoryId,
         subcategoryId: stock.subcategoryId ?? existingTargetStock.subcategoryId,
-        subcategoryName: stock.subcategoryName ?? existingTargetStock.subcategoryName,
+        subcategoryName:
+            stock.subcategoryName ?? existingTargetStock.subcategoryName,
         tax: stock.tax ?? existingTargetStock.tax,
       );
 
@@ -320,6 +337,8 @@ class StockCubit extends Cubit<StockState> {
         userName: userInfo['userName']!,
         userId: userInfo['userId']!,
         remarks: remarks,
+        productName: stock.name ?? '',
+
       );
       await transactionService.addTransaction(outTransaction);
 
@@ -335,6 +354,8 @@ class StockCubit extends Cubit<StockState> {
         userName: userInfo['userName']!,
         userId: userInfo['userId']!,
         remarks: remarks,
+        productName: stock.name ?? '',
+
       );
       await transactionService.addTransaction(receivedTransaction);
 

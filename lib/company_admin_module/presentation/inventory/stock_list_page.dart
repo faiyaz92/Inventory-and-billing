@@ -5,7 +5,6 @@ import 'package:requirment_gathering_app/company_admin_module/data/inventory/sto
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/stock_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
-import 'package:requirment_gathering_app/core_module/presentation/widget/custom_drop_down_widget.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
@@ -30,24 +29,62 @@ class _StockListPageState extends State<StockListPage> {
 
   void _showAddStockDialog(BuildContext context, StockModel stock) {
     int quantity = 0;
+    String? remarks;
+    final _formKey = GlobalKey<FormState>();
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: const Text('Add Stock'),
-          content: TextField(
-            decoration: const InputDecoration(labelText: 'Quantity to Add'),
-            keyboardType: TextInputType.number,
-            onChanged: (value) => quantity = int.tryParse(value) ?? 0,
+          content: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Quantity to Add',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) => quantity = int.tryParse(value) ?? 0,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Please enter quantity';
+                    if (int.tryParse(value) == null || int.parse(value) <= 0) {
+                      return 'Please enter a valid quantity';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Remarks (Optional)',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  onChanged: (value) => remarks = value.isEmpty ? null : value,
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
-            TextButton(
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
               onPressed: () {
-                if (quantity > 0) {
+                if (_formKey.currentState!.validate()) {
                   final updatedStock = StockModel(
                     id: stock.id,
                     productId: stock.productId,
@@ -55,7 +92,7 @@ class _StockListPageState extends State<StockListPage> {
                     quantity: stock.quantity + quantity,
                     lastUpdated: DateTime.now(),
                   );
-                  _stockCubit.updateStock(updatedStock);
+                  _stockCubit.updateStock(updatedStock, remarks: remarks);
                   Navigator.pop(context);
                 }
               },
@@ -70,43 +107,66 @@ class _StockListPageState extends State<StockListPage> {
   void _showSubtractStockDialog(BuildContext context, StockModel stock) {
     int quantity = 0;
     String? remarks;
+    final _formKey = GlobalKey<FormState>();
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: const Text('Subtract Stock'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                decoration: const InputDecoration(labelText: 'Quantity to Subtract'),
-                keyboardType: TextInputType.number,
-                onChanged: (value) => quantity = int.tryParse(value) ?? 0,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                decoration: const InputDecoration(labelText: 'Remarks (Optional)'),
-                onChanged: (value) => remarks = value.isEmpty ? null : value,
-              ),
-            ],
+          content: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Quantity to Subtract',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) => quantity = int.tryParse(value) ?? 0,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Please enter quantity';
+                    if (int.tryParse(value) == null || int.parse(value) <= 0) {
+                      return 'Please enter a valid quantity';
+                    }
+                    if (int.parse(value) > stock.quantity) {
+                      return 'Quantity exceeds available stock';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Remarks (Optional)',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  onChanged: (value) => remarks = value.isEmpty ? null : value,
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
-            TextButton(
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
               onPressed: () {
-                if (quantity > 0 && quantity <= stock.quantity) {
+                if (_formKey.currentState!.validate()) {
                   _stockCubit.subtractStock(stock, quantity, remarks: remarks);
                   Navigator.pop(context);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Invalid quantity'),
-                      backgroundColor: AppColors.red,
-                    ),
-                  );
                 }
               },
               child: const Text(AppLabels.saveButtonText),
@@ -120,55 +180,86 @@ class _StockListPageState extends State<StockListPage> {
   void _showTransferStockDialog(BuildContext context, StockModel stock, List<StoreDto> stores) {
     String? selectedStoreId;
     int quantity = 0;
+    String? remarks;
+    final _formKey = GlobalKey<FormState>();
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: const Text('Transfer Stock'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Transfer to Store'),
-                value: selectedStoreId,
-                items: stores
-                    .where((store) => store.storeId != stock.storeId)
-                    .map((store) => DropdownMenuItem(
-                  value: store.storeId,
-                  child: Text(store.name),
-                ))
-                    .toList(),
-                onChanged: (value) => selectedStoreId = value,
-                validator: (value) => value == null ? 'Please select a store' : null,
-              ),
-              TextField(
-                decoration: const InputDecoration(labelText: 'Quantity to Transfer'),
-                keyboardType: TextInputType.number,
-                onChanged: (value) => quantity = int.tryParse(value) ?? 0,
-              ),
-            ],
+          content: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButtonFormField<String>(
+                  decoration: InputDecoration(
+                    labelText: 'Transfer to Store',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  value: selectedStoreId,
+                  items: stores
+                      .where((store) => store.storeId != stock.storeId)
+                      .map((store) => DropdownMenuItem(
+                    value: store.storeId,
+                    child: Text(store.name),
+                  ))
+                      .toList(),
+                  onChanged: (value) => selectedStoreId = value,
+                  validator: (value) => value == null ? 'Please select a store' : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Quantity to Transfer',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) => quantity = int.tryParse(value) ?? 0,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Please enter quantity';
+                    if (int.tryParse(value) == null || int.parse(value) <= 0) {
+                      return 'Please enter a valid quantity';
+                    }
+                    if (int.parse(value) > stock.quantity) {
+                      return 'Quantity exceeds available stock';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Remarks (Optional)',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  onChanged: (value) => remarks = value.isEmpty ? null : value,
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
-            TextButton(
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
               onPressed: () {
-                if (selectedStoreId != null && quantity > 0 && quantity <= stock.quantity) {
-                  _stockCubit.transferStock(
-                    stock,
-                    selectedStoreId!,
-                    quantity,
-                  );
+                if (_formKey.currentState!.validate()) {
+                  _stockCubit.transferStock(stock, selectedStoreId!, quantity, remarks: remarks);
                   Navigator.pop(context);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Invalid quantity or store selection'),
-                      backgroundColor: AppColors.red,
-                    ),
-                  );
                 }
               },
               child: const Text(AppLabels.saveButtonText),
@@ -235,16 +326,38 @@ class _StockListPageState extends State<StockListPage> {
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(16.0),
-                            child: CustomDropdown(
-                              labelText: 'Select Store',
-                              selectedValue: _selectedStoreId,
-                              items: stores.map((store) => store.storeId).toList(),
-                              onChanged: (value) {
-                                setState(() => _selectedStoreId = value);
-                                if (value != null) {
-                                  context.read<StockCubit>().fetchStock(value);
-                                }
-                              },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.grey[50],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: DropdownButtonFormField<String>(
+                                decoration: InputDecoration(
+                                  labelText: 'Select Store',
+                                  labelStyle: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                  errorStyle: const TextStyle(color: Colors.red),
+                                ),
+                                value: _selectedStoreId,
+                                items: stores.map((store) => DropdownMenuItem<String>(
+                                  value: store.storeId,
+                                  child: Text(store.name),
+                                )).toList(),
+                                onChanged: (value) {
+                                  setState(() => _selectedStoreId = value);
+                                  if (value != null) {
+                                    context.read<StockCubit>().fetchStock(value);
+                                  }
+                                },
+                                validator: (value) => value == null ? 'Please select a store' : null,
+                              ),
                             ),
                           ),
                           Expanded(

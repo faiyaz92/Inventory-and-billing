@@ -13,7 +13,7 @@ class CartDashboardPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Cart Dashboard',
+        title: 'Sales Dashboard',
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -63,20 +63,20 @@ class CartDashboardPage extends StatelessWidget {
                       _buildDashboardCard(
                         context,
                         'Salesman Orders',
-                        Icons.receipt,
-                        Colors.orange,
+                        Icons.book,
+                        Colors.blueAccent,
                             () => sl<Coordinator>().navigateToSalesManOrderPage(),
                       ),
                       _buildDashboardCard(
                         context,
                         'Top Salesman List',
-                        Icons.person,
+                        Icons.people,
                         Colors.green,
                             () => sl<Coordinator>().navigateToSalesmanOrderListPage(),
                       ),
                       _buildDashboardCard(
                         context,
-                        'Top Delivery Man List',
+                        'Top Delivery Men List',
                         Icons.delivery_dining,
                         Colors.purple,
                             () => sl<Coordinator>().navigateToDeliveryManOrderListPage(),
@@ -90,7 +90,7 @@ class CartDashboardPage extends StatelessWidget {
                       ),
                       _buildDashboardCard(
                         context,
-                        'Top Customer List',
+                        'Top Customers List',
                         Icons.people,
                         Colors.teal,
                             () => sl<Coordinator>().navigateToCustomerOrderListPage(),

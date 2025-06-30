@@ -98,22 +98,22 @@ class InventoryDashboardPage extends StatelessWidget {
                       _buildDashboardCard(
                         context,
                         'Over all stock',
-                        Icons.food_bank,
+                        Icons.account_balance_wallet,
                         Colors.green,
                         () => sl<Coordinator>().navigateToOverAllStockPage(),
                       ),
                       _buildDashboardCard(
                         context,
                         'My Store',
-                        Icons.food_bank,
-                        Colors.green,
+                        Icons.store,
+                        Colors.orangeAccent,
                         () => sl<Coordinator>().navigateToStoreDetailsPage(
                             ''), //no store id means own store id
                       ),
                       _buildDashboardCard(
                         context,
                         'Store attendance',
-                        Icons.food_bank,
+                        Icons.people,
                         Colors.green,
                         () => sl<Coordinator>().navigateToAttendancePage(), //no store id means own store id
                       ),
