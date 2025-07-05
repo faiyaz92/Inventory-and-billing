@@ -53,13 +53,7 @@ class InventoryDashboardPage extends StatelessWidget {
                         Colors.blue,
                         () => sl<Coordinator>().navigateToStockListPage(),
                       ),
-                      _buildDashboardCard(
-                        context,
-                        'Billing',
-                        Icons.receipt,
-                        Colors.orange,
-                        () => sl<Coordinator>().navigateToBillingPage(),
-                      ),
+
                       _buildDashboardCard(
                         context,
                         'Sales Report',

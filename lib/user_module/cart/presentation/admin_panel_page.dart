@@ -11,6 +11,7 @@ import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
 import 'package:requirment_gathering_app/core_module/utils/custom_loading_dialog.dart';
 import 'package:requirment_gathering_app/core_module/utils/text_styles.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_cubit.dart';
 import 'package:sticky_headers/sticky_headers.dart';
@@ -236,7 +237,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
   Widget _buildFilters(BuildContext context) {
     return BlocBuilder<AdminOrderCubit, AdminOrderState>(
       buildWhen: (previous, current) =>
-          current is AdminOrderListFetchLoading ||
+      current is AdminOrderListFetchLoading ||
           current is AdminOrderListFetchSuccess ||
           current is AdminOrderListFetchError,
       builder: (context, state) {
@@ -261,27 +262,49 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
           List<UserInfo> users = state.users;
           List<StoreDto> stores = state.stores;
 
+          // Filter employees for Taken By and Delivered By
+          final employeeUsers = users
+              .where((user) => user.userType == UserType.Employee)
+              .toList();
+          // Filter customers for Customer filter
+          final customerUsers = users
+              .where((user) => user.userType == UserType.Customer)
+              .toList();
+
+          // Validate selected values
           final validOrderTakenBy = selectedOrderTakenBy != null &&
-                  users.any((user) => user.userId == selectedOrderTakenBy)
+              employeeUsers.any((user) => user.userId == selectedOrderTakenBy)
               ? selectedOrderTakenBy
               : null;
           final validOrderDeliveredBy = selectedOrderDeliveredBy != null &&
-                  users.any((user) => user.userId == selectedOrderDeliveredBy)
+              employeeUsers.any((user) => user.userId == selectedOrderDeliveredBy)
               ? selectedOrderDeliveredBy
               : null;
           final validUserId = selectedUserId != null &&
-                  users.any((user) => user.userId == selectedUserId)
+              customerUsers.any((user) => user.userId == selectedUserId)
               ? selectedUserId
               : null;
 
-          final dropdownItems = [
+          // Dropdown items for employees
+          final employeeDropdownItems = [
             const DropdownMenuItem<String>(value: null, child: Text('Select')),
-            ...users
+            ...employeeUsers
                 .where((user) => user.userId != null && user.userId!.isNotEmpty)
                 .map((user) => DropdownMenuItem<String>(
-                      value: user.userId,
-                      child: Text(user.userName ?? 'Unknown'),
-                    )),
+              value: user.userId,
+              child: Text(user.name ?? 'Unknown'),
+            )),
+          ];
+
+          // Dropdown items for customers
+          final customerDropdownItems = [
+            const DropdownMenuItem<String>(value: null, child: Text('Select')),
+            ...customerUsers
+                .where((user) => user.userId != null && user.userId!.isNotEmpty)
+                .map((user) => DropdownMenuItem<String>(
+              value: user.userId,
+              child: Text(user.name ?? 'Unknown'),
+            )),
           ];
 
           return Column(
@@ -338,7 +361,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                           context: context,
                           firstDate: DateTime(2020),
                           lastDate:
-                              DateTime.now().add(const Duration(days: 365)),
+                          DateTime.now().add(const Duration(days: 365)),
                           initialDateRange: DateTimeRange(
                             start: DateTime.now(),
                             end: DateTime.now().add(const Duration(days: 30)),
@@ -354,7 +377,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                             orderTakenBy: validOrderTakenBy,
                             orderDeliveredBy: validOrderDeliveredBy,
                             storeId: selectedStoreId,
-                            userId: selectedUserId,
+                            userId: validUserId,
                             minTotalAmount: minTotalAmount,
                             maxTotalAmount: maxTotalAmount,
                           );
@@ -387,7 +410,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                       decoration: InputDecoration(
                         labelText: 'Filter by Status',
                         labelStyle:
-                            const TextStyle(color: AppColors.textSecondary),
+                        const TextStyle(color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
@@ -430,7 +453,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                           orderTakenBy: validOrderTakenBy,
                           orderDeliveredBy: validOrderDeliveredBy,
                           storeId: selectedStoreId,
-                          userId: selectedUserId,
+                          userId: validUserId,
                           minTotalAmount: minTotalAmount,
                           maxTotalAmount: maxTotalAmount,
                         );
@@ -463,7 +486,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                       decoration: InputDecoration(
                         labelText: 'Taken By',
                         labelStyle:
-                            const TextStyle(color: AppColors.textSecondary),
+                        const TextStyle(color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
@@ -484,7 +507,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                         'All Salesmen',
                         style: TextStyle(color: AppColors.textSecondary),
                       ),
-                      items: dropdownItems,
+                      items: employeeDropdownItems,
                       onChanged: (value) {
                         _adminOrderCubit.fetchOrders(
                           startDate: orderStartDate,
@@ -495,7 +518,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                           orderTakenBy: value,
                           orderDeliveredBy: validOrderDeliveredBy,
                           storeId: selectedStoreId,
-                          userId: selectedUserId,
+                          userId: validUserId,
                           minTotalAmount: minTotalAmount,
                           maxTotalAmount: maxTotalAmount,
                         );
@@ -508,7 +531,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                       decoration: InputDecoration(
                         labelText: 'Delivered By',
                         labelStyle:
-                            const TextStyle(color: AppColors.textSecondary),
+                        const TextStyle(color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
@@ -529,7 +552,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                         'All Delivery Persons',
                         style: TextStyle(color: AppColors.textSecondary),
                       ),
-                      items: dropdownItems,
+                      items: employeeDropdownItems,
                       onChanged: (value) {
                         _adminOrderCubit.fetchOrders(
                           startDate: orderStartDate,
@@ -540,7 +563,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                           orderTakenBy: validOrderTakenBy,
                           orderDeliveredBy: value,
                           storeId: selectedStoreId,
-                          userId: selectedUserId,
+                          userId: validUserId,
                           minTotalAmount: minTotalAmount,
                           maxTotalAmount: maxTotalAmount,
                         );
@@ -558,7 +581,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                       decoration: InputDecoration(
                         labelText: 'Filter by Store',
                         labelStyle:
-                            const TextStyle(color: AppColors.textSecondary),
+                        const TextStyle(color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
@@ -583,9 +606,9 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                         const DropdownMenuItem(
                             value: null, child: Text('All Stores')),
                         ...stores.map((store) => DropdownMenuItem(
-                              value: store.storeId,
-                              child: Text(store.name),
-                            )),
+                          value: store.storeId,
+                          child: Text(store.name),
+                        )),
                       ],
                       onChanged: (value) {
                         _adminOrderCubit.fetchOrders(
@@ -597,7 +620,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                           orderTakenBy: validOrderTakenBy,
                           orderDeliveredBy: validOrderDeliveredBy,
                           storeId: value,
-                          userId: selectedUserId,
+                          userId: validUserId,
                           minTotalAmount: minTotalAmount,
                           maxTotalAmount: maxTotalAmount,
                         );
@@ -610,7 +633,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                       decoration: InputDecoration(
                         labelText: 'Filter by Customer',
                         labelStyle:
-                            const TextStyle(color: AppColors.textSecondary),
+                        const TextStyle(color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
@@ -631,7 +654,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                         'All Customers',
                         style: TextStyle(color: AppColors.textSecondary),
                       ),
-                      items: dropdownItems,
+                      items: customerDropdownItems,
                       onChanged: (value) {
                         _adminOrderCubit.fetchOrders(
                           startDate: orderStartDate,
@@ -661,7 +684,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                         labelText: 'Min Total Amount',
                         border: OutlineInputBorder(),
                         contentPadding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
                       keyboardType: TextInputType.number,
                       initialValue: minTotalAmount?.toString() ?? '',
@@ -676,7 +699,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                           orderTakenBy: validOrderTakenBy,
                           orderDeliveredBy: validOrderDeliveredBy,
                           storeId: selectedStoreId,
-                          userId: selectedUserId,
+                          userId: validUserId,
                           minTotalAmount: min,
                           maxTotalAmount: maxTotalAmount,
                         );
@@ -690,7 +713,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                         labelText: 'Max Total Amount',
                         border: OutlineInputBorder(),
                         contentPadding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
                       keyboardType: TextInputType.number,
                       initialValue: maxTotalAmount?.toString() ?? '',
@@ -705,7 +728,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                           orderTakenBy: validOrderTakenBy,
                           orderDeliveredBy: validOrderDeliveredBy,
                           storeId: selectedStoreId,
-                          userId: selectedUserId,
+                          userId: validUserId,
                           minTotalAmount: minTotalAmount,
                           maxTotalAmount: max,
                         );
@@ -721,7 +744,6 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
       },
     );
   }
-
   Widget _buildStatsCard(BuildContext context) {
     return BlocBuilder<AdminOrderCubit, AdminOrderState>(
       buildWhen: (previous, current) =>

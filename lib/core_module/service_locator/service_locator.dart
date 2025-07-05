@@ -95,7 +95,7 @@ import 'package:requirment_gathering_app/user_module/services/update_location_se
 
 final sl = GetIt.instance;
 
-void setupServiceLocator() {
+Future<void> setupServiceLocator() async{
   _initFirebase();
   _initRepositories();
   _initServices();

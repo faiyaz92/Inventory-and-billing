@@ -63,6 +63,7 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
       companyId: companyId,
       name: adminName,
       userName: adminUsername,
+      userType: UserType.Employee,
     );
     await _firestoreProvider
         .getTenantUsersRef(companyId)
@@ -73,8 +74,10 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
         .doc(userId)
         .set(adminUser.toMap());
   }
+
   @override
-  Future<String> addUserToCompany(UserInfoDto userInfoDto, String? password) async {
+  Future<String> addUserToCompany(
+      UserInfoDto userInfoDto, String? password) async {
     if (userInfoDto.companyId == null || userInfoDto.companyId!.isEmpty) {
       throw Exception('Company ID is missing. Cannot add user.');
     }
@@ -87,7 +90,8 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
       if (password == null || password.isEmpty) {
         throw Exception('Password is required for Employee users.');
       }
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: userInfoDto.email ?? '',
         password: password,
       );
@@ -125,10 +129,12 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
           .getTenantUsersRef(companyId)
           .doc(userId)
           .update(updateData);
-      await _firestoreProvider
+      if(userInfoDto.userType == UserType.Employee) {
+        await _firestoreProvider
           .getCommonUsersPath()
           .doc(userId)
           .update(updateData);
+      }
     } catch (e) {
       throw Exception('Error updating user: $e');
     }
@@ -184,7 +190,7 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
         role: Role.SUPER_ADMIN,
         userName: 'faiyaz92',
         name: 'Faiyaz Meghreji',
-        companyId: 'Easy2Solutions',
+        companyId: 'Easy2Solutions', userType: UserType.Boss,
       );
       await _firestoreProvider.superAdminPath
           .doc(currentUser.uid)
@@ -202,20 +208,21 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
   }
 
   @override
-  Future<List<UserInfoDto>> getUsersFromTenantCompany(String companyId, {String? storeId}) async {
+  Future<List<UserInfoDto>> getUsersFromTenantCompany(String companyId,
+      {String? storeId}) async {
     try {
       final userInfo = await _accountRepository.getUserInfo();
       final loggedInUserRole = userInfo?.role;
       final loggedInUserStoreId = userInfo?.storeId;
 
-      CollectionReference usersRef = _firestoreProvider.getTenantUsersRef(companyId);
+      CollectionReference usersRef =
+          _firestoreProvider.getTenantUsersRef(companyId);
       QuerySnapshot querySnapshot;
 
       if (storeId != null && storeId.isNotEmpty) {
         // Filter by provided storeId, regardless of role
-        querySnapshot = await usersRef
-            .where('storeId', isEqualTo: storeId)
-            .get();
+        querySnapshot =
+            await usersRef.where('storeId', isEqualTo: storeId).get();
       } else {
         // No storeId provided, use existing role-based logic
         if (loggedInUserRole == Role.COMPANY_ADMIN) {

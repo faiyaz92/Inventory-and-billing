@@ -6,8 +6,6 @@ import 'package:requirment_gathering_app/core_module/service_locator/service_loc
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/custom_loading_dialog.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
-import 'package:requirment_gathering_app/user_module/cart/presentation/cart_cubit.dart';
-import 'package:requirment_gathering_app/user_module/cart/presentation/order_cubit.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/sales_man_order_cubit.dart';
 
 @RoutePage()
@@ -22,10 +20,9 @@ class SalesmanOrderPage extends StatelessWidget {
       ],
       child: BlocConsumer<SalesmanOrderCubit, SalesmanOrderState>(
         listenWhen: (previous, current) =>
-            current is SalesmanOrderPlaced || current is SalesmanOrderError,
+        current is SalesmanOrderPlaced || current is SalesmanOrderError,
         listener: (context, state) {
           if (state is SalesmanOrderPlaced) {
-            
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text(
@@ -99,7 +96,7 @@ class SalesmanOrderPage extends StatelessWidget {
           }
         },
         buildWhen: (previous, current) =>
-            current is SalesmanOrderLoading ||
+        current is SalesmanOrderLoading ||
             current is SalesmanOrderLoaded ||
             previous is SalesmanOrderLoading ||
             previous is SalesmanOrderLoaded,
@@ -156,20 +153,20 @@ class SalesmanOrderPage extends StatelessWidget {
                           decoration: InputDecoration(
                             labelText: 'Customer',
                             labelStyle:
-                                const TextStyle(color: AppColors.textSecondary),
+                            const TextStyle(color: AppColors.textSecondary),
                             filled: true,
                             fillColor: AppColors.white,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
                                   color:
-                                      AppColors.textSecondary.withOpacity(0.3)),
+                                  AppColors.textSecondary.withOpacity(0.3)),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
                                   color:
-                                      AppColors.textSecondary.withOpacity(0.3)),
+                                  AppColors.textSecondary.withOpacity(0.3)),
                             ),
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 12),
@@ -183,25 +180,25 @@ class SalesmanOrderPage extends StatelessWidget {
                           ),
                           items: state is SalesmanOrderLoaded
                               ? [
-                                  ...state.customers.map(
-                                    (customer) => DropdownMenuItem(
-                                      value: customer,
-                                      child: Text(
-                                        customer.userName ?? 'Unknown',
-                                        style: const TextStyle(
-                                            color: AppColors.textPrimary),
-                                      ),
-                                    ),
-                                  ),
-                                  const DropdownMenuItem(
-                                    value: null,
-                                    child: Text(
-                                      'Add New Customer',
-                                      style:
-                                          TextStyle(color: AppColors.primary),
-                                    ),
-                                  ),
-                                ]
+                            ...state.customers.map(
+                                  (customer) => DropdownMenuItem(
+                                value: customer,
+                                child: Text(
+                                  customer.name ?? 'Unknown', // Changed from userName to name
+                                  style: const TextStyle(
+                                      color: AppColors.textPrimary),
+                                ),
+                              ),
+                            ),
+                            const DropdownMenuItem(
+                              value: null,
+                              child: Text(
+                                'Add New Customer',
+                                style:
+                                TextStyle(color: AppColors.primary),
+                              ),
+                            ),
+                          ]
                               : [],
                           onChanged: (value) {
                             if (state is SalesmanOrderLoaded) {
@@ -291,7 +288,7 @@ class SalesmanOrderPage extends StatelessWidget {
                 else if (state is SalesmanOrderLoaded)
                   SliverList(
                     delegate: SliverChildBuilderDelegate(
-                      (context, index) {
+                          (context, index) {
                         final product = state.filteredProducts[index];
                         final quantity =
                             state.productQuantities[product.id] ?? 0;
@@ -312,7 +309,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             product.name,
@@ -371,7 +368,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                               context
                                                   .read<SalesmanOrderCubit>()
                                                   .updateProductQuantity(
-                                                      product.id, false);
+                                                  product.id, false);
                                             },
                                           ),
                                           SizedBox(
@@ -396,7 +393,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                               context
                                                   .read<SalesmanOrderCubit>()
                                                   .updateProductQuantity(
-                                                      product.id, true);
+                                                  product.id, true);
                                             },
                                           ),
                                         ],
@@ -431,23 +428,23 @@ class SalesmanOrderPage extends StatelessWidget {
                                           children: [
                                             Padding(
                                               padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 8,
-                                                      horizontal: 12),
+                                              const EdgeInsets.symmetric(
+                                                  vertical: 8,
+                                                  horizontal: 12),
                                               child: Text(
                                                 'Subtotal (₹${product.price.toStringAsFixed(2)} x $quantity)',
                                                 style: const TextStyle(
                                                   fontSize: 14,
                                                   color:
-                                                      AppColors.textSecondary,
+                                                  AppColors.textSecondary,
                                                 ),
                                               ),
                                             ),
                                             Padding(
                                               padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 8,
-                                                      horizontal: 12),
+                                              const EdgeInsets.symmetric(
+                                                  vertical: 8,
+                                                  horizontal: 12),
                                               child: Text(
                                                 '₹${context.read<SalesmanOrderCubit>().calculateProductSubtotal(product.id).toStringAsFixed(2)}',
                                                 textAlign: TextAlign.right,
@@ -464,30 +461,30 @@ class SalesmanOrderPage extends StatelessWidget {
                                           children: [
                                             Padding(
                                               padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 8,
-                                                      horizontal: 12),
+                                              const EdgeInsets.symmetric(
+                                                  vertical: 8,
+                                                  horizontal: 12),
                                               child: Text(
                                                 'Tax (${(product.taxRate * 100).toStringAsFixed(0)}%)',
                                                 style: const TextStyle(
                                                   fontSize: 14,
                                                   color:
-                                                      AppColors.textSecondary,
+                                                  AppColors.textSecondary,
                                                 ),
                                               ),
                                             ),
                                             Padding(
                                               padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 8,
-                                                      horizontal: 12),
+                                              const EdgeInsets.symmetric(
+                                                  vertical: 8,
+                                                  horizontal: 12),
                                               child: Text(
                                                 '₹${context.read<SalesmanOrderCubit>().calculateProductTax(product.id).toStringAsFixed(2)}',
                                                 textAlign: TextAlign.right,
                                                 style: const TextStyle(
                                                   fontSize: 14,
                                                   color:
-                                                      AppColors.textSecondary,
+                                                  AppColors.textSecondary,
                                                 ),
                                               ),
                                             ),
@@ -498,7 +495,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                             color: AppColors.primary
                                                 .withOpacity(0.05),
                                             borderRadius:
-                                                const BorderRadius.only(
+                                            const BorderRadius.only(
                                               bottomLeft: Radius.circular(12),
                                               bottomRight: Radius.circular(12),
                                             ),
@@ -518,9 +515,9 @@ class SalesmanOrderPage extends StatelessWidget {
                                             ),
                                             Padding(
                                               padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 8,
-                                                      horizontal: 12),
+                                              const EdgeInsets.symmetric(
+                                                  vertical: 8,
+                                                  horizontal: 12),
                                               child: Text(
                                                 '₹${context.read<SalesmanOrderCubit>().calculateProductTotal(product.id).toStringAsFixed(2)}',
                                                 textAlign: TextAlign.right,
@@ -577,7 +574,7 @@ class SalesmanOrderPage extends StatelessWidget {
                       context: context,
                       shape: const RoundedRectangleBorder(
                         borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(20)),
+                        BorderRadius.vertical(top: Radius.circular(20)),
                       ),
                       isScrollControlled: true,
                       backgroundColor: AppColors.white,
@@ -590,7 +587,7 @@ class SalesmanOrderPage extends StatelessWidget {
                             children: [
                               Row(
                                 mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                MainAxisAlignment.spaceBetween,
                                 children: [
                                   const Text(
                                     'Order Summary',
@@ -691,7 +688,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                     TableRow(
                                       decoration: BoxDecoration(
                                         color:
-                                            AppColors.primary.withOpacity(0.05),
+                                        AppColors.primary.withOpacity(0.05),
                                         borderRadius: const BorderRadius.only(
                                           bottomLeft: Radius.circular(12),
                                           bottomRight: Radius.circular(12),
@@ -812,15 +809,15 @@ class _StickySearchBarDelegate extends SliverPersistentHeaderDelegate {
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide:
-                BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
+            BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide:
-                BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
+            BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
           ),
           contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
         onChanged: onSearchChanged,
       ),

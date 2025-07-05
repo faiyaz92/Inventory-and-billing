@@ -108,6 +108,13 @@ class CartDashboardPage extends StatelessWidget {
                         Colors.blueAccent,
                             () => sl<Coordinator>().navigateToProductPerformanceListPage(),
                       ),
+                      _buildDashboardCard(
+                        context,
+                        'Billing',
+                        Icons.receipt,
+                        Colors.orange,
+                            () => sl<Coordinator>().navigateToBillingPage(),
+                      ),
                     ],
                   ),
                 ),

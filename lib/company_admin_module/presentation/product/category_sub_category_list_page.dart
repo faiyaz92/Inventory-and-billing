@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/add_edit_category_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/add_edit_category_state.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
+import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 
 @RoutePage()
@@ -28,7 +29,7 @@ class _CategoriesWithSubcategoriesPageState
 
   @override
   void dispose() {
-    _categoryCubit.close(); // Close the cubit when the widget is disposed
+    _categoryCubit.close();
     super.dispose();
   }
 
@@ -38,170 +39,285 @@ class _CategoriesWithSubcategoriesPageState
       create: (_) => _categoryCubit,
       child: BlocBuilder<CategoryCubit, CategoryState>(
         builder: (context, state) {
-          if (state is CategoryLoading) {
-            return const Scaffold(
-              backgroundColor: Colors.white,
-              body: Center(child: CircularProgressIndicator()),
-            );
-          } else if (state is CategoryLoaded) {
-            final categories = state.categories;
-
-            if (categories.isEmpty) {
-              // Show message if there are no categories
-              return Scaffold(
-                appBar: AppBar(
-                  title: const Text("Categories and Subcategories"),
-                ),
-                body: const Center(
-                  child: Text("Please add a category"),
-                ),
-                floatingActionButton: FloatingActionButton(
+          return Scaffold(
+            appBar: CustomAppBar(
+              title: 'Categories and Subcategories',
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.add),
                   onPressed: () {
-                    // Navigate to Add Category Page using Coordinator
                     sl<Coordinator>().navigateToAddEditCategoryPage();
                   },
-                  child: const Icon(Icons.add),
+                  tooltip: 'Add Category',
                 ),
-              );
-            }
-
-            return Scaffold(
-              appBar: AppBar(
-                title: const Text("Categories and Subcategories"),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.add),
-                    onPressed: () {
-                      // Navigate to Add Category Page using Coordinator
-                      sl<Coordinator>().navigateToAddEditCategoryPage();
-                    },
-                  ),
-                ],
+              ],
+            ),
+            body: Container(
+              height: MediaQuery.of(context).size.height,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Theme.of(context).primaryColor.withOpacity(0.1),
+                    Theme.of(context).primaryColor.withOpacity(0.3),
+                  ],
+                ),
               ),
-              body: ListView.builder(
-                itemCount: categories.length,
-                itemBuilder: (context, index) {
-                  final category = categories[index];
+              child: SafeArea(
+                child: _buildBody(context, state),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 
-                  // Directly use subcategories from the category
-                  final subcategories = category.subcategories;
+  Widget _buildBody(BuildContext context, CategoryState state) {
+    if (state is CategoryLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    } else if (state is CategoryLoaded) {
+      final categories = state.categories;
 
-                  return Card(
+      if (categories.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'No categories available',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  sl<Coordinator>().navigateToAddEditCategoryPage();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                child: const Text('Add Category'),
+              ),
+            ],
+          ),
+        );
+      }
+
+      return ListView.builder(
+        padding: const EdgeInsets.all(16.0),
+        itemCount: categories.length,
+        itemBuilder: (context, index) {
+          final category = categories[index];
+          final subcategories = category.subcategories ?? [];
+
+          return Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.only(bottom: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Category Header
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  title: Semantics(
+                    label: 'Category: ${category.name}',
+                    child: Text(
+                      category.name ?? 'Category',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.black54),
+                        onPressed: () {
+                          sl<Coordinator>().navigateToAddEditCategoryPage(category: category);
+                        },
+                        tooltip: 'Edit Category',
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          _showDeleteConfirmationDialog(context, category, true);
+                        },
+                        tooltip: 'Delete Category',
+                      ),
+                    ],
+                  ),
+                ),
+                // Subcategories List
+                if (subcategories.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16.0),
                     child: Column(
-                      children: [
-                        // Category Header
-                        ListTile(
-                          title: Text(category.name ?? 'Category'),
+                      children: subcategories.map((sub) {
+                        return ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          title: Semantics(
+                            label: 'Subcategory: ${sub.name}',
+                            child: Text(
+                              sub.name ?? '',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.edit),
+                                icon: const Icon(Icons.edit, color: Colors.black54),
                                 onPressed: () {
-                                  // Navigate to Edit Category Page using Coordinator
-                                  sl<Coordinator>()
-                                      .navigateToAddEditCategoryPage(
-                                          category: category);
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () {
-                                  // Show delete confirmation
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: const Text('Delete Category'),
-                                      content: const Text(
-                                          'Are you sure you want to delete this category?'),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            context
-                                                .read<CategoryCubit>()
-                                                .deleteCategory(
-                                                    category.id ?? '');
-                                            Navigator.pop(context);
-                                          },
-                                          child: const Text('Yes'),
-                                        ),
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: const Text('No'),
-                                        ),
-                                      ],
-                                    ),
+                                  sl<Coordinator>().navigateToAddEditSubcategoryPage(
+                                    subcategory: sub,
+                                    category: category,
                                   );
                                 },
+                                tooltip: 'Edit Subcategory',
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () {
+                                  _showDeleteConfirmationDialog(context, sub, false, categoryId: category.id ?? '');
+                                },
+                                tooltip: 'Delete Subcategory',
                               ),
                             ],
                           ),
-                        ),
-                        // Subcategories List (Nested inside each Category)
-                        if (subcategories != null && subcategories.isNotEmpty)
-                          Column(
-                            children: subcategories.map((sub) {
-                              return ListTile(
-                                title: Text(sub.name ?? ''),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit),
-                                      onPressed: () {
-                                        // Navigate to Edit Subcategory Page using Coordinator
-                                        sl<Coordinator>()
-                                            .navigateToAddEditSubcategoryPage(
-                                          subcategory: sub,
-                                          category: category,
-                                        );
-                                      },
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete),
-                                      onPressed: () {
-                                        context
-                                            .read<CategoryCubit>()
-                                            .deleteSubcategory(
-                                              category.id ?? '',
-                                              sub.id ?? '',
-                                            );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        // Add Subcategory Button
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: ElevatedButton(
-                            onPressed: () {
-                              // Navigate to Add Subcategory Page using Coordinator
-                              sl<Coordinator>()
-                                  .navigateToAddEditSubcategoryPage(
-                                category: category,
-                              );
-                            },
-                            child: const Text('Add Subcategory'),
-                          ),
-                        ),
-                      ],
+                        );
+                      }).toList(),
                     ),
-                  );
-                },
-              ),
-            );
-          } else {
-            return const Scaffold(
-              backgroundColor: Colors.white,
-              body: Center(child: Text("Failed to load categories")),
-            );
-          }
+                  ),
+                // Add Subcategory Button
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      sl<Coordinator>().navigateToAddEditSubcategoryPage(category: category);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    child: const Text('Add Subcategory'),
+                  ),
+                ),
+              ],
+            ),
+          );
         },
+      );
+    } else {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'Failed to load categories',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                context.read<CategoryCubit>().fetchCategories();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  void _showDeleteConfirmationDialog(BuildContext context, dynamic item, bool isCategory, {String? categoryId}) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Text(
+          isCategory ? 'Delete Category' : 'Delete Subcategory',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'Are you sure you want to delete ${isCategory ? 'category' : 'subcategory'} "${item.name}"?',
+          style: const TextStyle(color: Colors.black87),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'No',
+              style: TextStyle(color: Colors.black54),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (isCategory) {
+                context.read<CategoryCubit>().deleteCategory(item.id ?? '');
+              } else {
+                context.read<CategoryCubit>().deleteSubcategory(categoryId!, item.id ?? '');
+              }
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text('Yes'),
+          ),
+        ],
       ),
     );
   }

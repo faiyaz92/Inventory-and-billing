@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/user_product_model.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/cart_cubit.dart';
@@ -78,8 +79,9 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
   Future<void> _initialize() async {
     emit(SalesmanOrderLoading());
     try {
-      // Fetch customers
-      _customers = await employeeServices.getUsersFromTenantCompany();
+      // Fetch customers and filter by userType == Customer
+      final allUsers = await employeeServices.getUsersFromTenantCompany();
+      _customers = allUsers.where((user) => user.userType == UserType.Customer).toList();
 
       // Fetch products
       _products = await productService.getProducts();
@@ -106,7 +108,7 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
   void selectCustomer(UserInfo? customer) {
     _selectedCustomer = customer;
     _customCustomerName =
-        null; // Reset custom customer name if a customer is selected
+    null; // Reset custom customer name if a customer is selected
     emit(SalesmanOrderLoaded(
       customers: _customers,
       products: _products,
@@ -159,7 +161,7 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
     } else {
       _filteredProducts = _products
           .where((product) =>
-              product.name.toLowerCase().contains(query.toLowerCase()))
+          product.name.toLowerCase().contains(query.toLowerCase()))
           .toList();
     }
     emit(SalesmanOrderLoaded(
@@ -183,7 +185,7 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
   double calculateProductTax(String productId) {
     final product = _products.firstWhere((p) => p.id == productId);
     final quantity = _productQuantities[productId] ?? 0;
-    return ((product.price * product.taxRate))* quantity;
+    return ((product.price * product.taxRate)) * quantity;
   }
 
   double calculateProductTotal(String productId) {
@@ -242,7 +244,7 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         userId: _selectedCustomer?.userId ??
             'CUSTOM_${DateTime.now().millisecondsSinceEpoch}',
-        userName: _selectedCustomer?.userName ?? _customCustomerName!,
+        userName: _selectedCustomer?.name ?? _customCustomerName!, // Changed from userName to name
         items: items,
         totalAmount: totalAmount,
         status: 'pending',
