@@ -11,8 +11,9 @@ class OrderDto {
   final String? orderTakenBy;
   final String? orderDeliveredBy;
   final String? responsibleForDelivery;
-  final String? lastUpdatedBy; // Added for last updated by
-  final String? storeId; // New field
+  final String? lastUpdatedBy;
+  final String? storeId;
+  final String? billNumber; // New field
   final DateTime orderDate;
   final DateTime? expectedDeliveryDate;
   final DateTime? orderDeliveryDate;
@@ -31,7 +32,8 @@ class OrderDto {
     this.orderDeliveredBy,
     this.responsibleForDelivery,
     this.lastUpdatedBy,
-     this.storeId, // New field
+    this.storeId,
+    this.billNumber, // New field
   });
 
   factory OrderDto.fromFirestore(Map<String, dynamic> data) {
@@ -55,7 +57,8 @@ class OrderDto {
       orderDeliveredBy: data['orderDeliveredBy'],
       responsibleForDelivery: data['responsibleForDelivery'],
       lastUpdatedBy: data['lastUpdatedBy'],
-      storeId: data['storeId'] ?? '', // New field
+      storeId: data['storeId'] ?? '',
+      billNumber: data['billNumber'], // New field
     );
   }
 
@@ -78,7 +81,8 @@ class OrderDto {
       'orderDeliveredBy': orderDeliveredBy,
       'responsibleForDelivery': responsibleForDelivery,
       'lastUpdatedBy': lastUpdatedBy,
-      'storeId': storeId, // New field
+      'storeId': storeId,
+      'billNumber': billNumber, // New field
     };
   }
 
@@ -97,7 +101,8 @@ class OrderDto {
       orderDeliveredBy: order.orderDeliveredBy,
       responsibleForDelivery: order.responsibleForDelivery,
       lastUpdatedBy: order.lastUpdatedBy,
-      storeId: order.storeId, // New field
+      storeId: order.storeId,
+      billNumber: order.billNumber, // New field
     );
   }
 }

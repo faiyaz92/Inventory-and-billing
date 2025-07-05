@@ -18,9 +18,10 @@ import 'package:sticky_headers/sticky_headers.dart';
 class PerformanceDetailsPage extends StatefulWidget {
   final String entityType;
   final String entityId;
+  final String? entityName;
 
   const PerformanceDetailsPage(
-      {super.key, required this.entityType, required this.entityId});
+      {super.key, required this.entityType, required this.entityId, this.entityName});
 
   @override
   _PerformanceDetailsPageState createState() => _PerformanceDetailsPageState();
@@ -286,7 +287,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
     return FutureBuilder<String>(
       future: context
           .read<AdminOrderCubit>()
-          .fetchEntityName(widget.entityType, widget.entityId),
+          .fetchEntityName(widget.entityType, widget.entityId,entityName: widget.entityName),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Shimmer.fromColors(
@@ -2002,6 +2003,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
                     sl<Coordinator>().navigateToPerformanceDetailsPage(
                       entityType: 'product',
                       entityId: salesData.productId,
+                      entityName: salesData.productName
                     );
                   },
                 );

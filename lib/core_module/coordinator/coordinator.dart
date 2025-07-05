@@ -1,4 +1,5 @@
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:requirment_gathering_app/company_admin_module/data/product/category.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/sub_category.dart';
@@ -76,7 +77,6 @@ abstract class Coordinator {
   Future<dynamic> navigateToStockListPage();
 
 
-   Future<dynamic> navigateToBillingPage();
 
    Future<dynamic> navigateToSalesReportPage();
 
@@ -110,8 +110,11 @@ abstract class Coordinator {
   Future<dynamic> navigateToDeliveryManOrderListPage();
   Future<dynamic> navigateToStoreOrderListPage();
   Future<dynamic> navigateToCustomerOrderListPage();
-  Future<dynamic> navigateToPerformanceDetailsPage({required String entityType, required String entityId});
+  Future<dynamic> navigateToPerformanceDetailsPage({required String entityType, required String entityId,String? entityName});
   Future<dynamic> navigateToCompanyPerformancePage();
   Future<dynamic> navigateToProductPerformanceListPage();
   Future<dynamic> navigateToUserLedgerPage({required UserInfo user});
+  Future<dynamic> navigateToBillingPage({String? orderId});
+  Future<dynamic> navigateToBillPdfPage({required pw.Document pdf, required String billNumber});
+
 }

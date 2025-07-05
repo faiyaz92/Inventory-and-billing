@@ -10,4 +10,5 @@ abstract class IOrderService {
   Future<void> setOrderDeliveryDate(String orderId, DateTime date);
   Future<void> setOrderDeliveredBy(String orderId, String? deliveredBy);
   Future<void> setResponsibleForDelivery(String orderId, String responsibleForDelivery); // New method
+  Future<void> updateOrder(Order order); // Add this method
 }

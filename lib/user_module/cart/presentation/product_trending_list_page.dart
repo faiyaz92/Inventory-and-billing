@@ -294,6 +294,7 @@ class _ProductTrendingListPageState extends State<ProductTrendingListPage> {
           sl<Coordinator>().navigateToPerformanceDetailsPage(
             entityType: 'product',
             entityId: salesData.productId,
+            entityName: salesData.productName,
           );
         },
         borderRadius: BorderRadius.circular(12),
@@ -319,13 +320,13 @@ class _ProductTrendingListPageState extends State<ProductTrendingListPage> {
                             color: AppColors.textPrimary,
                           ),
                         ),
-                        Text(
-                          'Product ID: ${salesData.productId}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
+                        // Text(
+                        //   'Product ID: ${salesData.productId}',
+                        //   style: const TextStyle(
+                        //     fontSize: 14,
+                        //     color: AppColors.textSecondary,
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),

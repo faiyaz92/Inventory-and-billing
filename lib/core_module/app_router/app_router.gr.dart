@@ -18,10 +18,10 @@ class AccountLedgerRoute extends PageRouteInfo<AccountLedgerRouteArgs> {
     required Partner company,
     List<PageRouteInfo>? children,
   }) : super(
-          AccountLedgerRoute.name,
-          args: AccountLedgerRouteArgs(key: key, company: company),
-          initialChildren: children,
-        );
+         AccountLedgerRoute.name,
+         args: AccountLedgerRouteArgs(key: key, company: company),
+         initialChildren: children,
+       );
 
   static const String name = 'AccountLedgerRoute';
 
@@ -51,11 +51,11 @@ class AccountLedgerRouteArgs {
 /// [AddCompanyPage]
 class AddCompanyRoute extends PageRouteInfo<AddCompanyRouteArgs> {
   AddCompanyRoute({Key? key, Partner? company, List<PageRouteInfo>? children})
-      : super(
-          AddCompanyRoute.name,
-          args: AddCompanyRouteArgs(key: key, company: company),
-          initialChildren: children,
-        );
+    : super(
+        AddCompanyRoute.name,
+        args: AddCompanyRouteArgs(key: key, company: company),
+        initialChildren: children,
+      );
 
   static const String name = 'AddCompanyRoute';
 
@@ -91,10 +91,10 @@ class AddEditCategoryRoute extends PageRouteInfo<AddEditCategoryRouteArgs> {
     Category? category,
     List<PageRouteInfo>? children,
   }) : super(
-          AddEditCategoryRoute.name,
-          args: AddEditCategoryRouteArgs(key: key, category: category),
-          initialChildren: children,
-        );
+         AddEditCategoryRoute.name,
+         args: AddEditCategoryRouteArgs(key: key, category: category),
+         initialChildren: children,
+       );
 
   static const String name = 'AddEditCategoryRoute';
 
@@ -130,10 +130,10 @@ class AddEditProductRoute extends PageRouteInfo<AddEditProductRouteArgs> {
     Product? product,
     List<PageRouteInfo>? children,
   }) : super(
-          AddEditProductRoute.name,
-          args: AddEditProductRouteArgs(key: key, product: product),
-          initialChildren: children,
-        );
+         AddEditProductRoute.name,
+         args: AddEditProductRouteArgs(key: key, product: product),
+         initialChildren: children,
+       );
 
   static const String name = 'AddEditProductRoute';
 
@@ -171,14 +171,14 @@ class AddEditSubcategoryRoute
     required Category category,
     List<PageRouteInfo>? children,
   }) : super(
-          AddEditSubcategoryRoute.name,
-          args: AddEditSubcategoryRouteArgs(
-            key: key,
-            subcategory: subcategory,
-            category: category,
-          ),
-          initialChildren: children,
-        );
+         AddEditSubcategoryRoute.name,
+         args: AddEditSubcategoryRouteArgs(
+           key: key,
+           subcategory: subcategory,
+           category: category,
+         ),
+         initialChildren: children,
+       );
 
   static const String name = 'AddEditSubcategoryRoute';
 
@@ -218,7 +218,7 @@ class AddEditSubcategoryRouteArgs {
 /// [AddStockPage]
 class AddStockRoute extends PageRouteInfo<void> {
   const AddStockRoute({List<PageRouteInfo>? children})
-      : super(AddStockRoute.name, initialChildren: children);
+    : super(AddStockRoute.name, initialChildren: children);
 
   static const String name = 'AddStockRoute';
 
@@ -234,7 +234,7 @@ class AddStockRoute extends PageRouteInfo<void> {
 /// [AddStorePage]
 class AddStoreRoute extends PageRouteInfo<void> {
   const AddStoreRoute({List<PageRouteInfo>? children})
-      : super(AddStoreRoute.name, initialChildren: children);
+    : super(AddStoreRoute.name, initialChildren: children);
 
   static const String name = 'AddStoreRoute';
 
@@ -250,11 +250,11 @@ class AddStoreRoute extends PageRouteInfo<void> {
 /// [AddSupplierPage]
 class AddSupplierRoute extends PageRouteInfo<AddSupplierRouteArgs> {
   AddSupplierRoute({Key? key, Partner? company, List<PageRouteInfo>? children})
-      : super(
-          AddSupplierRoute.name,
-          args: AddSupplierRouteArgs(key: key, company: company),
-          initialChildren: children,
-        );
+    : super(
+        AddSupplierRoute.name,
+        args: AddSupplierRouteArgs(key: key, company: company),
+        initialChildren: children,
+      );
 
   static const String name = 'AddSupplierRoute';
 
@@ -286,11 +286,11 @@ class AddSupplierRouteArgs {
 /// [AddTaskPage]
 class AddTaskRoute extends PageRouteInfo<AddTaskRouteArgs> {
   AddTaskRoute({Key? key, TaskModel? task, List<PageRouteInfo>? children})
-      : super(
-          AddTaskRoute.name,
-          args: AddTaskRouteArgs(key: key, task: task),
-          initialChildren: children,
-        );
+    : super(
+        AddTaskRoute.name,
+        args: AddTaskRouteArgs(key: key, task: task),
+        initialChildren: children,
+      );
 
   static const String name = 'AddTaskRoute';
 
@@ -326,10 +326,10 @@ class AddTenantCompanyRoute extends PageRouteInfo<AddTenantCompanyRouteArgs> {
     TenantCompany? company,
     List<PageRouteInfo>? children,
   }) : super(
-          AddTenantCompanyRoute.name,
-          args: AddTenantCompanyRouteArgs(key: key, company: company),
-          initialChildren: children,
-        );
+         AddTenantCompanyRoute.name,
+         args: AddTenantCompanyRouteArgs(key: key, company: company),
+         initialChildren: children,
+       );
 
   static const String name = 'AddTenantCompanyRoute';
 
@@ -361,11 +361,11 @@ class AddTenantCompanyRouteArgs {
 /// [AddUserPage]
 class AddUserRoute extends PageRouteInfo<AddUserRouteArgs> {
   AddUserRoute({Key? key, UserInfo? user, List<PageRouteInfo>? children})
-      : super(
-          AddUserRoute.name,
-          args: AddUserRouteArgs(key: key, user: user),
-          initialChildren: children,
-        );
+    : super(
+        AddUserRoute.name,
+        args: AddUserRouteArgs(key: key, user: user),
+        initialChildren: children,
+      );
 
   static const String name = 'AddUserRoute';
 
@@ -401,10 +401,10 @@ class AdminOrderDetailsRoute extends PageRouteInfo<AdminOrderDetailsRouteArgs> {
     required String orderId,
     List<PageRouteInfo>? children,
   }) : super(
-          AdminOrderDetailsRoute.name,
-          args: AdminOrderDetailsRouteArgs(key: key, orderId: orderId),
-          initialChildren: children,
-        );
+         AdminOrderDetailsRoute.name,
+         args: AdminOrderDetailsRouteArgs(key: key, orderId: orderId),
+         initialChildren: children,
+       );
 
   static const String name = 'AdminOrderDetailsRoute';
 
@@ -434,7 +434,7 @@ class AdminOrderDetailsRouteArgs {
 /// [AdminPanelPage]
 class AdminPanelRoute extends PageRouteInfo<void> {
   const AdminPanelRoute({List<PageRouteInfo>? children})
-      : super(AdminPanelRoute.name, initialChildren: children);
+    : super(AdminPanelRoute.name, initialChildren: children);
 
   static const String name = 'AdminPanelRoute';
 
@@ -450,7 +450,7 @@ class AdminPanelRoute extends PageRouteInfo<void> {
 /// [AiCompanyListPage]
 class AiCompanyListRoute extends PageRouteInfo<void> {
   const AiCompanyListRoute({List<PageRouteInfo>? children})
-      : super(AiCompanyListRoute.name, initialChildren: children);
+    : super(AiCompanyListRoute.name, initialChildren: children);
 
   static const String name = 'AiCompanyListRoute';
 
@@ -466,7 +466,7 @@ class AiCompanyListRoute extends PageRouteInfo<void> {
 /// [AttendanceRegisterPage]
 class AttendanceRegisterRoute extends PageRouteInfo<void> {
   const AttendanceRegisterRoute({List<PageRouteInfo>? children})
-      : super(AttendanceRegisterRoute.name, initialChildren: children);
+    : super(AttendanceRegisterRoute.name, initialChildren: children);
 
   static const String name = 'AttendanceRegisterRoute';
 
@@ -479,10 +479,94 @@ class AttendanceRegisterRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [BillPdfPage]
+class BillPdfRoute extends PageRouteInfo<BillPdfRouteArgs> {
+  BillPdfRoute({
+    Key? key,
+    required Document pdf,
+    required String billNumber,
+    List<PageRouteInfo>? children,
+  }) : super(
+         BillPdfRoute.name,
+         args: BillPdfRouteArgs(key: key, pdf: pdf, billNumber: billNumber),
+         initialChildren: children,
+       );
+
+  static const String name = 'BillPdfRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<BillPdfRouteArgs>();
+      return BillPdfPage(
+        key: args.key,
+        pdf: args.pdf,
+        billNumber: args.billNumber,
+      );
+    },
+  );
+}
+
+class BillPdfRouteArgs {
+  const BillPdfRouteArgs({
+    this.key,
+    required this.pdf,
+    required this.billNumber,
+  });
+
+  final Key? key;
+
+  final Document pdf;
+
+  final String billNumber;
+
+  @override
+  String toString() {
+    return 'BillPdfRouteArgs{key: $key, pdf: $pdf, billNumber: $billNumber}';
+  }
+}
+
+/// generated route for
+/// [BillingPage]
+class BillingRoute extends PageRouteInfo<BillingRouteArgs> {
+  BillingRoute({Key? key, String? orderId, List<PageRouteInfo>? children})
+    : super(
+        BillingRoute.name,
+        args: BillingRouteArgs(key: key, orderId: orderId),
+        initialChildren: children,
+      );
+
+  static const String name = 'BillingRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<BillingRouteArgs>(
+        orElse: () => const BillingRouteArgs(),
+      );
+      return BillingPage(key: args.key, orderId: args.orderId);
+    },
+  );
+}
+
+class BillingRouteArgs {
+  const BillingRouteArgs({this.key, this.orderId});
+
+  final Key? key;
+
+  final String? orderId;
+
+  @override
+  String toString() {
+    return 'BillingRouteArgs{key: $key, orderId: $orderId}';
+  }
+}
+
+/// generated route for
 /// [CartDashboardPage]
 class CartDashboardRoute extends PageRouteInfo<void> {
   const CartDashboardRoute({List<PageRouteInfo>? children})
-      : super(CartDashboardRoute.name, initialChildren: children);
+    : super(CartDashboardRoute.name, initialChildren: children);
 
   static const String name = 'CartDashboardRoute';
 
@@ -498,7 +582,7 @@ class CartDashboardRoute extends PageRouteInfo<void> {
 /// [CartHomePage]
 class CartHomeRoute extends PageRouteInfo<void> {
   const CartHomeRoute({List<PageRouteInfo>? children})
-      : super(CartHomeRoute.name, initialChildren: children);
+    : super(CartHomeRoute.name, initialChildren: children);
 
   static const String name = 'CartHomeRoute';
 
@@ -514,7 +598,7 @@ class CartHomeRoute extends PageRouteInfo<void> {
 /// [CartPage]
 class CartRoute extends PageRouteInfo<void> {
   const CartRoute({List<PageRouteInfo>? children})
-      : super(CartRoute.name, initialChildren: children);
+    : super(CartRoute.name, initialChildren: children);
 
   static const String name = 'CartRoute';
 
@@ -530,7 +614,7 @@ class CartRoute extends PageRouteInfo<void> {
 /// [CategoriesWithSubcategoriesPage]
 class CategoriesWithSubcategoriesRoute extends PageRouteInfo<void> {
   const CategoriesWithSubcategoriesRoute({List<PageRouteInfo>? children})
-      : super(CategoriesWithSubcategoriesRoute.name, initialChildren: children);
+    : super(CategoriesWithSubcategoriesRoute.name, initialChildren: children);
 
   static const String name = 'CategoriesWithSubcategoriesRoute';
 
@@ -546,7 +630,7 @@ class CategoriesWithSubcategoriesRoute extends PageRouteInfo<void> {
 /// [CheckoutPage]
 class CheckoutRoute extends PageRouteInfo<void> {
   const CheckoutRoute({List<PageRouteInfo>? children})
-      : super(CheckoutRoute.name, initialChildren: children);
+    : super(CheckoutRoute.name, initialChildren: children);
 
   static const String name = 'CheckoutRoute';
 
@@ -562,7 +646,7 @@ class CheckoutRoute extends PageRouteInfo<void> {
 /// [CompanyAdminPage]
 class CompanyAdminRoute extends PageRouteInfo<void> {
   const CompanyAdminRoute({List<PageRouteInfo>? children})
-      : super(CompanyAdminRoute.name, initialChildren: children);
+    : super(CompanyAdminRoute.name, initialChildren: children);
 
   static const String name = 'CompanyAdminRoute';
 
@@ -582,10 +666,10 @@ class CompanyDetailsRoute extends PageRouteInfo<CompanyDetailsRouteArgs> {
     required Partner company,
     List<PageRouteInfo>? children,
   }) : super(
-          CompanyDetailsRoute.name,
-          args: CompanyDetailsRouteArgs(key: key, company: company),
-          initialChildren: children,
-        );
+         CompanyDetailsRoute.name,
+         args: CompanyDetailsRouteArgs(key: key, company: company),
+         initialChildren: children,
+       );
 
   static const String name = 'CompanyDetailsRoute';
 
@@ -615,7 +699,7 @@ class CompanyDetailsRouteArgs {
 /// [CompanyListPage]
 class CompanyListRoute extends PageRouteInfo<void> {
   const CompanyListRoute({List<PageRouteInfo>? children})
-      : super(CompanyListRoute.name, initialChildren: children);
+    : super(CompanyListRoute.name, initialChildren: children);
 
   static const String name = 'CompanyListRoute';
 
@@ -631,7 +715,7 @@ class CompanyListRoute extends PageRouteInfo<void> {
 /// [CompanyPerformancePage]
 class CompanyPerformanceRoute extends PageRouteInfo<void> {
   const CompanyPerformanceRoute({List<PageRouteInfo>? children})
-      : super(CompanyPerformanceRoute.name, initialChildren: children);
+    : super(CompanyPerformanceRoute.name, initialChildren: children);
 
   static const String name = 'CompanyPerformanceRoute';
 
@@ -647,7 +731,7 @@ class CompanyPerformanceRoute extends PageRouteInfo<void> {
 /// [CompanySettingPage]
 class CompanySettingRoute extends PageRouteInfo<void> {
   const CompanySettingRoute({List<PageRouteInfo>? children})
-      : super(CompanySettingRoute.name, initialChildren: children);
+    : super(CompanySettingRoute.name, initialChildren: children);
 
   static const String name = 'CompanySettingRoute';
 
@@ -668,14 +752,14 @@ class CreateLedgerRoute extends PageRouteInfo<CreateLedgerRouteArgs> {
     required String customerCompanyId,
     List<PageRouteInfo>? children,
   }) : super(
-          CreateLedgerRoute.name,
-          args: CreateLedgerRouteArgs(
-            key: key,
-            companyId: companyId,
-            customerCompanyId: customerCompanyId,
-          ),
-          initialChildren: children,
-        );
+         CreateLedgerRoute.name,
+         args: CreateLedgerRouteArgs(
+           key: key,
+           companyId: companyId,
+           customerCompanyId: customerCompanyId,
+         ),
+         initialChildren: children,
+       );
 
   static const String name = 'CreateLedgerRoute';
 
@@ -715,7 +799,7 @@ class CreateLedgerRouteArgs {
 /// [CustomerOrderListPage]
 class CustomerOrderListRoute extends PageRouteInfo<void> {
   const CustomerOrderListRoute({List<PageRouteInfo>? children})
-      : super(CustomerOrderListRoute.name, initialChildren: children);
+    : super(CustomerOrderListRoute.name, initialChildren: children);
 
   static const String name = 'CustomerOrderListRoute';
 
@@ -731,7 +815,7 @@ class CustomerOrderListRoute extends PageRouteInfo<void> {
 /// [DashboardPage]
 class DashboardRoute extends PageRouteInfo<void> {
   const DashboardRoute({List<PageRouteInfo>? children})
-      : super(DashboardRoute.name, initialChildren: children);
+    : super(DashboardRoute.name, initialChildren: children);
 
   static const String name = 'DashboardRoute';
 
@@ -747,7 +831,7 @@ class DashboardRoute extends PageRouteInfo<void> {
 /// [DeliveryManOrderListPage]
 class DeliveryManOrderListRoute extends PageRouteInfo<void> {
   const DeliveryManOrderListRoute({List<PageRouteInfo>? children})
-      : super(DeliveryManOrderListRoute.name, initialChildren: children);
+    : super(DeliveryManOrderListRoute.name, initialChildren: children);
 
   static const String name = 'DeliveryManOrderListRoute';
 
@@ -759,19 +843,6 @@ class DeliveryManOrderListRoute extends PageRouteInfo<void> {
   );
 }
 
-class DriverPerformanceDetailsRouteArgs {
-  const DriverPerformanceDetailsRouteArgs({this.key, required this.driverId});
-
-  final Key? key;
-
-  final String driverId;
-
-  @override
-  String toString() {
-    return 'DriverPerformanceDetailsRouteArgs{key: $key, driverId: $driverId}';
-  }
-}
-
 /// generated route for
 /// [EmployeeDetailsPage]
 class EmployeeDetailsRoute extends PageRouteInfo<EmployeeDetailsRouteArgs> {
@@ -780,10 +851,10 @@ class EmployeeDetailsRoute extends PageRouteInfo<EmployeeDetailsRouteArgs> {
     required String userId,
     List<PageRouteInfo>? children,
   }) : super(
-          EmployeeDetailsRoute.name,
-          args: EmployeeDetailsRouteArgs(key: key, userId: userId),
-          initialChildren: children,
-        );
+         EmployeeDetailsRoute.name,
+         args: EmployeeDetailsRouteArgs(key: key, userId: userId),
+         initialChildren: children,
+       );
 
   static const String name = 'EmployeeDetailsRoute';
 
@@ -813,7 +884,7 @@ class EmployeeDetailsRouteArgs {
 /// [EmployeesPage]
 class EmployeesRoute extends PageRouteInfo<void> {
   const EmployeesRoute({List<PageRouteInfo>? children})
-      : super(EmployeesRoute.name, initialChildren: children);
+    : super(EmployeesRoute.name, initialChildren: children);
 
   static const String name = 'EmployeesRoute';
 
@@ -829,11 +900,11 @@ class EmployeesRoute extends PageRouteInfo<void> {
 /// [ForgotPasswordPage]
 class ForgotPasswordRoute extends PageRouteInfo<ForgotPasswordRouteArgs> {
   ForgotPasswordRoute({Key? key, List<PageRouteInfo>? children})
-      : super(
-          ForgotPasswordRoute.name,
-          args: ForgotPasswordRouteArgs(key: key),
-          initialChildren: children,
-        );
+    : super(
+        ForgotPasswordRoute.name,
+        args: ForgotPasswordRouteArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'ForgotPasswordRoute';
 
@@ -863,7 +934,7 @@ class ForgotPasswordRouteArgs {
 /// [HomePage]
 class HomeRoute extends PageRouteInfo<void> {
   const HomeRoute({List<PageRouteInfo>? children})
-      : super(HomeRoute.name, initialChildren: children);
+    : super(HomeRoute.name, initialChildren: children);
 
   static const String name = 'HomeRoute';
 
@@ -879,7 +950,7 @@ class HomeRoute extends PageRouteInfo<void> {
 /// [InventoryDashboardPage]
 class InventoryDashboardRoute extends PageRouteInfo<void> {
   const InventoryDashboardRoute({List<PageRouteInfo>? children})
-      : super(InventoryDashboardRoute.name, initialChildren: children);
+    : super(InventoryDashboardRoute.name, initialChildren: children);
 
   static const String name = 'InventoryDashboardRoute';
 
@@ -895,11 +966,11 @@ class InventoryDashboardRoute extends PageRouteInfo<void> {
 /// [LoginPage]
 class LoginRoute extends PageRouteInfo<LoginRouteArgs> {
   LoginRoute({Key? key, List<PageRouteInfo>? children})
-      : super(
-          LoginRoute.name,
-          args: LoginRouteArgs(key: key),
-          initialChildren: children,
-        );
+    : super(
+        LoginRoute.name,
+        args: LoginRouteArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'LoginRoute';
 
@@ -929,7 +1000,7 @@ class LoginRouteArgs {
 /// [OrderListPage]
 class OrderListRoute extends PageRouteInfo<void> {
   const OrderListRoute({List<PageRouteInfo>? children})
-      : super(OrderListRoute.name, initialChildren: children);
+    : super(OrderListRoute.name, initialChildren: children);
 
   static const String name = 'OrderListRoute';
 
@@ -945,7 +1016,7 @@ class OrderListRoute extends PageRouteInfo<void> {
 /// [OverallStockPage]
 class OverallStockRoute extends PageRouteInfo<void> {
   const OverallStockRoute({List<PageRouteInfo>? children})
-      : super(OverallStockRoute.name, initialChildren: children);
+    : super(OverallStockRoute.name, initialChildren: children);
 
   static const String name = 'OverallStockRoute';
 
@@ -965,16 +1036,18 @@ class PerformanceDetailsRoute
     Key? key,
     required String entityType,
     required String entityId,
+    String? entityName,
     List<PageRouteInfo>? children,
   }) : super(
-          PerformanceDetailsRoute.name,
-          args: PerformanceDetailsRouteArgs(
-            key: key,
-            entityType: entityType,
-            entityId: entityId,
-          ),
-          initialChildren: children,
-        );
+         PerformanceDetailsRoute.name,
+         args: PerformanceDetailsRouteArgs(
+           key: key,
+           entityType: entityType,
+           entityId: entityId,
+           entityName: entityName,
+         ),
+         initialChildren: children,
+       );
 
   static const String name = 'PerformanceDetailsRoute';
 
@@ -986,6 +1059,7 @@ class PerformanceDetailsRoute
         key: args.key,
         entityType: args.entityType,
         entityId: args.entityId,
+        entityName: args.entityName,
       );
     },
   );
@@ -996,6 +1070,7 @@ class PerformanceDetailsRouteArgs {
     this.key,
     required this.entityType,
     required this.entityId,
+    this.entityName,
   });
 
   final Key? key;
@@ -1004,9 +1079,11 @@ class PerformanceDetailsRouteArgs {
 
   final String entityId;
 
+  final String? entityName;
+
   @override
   String toString() {
-    return 'PerformanceDetailsRouteArgs{key: $key, entityType: $entityType, entityId: $entityId}';
+    return 'PerformanceDetailsRouteArgs{key: $key, entityType: $entityType, entityId: $entityId, entityName: $entityName}';
   }
 }
 
@@ -1014,7 +1091,7 @@ class PerformanceDetailsRouteArgs {
 /// [PreviewOrderPage]
 class PreviewOrderRoute extends PageRouteInfo<void> {
   const PreviewOrderRoute({List<PageRouteInfo>? children})
-      : super(PreviewOrderRoute.name, initialChildren: children);
+    : super(PreviewOrderRoute.name, initialChildren: children);
 
   static const String name = 'PreviewOrderRoute';
 
@@ -1030,11 +1107,11 @@ class PreviewOrderRoute extends PageRouteInfo<void> {
 /// [ProductListPage]
 class ProductListRoute extends PageRouteInfo<ProductListRouteArgs> {
   ProductListRoute({Key? key, List<PageRouteInfo>? children})
-      : super(
-          ProductListRoute.name,
-          args: ProductListRouteArgs(key: key),
-          initialChildren: children,
-        );
+    : super(
+        ProductListRoute.name,
+        args: ProductListRouteArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'ProductListRoute';
 
@@ -1064,7 +1141,7 @@ class ProductListRouteArgs {
 /// [ProductMgtPage]
 class ProductMgtRoute extends PageRouteInfo<void> {
   const ProductMgtRoute({List<PageRouteInfo>? children})
-      : super(ProductMgtRoute.name, initialChildren: children);
+    : super(ProductMgtRoute.name, initialChildren: children);
 
   static const String name = 'ProductMgtRoute';
 
@@ -1080,7 +1157,7 @@ class ProductMgtRoute extends PageRouteInfo<void> {
 /// [ProductTrendingListPage]
 class ProductTrendingListRoute extends PageRouteInfo<void> {
   const ProductTrendingListRoute({List<PageRouteInfo>? children})
-      : super(ProductTrendingListRoute.name, initialChildren: children);
+    : super(ProductTrendingListRoute.name, initialChildren: children);
 
   static const String name = 'ProductTrendingListRoute';
 
@@ -1096,7 +1173,7 @@ class ProductTrendingListRoute extends PageRouteInfo<void> {
 /// [ProfilePage]
 class ProfileRoute extends PageRouteInfo<void> {
   const ProfileRoute({List<PageRouteInfo>? children})
-      : super(ProfileRoute.name, initialChildren: children);
+    : super(ProfileRoute.name, initialChildren: children);
 
   static const String name = 'ProfileRoute';
 
@@ -1108,12 +1185,11 @@ class ProfileRoute extends PageRouteInfo<void> {
   );
 }
 
-/// gen
 /// generated route for
 /// [SalesReportPage]
 class SalesReportRoute extends PageRouteInfo<void> {
   const SalesReportRoute({List<PageRouteInfo>? children})
-      : super(SalesReportRoute.name, initialChildren: children);
+    : super(SalesReportRoute.name, initialChildren: children);
 
   static const String name = 'SalesReportRoute';
 
@@ -1129,7 +1205,7 @@ class SalesReportRoute extends PageRouteInfo<void> {
 /// [SalesmanOrderListPage]
 class SalesmanOrderListRoute extends PageRouteInfo<void> {
   const SalesmanOrderListRoute({List<PageRouteInfo>? children})
-      : super(SalesmanOrderListRoute.name, initialChildren: children);
+    : super(SalesmanOrderListRoute.name, initialChildren: children);
 
   static const String name = 'SalesmanOrderListRoute';
 
@@ -1145,7 +1221,7 @@ class SalesmanOrderListRoute extends PageRouteInfo<void> {
 /// [SalesmanOrderPage]
 class SalesmanOrderRoute extends PageRouteInfo<void> {
   const SalesmanOrderRoute({List<PageRouteInfo>? children})
-      : super(SalesmanOrderRoute.name, initialChildren: children);
+    : super(SalesmanOrderRoute.name, initialChildren: children);
 
   static const String name = 'SalesmanOrderRoute';
 
@@ -1161,7 +1237,7 @@ class SalesmanOrderRoute extends PageRouteInfo<void> {
 /// [SimpleEmployeesPage]
 class SimpleEmployeesRoute extends PageRouteInfo<void> {
   const SimpleEmployeesRoute({List<PageRouteInfo>? children})
-      : super(SimpleEmployeesRoute.name, initialChildren: children);
+    : super(SimpleEmployeesRoute.name, initialChildren: children);
 
   static const String name = 'SimpleEmployeesRoute';
 
@@ -1181,13 +1257,13 @@ class SplashScreenRoute extends PageRouteInfo<SplashScreenRouteArgs> {
     Future<void> Function()? onDelayComplete,
     List<PageRouteInfo>? children,
   }) : super(
-          SplashScreenRoute.name,
-          args: SplashScreenRouteArgs(
-            key: key,
-            onDelayComplete: onDelayComplete,
-          ),
-          initialChildren: children,
-        );
+         SplashScreenRoute.name,
+         args: SplashScreenRouteArgs(
+           key: key,
+           onDelayComplete: onDelayComplete,
+         ),
+         initialChildren: children,
+       );
 
   static const String name = 'SplashScreenRoute';
 
@@ -1222,7 +1298,7 @@ class SplashScreenRouteArgs {
 /// [StockListPage]
 class StockListRoute extends PageRouteInfo<void> {
   const StockListRoute({List<PageRouteInfo>? children})
-      : super(StockListRoute.name, initialChildren: children);
+    : super(StockListRoute.name, initialChildren: children);
 
   static const String name = 'StockListRoute';
 
@@ -1242,10 +1318,10 @@ class StoreDetailsRoute extends PageRouteInfo<StoreDetailsRouteArgs> {
     required String storeId,
     List<PageRouteInfo>? children,
   }) : super(
-          StoreDetailsRoute.name,
-          args: StoreDetailsRouteArgs(key: key, storeId: storeId),
-          initialChildren: children,
-        );
+         StoreDetailsRoute.name,
+         args: StoreDetailsRouteArgs(key: key, storeId: storeId),
+         initialChildren: children,
+       );
 
   static const String name = 'StoreDetailsRoute';
 
@@ -1275,7 +1351,7 @@ class StoreDetailsRouteArgs {
 /// [StoreOrderListPage]
 class StoreOrderListRoute extends PageRouteInfo<void> {
   const StoreOrderListRoute({List<PageRouteInfo>? children})
-      : super(StoreOrderListRoute.name, initialChildren: children);
+    : super(StoreOrderListRoute.name, initialChildren: children);
 
   static const String name = 'StoreOrderListRoute';
 
@@ -1291,7 +1367,7 @@ class StoreOrderListRoute extends PageRouteInfo<void> {
 /// [StoresListPage]
 class StoresListRoute extends PageRouteInfo<void> {
   const StoresListRoute({List<PageRouteInfo>? children})
-      : super(StoresListRoute.name, initialChildren: children);
+    : super(StoresListRoute.name, initialChildren: children);
 
   static const String name = 'StoresListRoute';
 
@@ -1307,7 +1383,7 @@ class StoresListRoute extends PageRouteInfo<void> {
 /// [SuperAdminPage]
 class SuperAdminRoute extends PageRouteInfo<void> {
   const SuperAdminRoute({List<PageRouteInfo>? children})
-      : super(SuperAdminRoute.name, initialChildren: children);
+    : super(SuperAdminRoute.name, initialChildren: children);
 
   static const String name = 'SuperAdminRoute';
 
@@ -1327,10 +1403,10 @@ class SupplierDetailsRoute extends PageRouteInfo<SupplierDetailsRouteArgs> {
     required Partner company,
     List<PageRouteInfo>? children,
   }) : super(
-          SupplierDetailsRoute.name,
-          args: SupplierDetailsRouteArgs(key: key, company: company),
-          initialChildren: children,
-        );
+         SupplierDetailsRoute.name,
+         args: SupplierDetailsRouteArgs(key: key, company: company),
+         initialChildren: children,
+       );
 
   static const String name = 'SupplierDetailsRoute';
 
@@ -1360,7 +1436,7 @@ class SupplierDetailsRouteArgs {
 /// [SupplierListPage]
 class SupplierListRoute extends PageRouteInfo<void> {
   const SupplierListRoute({List<PageRouteInfo>? children})
-      : super(SupplierListRoute.name, initialChildren: children);
+    : super(SupplierListRoute.name, initialChildren: children);
 
   static const String name = 'SupplierListRoute';
 
@@ -1376,7 +1452,7 @@ class SupplierListRoute extends PageRouteInfo<void> {
 /// [TaskListPage]
 class TaskListRoute extends PageRouteInfo<void> {
   const TaskListRoute({List<PageRouteInfo>? children})
-      : super(TaskListRoute.name, initialChildren: children);
+    : super(TaskListRoute.name, initialChildren: children);
 
   static const String name = 'TaskListRoute';
 
@@ -1388,24 +1464,11 @@ class TaskListRoute extends PageRouteInfo<void> {
   );
 }
 
-class TaxiBookingDetailsRouteArgs {
-  const TaxiBookingDetailsRouteArgs({this.key, required this.bookingId});
-
-  final Key? key;
-
-  final String bookingId;
-
-  @override
-  String toString() {
-    return 'TaxiBookingDetailsRouteArgs{key: $key, bookingId: $bookingId}';
-  }
-}
-
 /// generated route for
 /// [TransactionsPage]
 class TransactionsRoute extends PageRouteInfo<void> {
   const TransactionsRoute({List<PageRouteInfo>? children})
-      : super(TransactionsRoute.name, initialChildren: children);
+    : super(TransactionsRoute.name, initialChildren: children);
 
   static const String name = 'TransactionsRoute';
 
@@ -1425,10 +1488,10 @@ class UserLedgerRoute extends PageRouteInfo<UserLedgerRouteArgs> {
     required UserInfo user,
     List<PageRouteInfo>? children,
   }) : super(
-          UserLedgerRoute.name,
-          args: UserLedgerRouteArgs(key: key, user: user),
-          initialChildren: children,
-        );
+         UserLedgerRoute.name,
+         args: UserLedgerRouteArgs(key: key, user: user),
+         initialChildren: children,
+       );
 
   static const String name = 'UserLedgerRoute';
 
@@ -1462,10 +1525,10 @@ class UserOrderDetailsRoute extends PageRouteInfo<UserOrderDetailsRouteArgs> {
     required String orderId,
     List<PageRouteInfo>? children,
   }) : super(
-          UserOrderDetailsRoute.name,
-          args: UserOrderDetailsRouteArgs(key: key, orderId: orderId),
-          initialChildren: children,
-        );
+         UserOrderDetailsRoute.name,
+         args: UserOrderDetailsRouteArgs(key: key, orderId: orderId),
+         initialChildren: children,
+       );
 
   static const String name = 'UserOrderDetailsRoute';
 
@@ -1495,7 +1558,7 @@ class UserOrderDetailsRouteArgs {
 /// [WishlistPage]
 class WishlistRoute extends PageRouteInfo<void> {
   const WishlistRoute({List<PageRouteInfo>? children})
-      : super(WishlistRoute.name, initialChildren: children);
+    : super(WishlistRoute.name, initialChildren: children);
 
   static const String name = 'WishlistRoute';
 

@@ -564,7 +564,8 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
       emit(AdminOrderListFetchError('Failed to fetch orders: $e'));
     }
   }
-  Future<String> fetchEntityName(String entityType, String entityId) async {
+  Future<String> fetchEntityName(String entityType, String entityId,
+      {String? entityName}) async {
     try {
       final state = this.state;
       List<UserInfo> users = [];
@@ -593,6 +594,8 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
             orElse: () => StoreDto(storeId: entityId, name: entityId, createdBy: '', createdAt: DateTime.timestamp()),
           );
           return store.name;
+        case 'product':
+          return entityName??'Unknown';
         default:
           return entityId;
       }

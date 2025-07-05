@@ -9,7 +9,9 @@ import 'package:requirment_gathering_app/super_admin_module/data/tenant_company_
 import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.dart';
 import 'package:requirment_gathering_app/super_admin_module/repository/tenant_company_repository.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 class TenantCompanyRepository implements ITenantCompanyRepository {
   final IFirestorePathProvider _firestoreProvider;
@@ -71,27 +73,46 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
         .doc(userId)
         .set(adminUser.toMap());
   }
-
   @override
-  Future<String> addUserToCompany(
-      UserInfoDto userInfoDto, String password) async {
-    UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-      email: userInfoDto.email ?? '',
-      password: password,
-    );
-    String userId = userCredential.user!.uid;
+  Future<String> addUserToCompany(UserInfoDto userInfoDto, String? password) async {
     if (userInfoDto.companyId == null || userInfoDto.companyId!.isEmpty) {
       throw Exception('Company ID is missing. Cannot add user.');
     }
-    UserInfoDto updatedUserInfo = userInfoDto.copyWith(userId: userId);
+
+    String userId;
+    UserInfoDto updatedUserInfo;
+
+    if (userInfoDto.userType == UserType.Employee) {
+      // For Employees: Create Firebase Auth credentials
+      if (password == null || password.isEmpty) {
+        throw Exception('Password is required for Employee users.');
+      }
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        email: userInfoDto.email ?? '',
+        password: password,
+      );
+      userId = userCredential.user!.uid;
+      updatedUserInfo = userInfoDto.copyWith(userId: userId);
+    } else {
+      // For non-Employees: Generate custom userId, no Firebase Auth
+      userId = const Uuid().v4(); // Generate unique userId
+      updatedUserInfo = userInfoDto.copyWith(userId: userId);
+    }
+
+    // Add to tenant users collection (all users)
     await _firestoreProvider
         .getTenantUsersRef(userInfoDto.companyId!)
         .doc(userId)
         .set(updatedUserInfo.toMap());
-    await _firestoreProvider
-        .getCommonUsersPath()
-        .doc(userId)
-        .set(updatedUserInfo.toMap());
+
+    // Only add Employees to common users collection
+    if (userInfoDto.userType == UserType.Employee) {
+      await _firestoreProvider
+          .getCommonUsersPath()
+          .doc(userId)
+          .set(updatedUserInfo.toMap());
+    }
+
     return userId;
   }
 

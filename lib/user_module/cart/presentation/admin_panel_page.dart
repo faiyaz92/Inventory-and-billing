@@ -1027,8 +1027,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
     );
   }
 
-  Widget _buildOrderCard(
-      BuildContext context, Order order, AdminOrderListFetchSuccess state) {
+  Widget _buildOrderCard(BuildContext context, Order order, AdminOrderListFetchSuccess state) {
     final statusStyles = _adminOrderCubit.getStatusColors(order.status);
     return Card(
       elevation: 4,
@@ -1037,8 +1036,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
       ),
       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
       child: InkWell(
-        onTap: () =>
-            sl<Coordinator>().navigateToAdminOrderDetailsPage(order.id),
+        onTap: () => sl<Coordinator>().navigateToAdminOrderDetailsPage(order.id),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
@@ -1053,26 +1051,43 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                     size: 36,
                   ),
                   const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Order #${order.id}',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
-                          ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Order #${order.id}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
                         ),
-                        Text(
-                          'Customer: ${order.userName}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textSecondary,
-                          ),
+                      ),
+                      Text(
+                        'Customer: ${order.userName}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
                         ),
-                      ],
+                      ),
+                    ],
+                  ),
+                  Expanded(child: SizedBox()),
+                  ElevatedButton(
+                    onPressed: () => sl<Coordinator>().navigateToBillingPage(orderId: order.id),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      minimumSize: const Size(40, 30),
+                    ),
+                    child: const Text(
+                      'Create Bill',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.white,
+                      ),
                     ),
                   ),
                 ],
@@ -1088,9 +1103,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  context
-                      .read<AdminOrderCubit>()
-                      .formatOrderDate(order.orderDate),
+                  context.read<AdminOrderCubit>().formatOrderDate(order.orderDate),
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
@@ -1126,9 +1139,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                     children: [
                       _buildTableRow(
                         'Products',
-                        context
-                            .read<AdminOrderCubit>()
-                            .getProductNames(order.items),
+                        context.read<AdminOrderCubit>().getProductNames(order.items),
                         maxLines: 2,
                       ),
                       _buildTableRow(
@@ -1137,7 +1148,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                         valueColor: statusStyles['color'],
                         backgroundColor: statusStyles['backgroundColor'],
                         valueWeight: order.status.toLowerCase() == 'pending' ||
-                                order.status.toLowerCase() == 'processing'
+                            order.status.toLowerCase() == 'processing'
                             ? FontWeight.bold
                             : null,
                       ),
@@ -1162,7 +1173,6 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
       ),
     );
   }
-
   TableRow _buildTableRow(
     String label,
     String value, {
