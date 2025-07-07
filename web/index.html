@@ -1,19 +1,5 @@
-<!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
@@ -32,6 +18,27 @@
   <title>requirment_gathering_app</title>
   <link rel="manifest" href="manifest.json">
 
+  <!-- Firebase SDKs (loaded as ES Modules) -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getAuth } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAY3TseN8w0IvVJIxpaYvLKnP3H1DmtFYg",
+      authDomain: "requiementgathering.firebaseapp.com",
+      projectId: "requiementgathering",
+      storageBucket: "requiementgathering.firebasestorage.app",
+      messagingSenderId: "297040139948",
+      appId: "1:297040139948:web:4a339a1d3150e95a3c3109",
+      measurementId: "G-TB2KW7KLLB"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    console.log('Firebase initialized in index.html');
+  </script>
+
   <script>
     // The value below is injected by flutter build, do not touch.
     const serviceWorkerVersion = null;
@@ -40,7 +47,7 @@
   <script src="flutter.js" defer></script>
 </head>
 <body>
-  <script>
+<script>
     window.addEventListener('load', function(ev) {
       // Download main.dart.js
       _flutter.loader.loadEntrypoint({

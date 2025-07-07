@@ -13,8 +13,9 @@ class Order {
   final String? orderTakenBy;
   final String? orderDeliveredBy;
   final String? responsibleForDelivery;
-  final String? lastUpdatedBy; // Added for last updated by
-  final String? storeId; // New field
+  final String? lastUpdatedBy;
+  final String? storeId;
+  final String? billNumber; // New field
 
   Order({
     required this.id,
@@ -30,7 +31,8 @@ class Order {
     this.orderDeliveredBy,
     this.responsibleForDelivery,
     this.lastUpdatedBy,
-     this.storeId, // New field
+    this.storeId,
+    this.billNumber, // New field
   });
 
   factory Order.fromDto(OrderDto dto) {
@@ -48,7 +50,8 @@ class Order {
       orderDeliveredBy: dto.orderDeliveredBy,
       responsibleForDelivery: dto.responsibleForDelivery,
       lastUpdatedBy: dto.lastUpdatedBy,
-      storeId: dto.storeId, // New field
+      storeId: dto.storeId,
+      billNumber: dto.billNumber, // New field
     );
   }
 }
@@ -79,5 +82,34 @@ class CartItem {
       taxRate: dto.taxRate,
       taxAmount: dto.taxAmount,
     );
+  }
+
+  CartItem copyWith({
+    String? productId,
+    String? productName,
+    double? price,
+    int? quantity,
+    double? taxRate,
+    double? taxAmount,
+  }) {
+    return CartItem(
+      productId: productId ?? this.productId,
+      productName: productName ?? this.productName,
+      price: price ?? this.price,
+      quantity: quantity ?? this.quantity,
+      taxRate: taxRate ?? this.taxRate,
+      taxAmount: taxAmount ?? this.taxAmount,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'productId': productId,
+      'productName': productName,
+      'price': price,
+      'quantity': quantity,
+      'taxRate': taxRate,
+      'taxAmount': taxAmount,
+    };
   }
 }

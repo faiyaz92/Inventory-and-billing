@@ -1,3 +1,4 @@
+import 'package:pdf/widgets.dart' as pw;
 import 'package:requirment_gathering_app/company_admin_module/data/product/category.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/sub_category.dart';
@@ -208,13 +209,6 @@ class AppCoordinator implements Coordinator {
   }
 
   @override
-  Future<void> navigateToBillingPage() {
-    // TODO: implement navigateToBillingPage
-    // return _router.push(const BillingRoute());
-    return _router.push(const AddStockRoute()); //dummy
-  }
-
-  @override
   Future navigateToSalesReportPage() {
     // TODO: implement navigateToSalesReportPage
     return _router.push(const SalesReportRoute());
@@ -354,10 +348,11 @@ class AppCoordinator implements Coordinator {
       _router.push(const CustomerOrderListRoute());
 
   @override
-  Future<dynamic> navigateToPerformanceDetailsPage(
-          {required String entityType, required String entityId}) =>
-      _router.push(
-          PerformanceDetailsRoute(entityType: entityType, entityId: entityId));
+  Future<dynamic> navigateToPerformanceDetailsPage({required String entityType,
+    required String entityId,
+    String? entityName}) =>
+      _router.push(PerformanceDetailsRoute(
+          entityType: entityType, entityId: entityId, entityName: entityName));
 
   @override
   Future<dynamic> navigateToCompanyPerformancePage() =>
@@ -374,49 +369,13 @@ class AppCoordinator implements Coordinator {
   }
 
   @override
-  Future<dynamic> navigateToTaxiBookingPage() {
-    return _router.push(const TaxiBookingRoute());
+  Future<dynamic> navigateToBillingPage({String? orderId}) {
+    return _router.push(BillingRoute(orderId: orderId));
   }
 
   @override
-  Future<dynamic> navigateToTaxiSettingsPage() {
-    return _router.push(const TaxiSettingsRoute());
-  }
-
-  @override
-  Future<dynamic> navigateToTaxiBookingsAdminPage() {
-    return _router.push(const TaxiBookingsAdminRoute());
-  }
-
-  @override
-  Future<dynamic> navigateToDriverListPage() {
-    return _router.push(const DriverListRoute());
-  }
-
-  @override
-  Future<dynamic> navigateToDriverPerformanceDetailsPage(
-      {required String driverId}) {
-    return _router.push(DriverPerformanceDetailsRoute(driverId: driverId));
-  }
-
-  @override
-  Future<dynamic> navigateToTaxiCompanyPerformancePage() {
-    return _router.push(const TaxiCompanyPerformanceRoute());
-  }
-
-  @override
-  Future<dynamic> navigateToTaxiVisitorCounterPage() {
-    return _router.push(const VisitorCounterRoute());
-  }
-
-  @override
-  Future<dynamic> navigateToBookingDetailsPage({required String bookingId}) {
-    return _router.push(TaxiBookingDetailsRoute(bookingId: bookingId));
-  }@override
-  Future<dynamic> navigateToUserBookingHistory() {
-    return _router.push(const TaxiBookingsUserRoute());
-  }@override
-  Future<dynamic> navigateToWebApp() {
-    return _router.push(const RidePlatinumRoute());
+  Future<dynamic> navigateToBillPdfPage(
+      {required pw.Document pdf, required String billNumber}) {
+    return _router.push(BillPdfRoute(pdf: pdf, billNumber: billNumber));
   }
 }

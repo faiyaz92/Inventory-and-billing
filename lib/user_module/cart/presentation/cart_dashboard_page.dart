@@ -13,7 +13,7 @@ class CartDashboardPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Cart Dashboard',
+        title: 'Sales Dashboard',
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -63,20 +63,20 @@ class CartDashboardPage extends StatelessWidget {
                       _buildDashboardCard(
                         context,
                         'Salesman Orders',
-                        Icons.receipt,
-                        Colors.orange,
+                        Icons.book,
+                        Colors.blueAccent,
                             () => sl<Coordinator>().navigateToSalesManOrderPage(),
                       ),
                       _buildDashboardCard(
                         context,
                         'Top Salesman List',
-                        Icons.person,
+                        Icons.people,
                         Colors.green,
                             () => sl<Coordinator>().navigateToSalesmanOrderListPage(),
                       ),
                       _buildDashboardCard(
                         context,
-                        'Top Delivery Man List',
+                        'Top Delivery Men List',
                         Icons.delivery_dining,
                         Colors.purple,
                             () => sl<Coordinator>().navigateToDeliveryManOrderListPage(),
@@ -90,7 +90,7 @@ class CartDashboardPage extends StatelessWidget {
                       ),
                       _buildDashboardCard(
                         context,
-                        'Top Customer List',
+                        'Top Customers List',
                         Icons.people,
                         Colors.teal,
                             () => sl<Coordinator>().navigateToCustomerOrderListPage(),
@@ -108,57 +108,12 @@ class CartDashboardPage extends StatelessWidget {
                         Colors.blueAccent,
                             () => sl<Coordinator>().navigateToProductPerformanceListPage(),
                       ),
-
                       _buildDashboardCard(
                         context,
-                        'Taxi booking',
-                        Icons.car_rental,
-                        Colors.blueAccent,
-                            () => sl<Coordinator>().navigateToTaxiBookingPage(),
-                      ), _buildDashboardCard(
-                        context,
-                        'Taxi admin',
-                        Icons.admin_panel_settings,
-                        Colors.blueAccent,
-                            () => sl<Coordinator>().navigateToTaxiBookingsAdminPage(),
-                      ), _buildDashboardCard(
-                        context,
-                        'Taxi Setting',
-                        Icons.settings,
-                        Colors.blueAccent,
-                            () => sl<Coordinator>().navigateToTaxiSettingsPage(),
-                      ),_buildDashboardCard(
-                        context,
-                        'Driver List',
-                        Icons.settings,
-                        Colors.blueAccent,
-                            () => sl<Coordinator>().navigateToDriverListPage(),
-                      ),_buildDashboardCard(
-                        context,
-                        'Taxi Company performance',
-                        Icons.settings,
-                        Colors.blueAccent,
-                            () => sl<Coordinator>().navigateToTaxiCompanyPerformancePage(),
-                      ),_buildDashboardCard(
-                        context,
-                        'Taxi Company visitor counter',
-                        Icons.settings,
-                        Colors.blueAccent,
-                            () => sl<Coordinator>().navigateToTaxiVisitorCounterPage(),
-                      ),_buildDashboardCard(
-                        context,
-                        'Booking history',
-                        Icons.history,
-                        Colors.blueAccent,
-                            () => sl<Coordinator>().navigateToUserBookingHistory(),
-                      ),
-                      
-                      _buildDashboardCard(
-                        context,
-                        'WEB',
-                        Icons.history,
-                        Colors.blueAccent,
-                            () => sl<Coordinator>().navigateToWebApp(),
+                        'Billing',
+                        Icons.receipt,
+                        Colors.orange,
+                            () => sl<Coordinator>().navigateToBillingPage(),
                       ),
                     ],
                   ),

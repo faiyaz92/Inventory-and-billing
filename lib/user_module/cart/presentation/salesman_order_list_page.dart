@@ -8,6 +8,7 @@ import 'package:requirment_gathering_app/core_module/service_locator/service_loc
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/custom_loading_dialog.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_cubit.dart';
 import 'package:shimmer/shimmer.dart';
@@ -80,8 +81,10 @@ class _SalesmanOrderListPageState extends State<SalesmanOrderListPage> {
                     label: Text(
                       filter['label'] as String,
                       style: TextStyle(
-                        color: isSelected ? Colors.white : AppColors.textPrimary,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color:
+                            isSelected ? Colors.white : AppColors.textPrimary,
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),
                     selected: isSelected,
@@ -187,8 +190,10 @@ class _SalesmanOrderListPageState extends State<SalesmanOrderListPage> {
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-          leading: const Icon(Icons.calendar_today, color: AppColors.primary, size: 36),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          leading: const Icon(Icons.calendar_today,
+              color: AppColors.primary, size: 36),
           title: Text(
             'Date Range: ${formatter.format(_dateRange.start)} - ${formatter.format(_dateRange.end)}',
             style: const TextStyle(
@@ -213,13 +218,17 @@ class _SalesmanOrderListPageState extends State<SalesmanOrderListPage> {
     );
   }
 
-  Map<UserInfo, List<Order>> _groupOrdersBySalesman(List<Order> orders, List<UserInfo> users) {
+  Map<UserInfo, List<Order>> _groupOrdersBySalesman(
+      List<Order> orders, List<UserInfo> users) {
     final Map<UserInfo, List<Order>> grouped = {};
     for (var order in orders) {
       if (order.orderTakenBy != null) {
         final salesman = users.firstWhere(
-              (user) => user.userId == order.orderTakenBy,
-          orElse: () => UserInfo(userId: order.orderTakenBy, userName: 'Unknown'),
+          (user) => user.userId == order.orderTakenBy,
+          orElse: () => UserInfo(
+              userId: order.orderTakenBy,
+              userName: 'Unknown',
+              userType: UserType.Customer),
         );
         grouped.putIfAbsent(salesman, () => []).add(order);
       }
@@ -228,7 +237,8 @@ class _SalesmanOrderListPageState extends State<SalesmanOrderListPage> {
   }
 
   Widget _buildSalesmanCard(UserInfo salesman, List<Order> orders) {
-    final totalAmount = orders.fold(0.0, (sum, order) => sum + order.totalAmount);
+    final totalAmount =
+        orders.fold(0.0, (sum, order) => sum + order.totalAmount);
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -325,19 +335,19 @@ class _SalesmanOrderListPageState extends State<SalesmanOrderListPage> {
   }
 
   TableRow _buildTableRow(
-      String label,
-      String value, {
-        bool isBold = false,
-        Color? valueColor = AppColors.textSecondary,
-        Color? backgroundColor,
-        BorderRadius? borderRadius,
-      }) {
+    String label,
+    String value, {
+    bool isBold = false,
+    Color? valueColor = AppColors.textSecondary,
+    Color? backgroundColor,
+    BorderRadius? borderRadius,
+  }) {
     return TableRow(
       decoration: backgroundColor != null || borderRadius != null
           ? BoxDecoration(
-        color: backgroundColor,
-        borderRadius: borderRadius,
-      )
+              color: backgroundColor,
+              borderRadius: borderRadius,
+            )
           : null,
       children: [
         Padding(
@@ -377,7 +387,8 @@ class _SalesmanOrderListPageState extends State<SalesmanOrderListPage> {
           highlightColor: Colors.grey[100]!,
           child: Card(
             elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -445,7 +456,8 @@ class _SalesmanOrderListPageState extends State<SalesmanOrderListPage> {
                           TableRow(
                             children: [
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 4.0, horizontal: 8.0),
                                 child: Container(
                                   width: 80,
                                   height: 14,
@@ -453,7 +465,8 @@ class _SalesmanOrderListPageState extends State<SalesmanOrderListPage> {
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 4.0, horizontal: 8.0),
                                 child: Container(
                                   width: 50,
                                   height: 14,
@@ -472,7 +485,8 @@ class _SalesmanOrderListPageState extends State<SalesmanOrderListPage> {
                             ),
                             children: [
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 4.0, horizontal: 8.0),
                                 child: Container(
                                   width: 80,
                                   height: 14,
@@ -480,7 +494,8 @@ class _SalesmanOrderListPageState extends State<SalesmanOrderListPage> {
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 4.0, horizontal: 8.0),
                                 child: Container(
                                   width: 50,
                                   height: 14,
@@ -529,9 +544,11 @@ class _SalesmanOrderListPageState extends State<SalesmanOrderListPage> {
                     if (state is AdminOrderListFetchLoading) {
                       return const CustomLoadingDialog();
                     } else if (state is AdminOrderListFetchSuccess) {
-                      final salesmanOrders = _groupOrdersBySalesman(state.orders, state.users);
+                      final salesmanOrders =
+                          _groupOrdersBySalesman(state.orders, state.users);
                       if (salesmanOrders.isEmpty) {
-                        return const Center(child: Text('No salesmen found for this period'));
+                        return const Center(
+                            child: Text('No salesmen found for this period'));
                       }
                       return ListView.builder(
                         padding: const EdgeInsets.only(bottom: 16.0),

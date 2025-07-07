@@ -7,6 +7,7 @@ import 'dart:async' as _i5;
 
 import 'package:flutter_bloc/flutter_bloc.dart' as _i7;
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:pdf/widgets.dart' as _i15;
 import 'package:requirment_gathering_app/company_admin_module/data/product/category.dart'
     as _i13;
 import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart'
@@ -22,7 +23,7 @@ import 'package:requirment_gathering_app/core_module/presentation/login/splash_c
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart'
     as _i4;
 import 'package:requirment_gathering_app/core_module/services/auth_service.dart'
-    as _i15;
+    as _i16;
 import 'package:requirment_gathering_app/super_admin_module/data/tenant_company.dart'
     as _i10;
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart'
@@ -30,7 +31,7 @@ import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart'
 import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.dart'
     as _i2;
 import 'package:requirment_gathering_app/super_admin_module/services/tenant_company_service.dart'
-    as _i16;
+    as _i17;
 import 'package:requirment_gathering_app/user_module/data/partner.dart' as _i9;
 
 // ignore_for_file: type=lint
@@ -586,15 +587,6 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
       ) as _i5.Future<dynamic>);
 
   @override
-  _i5.Future<dynamic> navigateToBillingPage() => (super.noSuchMethod(
-        Invocation.method(
-          #navigateToBillingPage,
-          [],
-        ),
-        returnValue: _i5.Future<dynamic>.value(),
-      ) as _i5.Future<dynamic>);
-
-  @override
   _i5.Future<dynamic> navigateToSalesReportPage() => (super.noSuchMethod(
         Invocation.method(
           #navigateToSalesReportPage,
@@ -845,6 +837,7 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
   _i5.Future<dynamic> navigateToPerformanceDetailsPage({
     required String? entityType,
     required String? entityId,
+    String? entityName,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -853,6 +846,7 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
           {
             #entityType: entityType,
             #entityId: entityId,
+            #entityName: entityName,
           },
         ),
         returnValue: _i5.Future<dynamic>.value(),
@@ -889,80 +883,29 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
       ) as _i5.Future<dynamic>);
 
   @override
-  _i5.Future<dynamic> navigateToTaxiBookingPage() => (super.noSuchMethod(
-        Invocation.method(
-          #navigateToTaxiBookingPage,
-          [],
-        ),
-        returnValue: _i5.Future<dynamic>.value(),
-      ) as _i5.Future<dynamic>);
-
-  @override
-  _i5.Future<dynamic> navigateToTaxiSettingsPage() => (super.noSuchMethod(
-        Invocation.method(
-          #navigateToTaxiSettingsPage,
-          [],
-        ),
-        returnValue: _i5.Future<dynamic>.value(),
-      ) as _i5.Future<dynamic>);
-
-  @override
-  _i5.Future<dynamic> navigateToTaxiBookingsAdminPage() => (super.noSuchMethod(
-        Invocation.method(
-          #navigateToTaxiBookingsAdminPage,
-          [],
-        ),
-        returnValue: _i5.Future<dynamic>.value(),
-      ) as _i5.Future<dynamic>);
-
-  @override
-  _i5.Future<dynamic> navigateToDriverListPage() => (super.noSuchMethod(
-        Invocation.method(
-          #navigateToDriverListPage,
-          [],
-        ),
-        returnValue: _i5.Future<dynamic>.value(),
-      ) as _i5.Future<dynamic>);
-
-  @override
-  _i5.Future<dynamic> navigateToDriverPerformanceDetailsPage(
-          {required String? driverId}) =>
+  _i5.Future<dynamic> navigateToBillingPage({String? orderId}) =>
       (super.noSuchMethod(
         Invocation.method(
-          #navigateToDriverPerformanceDetailsPage,
+          #navigateToBillingPage,
           [],
-          {#driverId: driverId},
+          {#orderId: orderId},
         ),
         returnValue: _i5.Future<dynamic>.value(),
       ) as _i5.Future<dynamic>);
 
   @override
-  _i5.Future<dynamic> navigateToBookingDetailsPage(
-          {required String? bookingId}) =>
+  _i5.Future<dynamic> navigateToBillPdfPage({
+    required _i15.Document? pdf,
+    required String? billNumber,
+  }) =>
       (super.noSuchMethod(
         Invocation.method(
-          #navigateToBookingDetailsPage,
+          #navigateToBillPdfPage,
           [],
-          {#bookingId: bookingId},
-        ),
-        returnValue: _i5.Future<dynamic>.value(),
-      ) as _i5.Future<dynamic>);
-
-  @override
-  _i5.Future<dynamic> navigateToTaxiCompanyPerformancePage() =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #navigateToTaxiCompanyPerformancePage,
-          [],
-        ),
-        returnValue: _i5.Future<dynamic>.value(),
-      ) as _i5.Future<dynamic>);
-
-  @override
-  _i5.Future<dynamic> navigateToTaxiVisitorCounterPage() => (super.noSuchMethod(
-        Invocation.method(
-          #navigateToTaxiVisitorCounterPage,
-          [],
+          {
+            #pdf: pdf,
+            #billNumber: billNumber,
+          },
         ),
         returnValue: _i5.Future<dynamic>.value(),
       ) as _i5.Future<dynamic>);
@@ -971,7 +914,7 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
 /// A class which mocks [AuthService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAuthService extends _i1.Mock implements _i15.AuthService {
+class MockAuthService extends _i1.Mock implements _i16.AuthService {
   MockAuthService() {
     _i1.throwOnMissingStub(this);
   }
@@ -1027,7 +970,7 @@ class MockAuthService extends _i1.Mock implements _i15.AuthService {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockTenantCompanyService extends _i1.Mock
-    implements _i16.TenantCompanyService {
+    implements _i17.TenantCompanyService {
   MockTenantCompanyService() {
     _i1.throwOnMissingStub(this);
   }

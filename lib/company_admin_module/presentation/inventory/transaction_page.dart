@@ -772,7 +772,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                     : transaction.type.toUpperCase(),
                 Colors.blue[50]!),
             _buildTableRow(
-                'Product ID', transaction.productId, Colors.green[50]!),
+                'Product ID', transaction.productName, Colors.green[50]!),
             _buildTableRow('Quantity', transaction.quantity.toString(),
                 Colors.orange[50]!),
             _buildTableRow(

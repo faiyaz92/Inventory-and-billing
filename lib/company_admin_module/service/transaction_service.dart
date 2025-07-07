@@ -130,7 +130,7 @@ class TransactionServiceImpl implements TransactionService {
       customerId: transaction.customerId,
       timestamp: transaction.timestamp,
       userName: userName,
-      userId: userId,
+      userId: userId, productName: transaction.productName,
     );
     await transactionRepository.addTransaction(
         companyId, billingTransaction.toDto());

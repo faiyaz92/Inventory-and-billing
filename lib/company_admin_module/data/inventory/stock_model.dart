@@ -66,4 +66,36 @@ class StockModel {
       tax: tax,
     );
   }
+
+  StockModel copyWith({
+    String? id,
+    String? productId,
+    String? storeId,
+    int? quantity,
+    DateTime? lastUpdated,
+    String? name,
+    double? price,
+    int? stock,
+    String? category,
+    String? categoryId,
+    String? subcategoryId,
+    String? subcategoryName,
+    double? tax,
+  }) {
+    return StockModel(
+      id: id ?? this.id,
+      productId: productId ?? this.productId,
+      storeId: storeId ?? this.storeId,
+      quantity: quantity ?? this.quantity,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
+      name: name ?? this.name,
+      price: price ?? this.price,
+      stock: stock ?? this.stock,
+      category: category ?? this.category,
+      categoryId: categoryId ?? this.categoryId,
+      subcategoryId: subcategoryId ?? this.subcategoryId,
+      subcategoryName: subcategoryName ?? this.subcategoryName,
+      tax: tax ?? this.tax,
+    );
+  }
 }

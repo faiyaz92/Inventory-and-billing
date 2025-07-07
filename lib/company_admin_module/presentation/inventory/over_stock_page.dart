@@ -18,7 +18,6 @@ class OverallStockPage extends StatelessWidget {
     return BlocProvider(
       create: (_) => OverallStockCubit(
         stockService: sl<StockService>(),
-        productService: sl<ProductService>(),
       )..loadOverallStock(),
       child: Scaffold(
         appBar: const CustomAppBar(

@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/user_product_model.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/cart_cubit.dart';
@@ -22,12 +23,11 @@ class SalesmanOrderLoading extends SalesmanOrderState {
 class SalesmanOrderLoaded extends SalesmanOrderState {
   final List<UserInfo> customers;
   final List<UserProduct> products;
-  final List<UserProduct> filteredProducts; // Added for search
+  final List<UserProduct> filteredProducts;
   final Map<String, int> productQuantities;
   final UserInfo? selectedCustomer;
-  final String? customCustomerName;
   final String searchQuery;
-  final bool? isLoading; // Added for search
+  final bool? isLoading;
 
   SalesmanOrderLoaded({
     required this.customers,
@@ -35,7 +35,6 @@ class SalesmanOrderLoaded extends SalesmanOrderState {
     required this.filteredProducts,
     required this.productQuantities,
     this.selectedCustomer,
-    this.customCustomerName,
     this.searchQuery = '',
     this.isLoading = false,
   });
@@ -69,23 +68,19 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
 
   List<UserInfo> _customers = [];
   List<UserProduct> _products = [];
-  List<UserProduct> _filteredProducts = []; // Added for search
+  List<UserProduct> _filteredProducts = [];
   Map<String, int> _productQuantities = {};
   UserInfo? _selectedCustomer;
-  String? _customCustomerName;
-  String _searchQuery = ''; // Added for search
+  String _searchQuery = '';
 
   Future<void> _initialize() async {
     emit(SalesmanOrderLoading());
     try {
-      // Fetch customers
       _customers = await employeeServices.getUsersFromTenantCompany();
+      _customers = _customers.where((user) => user.userType == UserType.Customer).toList();
 
-      // Fetch products
       _products = await productService.getProducts();
-      _filteredProducts = _products; // Initialize filtered products
-
-      // Initialize product quantities
+      _filteredProducts = _products;
       _productQuantities = {for (var product in _products) product.id: 0};
 
       emit(SalesmanOrderLoaded(
@@ -94,7 +89,6 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
         filteredProducts: _filteredProducts,
         productQuantities: _productQuantities,
         selectedCustomer: _selectedCustomer,
-        customCustomerName: _customCustomerName,
         searchQuery: _searchQuery,
         isLoading: true,
       ));
@@ -103,31 +97,33 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
     }
   }
 
-  void selectCustomer(UserInfo? customer) {
-    _selectedCustomer = customer;
-    _customCustomerName =
-        null; // Reset custom customer name if a customer is selected
-    emit(SalesmanOrderLoaded(
-      customers: _customers,
-      products: _products,
-      filteredProducts: _filteredProducts,
-      productQuantities: _productQuantities,
-      selectedCustomer: _selectedCustomer,
-      customCustomerName: _customCustomerName,
-      searchQuery: _searchQuery,
-    ));
+  Future<void> refreshCustomers() async {
+    emit(SalesmanOrderLoading(dialogMessage: 'Refreshing customers...'));
+    try {
+      _customers = await employeeServices.getUsersFromTenantCompany();
+      _customers = _customers.where((user) => user.userType == UserType.Customer).toList();
+      emit(SalesmanOrderLoaded(
+        customers: _customers,
+        products: _products,
+        filteredProducts: _filteredProducts,
+        productQuantities: _productQuantities,
+        selectedCustomer: _selectedCustomer,
+        searchQuery: _searchQuery,
+      ));
+    } catch (e) {
+      emit(SalesmanOrderError('Failed to refresh customers: $e'));
+    }
   }
 
-  void setCustomCustomerName(String name) {
-    _customCustomerName = name;
-    _selectedCustomer = null; // Reset selected customer if custom name is used
+  void selectCustomer(UserInfo? customer) {
+    emit(SalesmanOrderInitial());
+    _selectedCustomer = customer;
     emit(SalesmanOrderLoaded(
       customers: _customers,
       products: _products,
       filteredProducts: _filteredProducts,
       productQuantities: _productQuantities,
       selectedCustomer: _selectedCustomer,
-      customCustomerName: _customCustomerName,
       searchQuery: _searchQuery,
     ));
   }
@@ -146,12 +142,10 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
       filteredProducts: _filteredProducts,
       productQuantities: _productQuantities,
       selectedCustomer: _selectedCustomer,
-      customCustomerName: _customCustomerName,
       searchQuery: _searchQuery,
     ));
   }
 
-  // Search functionality
   void searchProducts(String query) {
     _searchQuery = query;
     if (query.isEmpty) {
@@ -159,7 +153,7 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
     } else {
       _filteredProducts = _products
           .where((product) =>
-              product.name.toLowerCase().contains(query.toLowerCase()))
+          product.name.toLowerCase().contains(query.toLowerCase()))
           .toList();
     }
     emit(SalesmanOrderLoaded(
@@ -168,12 +162,10 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
       filteredProducts: _filteredProducts,
       productQuantities: _productQuantities,
       selectedCustomer: _selectedCustomer,
-      customCustomerName: _customCustomerName,
       searchQuery: _searchQuery,
     ));
   }
 
-  // Price calculation methods (similar to CartCubit)
   double calculateProductSubtotal(String productId) {
     final product = _products.firstWhere((p) => p.id == productId);
     final quantity = _productQuantities[productId] ?? 0;
@@ -183,7 +175,7 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
   double calculateProductTax(String productId) {
     final product = _products.firstWhere((p) => p.id == productId);
     final quantity = _productQuantities[productId] ?? 0;
-    return ((product.price * product.taxRate))* quantity;
+    return ((product.price * product.taxRate)) * quantity;
   }
 
   double calculateProductTotal(String productId) {
@@ -215,16 +207,13 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
   }
 
   Future<void> placeOrder() async {
-    if (_selectedCustomer == null &&
-        (_customCustomerName == null || _customCustomerName!.isEmpty)) {
-      emit(SalesmanOrderError(
-          'Please select a customer or enter a new customer name'));
+    if (_selectedCustomer == null) {
+      emit(SalesmanOrderError('Please select a customer'));
       return;
     }
 
     emit(SalesmanOrderLoading(dialogMessage: 'Wait...'));
     try {
-      // Add selected products to cart
       for (var product in _products) {
         final quantity = _productQuantities[product.id]!;
         if (quantity > 0) {
@@ -232,7 +221,6 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
         }
       }
 
-      // Calculate total and create order
       final totalAmount = await cartCubit.totalAmount;
       final items = cartCubit.state.items;
       final userInfo = await accountRepository.getUserInfo();
@@ -240,9 +228,8 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
       final storeId = userInfo?.storeId;
       final order = Order(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        userId: _selectedCustomer?.userId ??
-            'CUSTOM_${DateTime.now().millisecondsSinceEpoch}',
-        userName: _selectedCustomer?.userName ?? _customCustomerName!,
+        userId: _selectedCustomer!.userId!,
+        userName: _selectedCustomer!.name ?? 'Unknown',
         items: items,
         totalAmount: totalAmount,
         status: 'pending',
@@ -251,12 +238,8 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
         storeId: storeId,
       );
 
-      // Place the order
-      await orderCubit.placeOrderBySalesMan(
-        order,
-      );
+      await orderCubit.placeOrderBySalesMan(order);
 
-      // Clear cart after successful order placement
       await cartCubit.clearCart();
       emit(SalesmanOrderPlaced());
     } catch (e) {

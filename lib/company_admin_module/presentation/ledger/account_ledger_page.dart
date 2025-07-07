@@ -268,7 +268,7 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                "Base Construction Cost",
+                "Material Cost",
                 style:
                     defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
@@ -308,7 +308,7 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                "Current Base Due",
+                "Material Due",
                 style: defaultTextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -489,7 +489,7 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
-          child: const Text("Credit (Jama)"),
+          child: const Text("Credit"),
         ),
         ElevatedButton(
           onPressed: () => context
@@ -500,7 +500,7 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
-          child: const Text("Debit (Udhar)"),
+          child: const Text("Debit"),
         ),
       ],
     );
@@ -543,8 +543,8 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
                         children: [
                           Text(
                             txn?.type == "Debit"
-                                ? "Udhar: ₹${txn?.amount}"
-                                : "Jama: ₹${txn?.amount}",
+                                ? "Debit: ₹${txn?.amount}"
+                                : "Credit: ₹${txn?.amount}",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -617,7 +617,7 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
           value: _ledgerCubit,
           child: AlertDialog(
             title:
-                Text(state.isDebit ? "Add Debit (Udhar)" : "Add Credit (Jama)"),
+                Text(state.isDebit ? "Add Debit" : "Add Credit"),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,

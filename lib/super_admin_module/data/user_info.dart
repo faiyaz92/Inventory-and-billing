@@ -3,7 +3,6 @@ import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.d
 import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 
-
 class UserInfo extends Equatable {
   final String? userId;
   final String? companyId;
@@ -11,7 +10,7 @@ class UserInfo extends Equatable {
   final String? email;
   final String? userName;
   final Role? role;
-  final UserType? userType; // New field
+  final UserType? userType; // Nullable
   final double? latitude;
   final double? longitude;
   final double? dailyWage;
@@ -25,7 +24,7 @@ class UserInfo extends Equatable {
     this.email,
     this.userName,
     this.role,
-    this.userType, // New field
+    this.userType, // Optional
     this.latitude,
     this.longitude,
     this.dailyWage,
@@ -34,6 +33,11 @@ class UserInfo extends Equatable {
   });
 
   factory UserInfo.fromJson(Map<String, dynamic> json) {
+    final userTypeRaw = json['userType'] as String?;
+    final userType = UserTypeExtension.fromString(userTypeRaw) ?? UserType.Customer; // Default to Customer
+    if (userTypeRaw != null && userType == UserType.Customer) {
+      print('UserInfo.fromJson: Defaulted userType to Customer for raw value "$userTypeRaw"');
+    }
     return UserInfo(
       userId: json['userId'] as String?,
       companyId: json['companyId'] as String?,
@@ -41,7 +45,7 @@ class UserInfo extends Equatable {
       email: json['email'] as String?,
       userName: json['userName'] as String?,
       role: json['role'] != null ? RoleExtension.fromString(json['role']) : null,
-      userType: json['userType'] != null ? UserTypeExtension.fromString(json['userType']) : null, // New field
+      userType: userType,
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
       dailyWage: (json['dailyWage'] as num?)?.toDouble() ?? 500.0,
@@ -58,7 +62,7 @@ class UserInfo extends Equatable {
       'email': email,
       'userName': userName,
       'role': role?.name,
-      'userType': userType?.name, // New field
+      'userType': userType?.name, // Serialize as string
       'latitude': latitude,
       'longitude': longitude,
       'dailyWage': dailyWage,
@@ -74,7 +78,7 @@ class UserInfo extends Equatable {
     String? email,
     String? userName,
     Role? role,
-    UserType? userType, // New field
+    UserType? userType,
     double? latitude,
     double? longitude,
     double? dailyWage,
@@ -88,7 +92,7 @@ class UserInfo extends Equatable {
       email: email ?? this.email,
       userName: userName ?? this.userName,
       role: role ?? this.role,
-      userType: userType ?? this.userType, // New field
+      userType: userType ?? this.userType,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       dailyWage: dailyWage ?? this.dailyWage,
@@ -105,7 +109,7 @@ class UserInfo extends Equatable {
       email: email ?? '',
       userName: userName ?? '',
       role: role ?? Role.USER,
-      userType: userType ?? UserType.Employee, // New field with default
+      userType: userType ?? UserType.Customer, // Default to Customer
       latitude: latitude,
       longitude: longitude,
       dailyWage: dailyWage,
@@ -122,7 +126,7 @@ class UserInfo extends Equatable {
       email: dto.email,
       userName: dto.userName,
       role: dto.role,
-      userType: dto.userType, // New field
+      userType: dto.userType,
       latitude: dto.latitude,
       longitude: dto.longitude,
       dailyWage: dto.dailyWage,
@@ -139,7 +143,7 @@ class UserInfo extends Equatable {
     email,
     userName,
     role,
-    userType, // New field
+    userType,
     latitude,
     longitude,
     dailyWage,

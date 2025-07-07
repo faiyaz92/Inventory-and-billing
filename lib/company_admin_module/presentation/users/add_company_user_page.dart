@@ -12,6 +12,7 @@ import 'package:requirment_gathering_app/core_module/service_locator/service_loc
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 
 @RoutePage()
 class AddUserPage extends StatelessWidget {
@@ -44,6 +45,7 @@ class _AddUserView extends StatefulWidget {
   State<_AddUserView> createState() => _AddUserViewState();
 }
 
+
 class _AddUserViewState extends State<_AddUserView> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController nameController = TextEditingController();
@@ -53,6 +55,7 @@ class _AddUserViewState extends State<_AddUserView> {
   final TextEditingController dailyWageController = TextEditingController();
   Role? _selectedRole;
   String? _selectedStoreId;
+  UserType? _selectedUserType;
   bool isEditing = false;
 
   @override
@@ -66,9 +69,10 @@ class _AddUserViewState extends State<_AddUserView> {
       dailyWageController.text = widget.user?.dailyWage?.toString() ?? '500.0';
       _selectedRole = widget.user?.role;
       _selectedStoreId = widget.user?.storeId;
-      print('initState (editing): _selectedStoreId = $_selectedStoreId');
+      _selectedUserType = widget.user?.userType ?? UserType.Employee; // Default to Employee
+      print('initState (editing): _selectedStoreId = $_selectedStoreId, _selectedUserType = $_selectedUserType');
     }
-    print('AddUserView initState: _selectedStoreId = $_selectedStoreId, isEditing = $isEditing');
+    print('AddUserView initState: _selectedStoreId = $_selectedStoreId, _selectedUserType = $_selectedUserType, isEditing = $isEditing');
   }
 
   @override
@@ -90,6 +94,7 @@ class _AddUserViewState extends State<_AddUserView> {
     setState(() {
       _selectedRole = null;
       _selectedStoreId = null;
+      _selectedUserType = null;
     });
   }
 
@@ -156,14 +161,15 @@ class _AddUserViewState extends State<_AddUserView> {
                 child: BlocListener<StoreCubit, StoreState>(
                   listener: (context, storeState) {
                     if (storeState is StoreLoaded && !isEditing && _selectedStoreId == null) {
-                      // Validate defaultStoreId
                       final validStoreId = storeState.stores.any((store) => store.storeId == storeState.defaultStoreId)
                           ? storeState.defaultStoreId
                           : storeState.stores.isNotEmpty
                           ? storeState.stores.first.storeId
                           : null;
                       if (validStoreId != null) {
-                        _selectedStoreId = validStoreId;
+                        setState(() {
+                          _selectedStoreId = validStoreId;
+                        });
                         print('BlocListener: Set _selectedStoreId = $_selectedStoreId for adding');
                       }
                     }
@@ -201,6 +207,7 @@ class _AddUserViewState extends State<_AddUserView> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                // Full Name Field
                                 Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 12.0),
                                   child: TextFormField(
@@ -231,6 +238,7 @@ class _AddUserViewState extends State<_AddUserView> {
                                     value!.isEmpty ? "Name is required" : null,
                                   ),
                                 ),
+                                // Email Field
                                 Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 12.0),
                                   child: TextFormField(
@@ -258,10 +266,18 @@ class _AddUserViewState extends State<_AddUserView> {
                                     ),
                                     keyboardType: TextInputType.emailAddress,
                                     style: const TextStyle(fontSize: 16.0),
-                                    validator: (value) =>
-                                    value!.isEmpty ? "Email is required" : null,
+                                    validator: (value) {
+                                      if (_selectedUserType == UserType.Employee && (value == null || value.isEmpty)) {
+                                        return "Email is required for Employee";
+                                      }
+                                      if (value != null && value.isNotEmpty && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                                        return "Enter a valid email";
+                                      }
+                                      return null;
+                                    },
                                   ),
                                 ),
+                                // Username Field
                                 Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 12.0),
                                   child: TextFormField(
@@ -288,10 +304,15 @@ class _AddUserViewState extends State<_AddUserView> {
                                       ),
                                     ),
                                     style: const TextStyle(fontSize: 16.0),
-                                    validator: (value) =>
-                                    value!.isEmpty ? "Username is required" : null,
+                                    validator: (value) {
+                                      if (_selectedUserType == UserType.Employee && (value == null || value.isEmpty)) {
+                                        return "Username is required for Employee";
+                                      }
+                                      return null;
+                                    },
                                   ),
                                 ),
+                                // Daily Wage Field
                                 Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 12.0),
                                   child: TextFormField(
@@ -320,13 +341,66 @@ class _AddUserViewState extends State<_AddUserView> {
                                     keyboardType: TextInputType.number,
                                     style: const TextStyle(fontSize: 16.0),
                                     validator: (value) {
-                                      if (value!.isEmpty) return "Daily wage is required";
-                                      final wage = double.tryParse(value);
-                                      if (wage == null || wage <= 0) return "Enter a valid wage";
+                                      if (_selectedUserType == UserType.Employee) {
+                                        if (value == null || value.isEmpty) {
+                                          return "Daily wage is required for Employee";
+                                        }
+                                        final wage = double.tryParse(value);
+                                        if (wage == null || wage <= 0) {
+                                          return "Enter a valid wage";
+                                        }
+                                      }
                                       return null;
                                     },
                                   ),
                                 ),
+                                // UserType Dropdown
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                  child: DropdownButtonFormField<UserType>(
+                                    value: _selectedUserType,
+                                    decoration: InputDecoration(
+                                      labelText: "Select User Type",
+                                      labelStyle: TextStyle(
+                                        color: Theme.of(context).primaryColor,
+                                        fontSize: 16.0,
+                                      ),
+                                      filled: true,
+                                      fillColor: Colors.grey[100],
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: BorderSide(color: Colors.grey[400]!),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: BorderSide(color: Colors.grey[400]!),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                      ),
+                                    ),
+                                    items: UserType.values.map((userType) {
+                                      return DropdownMenuItem(
+                                        value: userType,
+                                        child: Text(
+                                          userType.name,
+                                          style: const TextStyle(fontSize: 16.0, color: Colors.black),
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _selectedUserType = value;
+                                        print('UserType Dropdown onChanged: _selectedUserType = $_selectedUserType');
+                                      });
+                                    },
+                                    validator: (value) =>
+                                    value == null ? "User Type is required" : null,
+                                    style: const TextStyle(fontSize: 16.0, color: Colors.black),
+                                  ),
+                                ),
+                                // Role Dropdown
                                 Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 12.0),
                                   child: DropdownButtonFormField<Role>(
@@ -367,11 +441,16 @@ class _AddUserViewState extends State<_AddUserView> {
                                         print('Role Dropdown onChanged: _selectedRole = $_selectedRole');
                                       });
                                     },
-                                    validator: (value) =>
-                                    value == null ? "Role is required" : null,
+                                    validator: (value) {
+                                      if (_selectedUserType == UserType.Employee && value == null) {
+                                        return "Role is required for Employee";
+                                      }
+                                      return null;
+                                    },
                                     style: const TextStyle(fontSize: 16.0, color: Colors.black),
                                   ),
                                 ),
+                                // Store Dropdown
                                 if (storeState is StoreLoaded && stores.length > 1)
                                   Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 12.0),
@@ -409,14 +488,21 @@ class _AddUserViewState extends State<_AddUserView> {
                                         );
                                       }).toList(),
                                       onChanged: (value) {
-                                        _selectedStoreId = value;
-                                        print('Store Dropdown onChanged: _selectedStoreId = $_selectedStoreId');
+                                        setState(() {
+                                          _selectedStoreId = value;
+                                          print('Store Dropdown onChanged: _selectedStoreId = $_selectedStoreId');
+                                        });
                                       },
-                                      validator: (value) =>
-                                      value == null ? "Store is required" : null,
+                                      validator: (value) {
+                                        if (_selectedUserType == UserType.Employee && value == null) {
+                                          return "Store is required for Employee";
+                                        }
+                                        return null;
+                                      },
                                       style: const TextStyle(fontSize: 16.0, color: Colors.black),
                                     ),
                                   ),
+                                // Password Field
                                 if (!isEditing)
                                   Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 12.0),
@@ -445,9 +531,12 @@ class _AddUserViewState extends State<_AddUserView> {
                                       ),
                                       obscureText: true,
                                       style: const TextStyle(fontSize: 16.0),
-                                      validator: (value) => value!.length < 6
-                                          ? "Password must be at least 6 characters"
-                                          : null,
+                                      validator: (value) {
+                                        if (_selectedUserType == UserType.Employee && (value == null || value.length < 6)) {
+                                          return "Password must be at least 6 characters for Employee";
+                                        }
+                                        return null;
+                                      },
                                     ),
                                   ),
                                 const SizedBox(height: 20),
@@ -475,15 +564,18 @@ class _AddUserViewState extends State<_AddUserView> {
                                       if (_formKey.currentState!.validate()) {
                                         final userInfo = UserInfo(
                                           userId: widget.user?.userId,
-                                          email: emailController.text.trim(),
-                                          role: _selectedRole,
+                                          companyId: widget.user?.companyId,
                                           name: nameController.text.trim(),
-                                          userName: userNameController.text.trim(),
-                                          dailyWage: double.tryParse(dailyWageController.text.trim()),
+                                          email: emailController.text.trim().isEmpty ? null : emailController.text.trim(),
+                                          userName: userNameController.text.trim().isEmpty ? null : userNameController.text.trim(),
+                                          role: _selectedRole,
+                                          userType: _selectedUserType ?? UserType.Employee, // Default to Employee
+                                          dailyWage: dailyWageController.text.trim().isEmpty ? null : double.tryParse(dailyWageController.text.trim()),
                                           storeId: _selectedStoreId ?? defaultStoreId,
+                                          accountLedgerId: widget.user?.accountLedgerId,
                                         );
 
-                                        print('Submitting userInfo with storeId = ${userInfo.storeId}');
+                                        print('Submitting userInfo with storeId = ${userInfo.storeId}, userType = ${userInfo.userType}');
 
                                         if (isEditing) {
                                           context.read<AddUserCubit>().updateUser(userInfo);

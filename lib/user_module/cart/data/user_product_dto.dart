@@ -19,7 +19,7 @@ class UserProductDto {
   factory UserProductDto.fromStock(StockModel stock) {
     return UserProductDto(
         id: stock.productId,
-        name: stock.productId, // Using productId as name for simplicity
+        name: stock.name??'', // Using productId as name for simplicity
         price: stock.price ?? 0,
         taxRate: (stock.tax??0)/100,
         );

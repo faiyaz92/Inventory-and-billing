@@ -479,6 +479,90 @@ class AttendanceRegisterRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [BillPdfPage]
+class BillPdfRoute extends PageRouteInfo<BillPdfRouteArgs> {
+  BillPdfRoute({
+    Key? key,
+    required Document pdf,
+    required String billNumber,
+    List<PageRouteInfo>? children,
+  }) : super(
+         BillPdfRoute.name,
+         args: BillPdfRouteArgs(key: key, pdf: pdf, billNumber: billNumber),
+         initialChildren: children,
+       );
+
+  static const String name = 'BillPdfRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<BillPdfRouteArgs>();
+      return BillPdfPage(
+        key: args.key,
+        pdf: args.pdf,
+        billNumber: args.billNumber,
+      );
+    },
+  );
+}
+
+class BillPdfRouteArgs {
+  const BillPdfRouteArgs({
+    this.key,
+    required this.pdf,
+    required this.billNumber,
+  });
+
+  final Key? key;
+
+  final Document pdf;
+
+  final String billNumber;
+
+  @override
+  String toString() {
+    return 'BillPdfRouteArgs{key: $key, pdf: $pdf, billNumber: $billNumber}';
+  }
+}
+
+/// generated route for
+/// [BillingPage]
+class BillingRoute extends PageRouteInfo<BillingRouteArgs> {
+  BillingRoute({Key? key, String? orderId, List<PageRouteInfo>? children})
+    : super(
+        BillingRoute.name,
+        args: BillingRouteArgs(key: key, orderId: orderId),
+        initialChildren: children,
+      );
+
+  static const String name = 'BillingRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<BillingRouteArgs>(
+        orElse: () => const BillingRouteArgs(),
+      );
+      return BillingPage(key: args.key, orderId: args.orderId);
+    },
+  );
+}
+
+class BillingRouteArgs {
+  const BillingRouteArgs({this.key, this.orderId});
+
+  final Key? key;
+
+  final String? orderId;
+
+  @override
+  String toString() {
+    return 'BillingRouteArgs{key: $key, orderId: $orderId}';
+  }
+}
+
+/// generated route for
 /// [CartDashboardPage]
 class CartDashboardRoute extends PageRouteInfo<void> {
   const CartDashboardRoute({List<PageRouteInfo>? children})
@@ -760,63 +844,6 @@ class DeliveryManOrderListRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [DriverListPage]
-class DriverListRoute extends PageRouteInfo<void> {
-  const DriverListRoute({List<PageRouteInfo>? children})
-    : super(DriverListRoute.name, initialChildren: children);
-
-  static const String name = 'DriverListRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const DriverListPage();
-    },
-  );
-}
-
-/// generated route for
-/// [DriverPerformanceDetailsPage]
-class DriverPerformanceDetailsRoute
-    extends PageRouteInfo<DriverPerformanceDetailsRouteArgs> {
-  DriverPerformanceDetailsRoute({
-    Key? key,
-    required String driverId,
-    List<PageRouteInfo>? children,
-  }) : super(
-         DriverPerformanceDetailsRoute.name,
-         args: DriverPerformanceDetailsRouteArgs(key: key, driverId: driverId),
-         initialChildren: children,
-       );
-
-  static const String name = 'DriverPerformanceDetailsRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<DriverPerformanceDetailsRouteArgs>();
-      return DriverPerformanceDetailsPage(
-        key: args.key,
-        driverId: args.driverId,
-      );
-    },
-  );
-}
-
-class DriverPerformanceDetailsRouteArgs {
-  const DriverPerformanceDetailsRouteArgs({this.key, required this.driverId});
-
-  final Key? key;
-
-  final String driverId;
-
-  @override
-  String toString() {
-    return 'DriverPerformanceDetailsRouteArgs{key: $key, driverId: $driverId}';
-  }
-}
-
-/// generated route for
 /// [EmployeeDetailsPage]
 class EmployeeDetailsRoute extends PageRouteInfo<EmployeeDetailsRouteArgs> {
   EmployeeDetailsRoute({
@@ -1009,6 +1036,7 @@ class PerformanceDetailsRoute
     Key? key,
     required String entityType,
     required String entityId,
+    String? entityName,
     List<PageRouteInfo>? children,
   }) : super(
          PerformanceDetailsRoute.name,
@@ -1016,6 +1044,7 @@ class PerformanceDetailsRoute
            key: key,
            entityType: entityType,
            entityId: entityId,
+           entityName: entityName,
          ),
          initialChildren: children,
        );
@@ -1030,6 +1059,7 @@ class PerformanceDetailsRoute
         key: args.key,
         entityType: args.entityType,
         entityId: args.entityId,
+        entityName: args.entityName,
       );
     },
   );
@@ -1040,6 +1070,7 @@ class PerformanceDetailsRouteArgs {
     this.key,
     required this.entityType,
     required this.entityId,
+    this.entityName,
   });
 
   final Key? key;
@@ -1048,9 +1079,11 @@ class PerformanceDetailsRouteArgs {
 
   final String entityId;
 
+  final String? entityName;
+
   @override
   String toString() {
-    return 'PerformanceDetailsRouteArgs{key: $key, entityType: $entityType, entityId: $entityId}';
+    return 'PerformanceDetailsRouteArgs{key: $key, entityType: $entityType, entityId: $entityId, entityName: $entityName}';
   }
 }
 
@@ -1148,22 +1181,6 @@ class ProfileRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const ProfilePage();
-    },
-  );
-}
-
-/// generated route for
-/// [RidePlatinumPage]
-class RidePlatinumRoute extends PageRouteInfo<void> {
-  const RidePlatinumRoute({List<PageRouteInfo>? children})
-    : super(RidePlatinumRoute.name, initialChildren: children);
-
-  static const String name = 'RidePlatinumRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const RidePlatinumPage();
     },
   );
 }
@@ -1448,124 +1465,6 @@ class TaskListRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [TaxiBookingDetailsPage]
-class TaxiBookingDetailsRoute
-    extends PageRouteInfo<TaxiBookingDetailsRouteArgs> {
-  TaxiBookingDetailsRoute({
-    Key? key,
-    required String bookingId,
-    List<PageRouteInfo>? children,
-  }) : super(
-         TaxiBookingDetailsRoute.name,
-         args: TaxiBookingDetailsRouteArgs(key: key, bookingId: bookingId),
-         initialChildren: children,
-       );
-
-  static const String name = 'TaxiBookingDetailsRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<TaxiBookingDetailsRouteArgs>();
-      return TaxiBookingDetailsPage(key: args.key, bookingId: args.bookingId);
-    },
-  );
-}
-
-class TaxiBookingDetailsRouteArgs {
-  const TaxiBookingDetailsRouteArgs({this.key, required this.bookingId});
-
-  final Key? key;
-
-  final String bookingId;
-
-  @override
-  String toString() {
-    return 'TaxiBookingDetailsRouteArgs{key: $key, bookingId: $bookingId}';
-  }
-}
-
-/// generated route for
-/// [TaxiBookingPage]
-class TaxiBookingRoute extends PageRouteInfo<void> {
-  const TaxiBookingRoute({List<PageRouteInfo>? children})
-    : super(TaxiBookingRoute.name, initialChildren: children);
-
-  static const String name = 'TaxiBookingRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const TaxiBookingPage();
-    },
-  );
-}
-
-/// generated route for
-/// [TaxiBookingsAdminPage]
-class TaxiBookingsAdminRoute extends PageRouteInfo<void> {
-  const TaxiBookingsAdminRoute({List<PageRouteInfo>? children})
-    : super(TaxiBookingsAdminRoute.name, initialChildren: children);
-
-  static const String name = 'TaxiBookingsAdminRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const TaxiBookingsAdminPage();
-    },
-  );
-}
-
-/// generated route for
-/// [TaxiBookingsUserPage]
-class TaxiBookingsUserRoute extends PageRouteInfo<void> {
-  const TaxiBookingsUserRoute({List<PageRouteInfo>? children})
-    : super(TaxiBookingsUserRoute.name, initialChildren: children);
-
-  static const String name = 'TaxiBookingsUserRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const TaxiBookingsUserPage();
-    },
-  );
-}
-
-/// generated route for
-/// [TaxiCompanyPerformancePage]
-class TaxiCompanyPerformanceRoute extends PageRouteInfo<void> {
-  const TaxiCompanyPerformanceRoute({List<PageRouteInfo>? children})
-    : super(TaxiCompanyPerformanceRoute.name, initialChildren: children);
-
-  static const String name = 'TaxiCompanyPerformanceRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const TaxiCompanyPerformancePage();
-    },
-  );
-}
-
-/// generated route for
-/// [TaxiSettingsPage]
-class TaxiSettingsRoute extends PageRouteInfo<void> {
-  const TaxiSettingsRoute({List<PageRouteInfo>? children})
-    : super(TaxiSettingsRoute.name, initialChildren: children);
-
-  static const String name = 'TaxiSettingsRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const TaxiSettingsPage();
-    },
-  );
-}
-
-/// generated route for
 /// [TransactionsPage]
 class TransactionsRoute extends PageRouteInfo<void> {
   const TransactionsRoute({List<PageRouteInfo>? children})
@@ -1653,22 +1552,6 @@ class UserOrderDetailsRouteArgs {
   String toString() {
     return 'UserOrderDetailsRouteArgs{key: $key, orderId: $orderId}';
   }
-}
-
-/// generated route for
-/// [VisitorCounterPage]
-class VisitorCounterRoute extends PageRouteInfo<void> {
-  const VisitorCounterRoute({List<PageRouteInfo>? children})
-    : super(VisitorCounterRoute.name, initialChildren: children);
-
-  static const String name = 'VisitorCounterRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const VisitorCounterPage();
-    },
-  );
 }
 
 /// generated route for

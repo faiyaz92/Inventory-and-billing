@@ -1,4 +1,5 @@
 import 'package:auto_route/annotations.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
@@ -9,7 +10,8 @@ import 'package:requirment_gathering_app/user_module/services/update_location_se
 
 @RoutePage()
 class SplashScreenPage extends StatefulWidget {
-  final Future<void> Function()? onDelayComplete; // Optional callback for testing
+  final Future<void> Function()?
+      onDelayComplete; // Optional callback for testing
 
   const SplashScreenPage({super.key, this.onDelayComplete});
 
@@ -17,17 +19,25 @@ class SplashScreenPage extends StatefulWidget {
   State<SplashScreenPage> createState() => _SplashScreenPageState();
 }
 
-class _SplashScreenPageState extends State<SplashScreenPage> with SingleTickerProviderStateMixin {
+class _SplashScreenPageState extends State<SplashScreenPage>
+    with SingleTickerProviderStateMixin {
   late final SplashCubit splashCubit;
   double _opacity = 0.0;
 
   @override
   void initState() {
     super.initState();
+    print('SplashScreen: initState started');
     splashCubit = sl<SplashCubit>();
-    // _initializePermissionsAndService();
+// Initialize permissions only on non-web platforms
+    if (!kIsWeb) {
+      print('SplashScreen: Initializing permissions and services (non-web)');
+      // _initializePermissionsAndService();
+    } else {
+      print('SplashScreen: Skipping permissions and services on web');
+    }
     _startSplashDelay();
-    // Start fade-in animation
+// Start fade-in animation
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) {
         setState(() {
@@ -38,21 +48,39 @@ class _SplashScreenPageState extends State<SplashScreenPage> with SingleTickerPr
   }
 
   Future<void> _initializePermissionsAndService() async {
-    final permissionHandler = sl<PermissionHandler>();
-    final locationService = sl<LocationUpdateService>();
-    final hasPermission = await permissionHandler.requestLocationPermissions(context);
-    if (hasPermission) {
-      await locationService.initializeService();
+    print('SplashScreen: Initializing permissions and services');
+    try {
+      final permissionHandler = sl<PermissionHandler>();
+      final locationService = sl<LocationUpdateService>();
+      final hasPermission =
+          await permissionHandler.requestLocationPermissions(context);
+      if (hasPermission) {
+        await locationService.initializeService();
+        print('SplashScreen: Location service initialized');
+      } else {
+        print('SplashScreen: Location permissions denied');
+      }
+    } catch (e) {
+      print('SplashScreen: Error initializing permissions/service: $e');
     }
   }
 
   void _startSplashDelay() {
+    print('SplashScreen: Starting delay');
     if (widget.onDelayComplete != null) {
-      widget.onDelayComplete!(); // Testing callback
+      widget.onDelayComplete!();
     } else {
       Future.delayed(const Duration(seconds: 1), () {
         if (mounted) {
-          splashCubit.checkSession();
+          print('SplashScreen: Delay completed, checking session');
+          splashCubit.checkSession().timeout(
+            const Duration(seconds: 10),
+            onTimeout: () {
+              print('SplashScreen: Session check timed out');
+              splashCubit.emitError(
+                  'Session check timed out. Please try again or go to login.');
+            },
+          );
         }
       });
     }
@@ -64,9 +92,37 @@ class _SplashScreenPageState extends State<SplashScreenPage> with SingleTickerPr
       bloc: splashCubit,
       listener: (context, state) {
         if (state is NavigateToDashboard) {
+          print('SplashScreen: Navigating to Dashboard');
           sl<Coordinator>().navigateToDashboardPage();
         } else if (state is NavigateToLogin) {
+          print('SplashScreen: Navigating to Login');
           sl<Coordinator>().navigateToLoginPage();
+        } else if (state is SplashError) {
+          print('SplashScreen: Error state received: ${state.message}');
+          showDialog(
+            context: context,
+            builder: (dialogContext) => AlertDialog(
+              title: const Text('Error'),
+              content: Text(state.message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop();
+                    splashCubit.checkSession(); // Retry
+                  },
+                  child: const Text('Retry'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop();
+                    sl<Coordinator>()
+                        .navigateToLoginPage(); // Fallback to login
+                  },
+                  child: const Text('Go to Login'),
+                ),
+              ],
+            ),
+          );
         }
       },
       child: Scaffold(

@@ -1,6 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pdf/widgets.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/bill_pdf.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/billing_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/category.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart';
@@ -43,19 +46,7 @@ import 'package:requirment_gathering_app/super_admin_module/data/tenant_company.
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/presentation/add_tenant_company/add_tenant_company_page.dart';
 import 'package:requirment_gathering_app/super_admin_module/presentation/dashboard/super_admin_page.dart';
-import 'package:requirment_gathering_app/taxi/driver_list.dart';
-import 'package:requirment_gathering_app/taxi/driver_performance_details_page.dart';
-import 'package:requirment_gathering_app/taxi/taxi_admin_cubit.dart';
-import 'package:requirment_gathering_app/taxi/taxi_bookinf_admin_details_page.dart';
-import 'package:requirment_gathering_app/taxi/taxi_booking_admin_panel_page.dart';
-import 'package:requirment_gathering_app/taxi/taxi_booking_cubit.dart';
-import 'package:requirment_gathering_app/taxi/taxi_booking_page.dart';
-import 'package:requirment_gathering_app/taxi/taxi_booking_web_page.dart';
-import 'package:requirment_gathering_app/taxi/taxi_company_performance_page.dart';
-import 'package:requirment_gathering_app/taxi/taxi_setting_cubit.dart';
-import 'package:requirment_gathering_app/taxi/taxi_setting_page.dart';
-import 'package:requirment_gathering_app/taxi/taxi_user_booking_history.dart';
-import 'package:requirment_gathering_app/taxi/visitor_counter_page.dart';
+
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_details_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_panel_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/cart_dashboard_page.dart';
@@ -184,53 +175,9 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: CompanyPerformanceRoute.page),
         AutoRoute(page: ProductTrendingListRoute.page),
         AutoRoute(page: UserLedgerRoute.page, path: '/user-ledger'),
-        AutoRoute(
-            page: PageInfo(TaxiBookingRoute.name, builder: (data) {
-              return MultiBlocProvider(providers: [
-                BlocProvider(
-                  create: (context) => sl<TaxiBookingCubit>(),
-                ),
-                BlocProvider(
-                  create: (context) => sl<TaxiSettingsCubit>(),
-                ),
-              ], child: const TaxiBookingPage());
-            }),
-            path: '/taxi-booking'),
-        AutoRoute(
-            page: PageInfo(TaxiSettingsRoute.name, builder: (data) {
-              return BlocProvider(
-                create: (context) => sl<TaxiSettingsCubit>(),
-                child: const TaxiSettingsPage(),
-              );
-            }),
-            path: '/taxi-settings'),
+        AutoRoute(page: BillingRoute.page, path: '/billing'),
+        AutoRoute(page: BillPdfRoute.page, path: '/bill-pdf'),
 
 
-    AutoRoute(page: TaxiBookingsAdminRoute.page, ),
-    AutoRoute(
-      page: DriverListRoute.page,
-      path: '/driver-list',
-    ),
-    AutoRoute(
-      page: DriverPerformanceDetailsRoute.page,
-      path: '/driver-performance-details',
-    ),
-    AutoRoute(
-      page: TaxiCompanyPerformanceRoute.page,
-      path: '/taxi-performancePage',
-    ),
-    AutoRoute(
-      path: '/visitor-counter',
-      page: VisitorCounterRoute.page,
-    ), AutoRoute(
-
-      page: TaxiBookingDetailsRoute.page,
-    ), AutoRoute(
-
-      page: TaxiBookingsUserRoute.page,
-    ), AutoRoute(
-
-      page: RidePlatinumRoute.page,
-    ),
   ];
 }

@@ -5,6 +5,7 @@ import 'package:requirment_gathering_app/core_module/presentation/widget/custom_
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_cubit.dart';
 
@@ -329,8 +330,7 @@ class AdminOrderDetailsPage extends StatelessWidget {
               value: state.normalizedStatus,
               items: const [
                 DropdownMenuItem(value: 'pending', child: Text('Pending')),
-                DropdownMenuItem(
-                    value: 'processing', child: Text('Processing')),
+                DropdownMenuItem(value: 'processing', child: Text('Processing')),
                 DropdownMenuItem(value: 'shipped', child: Text('Shipped')),
                 DropdownMenuItem(value: 'completed', child: Text('Completed')),
               ],
@@ -354,9 +354,11 @@ class AdminOrderDetailsPage extends StatelessWidget {
                   value: null,
                   child: Text('Not Assigned'),
                 ),
-                ...state.users.map((user) => DropdownMenuItem(
+                ...state.users
+                    .where((user) => user.userType == UserType.Employee)
+                    .map((user) => DropdownMenuItem(
                   value: user.userId,
-                  child: Text(user.userName ?? 'Unknown'),
+                  child: Text(user.name ?? 'Unknown'),
                 )),
               ],
               onChanged: (value) {
