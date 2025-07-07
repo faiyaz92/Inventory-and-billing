@@ -94,14 +94,6 @@ class ProductMgtPage extends StatelessWidget {
                           sl<Coordinator>().navigateToCategoriesWithSubcategoriesPage();
                         },
                       ),
-                      _buildGridItem(
-                        icon: Icons.category,
-                        label: 'Inventory',
-                        color: Colors.teal,
-                        onTap: () {
-                          sl<Coordinator>().navigateToInventoryDashBoard();
-                        },
-                      ),
                     ],
                   ),
                 ),

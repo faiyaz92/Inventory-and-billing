@@ -62,16 +62,7 @@ import 'package:requirment_gathering_app/super_admin_module/repository/tenant_co
 import 'package:requirment_gathering_app/super_admin_module/repository/tenant_company_repository_impl.dart';
 import 'package:requirment_gathering_app/super_admin_module/services/tenant_company_service.dart';
 import 'package:requirment_gathering_app/super_admin_module/services/tenant_company_service_impl.dart';
-import 'package:requirment_gathering_app/taxi/taxi_admin_cubit.dart';
-import 'package:requirment_gathering_app/taxi/taxi_booking_cubit.dart';
-import 'package:requirment_gathering_app/taxi/taxi_booking_repository.dart';
-import 'package:requirment_gathering_app/taxi/taxi_service.dart';
-import 'package:requirment_gathering_app/taxi/taxi_setting_cubit.dart';
-import 'package:requirment_gathering_app/taxi/taxi_setting_repository.dart';
-import 'package:requirment_gathering_app/taxi/taxi_setting_service.dart';
-import 'package:requirment_gathering_app/taxi/taxi_user_cubit.dart';
-import 'package:requirment_gathering_app/taxi/visitor_counter_cubit.dart';
-import 'package:requirment_gathering_app/taxi/visitor_counter_service.dart';
+
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_cubit.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/cart_cubit.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/order_cubit.dart';
@@ -104,7 +95,7 @@ import 'package:requirment_gathering_app/user_module/services/update_location_se
 
 final sl = GetIt.instance;
 
-void setupServiceLocator() {
+Future<void> setupServiceLocator() async{
   _initFirebase();
   _initRepositories();
   _initServices();
@@ -181,10 +172,7 @@ void _initRepositories() {
         firestorePathProvider: sl<IFirestorePathProvider>(),
       ));
 
-  sl.registerLazySingleton<ITaxiBookingRepository>(
-      () => TaxiBookingRepositoryImpl(sl<IFirestorePathProvider>(),sl<AccountRepository>()));
-  sl.registerLazySingleton<ITaxiSettingsRepository>(
-      () => TaxiSettingsRepositoryImpl(sl<IFirestorePathProvider>()));
+
 }
 
 /// **3. Initialize Services**
@@ -223,7 +211,7 @@ void _initServices() {
       () => UserServiceImpl(sl<AccountRepository>()));
   // Register Product Service
   sl.registerLazySingleton<ProductService>(() => ProductServiceImpl(
-      productRepository: sl<ProductRepository>(), sl<AccountRepository>()));
+      productRepository: sl<ProductRepository>(), sl<AccountRepository>(),stockRepository: sl<StockRepository>()));
   sl.registerLazySingleton<CategoryService>(() => CategoryServiceImpl(
         categoryRepository: sl<CategoryRepository>(),
         accountRepository: sl<AccountRepository>(),
@@ -264,21 +252,6 @@ void _initServices() {
     ),
   );
 
-  // Register Taxi Services
-  sl.registerLazySingleton<IVisitorCounterService>(
-    () => VisitorCounterServiceImpl(
-        sl<ITaxiBookingRepository>(), sl<AccountRepository>()),
-  );
-  sl.registerLazySingleton<ITaxiBookingService>(
-    () => TaxiBookingServiceImpl(
-      sl<ITaxiBookingRepository>(),
-      sl<AccountRepository>(),
-    ),
-  );
-  sl.registerLazySingleton<ITaxiSettingsService>(
-    () => TaxiSettingsServiceImpl(
-        sl<ITaxiSettingsRepository>(), sl<AccountRepository>()),
-  );
 
 }
 
@@ -372,29 +345,6 @@ void _initCubits() {
         sl<CustomerCompanyService>(),
       ));
 
-  // Register Taxi Cubits with Services
-  sl.registerFactory<TaxiAdminCubit>(
-    () => TaxiAdminCubit(sl<ITaxiBookingService>(),
-        sl<ITaxiSettingsService>(),  sl<UserServices>(), sl<AccountRepository>()),
-  );
-  sl.registerFactory<TaxiBookingCubit>(
-    () => TaxiBookingCubit(
-      sl<ITaxiBookingService>(),
-      sl<IVisitorCounterService>(),
-    ),
-  );
-  sl.registerFactory<TaxiSettingsCubit>(
-    () => TaxiSettingsCubit(sl<ITaxiSettingsService>()),
-  );
-  sl.registerFactory<VisitorCounterCubit>(
-        () => VisitorCounterCubit(sl<IVisitorCounterService>()),
-  );
-  sl.registerFactory(() => ProfileCubit(accountRepository: sl<AccountRepository>()));
-  sl.registerFactory<TaxiUserCubit>(() => TaxiUserCubit(
-    sl<ITaxiBookingService>(),
-    sl<ITaxiSettingsService>(),
-    sl<AccountRepository>(),
-  ));
 }
 
 /// **5. Initialize App Navigation & Coordinator**

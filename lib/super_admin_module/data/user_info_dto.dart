@@ -9,7 +9,7 @@ class UserInfoDto extends Equatable {
   final String email;
   final String userName;
   final Role role;
-  final UserType? userType; // New field
+  final UserType? userType; // Nullable
   final double? latitude;
   final double? longitude;
   final double? dailyWage;
@@ -23,7 +23,7 @@ class UserInfoDto extends Equatable {
     required this.email,
     required this.userName,
     required this.role,
-    this.userType, // New field
+    this.userType, // Optional
     this.latitude,
     this.longitude,
     this.dailyWage,
@@ -32,6 +32,11 @@ class UserInfoDto extends Equatable {
   });
 
   factory UserInfoDto.fromMap(Map<String, dynamic> map) {
+    final userTypeRaw = map['userType'] as String?;
+    final userType = UserTypeExtension.fromString(userTypeRaw) ?? UserType.Customer; // Default to Customer
+    if (userTypeRaw != null && userType == UserType.Customer) {
+      print('UserInfoDto.fromMap: Defaulted userType to Customer for raw value "$userTypeRaw"');
+    }
     return UserInfoDto(
       userId: map['userId'] as String,
       companyId: map['companyId'] as String?,
@@ -39,10 +44,7 @@ class UserInfoDto extends Equatable {
       email: map['email'] as String,
       userName: map['userName'] as String,
       role: RoleExtension.fromString(map['role'] as String),
-      userType: map.containsKey('userType')
-          ? UserTypeExtension.fromString(map['userType'] as String)
-          : UserType.Employee,
-      // New field
+      userType: userType,
       latitude: (map['latitude'] as num?)?.toDouble(),
       longitude: (map['longitude'] as num?)?.toDouble(),
       dailyWage: (map['dailyWage'] as num?)?.toDouble() ?? 500.0,
@@ -59,7 +61,7 @@ class UserInfoDto extends Equatable {
       'email': email,
       'userName': userName,
       'role': role.name,
-      'userType': userType, // New field
+      'userType': userType?.name, // Serialize as string
       'latitude': latitude,
       'longitude': longitude,
       'dailyWage': dailyWage,
@@ -72,11 +74,11 @@ class UserInfoDto extends Equatable {
     final map = <String, dynamic>{};
     map['userId'] = userId; // Always include userId
     if (companyId != null) map['companyId'] = companyId;
-    if (name != null) map['name'] = name;
-    if (email != null) map['email'] = email;
-    if (userName != null) map['userName'] = userName;
-    if (role != null) map['role'] = role.name;
-    if (userType != null) map['userType'] = userType; // New field
+    if (name.isNotEmpty) map['name'] = name;
+    if (email.isNotEmpty) map['email'] = email;
+    if (userName.isNotEmpty) map['userName'] = userName;
+    map['role'] = role.name; // Always include role
+    if (userType != null) map['userType'] = userType!.name; // Serialize as string
     if (latitude != null) map['latitude'] = latitude;
     if (longitude != null) map['longitude'] = longitude;
     if (dailyWage != null) map['dailyWage'] = dailyWage;
@@ -92,7 +94,7 @@ class UserInfoDto extends Equatable {
     String? email,
     String? userName,
     Role? role,
-    UserType? userType, // New field
+    UserType? userType,
     double? latitude,
     double? longitude,
     double? dailyWage,
@@ -107,7 +109,6 @@ class UserInfoDto extends Equatable {
       userName: userName ?? this.userName,
       role: role ?? this.role,
       userType: userType ?? this.userType,
-      // New field
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       dailyWage: dailyWage ?? this.dailyWage,
@@ -118,17 +119,17 @@ class UserInfoDto extends Equatable {
 
   @override
   List<Object?> get props => [
-        userId,
-        companyId,
-        name,
-        email,
-        userName,
-        role,
-        userType, // New field
-        latitude,
-        longitude,
-        dailyWage,
-        storeId,
-        accountLedgerId,
-      ];
+    userId,
+    companyId,
+    name,
+    email,
+    userName,
+    role,
+    userType,
+    latitude,
+    longitude,
+    dailyWage,
+    storeId,
+    accountLedgerId,
+  ];
 }

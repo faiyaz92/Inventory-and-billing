@@ -56,7 +56,7 @@ class OrderService implements IOrderService {
   Future<Order> getOrderById(String orderId) async {
     final userInfo = await accountRepository.getUserInfo();
     final orderDto =
-        await orderRepository.getOrderById(userInfo?.companyId ?? '', orderId);
+    await orderRepository.getOrderById(userInfo?.companyId ?? '', orderId);
     return Order.fromDto(orderDto);
   }
 
@@ -80,5 +80,12 @@ class OrderService implements IOrderService {
     final userInfo = await accountRepository.getUserInfo();
     await orderRepository.setResponsibleForDelivery(userInfo?.companyId ?? '',
         orderId, responsibleForDelivery, userInfo?.userId);
+  }
+
+  @override
+  Future<void> updateOrder(Order order) async {
+    final userInfo = await accountRepository.getUserInfo();
+    final orderDto = OrderDto.fromModel(order);
+    await orderRepository.updateOrder(userInfo?.companyId ?? '', orderDto);
   }
 }

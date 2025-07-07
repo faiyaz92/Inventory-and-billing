@@ -6,7 +6,6 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/produ
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/product_state.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
-import 'package:requirment_gathering_app/core_module/presentation/widget/custom_drop_down_widget.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 
 @RoutePage()
@@ -24,7 +23,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _stockController = TextEditingController();
-  final TextEditingController _taxController = TextEditingController(); // New controller for tax
+  final TextEditingController _taxController = TextEditingController();
 
   late AdminProductCubit _cubit;
 
@@ -39,7 +38,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
       _nameController.text = widget.product!.name;
       _priceController.text = widget.product!.price.toString();
       _stockController.text = widget.product!.stock.toString();
-      _taxController.text = widget.product!.tax.toString(); // Set tax for edit
+      _taxController.text = widget.product!.tax.toString();
     } else {
       _cubit.loadCategories();
     }
@@ -56,7 +55,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
         categoryId: _cubit.selectedCategoryId ?? '',
         subcategoryId: _cubit.selectedSubcategoryId ?? '',
         subcategoryName: _cubit.selectedSubcategoryName ?? '',
-        tax: double.parse(_taxController.text), // Include tax
+        tax: double.parse(_taxController.text),
       );
 
       if (widget.product == null) {
@@ -254,14 +253,30 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                                     color: Colors.grey[50],
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: CustomDropdown<String>(
-                                    selectedValue: state.selectedCategory
-                                        ?.name?.isNotEmpty ==
-                                        true
+                                  child: DropdownButtonFormField<String>(
+                                    decoration: InputDecoration(
+                                      labelText: 'Category',
+                                      labelStyle: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 12,
+                                      ),
+                                      errorStyle: const TextStyle(color: Colors.red),
+                                    ),
+                                    value: state.selectedCategory?.name?.isNotEmpty == true
                                         ? state.selectedCategory!.name
                                         : null,
-                                    items: categoryNames,
-                                    labelText: 'Category',
+                                    items: categoryNames.map((name) => DropdownMenuItem<String>(
+                                      value: name,
+                                      child: Text(name),
+                                    )).toList(),
                                     onChanged: (value) {
                                       if (value != null) {
                                         _cubit.selectCategory(value);
@@ -274,8 +289,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                                   ),
                                 );
                               }
-                              return const Center(
-                                  child: CircularProgressIndicator());
+                              return const Center(child: CircularProgressIndicator());
                             },
                           ),
                           const SizedBox(height: 16),
@@ -298,15 +312,34 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                                     color: Colors.grey[50],
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: CustomDropdown<String>(
-                                    selectedValue: state.selectedSubcategory
-                                        ?.name?.isNotEmpty ==
-                                        true
+                                  child: DropdownButtonFormField<String>(
+                                    decoration: InputDecoration(
+                                      labelText: 'Subcategory',
+                                      labelStyle: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 12,
+                                      ),
+                                      errorStyle: const TextStyle(color: Colors.red),
+                                    ),
+                                    value: state.selectedSubcategory?.name?.isNotEmpty == true
                                         ? state.selectedSubcategory!.name
                                         : null,
-                                    items:
-                                    subcategoryItems.isNotEmpty ? subcategoryItems : [],
-                                    labelText: 'Subcategory',
+                                    items: subcategoryItems.isNotEmpty
+                                        ? subcategoryItems
+                                        .map((name) => DropdownMenuItem<String>(
+                                      value: name,
+                                      child: Text(name),
+                                    ))
+                                        .toList()
+                                        : [],
                                     onChanged: (value) {
                                       if (value != null) {
                                         _cubit.selectSubcategory(value);
@@ -358,7 +391,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
     _nameController.dispose();
     _priceController.dispose();
     _stockController.dispose();
-    _taxController.dispose(); // Dispose tax controller
+    _taxController.dispose();
     super.dispose();
   }
 }

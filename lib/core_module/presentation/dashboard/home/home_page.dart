@@ -282,19 +282,27 @@ class HomePage extends StatelessWidget {
           },
         ),
         _buildGridItem(
-          icon: Icons.manage_accounts,
+          icon: Icons.work,
           label: 'Product Management',
-          color: Colors.pink,
+          color: Colors.lightGreenAccent,
           onTap: () {
             sl<Coordinator>().navigateToProductManagementPage();
           },
         ),
         _buildGridItem(
-          icon: Icons.manage_accounts,
-          label: 'Cart Management',
+          icon: Icons.attach_money,
+          label: 'Sales Dashboard',
           color: Colors.pink,
           onTap: () {
             sl<Coordinator>().navigateToCartDashboard();
+          },
+        ),
+        _buildGridItem(
+          icon: Icons.inventory,
+          label: 'Inventory',
+          color: Colors.teal,
+          onTap: () {
+            sl<Coordinator>().navigateToInventoryDashBoard();
           },
         ),
       ]);

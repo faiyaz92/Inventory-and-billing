@@ -8,7 +8,6 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/produ
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/product_state.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
-import 'package:requirment_gathering_app/core_module/presentation/widget/custom_drop_down_widget.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
@@ -45,137 +44,253 @@ class _AddStockPageState extends State<AddStockPage> {
       ],
       child: Scaffold(
         appBar: const CustomAppBar(title: 'Add Stock'),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: BlocConsumer<StockCubit, StockState>(
-              listener: (context, state) {
-                // if (state is StockLoaded) {
-                //   ScaffoldMessenger.of(context).showSnackBar(
-                //     const SnackBar(content: Text('Stock added successfully')),
-                //   );
-                //   sl<Coordinator>().navigateBack(isUpdated: true);
-                // } else if (state is StockError) {
-                //   ScaffoldMessenger.of(context).showSnackBar(
-                //     SnackBar(content: Text(state.error), backgroundColor: AppColors.red),
-                //   );
-                // }
-              },
-              builder: (context, state) {
-                return BlocBuilder<StockCubit, StockState>(
-                  buildWhen: (previous, current) {
-                    if (previous.runtimeType == current.runtimeType) {
-                      if (previous is StockLoaded && current is StockLoaded) {
-                        return previous.stores != current.stores ||
-                            previous.stockItems != current.stockItems;
-                      }
-                      if (previous is StockError && current is StockError) {
-                        return previous.error != current.error;
-                      }
-                      return false;
-                    }
-                    return true;
-                  },
-                  builder: (context, state) {
-                    if (state is StockLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (state is StockError) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text('Error: ${state.error}', style: const TextStyle(color: Colors.red)),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
-                              onPressed: () => _stockCubit.fetchStock(''),
-                              child: const Text('Retry'),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
+        body: Container(
+          height: MediaQuery.of(context).size.height,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Theme.of(context).primaryColor.withOpacity(0.1),
+                Theme.of(context).primaryColor.withOpacity(0.3),
+              ],
+            ),
+          ),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Form(
+                      key: _formKey,
+                      child: BlocConsumer<StockCubit, StockState>(
+                        listener: (context, state) {
+                          // if (state is StockLoaded) {
+                          //   ScaffoldMessenger.of(context).showSnackBar(
+                          //     const SnackBar(content: Text('Stock added successfully')),
+                          //   );
+                          //   sl<Coordinator>().navigateBack(isUpdated: true);
+                          // } else if (state is StockError) {
+                          //   ScaffoldMessenger.of(context).showSnackBar(
+                          //     SnackBar(content: Text(state.error), backgroundColor: AppColors.red),
+                          //   );
+                          // }
+                        },
+                        builder: (context, state) {
+                          return BlocBuilder<StockCubit, StockState>(
+                            buildWhen: (previous, current) {
+                              if (previous.runtimeType == current.runtimeType) {
+                                if (previous is StockLoaded && current is StockLoaded) {
+                                  return previous.stores != current.stores ||
+                                      previous.stockItems != current.stockItems;
+                                }
+                                if (previous is StockError && current is StockError) {
+                                  return previous.error != current.error;
+                                }
+                                return false;
+                              }
+                              return true;
+                            },
+                            builder: (context, state) {
+                              if (state is StockLoading) {
+                                return const Center(child: CircularProgressIndicator());
+                              } else if (state is StockError) {
+                                return Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text('Error: ${state.error}', style: const TextStyle(color: Colors.red)),
+                                      const SizedBox(height: 16),
+                                      ElevatedButton(
+                                        onPressed: () => _stockCubit.fetchStock(''),
+                                        child: const Text('Retry'),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Theme.of(context).primaryColor,
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(vertical: 16),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          textStyle: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
 
-                    final stores = (state is StockLoaded) ? state.stores : [];
-                    final products = context.read<AdminProductCubit>().state is ProductLoaded
-                        ? (context.read<AdminProductCubit>().state as ProductLoaded).products
-                        : [];
+                              final stores = (state is StockLoaded) ? state.stores : [];
+                              final products = context.read<AdminProductCubit>().state is ProductLoaded
+                                  ? (context.read<AdminProductCubit>().state as ProductLoaded).products
+                                  : [];
 
-                    return Column(
-                      children: [
-                        CustomDropdown(
-                          labelText: 'Store',
-                          selectedValue: _selectedStoreId,
-                          items: stores.map((store) => store.storeId).toList(),
-                          onChanged: (value) => setState(() => _selectedStoreId = value),
-                          validator: (value) => value == null ? 'Please select a store' : null,
-                        ),
-                        CustomDropdown(
-                          labelText: 'Product',
-                          selectedValue: _selectedProductId,
-                          items: products.map((product) => product.id).toList(),
-                          onChanged: (value) => setState(() => _selectedProductId = value),
-                          validator: (value) => value == null ? 'Please select a product' : null,
-                        ),
-                        TextFormField(
-                          decoration: const InputDecoration(labelText: 'Quantity'),
-                          keyboardType: TextInputType.number,
-                          onChanged: (value) => setState(() => _quantity = int.tryParse(value) ?? 0),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter quantity';
-                            }
-                            if (int.tryParse(value) == null || int.parse(value) <= 0) {
-                              return 'Please enter a valid quantity';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              // Fetch the selected Product
-                              final selectedProduct = products.firstWhere(
-                                    (product) => product.id == _selectedProductId,
-                                orElse: () => Product(
-                                  id: _selectedProductId ?? '',
-                                  name: '',
-                                  price: 0.0,
-                                  stock: 0,
-                                  category: '',
-                                  categoryId: '',
-                                  subcategoryId: '',
-                                  subcategoryName: '',
-                                  tax: 0.0,
-                                ),
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  // Store Dropdown
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[50],
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: DropdownButtonFormField<String>(
+                                      decoration: InputDecoration(
+                                        labelText: 'Store',
+                                        labelStyle: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black87,
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                        errorStyle: const TextStyle(color: Colors.red),
+                                      ),
+                                      value: _selectedStoreId,
+                                      items: stores.map((store) => DropdownMenuItem<String>(
+                                        value: store.storeId,
+                                        child: Text(store.name),
+                                      )).toList(),
+                                      onChanged: (value) => setState(() => _selectedStoreId = value),
+                                      validator: (value) => value == null ? 'Please select a store' : null,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  // Product Dropdown
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[50],
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: DropdownButtonFormField<String>(
+                                      decoration: InputDecoration(
+                                        labelText: 'Product',
+                                        labelStyle: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black87,
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                        errorStyle: const TextStyle(color: Colors.red),
+                                      ),
+                                      value: _selectedProductId,
+                                      items: products.map((product) => DropdownMenuItem<String>(
+                                        value: product.id,
+                                        child: Text(product.name),
+                                      )).toList(),
+                                      onChanged: (value) => setState(() => _selectedProductId = value),
+                                      validator: (value) => value == null ? 'Please select a product' : null,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  // Quantity
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[50],
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: TextFormField(
+                                      decoration: InputDecoration(
+                                        labelText: 'Quantity',
+                                        labelStyle: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black87,
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                        errorStyle: const TextStyle(color: Colors.red),
+                                      ),
+                                      keyboardType: TextInputType.number,
+                                      onChanged: (value) => setState(() => _quantity = int.tryParse(value) ?? 0),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Please enter quantity';
+                                        }
+                                        if (int.tryParse(value) == null || int.parse(value) <= 0) {
+                                          return 'Please enter a valid quantity';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  // Save Button
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      if (_formKey.currentState!.validate()) {
+                                        final selectedProduct = products.firstWhere(
+                                              (product) => product.id == _selectedProductId,
+                                          orElse: () => Product(
+                                            id: _selectedProductId ?? '',
+                                            name: '',
+                                            price: 0.0,
+                                            stock: 0,
+                                            category: '',
+                                            categoryId: '',
+                                            subcategoryId: '',
+                                            subcategoryName: '',
+                                            tax: 0.0,
+                                          ),
+                                        );
+
+                                        final stock = StockModel(
+                                          id: '${_selectedProductId}_${_selectedStoreId}',
+                                          productId: _selectedProductId!,
+                                          storeId: _selectedStoreId!,
+                                          quantity: _quantity,
+                                          lastUpdated: DateTime.now(),
+                                          name: selectedProduct.name,
+                                          price: selectedProduct.price,
+                                          stock: null,
+                                          category: selectedProduct.category,
+                                          categoryId: selectedProduct.categoryId,
+                                          subcategoryId: selectedProduct.subcategoryId,
+                                          subcategoryName: selectedProduct.subcategoryName,
+                                          tax: selectedProduct.tax,
+                                        );
+                                        _stockCubit.addStock(stock, product: selectedProduct);
+                                      }
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Theme.of(context).primaryColor,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(vertical: 16),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      textStyle: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    child: const Text(AppLabels.saveButtonText),
+                                  ),
+                                ],
                               );
-
-                              final stock = StockModel(
-                                id: '${_selectedProductId}_${_selectedStoreId}',
-                                productId: _selectedProductId!,
-                                storeId: _selectedStoreId!,
-                                quantity: _quantity,
-                                lastUpdated: DateTime.now(),
-                                name: null, // Let StockCubit map
-                                price: null,
-                                stock: null,
-                                category: null,
-                                categoryId: null,
-                                subcategoryId: null,
-                                subcategoryName: null,
-                                tax: null,
-                              );
-                              _stockCubit.addStock(stock, product: selectedProduct);
-                            }
-                          },
-                          child: const Text(AppLabels.saveButtonText),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ),

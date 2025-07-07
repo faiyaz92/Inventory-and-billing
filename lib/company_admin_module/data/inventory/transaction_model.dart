@@ -2,20 +2,23 @@ import 'package:requirment_gathering_app/company_admin_module/data/inventory/tra
 
 class TransactionModel {
   final String id;
-  final String type; // 'transfer' or 'billing'
+  final String type;
   final String productId;
+  final String productName; // Added
   final int quantity;
   final String fromStoreId;
-  final String? toStoreId; // Null for billing
-  final String? customerId; // Null for transfer
+  final String? toStoreId;
+  final String? customerId;
   final DateTime timestamp;
-  final String userName; // Added to store the username of the user
-  final String userId;   // Added to store the user ID of the user
+  final String userName;
+  final String userId;
+  final String? remarks;
 
   TransactionModel({
     required this.id,
     required this.type,
     required this.productId,
+    required this.productName, // Added
     required this.quantity,
     required this.fromStoreId,
     this.toStoreId,
@@ -23,6 +26,7 @@ class TransactionModel {
     required this.timestamp,
     required this.userName,
     required this.userId,
+    this.remarks,
   });
 
   factory TransactionModel.fromDto(TransactionDto dto) {
@@ -30,13 +34,15 @@ class TransactionModel {
       id: dto.id,
       type: dto.type,
       productId: dto.productId,
+      productName: dto.productName, // Added
       quantity: dto.quantity,
       fromStoreId: dto.fromStoreId,
       toStoreId: dto.toStoreId,
       customerId: dto.customerId,
       timestamp: dto.timestamp,
-      userName: dto.userName, // Added
-      userId: dto.userId,     // Added
+      userName: dto.userName,
+      userId: dto.userId,
+      remarks: dto.remarks,
     );
   }
 
@@ -45,13 +51,15 @@ class TransactionModel {
       id: id,
       type: type,
       productId: productId,
+      productName: productName, // Added
       quantity: quantity,
       fromStoreId: fromStoreId,
       toStoreId: toStoreId,
       customerId: customerId,
       timestamp: timestamp,
-      userName: userName, // Added
-      userId: userId,     // Added
+      userName: userName,
+      userId: userId,
+      remarks: remarks,
     );
   }
 }

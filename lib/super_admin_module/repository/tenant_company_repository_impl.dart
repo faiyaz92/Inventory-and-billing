@@ -9,7 +9,9 @@ import 'package:requirment_gathering_app/super_admin_module/data/tenant_company_
 import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.dart';
 import 'package:requirment_gathering_app/super_admin_module/repository/tenant_company_repository.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 class TenantCompanyRepository implements ITenantCompanyRepository {
   final IFirestorePathProvider _firestoreProvider;
@@ -61,6 +63,7 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
       companyId: companyId,
       name: adminName,
       userName: adminUsername,
+      userType: UserType.Employee,
     );
     await _firestoreProvider
         .getTenantUsersRef(companyId)
@@ -74,24 +77,46 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
 
   @override
   Future<String> addUserToCompany(
-      UserInfoDto userInfoDto, String password) async {
-    UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-      email: userInfoDto.email ?? '',
-      password: password,
-    );
-    String userId = userCredential.user!.uid;
+      UserInfoDto userInfoDto, String? password) async {
     if (userInfoDto.companyId == null || userInfoDto.companyId!.isEmpty) {
       throw Exception('Company ID is missing. Cannot add user.');
     }
-    UserInfoDto updatedUserInfo = userInfoDto.copyWith(userId: userId);
+
+    String userId;
+    UserInfoDto updatedUserInfo;
+
+    if (userInfoDto.userType == UserType.Employee) {
+      // For Employees: Create Firebase Auth credentials
+      if (password == null || password.isEmpty) {
+        throw Exception('Password is required for Employee users.');
+      }
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
+        email: userInfoDto.email ?? '',
+        password: password,
+      );
+      userId = userCredential.user!.uid;
+      updatedUserInfo = userInfoDto.copyWith(userId: userId);
+    } else {
+      // For non-Employees: Generate custom userId, no Firebase Auth
+      userId = const Uuid().v4(); // Generate unique userId
+      updatedUserInfo = userInfoDto.copyWith(userId: userId);
+    }
+
+    // Add to tenant users collection (all users)
     await _firestoreProvider
         .getTenantUsersRef(userInfoDto.companyId!)
         .doc(userId)
         .set(updatedUserInfo.toMap());
-    await _firestoreProvider
-        .getCommonUsersPath()
-        .doc(userId)
-        .set(updatedUserInfo.toMap());
+
+    // Only add Employees to common users collection
+    if (userInfoDto.userType == UserType.Employee) {
+      await _firestoreProvider
+          .getCommonUsersPath()
+          .doc(userId)
+          .set(updatedUserInfo.toMap());
+    }
+
     return userId;
   }
 
@@ -104,10 +129,12 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
           .getTenantUsersRef(companyId)
           .doc(userId)
           .update(updateData);
-      await _firestoreProvider
+      if(userInfoDto.userType == UserType.Employee) {
+        await _firestoreProvider
           .getCommonUsersPath()
           .doc(userId)
           .update(updateData);
+      }
     } catch (e) {
       throw Exception('Error updating user: $e');
     }
@@ -163,7 +190,7 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
         role: Role.SUPER_ADMIN,
         userName: 'faiyaz92',
         name: 'Faiyaz Meghreji',
-        companyId: 'Easy2Solutions',
+        companyId: 'Easy2Solutions', userType: UserType.Boss,
       );
       await _firestoreProvider.superAdminPath
           .doc(currentUser.uid)
@@ -181,20 +208,21 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
   }
 
   @override
-  Future<List<UserInfoDto>> getUsersFromTenantCompany(String companyId, {String? storeId}) async {
+  Future<List<UserInfoDto>> getUsersFromTenantCompany(String companyId,
+      {String? storeId}) async {
     try {
       final userInfo = await _accountRepository.getUserInfo();
       final loggedInUserRole = userInfo?.role;
       final loggedInUserStoreId = userInfo?.storeId;
 
-      CollectionReference usersRef = _firestoreProvider.getTenantUsersRef(companyId);
+      CollectionReference usersRef =
+          _firestoreProvider.getTenantUsersRef(companyId);
       QuerySnapshot querySnapshot;
 
       if (storeId != null && storeId.isNotEmpty) {
         // Filter by provided storeId, regardless of role
-        querySnapshot = await usersRef
-            .where('storeId', isEqualTo: storeId)
-            .get();
+        querySnapshot =
+            await usersRef.where('storeId', isEqualTo: storeId).get();
       } else {
         // No storeId provided, use existing role-based logic
         if (loggedInUserRole == Role.COMPANY_ADMIN) {
