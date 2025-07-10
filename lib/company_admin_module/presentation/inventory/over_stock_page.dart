@@ -10,15 +10,30 @@ import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
 
 @RoutePage()
-class OverallStockPage extends StatelessWidget {
+class OverallStockPage extends StatefulWidget {
   const OverallStockPage({Key? key}) : super(key: key);
+
+  @override
+  _OverallStockPageState createState() => _OverallStockPageState();
+}
+
+class _OverallStockPageState extends State<OverallStockPage> {
+  final OverallStockCubit overallStockCubit = OverallStockCubit(
+    stockService: sl<StockService>(),
+  )..loadOverallStock();
+  String searchQuery = '';
+  List<ProductStock> filteredProductStocks = [];
+
+  @override
+  void dispose() {
+    overallStockCubit.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => OverallStockCubit(
-        stockService: sl<StockService>(),
-      )..loadOverallStock(),
+      create: (_) => overallStockCubit,
       child: Scaffold(
         appBar: const CustomAppBar(
           title: AppLabels.overallStockTitle,
@@ -45,7 +60,17 @@ class OverallStockPage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: TextField(
                       onChanged: (query) {
-                        context.read<OverallStockCubit>().searchProducts(query);
+                        print('Search input: $query'); // Debug: Log input
+                        setState(() {
+                          searchQuery = query.trim().toLowerCase();
+                          // Filter products locally
+                          filteredProductStocks = overallStockCubit.state.productStocks.where((product) {
+                            final productName = product.productName.toLowerCase();
+                            final productId = product.productId.toLowerCase();
+                            return productName.contains(searchQuery) || productId.contains(searchQuery);
+                          }).toList();
+                          print('Filtered ${filteredProductStocks.length} products for query: $searchQuery');
+                        });
                       },
                       decoration: InputDecoration(
                         labelText: AppLabels.searchProducts,
@@ -76,14 +101,16 @@ class OverallStockPage extends StatelessWidget {
                   Expanded(
                     child: BlocBuilder<OverallStockCubit, OverallStockState>(
                       builder: (context, state) {
-                        if (state.isLoading) {
+                        print('BlocBuilder triggered: ${state.runtimeType}, '
+                            '${state.productStocks.length} products'); // Debug: Log state
+                        if (state is OverallStockLoading) {
                           return const Center(
                             child: CircularProgressIndicator(
                               color: AppColors.primary,
                             ),
                           );
                         }
-                        if (state.error != null) {
+                        if (state is OverallStockError) {
                           return Center(
                             child: Card(
                               elevation: 4,
@@ -103,7 +130,11 @@ class OverallStockPage extends StatelessWidget {
                             ),
                           );
                         }
-                        if (state.productStocks.isEmpty) {
+                        // Initialize filteredProductStocks on first success load
+                        if (state is OverallStockSuccess && filteredProductStocks.isEmpty && searchQuery.isEmpty) {
+                          filteredProductStocks = List.from(state.productStocks);
+                        }
+                        if (filteredProductStocks.isEmpty && searchQuery.isEmpty) {
                           return Center(
                             child: Card(
                               elevation: 4,
@@ -123,12 +154,7 @@ class OverallStockPage extends StatelessWidget {
                             ),
                           );
                         }
-                        final filteredProducts = state.productStocks.where((product) {
-                          final query = state.searchQuery?.toLowerCase() ?? '';
-                          return product.productName.toLowerCase().contains(query) ||
-                              product.productId.toLowerCase().contains(query);
-                        }).toList();
-                        if (filteredProducts.isEmpty) {
+                        if (filteredProductStocks.isEmpty && searchQuery.isNotEmpty) {
                           return Center(
                             child: Card(
                               elevation: 4,
@@ -149,10 +175,10 @@ class OverallStockPage extends StatelessWidget {
                           );
                         }
                         return ListView.separated(
-                          itemCount: filteredProducts.length,
+                          itemCount: filteredProductStocks.length,
                           separatorBuilder: (context, index) => const SizedBox(height: 12),
                           itemBuilder: (context, index) {
-                            final product = filteredProducts[index];
+                            final product = filteredProductStocks[index];
                             return Card(
                               elevation: 4,
                               shape: RoundedRectangleBorder(

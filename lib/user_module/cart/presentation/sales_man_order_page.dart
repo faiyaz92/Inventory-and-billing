@@ -106,12 +106,11 @@ class SalesmanOrderPage extends StatelessWidget {
         builder: (context, state) {
           if (state is SalesmanOrderLoading) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-
               showDialog(
                 context: context,
                 barrierDismissible: false,
                 builder: (dialogContext) {
-                  return  CustomLoadingDialog(message: state.dialogMessage);
+                  return CustomLoadingDialog(message: state.dialogMessage);
                 },
               );
             });
@@ -565,7 +564,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                         ),
                                         Padding(
                                           padding: const EdgeInsets.symmetric(
-                                              vertical: 12, horizontal: 16),
+                                              horizontal: 12, vertical: 16),
                                           child: Text(
                                             '₹${cubit.calculateOverallSubtotal().toStringAsFixed(2)}', // Use cubit
                                             textAlign: TextAlign.right,
@@ -701,12 +700,16 @@ class SalesmanOrderPage extends StatelessWidget {
   }
 
   Future<void> _showCustomerSelectionDialog(
-      BuildContext context, UserServices userServices, SalesmanOrderCubit cubit) async { // Add cubit parameter
+      BuildContext context, UserServices userServices, SalesmanOrderCubit cubit) async {
     final TextEditingController customerNameController = TextEditingController();
+    final TextEditingController searchController = TextEditingController();
     bool isLoading = false;
+    List<UserInfo> filteredCustomers = [];
+
     try {
       final users = await userServices.getUsersFromTenantCompany();
       final customerUsers = users.where((u) => u.userType == UserType.Customer).toList();
+      filteredCustomers = customerUsers; // Initialize with all customers
       if (!context.mounted) return;
       showModalBottomSheet(
         context: context,
@@ -744,13 +747,47 @@ class SalesmanOrderPage extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   child: TextField(
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Search Customers',
+                      hintStyle: const TextStyle(color: AppColors.textSecondary),
+                      prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+                      filled: true,
+                      fillColor: AppColors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        if (value.isEmpty) {
+                          filteredCustomers = customerUsers;
+                        } else {
+                          filteredCustomers = customerUsers
+                              .where((customer) =>
+                          customer.name?.toLowerCase().contains(value.toLowerCase()) ?? false)
+                              .toList();
+                        }
+                      });
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: TextField(
                     controller: customerNameController,
                     decoration: InputDecoration(
                       labelText: 'New Customer Name',
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8)),
                       errorText: customerNameController.text.isEmpty &&
-                          customerUsers.isEmpty
+                          filteredCustomers.isEmpty
                           ? 'Name is required'
                           : null,
                     ),
@@ -804,7 +841,7 @@ class SalesmanOrderPage extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: const EdgeInsets.symmetric(vertical: 12,horizontal: 12),
                     ),
                     child: isLoading
                         ? const SizedBox(
@@ -827,13 +864,13 @@ class SalesmanOrderPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Expanded(
-                  child: customerUsers.isEmpty
-                      ? const Center(child: Text('No customers available'))
+                  child: filteredCustomers.isEmpty
+                      ? const Center(child: Text('No customers found'))
                       : ListView.builder(
                     controller: scrollController,
-                    itemCount: customerUsers.length,
+                    itemCount: filteredCustomers.length,
                     itemBuilder: (dialogContext, index) {
-                      final user = customerUsers[index];
+                      final user = filteredCustomers[index];
                       return ListTile(
                         title: Text(
                           user.name ?? 'Unknown',

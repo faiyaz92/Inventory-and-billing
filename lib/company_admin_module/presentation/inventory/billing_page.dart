@@ -270,10 +270,14 @@ class _BillingPageState extends State<BillingPage> {
   Future<void> _showCustomerSelectionDialog() async {
     final userServices = sl<UserServices>();
     final addUserCubit = sl<AddUserCubit>();
+    final TextEditingController searchController = TextEditingController(); // Controller for search bar
+    List<UserInfo> filteredCustomers = []; // List for filtered customers
+    List<UserInfo> allCustomers = []; // Store all customers for filtering
+
     try {
       final users = await userServices.getUsersFromTenantCompany();
-      final customerUsers =
-      users.where((u) => u.userType == UserType.Customer).toList();
+      allCustomers = users.where((u) => u.userType == UserType.Customer).toList();
+      filteredCustomers = allCustomers; // Initialize with all customers
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -289,148 +293,197 @@ class _BillingPageState extends State<BillingPage> {
             minChildSize: 0.5,
             maxChildSize: 0.9,
             expand: false,
-            builder: (context, scrollController) => Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Select or Add Customer',
-                        style: TextStyle(
+            builder: (context, scrollController) => StatefulBuilder(
+              builder: (context, setState) => Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Select or Add Customer',
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.primary),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: AppColors.primary),
-                        onPressed: () => Navigator.of(context).pop(),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: TextField(
-                    controller: _customerNameController,
-                    decoration: InputDecoration(
-                      labelText: 'New Customer Name',
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                      errorText: _customerNameController.text.isEmpty &&
-                          customerUsers.isEmpty
-                          ? 'Name is required'
-                          : null,
-                    ),
-                  ),
-                ),
-                BlocListener<AddUserCubit, AddUserState>(
-                  listener: (context, state) {
-                    if (state is AddUserSuccess) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Customer added successfully')),
-                      );
-                      setState(() {
-                        _isLoading = false;
-                      });
-                      Navigator.of(context).pop();
-                    } else if (state is AddUserFailure) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(state.error)),
-                      );
-                      setState(() {
-                        _isLoading = false;
-                      });
-                    }
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        if (_customerNameController.text.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Customer name is required')),
-                          );
-                          return;
-                        }
-                        setState(() => _isLoading = true);
-                        try {
-                          final companyId =
-                              (await sl<AccountRepository>().getUserInfo())
-                                  ?.companyId;
-                          final userInfo = UserInfo(
-                            name: _customerNameController.text.trim(),
-                            userType: UserType.Customer,
-                            companyId: companyId,
-                          );
-                          await addUserCubit.addUser(userInfo, '');
-                          final users =
-                          await userServices.getUsersFromTenantCompany();
-                          final newCustomer = users.firstWhere(
-                                (u) => u.name == userInfo.name,
-                            orElse: () => userInfo.copyWith(
-                                userId: DateTime.now()
-                                    .millisecondsSinceEpoch
-                                    .toString()),
-                          );
-                          setState(() {
-                            _selectedCustomer = newCustomer;
-                            _newCustomerLedgerId = newCustomer.accountLedgerId;
-                            _customerNameController.clear();
-                          });
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Failed to add customer: $e')),
-                          );
-                          setState(() => _isLoading = false);
-                        }
-                      },
-                      child: const Text('Add New Customer'),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: customerUsers.isEmpty
-                      ? const Center(child: Text('No customers available'))
-                      : ListView.builder(
-                    controller: scrollController,
-                    itemCount: customerUsers.length,
-                    itemBuilder: (context, index) {
-                      final user = customerUsers[index];
-                      return ListTile(
-                        title: Text(
-                          user.name ?? user.userName ?? 'Unknown',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold),
+                            color: AppColors.primary,
+                          ),
                         ),
-                        subtitle: Text('ID: ${user.userId}'),
-                        onTap: () {
-                          setState(() {
-                            _selectedCustomer = user;
-                            _newCustomerLedgerId = user.accountLedgerId;
-                          });
-                          Navigator.of(context).pop();
-                        },
-                      );
-                    },
+                        IconButton(
+                          icon: const Icon(Icons.close, color: AppColors.primary),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  // Search Bar
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: TextField(
+                      controller: searchController,
+                      decoration: InputDecoration(
+                        hintText: 'Search Customers',
+                        hintStyle: const TextStyle(color: AppColors.textSecondary),
+                        prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+                        filled: true,
+                        fillColor: AppColors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          if (value.isEmpty) {
+                            filteredCustomers = allCustomers;
+                          } else {
+                            filteredCustomers = allCustomers
+                                .where((customer) =>
+                            (customer.name?.toLowerCase().contains(value.toLowerCase()) ?? false) ||
+                                (customer.userName?.toLowerCase().contains(value.toLowerCase()) ?? false))
+                                .toList();
+                          }
+                        });
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: TextField(
+                      controller: _customerNameController,
+                      decoration: InputDecoration(
+                        labelText: 'New Customer Name',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        errorText: _customerNameController.text.isEmpty && filteredCustomers.isEmpty
+                            ? 'Name is required'
+                            : null,
+                      ),
+                    ),
+                  ),
+                  BlocListener<AddUserCubit, AddUserState>(
+                    listener: (context, state) {
+                      if (state is AddUserSuccess) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Customer added successfully')),
+                        );
+                        setState(() {
+                          _isLoading = false;
+                        });
+                        Navigator.of(context).pop();
+                      } else if (state is AddUserFailure) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(state.error)),
+                        );
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          if (_customerNameController.text.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Customer name is required')),
+                            );
+                            return;
+                          }
+                          setState(() => _isLoading = true);
+                          try {
+                            final companyId = (await sl<AccountRepository>().getUserInfo())?.companyId;
+                            final userInfo = UserInfo(
+                              name: _customerNameController.text.trim(),
+                              userType: UserType.Customer,
+                              companyId: companyId,
+                            );
+                            await addUserCubit.addUser(userInfo, '');
+                            final users = await userServices.getUsersFromTenantCompany();
+                            final newCustomer = users.firstWhere(
+                                  (u) => u.name == userInfo.name,
+                              orElse: () => userInfo.copyWith(
+                                userId: DateTime.now().millisecondsSinceEpoch.toString(),
+                              ),
+                            );
+                            setState(() {
+                              _selectedCustomer = newCustomer;
+                              _newCustomerLedgerId = newCustomer.accountLedgerId;
+                              _customerNameController.clear();
+                            });
+                            // Refresh customer list after adding a new customer
+                            allCustomers = users.where((u) => u.userType == UserType.Customer).toList();
+                            filteredCustomers = allCustomers;
+                            searchController.clear();
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Failed to add customer: $e')),
+                            );
+                            setState(() => _isLoading = false);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        child: const Text(
+                          'Add New Customer',
+                          style: TextStyle(
+                            color: AppColors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: filteredCustomers.isEmpty
+                        ? const Center(child: Text('No customers available'))
+                        : ListView.builder(
+                      controller: scrollController,
+                      itemCount: filteredCustomers.length,
+                      itemBuilder: (context, index) {
+                        final user = filteredCustomers[index];
+                        return ListTile(
+                          title: Text(
+                            user.name ?? user.userName ?? 'Unknown',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text('ID: ${user.userId}'),
+                          onTap: () {
+                            setState(() {
+                              _selectedCustomer = user;
+                              _newCustomerLedgerId = user.accountLedgerId;
+                            });
+                            Navigator.of(context).pop();
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to fetch customers: $e')),
+          SnackBar(content: Text('error')),
       );
     }
   }
-
   Future<void> _generateBill() async {
     if (_cartItems.isEmpty && _existingBillNumber == null) {
       ScaffoldMessenger.of(context).showSnackBar(

@@ -199,296 +199,259 @@ class HomePage extends StatelessWidget {
   }) {
     final List<Widget> gridItems = [];
 
-    if (role == Role.SUPER_ADMIN) {
-      gridItems.add(
-        _buildGridItem(
-          icon: Icons.admin_panel_settings_outlined,
-          label: 'Super Admin',
-          color: Colors.cyan,
-          onTap: () {
-            sl<Coordinator>().navigateToSuperAdminPage();
-          },
-          isWeb: isWeb,
-        ),
-      );
-    } else if (role == Role.COMPANY_ADMIN) {
-      gridItems.addAll([
-        _buildGridItem(
-          icon: Icons.admin_panel_settings_outlined,
-          label: 'Company Admin',
-          color: Colors.deepPurple,
-          onTap: () {
-            sl<Coordinator>().navigateToCompanyAdminPage();
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.add_task,
-          label: 'Add Task',
-          color: Colors.blue,
-          onTap: () {
-            sl<Coordinator>().navigateToAddTaskPage();
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.task_alt,
-          label: 'Task List',
-          color: Colors.green,
-          onTap: () {
-            sl<Coordinator>().navigateToTaskListPage();
-          },
-          isWeb: isWeb,
-        ),
+    // Common grid item for all roles: User Ledger
+    gridItems.add(
+      _buildGridItem(
+        icon: Icons.account_balance_wallet_outlined,
+        label: 'User Ledger',
+        color: Colors.deepPurple,
+        onTap: () async {
+          final user = await sl<AccountRepository>().getUserInfo();
+          sl<Coordinator>().navigateToUserLedgerPage(
+            user: user?.copyWith(accountLedgerId: '1q3XGuMfV9LunYhnKDh8') ?? UserInfo(),
+          );
+        },
+        isWeb: isWeb,
+      ),
+    );
 
-
-
-        _buildGridItem(
-          icon: Icons.settings_outlined,
-          label: 'Company Settings',
-          color: Colors.indigo,
-          onTap: () {
-            sl<Coordinator>().navigateToCompanySettingsPage();
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.inventory_2_outlined,
-          label: 'Product Management',
-          color: Colors.lightGreenAccent,
-          onTap: () {
-            sl<Coordinator>().navigateToProductManagementPage();
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.bar_chart_outlined,
-          label: 'Sales Dashboard',
-          color: Colors.pink,
-          onTap: () {
-            sl<Coordinator>().navigateToCartDashboard();
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.warehouse_outlined,
-          label: 'Inventory',
-          color: Colors.teal,
-          onTap: () {
-            sl<Coordinator>().navigateToInventoryDashBoard();
-          },
-          isWeb: isWeb,
-        ),
-      ]);
-    } else if (role == Role.STORE_ADMIN) {
-      gridItems.addAll([
-        _buildGridItem(
-          icon: Icons.storefront_outlined,
-          label: 'My Store',
-          color: Colors.orangeAccent,
-          onTap: () {
-            sl<Coordinator>().navigateToStoreDetailsPage('');
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.store_mall_directory_outlined,
-          label: 'Store List',
-          color: Colors.pink,
-          onTap: () {
-            sl<Coordinator>().navigateToStoresListPage();
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.inventory_outlined,
-          label: 'Stock List',
-          color: Colors.blueAccent,
-          onTap: () {
-            sl<Coordinator>().navigateToStockListPage();
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.storage_outlined,
-          label: 'Overall Stock',
-          color: Colors.pink,
-          onTap: () {
-            sl<Coordinator>().navigateToOverAllStockPage();
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.event_available_outlined,
-          label: 'Store Attendance',
-          color: Colors.pink,
-          onTap: () {
-            sl<Coordinator>().navigateToAttendancePage();
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.add_task,
-          label: 'Add Task',
-          color :Colors.blueAccent,
-          onTap: () {
-            sl<Coordinator>().navigateToAddTaskPage();
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.task_alt,
-          label: 'Task List',
-          color: Colors.green,
-          onTap: () {
-            sl<Coordinator>().navigateToTaskListPage();
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.person_add_alt_1_outlined,
-          label: 'Add Customer',
-          color: Colors.pink,
-          onTap: () {
-            sl<Coordinator>().navigateToAddUserPage();
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.receipt_long_outlined,
-          label: 'Billing Customer',
-          color: Colors.pink,
-          onTap: () {
-            sl<Coordinator>().navigateToBillingPage();
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.shopping_cart_outlined,
-          label: 'Cart Management',
-          color: Colors.pink,
-          onTap: () {
-            sl<Coordinator>().navigateToCartDashboard();
-          },
-          isWeb: isWeb,
-        ),
-      ]);
-    } else {
-      gridItems.addAll([
-        _buildGridItem(
-          icon: Icons.add_task,
-          label: 'Add Task',
-          color: Colors.blue,
-          onTap: () {
-            sl<Coordinator>().navigateToAddTaskPage();
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.task_alt,
-          label: 'Task List',
-          color: Colors.green,
-          onTap: () {
-            sl<Coordinator>().navigateToTaskListPage();
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.add_business_outlined,
-          label: 'Add Site',
-          color: Colors.orange,
-          onTap: () {
-            sl<Coordinator>().navigateToAddCompanyPage();
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.business_center_outlined,
-          label: 'Site List',
-          color: Colors.purple,
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Site List Coming Soon!"),
-              ),
-            );
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.group_add_outlined,
-          label: 'Add Supplier',
-          color: Colors.red,
-          onTap: () {
-            sl<Coordinator>().navigateToAddEditSupplierPage();
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.groups_outlined,
-          label: 'Supplier List',
-          color: Colors.teal,
-          onTap: () {
-            sl<Coordinator>().navigateToSupplierListPage();
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.lightbulb_outline,
-          label: 'Add Strategy',
-          color: Colors.amber,
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Add Strategy Coming Soon!"),
-              ),
-            );
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.settings_outlined,
-          label: 'Company Settings',
-          color: Colors.indigo,
-          onTap: () {
-            sl<Coordinator>().navigateToCompanySettingsPage();
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.inventory_2_outlined,
-          label: 'Product Management',
-          color: Colors.pink,
-          onTap: () {
-            sl<Coordinator>().navigateToProductManagementPage();
-          },
-          isWeb: isWeb,
-        ),
-        _buildGridItem(
-          icon: Icons.shopping_cart_outlined,
-          label: 'Cart Management',
-          color: Colors.pink,
-          onTap: () {
-            sl<Coordinator>().navigateToCartDashboard();
-          },
-          isWeb: isWeb,
-        ),
-      ]);
-    }
-    gridItems.add(_buildGridItem(
-      icon: Icons.account_balance_wallet_outlined,
-      label: 'User Ledger',
-      color: Colors.deepPurple,
-      onTap: () async {
-        final user = await sl<AccountRepository>().getUserInfo();
-        sl<Coordinator>().navigateToUserLedgerPage(
-          user: user?.copyWith(accountLedgerId: '1q3XGuMfV9LunYhnKDh8') ?? UserInfo(),
+    // Role-based access
+    switch (role) {
+      case Role.SUPER_ADMIN:
+        gridItems.add(
+          _buildGridItem(
+            icon: Icons.admin_panel_settings_outlined,
+            label: 'Super Admin',
+            color: Colors.cyan,
+            onTap: () {
+              sl<Coordinator>().navigateToSuperAdminPage();
+            },
+            isWeb: isWeb,
+          ),
         );
-      },
-      isWeb: isWeb,
-    ));
+        gridItems.add(
+          _buildGridItem(
+            icon: Icons.add_business_outlined,
+            label: 'Add Company',
+            color: Colors.orange,
+            onTap: () {
+              sl<Coordinator>().navigateToAddCompanyPage();
+            },
+            isWeb: isWeb,
+          ),
+        );
+        break;
+
+      case Role.COMPANY_ADMIN:
+        gridItems.addAll([
+          _buildGridItem(
+            icon: Icons.admin_panel_settings_outlined,
+            label: 'Company Admin',
+            color: Colors.deepPurple,
+            onTap: () {
+              sl<Coordinator>().navigateToCompanyAdminPage();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.add_task,
+            label: 'Add Task',
+            color: Colors.blue,
+            onTap: () {
+              sl<Coordinator>().navigateToAddTaskPage();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.task_alt,
+            label: 'Task List',
+            color: Colors.green,
+            onTap: () {
+              sl<Coordinator>().navigateToTaskListPage();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.settings_outlined,
+            label: 'Company Settings',
+            color: Colors.indigo,
+            onTap: () {
+              sl<Coordinator>().navigateToCompanySettingsPage();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.inventory_2_outlined,
+            label: 'Product Management',
+            color: Colors.lightGreenAccent,
+            onTap: () {
+              sl<Coordinator>().navigateToProductManagementPage();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.bar_chart_outlined,
+            label: 'Sales Dashboard',
+            color: Colors.pink,
+            onTap: () {
+              sl<Coordinator>().navigateToCartDashboard();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.warehouse_outlined,
+            label: 'Inventory',
+            color: Colors.teal,
+            onTap: () {
+              sl<Coordinator>().navigateToInventoryDashBoard();
+            },
+            isWeb: isWeb,
+          ),
+        ]);
+        break;
+
+      case Role.STORE_ADMIN:
+        gridItems.addAll([
+          _buildGridItem(
+            icon: Icons.storefront_outlined,
+            label: 'My Store',
+            color: Colors.orangeAccent,
+            onTap: () {
+              sl<Coordinator>().navigateToStoreDetailsPage('');
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.store_mall_directory_outlined,
+            label: 'Store List',
+            color: Colors.pink,
+            onTap: () {
+              sl<Coordinator>().navigateToStoresListPage();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.inventory_outlined,
+            label: 'Stock List',
+            color: Colors.blueAccent,
+            onTap: () {
+              sl<Coordinator>().navigateToStockListPage();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.storage_outlined,
+            label: 'Overall Stock',
+            color: Colors.pink,
+            onTap: () {
+              sl<Coordinator>().navigateToOverAllStockPage();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.event_available_outlined,
+            label: 'Store Attendance',
+            color: Colors.pink,
+            onTap: () {
+              sl<Coordinator>().navigateToAttendancePage();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.add_task,
+            label: 'Add Task',
+            color: Colors.blueAccent,
+            onTap: () {
+              sl<Coordinator>().navigateToAddTaskPage();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.task_alt,
+            label: 'Task List',
+            color: Colors.green,
+            onTap: () {
+              sl<Coordinator>().navigateToTaskListPage();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.person_add_alt_1_outlined,
+            label: 'Add Customer',
+            color: Colors.pink,
+            onTap: () {
+              sl<Coordinator>().navigateToAddUserPage();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.receipt_long_outlined,
+            label: 'Billing Customer',
+            color: Colors.pink,
+            onTap: () {
+              sl<Coordinator>().navigateToBillingPage();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.shopping_cart_outlined,
+            label: 'Cart Management',
+            color: Colors.pink,
+            onTap: () {
+              sl<Coordinator>().navigateToCartDashboard();
+            },
+            isWeb: isWeb,
+          ),
+        ]);
+        break;
+
+      case Role.SALES_MAN:
+        gridItems.addAll([
+          _buildGridItem(
+            icon: Icons.receipt,
+            label: 'Cart Admin',
+            color: Colors.orange,
+            onTap: () {
+              sl<Coordinator>().navigateToAdminPanelPage();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.book,
+            label: 'Salesman Orders',
+            color: Colors.blueAccent,
+            onTap: () {
+              sl<Coordinator>().navigateToSalesManOrderPage();
+            },
+            isWeb: isWeb,
+          ),
+        ]);
+        break;
+
+      case Role.DELIVERY_MAN:
+      // Empty access for now, only User Ledger is added above
+        break;
+
+      case Role.STORE_ACCOUNTANT:
+      // Empty access for now, only User Ledger is added above
+        break;
+
+      case Role.STORE_MANAGER:
+      // Empty access for now, only User Ledger is added above
+        break;
+
+      case Role.COMPANY_ACCOUNTANT:
+      // Empty access for now, only User Ledger is added above
+        break;
+
+      case Role.USER:
+      // Empty access for now, only User Ledger is added above
+        break;
+    }
+
     return gridItems;
   }
+
 
   Widget _buildGridItem({
     required IconData icon,
