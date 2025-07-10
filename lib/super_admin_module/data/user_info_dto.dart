@@ -9,12 +9,15 @@ class UserInfoDto extends Equatable {
   final String email;
   final String userName;
   final Role role;
-  final UserType? userType; // Nullable
+  final UserType? userType;
   final double? latitude;
   final double? longitude;
   final double? dailyWage;
   final String? storeId;
   final String? accountLedgerId;
+  final String? mobileNumber; // New field
+  final String? businessName; // New field
+  final String? address; // New field
 
   const UserInfoDto({
     required this.userId,
@@ -23,17 +26,20 @@ class UserInfoDto extends Equatable {
     required this.email,
     required this.userName,
     required this.role,
-    this.userType, // Optional
+    this.userType,
     this.latitude,
     this.longitude,
     this.dailyWage,
     this.storeId,
     this.accountLedgerId,
+    this.mobileNumber,
+    this.businessName,
+    this.address,
   });
 
   factory UserInfoDto.fromMap(Map<String, dynamic> map) {
     final userTypeRaw = map['userType'] as String?;
-    final userType = UserTypeExtension.fromString(userTypeRaw) ?? UserType.Customer; // Default to Customer
+    final userType = UserTypeExtension.fromString(userTypeRaw) ?? UserType.Customer;
     if (userTypeRaw != null && userType == UserType.Customer) {
       print('UserInfoDto.fromMap: Defaulted userType to Customer for raw value "$userTypeRaw"');
     }
@@ -50,6 +56,9 @@ class UserInfoDto extends Equatable {
       dailyWage: (map['dailyWage'] as num?)?.toDouble() ?? 500.0,
       storeId: map['storeId'] as String?,
       accountLedgerId: map['accountLedgerId'] as String?,
+      mobileNumber: map['mobileNumber'] as String?,
+      businessName: map['businessName'] as String?,
+      address: map['address'] as String?,
     );
   }
 
@@ -61,29 +70,35 @@ class UserInfoDto extends Equatable {
       'email': email,
       'userName': userName,
       'role': role.name,
-      'userType': userType?.name, // Serialize as string
+      'userType': userType?.name,
       'latitude': latitude,
       'longitude': longitude,
       'dailyWage': dailyWage,
       'storeId': storeId,
       'accountLedgerId': accountLedgerId,
+      'mobileNumber': mobileNumber,
+      'businessName': businessName,
+      'address': address,
     };
   }
 
   Map<String, dynamic> toPartialMap() {
     final map = <String, dynamic>{};
-    map['userId'] = userId; // Always include userId
+    map['userId'] = userId;
     if (companyId != null) map['companyId'] = companyId;
     if (name.isNotEmpty) map['name'] = name;
     if (email.isNotEmpty) map['email'] = email;
     if (userName.isNotEmpty) map['userName'] = userName;
-    map['role'] = role.name; // Always include role
-    if (userType != null) map['userType'] = userType!.name; // Serialize as string
+    map['role'] = role.name;
+    if (userType != null) map['userType'] = userType!.name;
     if (latitude != null) map['latitude'] = latitude;
     if (longitude != null) map['longitude'] = longitude;
     if (dailyWage != null) map['dailyWage'] = dailyWage;
     if (storeId != null) map['storeId'] = storeId;
     if (accountLedgerId != null) map['accountLedgerId'] = accountLedgerId;
+    if (mobileNumber != null) map['mobileNumber'] = mobileNumber;
+    if (businessName != null) map['businessName'] = businessName;
+    if (address != null) map['address'] = address;
     return map;
   }
 
@@ -100,6 +115,9 @@ class UserInfoDto extends Equatable {
     double? dailyWage,
     String? storeId,
     String? accountLedgerId,
+    String? mobileNumber,
+    String? businessName,
+    String? address,
   }) {
     return UserInfoDto(
       userId: userId ?? this.userId,
@@ -114,6 +132,9 @@ class UserInfoDto extends Equatable {
       dailyWage: dailyWage ?? this.dailyWage,
       storeId: storeId ?? this.storeId,
       accountLedgerId: accountLedgerId ?? this.accountLedgerId,
+      mobileNumber: mobileNumber ?? this.mobileNumber,
+      businessName: businessName ?? this.businessName,
+      address: address ?? this.address,
     );
   }
 
@@ -131,5 +152,8 @@ class UserInfoDto extends Equatable {
     dailyWage,
     storeId,
     accountLedgerId,
+    mobileNumber,
+    businessName,
+    address,
   ];
 }

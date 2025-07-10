@@ -10,6 +10,9 @@ class CompanyAdminPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isWeb = screenWidth > 600;
+
     return Scaffold(
       appBar: const CustomAppBar(title: 'Company Admin Dashboard'),
       body: Container(
@@ -25,89 +28,39 @@ class CompanyAdminPage extends StatelessWidget {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(isWeb ? 24.0 : 16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: Card(
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    color: Colors.white,
+                    child: Padding(
+                      padding: EdgeInsets.all(isWeb ? 24.0 : 16.0),
+                      child: Text(
+                        'Welcome to Company Admin Dashboard',
+                        style: TextStyle(
+                          fontSize: isWeb ? 28 : 24,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: isWeb ? 32 : 24),
                 Expanded(
                   child: GridView.count(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    childAspectRatio: 1.0,
-                    children: [
-                      _buildGridItem(
-                        icon: Icons.person_add,
-                        label: 'Add User',
-                        color: Colors.blue,
-                        onTap: () {
-                          sl<Coordinator>().navigateToAddUserPage();
-                        },
-                      ),
-                      _buildGridItem(
-                        icon: Icons.monetization_on_sharp,
-                        label: 'User salary List',
-                        color: Colors.orangeAccent,
-                        onTap: () {
-                          sl<Coordinator>().navigateToUserListPage();
-                        },
-                      ), _buildGridItem(
-                        icon: Icons.list,
-                        label: 'User List',
-                        color: Colors.green,
-                        onTap: () {
-                          sl<Coordinator>().navigateToSimpleEmployeeList();
-                        },
-                      ),
-                      _buildGridItem(
-                        icon: Icons.task,
-                        label: 'Add Task',
-                        color: Colors.orange,
-                        onTap: () {
-                          sl<Coordinator>().navigateToAddTaskPage();
-                        },
-                      ),
-                      _buildGridItem(
-                        icon: Icons.task,
-                        label: 'Task List',
-                        color: Colors.purple,
-                        onTap: () {
-                          sl<Coordinator>().navigateToTaskListPage();
-                        },
-                      ),
-                      _buildGridItem(
-                        icon: Icons.add_chart,
-                        label: 'Attendance',
-                        color: Colors.lightGreen,
-                        onTap: () {
-                          sl<Coordinator>().navigateToAttendancePage();
-                        },
-                      ),
-                      _buildGridItem(
-                        icon: Icons.security,
-                        label: 'Manage Roles',
-                        color: Colors.red,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Manage Roles Coming Soon!"),
-                            ),
-                          );
-                        },
-                      ),
-                      _buildGridItem(
-                        icon: Icons.bar_chart,
-                        label: 'Reports',
-                        color: Colors.teal,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Reports Coming Soon!"),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+                    crossAxisCount: isWeb ? 4 : 3,
+                    crossAxisSpacing: isWeb ? 16 : 12,
+                    mainAxisSpacing: isWeb ? 16 : 12,
+                    childAspectRatio: isWeb ? 1.2 : 1.0,
+                    children: _buildGridItems(context, isWeb),
                   ),
                 ),
               ],
@@ -118,35 +71,98 @@ class CompanyAdminPage extends StatelessWidget {
     );
   }
 
+  List<Widget> _buildGridItems(BuildContext context, bool isWeb) {
+    return [
+      _buildGridItem(
+        context:context,
+        icon: Icons.person_add,
+        label: 'Add User',
+        color: Colors.blue,
+        onTap: () => sl<Coordinator>().navigateToAddUserPage(),
+        isWeb: isWeb,
+      ),
+      _buildGridItem(
+        context:context,
+        icon: Icons.monetization_on_sharp,
+        label: 'User Salary List',
+        color: Colors.orangeAccent,
+        onTap: () => sl<Coordinator>().navigateToUserListPage(),
+        isWeb: isWeb,
+      ),
+      _buildGridItem(
+        context:context,
+        icon: Icons.list,
+        label: 'User List',
+        color: Colors.green,
+        onTap: () => sl<Coordinator>().navigateToSimpleEmployeeList(),
+        isWeb: isWeb,
+      ),
+      _buildGridItem(
+        context:context,
+        icon: Icons.task,
+        label: 'Add Task',
+        color: Colors.orange,
+        onTap: () => sl<Coordinator>().navigateToAddTaskPage(),
+        isWeb: isWeb,
+      ),
+      _buildGridItem(
+        context:context,
+        icon: Icons.task,
+        label: 'Task List',
+        color: Colors.purple,
+        onTap: () => sl<Coordinator>().navigateToTaskListPage(),
+        isWeb: isWeb,
+      ),
+      _buildGridItem(
+        context:context,
+        icon: Icons.add_chart,
+        label: 'Attendance',
+        color: Colors.lightGreen,
+        onTap: () => sl<Coordinator>().navigateToAttendancePage(),
+        isWeb: isWeb,
+      ),
+
+
+    ];
+  }
+
   Widget _buildGridItem({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required VoidCallback onTap,
     required Color color,
+    required bool isWeb,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Card(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
         ),
-        elevation: 4,
+        elevation: 8,
         color: Colors.white,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 36, color: color),
-              const SizedBox(height: 8),
+              Icon(
+                icon,
+                size: isWeb ? 48 : 36,
+                color: color,
+              ),
+              SizedBox(height: isWeb ? 12 : 8),
               Text(
                 label,
-                style: const TextStyle(
-                  fontSize: 14,
+                style: TextStyle(
+                  fontSize: isWeb ? 16 : 14,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

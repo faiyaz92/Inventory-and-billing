@@ -1,4 +1,4 @@
-import 'package:auto_route/auto_route.dart';
+import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
@@ -10,6 +10,9 @@ class InventoryDashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isWeb = screenWidth > 600;
+
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Inventory Dashboard',
@@ -34,84 +37,39 @@ class InventoryDashboardPage extends StatelessWidget {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(isWeb ? 24.0 : 16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // GridView
+                SizedBox(
+                  width: double.infinity,
+                  child: Card(
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    color: Colors.white,
+                    child: Padding(
+                      padding: EdgeInsets.all(isWeb ? 24.0 : 16.0),
+                      child: Text(
+                        'Welcome to Inventory Dashboard',
+                        style: TextStyle(
+                          fontSize: isWeb ? 28 : 24,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: isWeb ? 32 : 24),
                 Expanded(
                   child: GridView.count(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    childAspectRatio: 1.0,
-                    children: [
-                      _buildDashboardCard(
-                        context,
-                        'Stock List',
-                        Icons.list,
-                        Colors.blue,
-                        () => sl<Coordinator>().navigateToStockListPage(),
-                      ),
-
-                      _buildDashboardCard(
-                        context,
-                        'Sales Report',
-                        Icons.bar_chart,
-                        Colors.purple,
-                        () => sl<Coordinator>().navigateToSalesReportPage(),
-                      ),
-                      _buildDashboardCard(
-                        context,
-                        'Transactions',
-                        Icons.account_balance,
-                        Colors.teal,
-                        () => sl<Coordinator>().navigateToTransactionsPage(),
-                      ),
-                      _buildDashboardCard(
-                        context,
-                        'Add Customer',
-                        Icons.person_add,
-                        Colors.red,
-                        () => sl<Coordinator>().navigateToAddUserPage(),
-                      ),
-                      _buildDashboardCard(
-                        context,
-                        'Store List',
-                        Icons.store,
-                        Colors.indigo,
-                        () => sl<Coordinator>().navigateToStoresListPage(),
-                      ),
-                      _buildDashboardCard(
-                        context,
-                        'Add Store',
-                        Icons.add_business,
-                        Colors.amber,
-                        () => sl<Coordinator>().navigateToAddStorePage(),
-                      ),
-                      _buildDashboardCard(
-                        context,
-                        'Over all stock',
-                        Icons.account_balance_wallet,
-                        Colors.green,
-                        () => sl<Coordinator>().navigateToOverAllStockPage(),
-                      ),
-                      _buildDashboardCard(
-                        context,
-                        'My Store',
-                        Icons.store,
-                        Colors.orangeAccent,
-                        () => sl<Coordinator>().navigateToStoreDetailsPage(
-                            ''), //no store id means own store id
-                      ),
-                      _buildDashboardCard(
-                        context,
-                        'Store attendance',
-                        Icons.people,
-                        Colors.green,
-                        () => sl<Coordinator>().navigateToAttendancePage(), //no store id means own store id
-                      ),
-                    ],
+                    crossAxisCount: isWeb ? 4 : 3,
+                    crossAxisSpacing: isWeb ? 16 : 12,
+                    mainAxisSpacing: isWeb ? 16 : 12,
+                    childAspectRatio: isWeb ? 1.2 : 1.0,
+                    children: _buildGridItems(context, isWeb),
                   ),
                 ),
               ],
@@ -122,34 +80,127 @@ class InventoryDashboardPage extends StatelessWidget {
     );
   }
 
+  List<Widget> _buildGridItems(BuildContext context, bool isWeb) {
+    return [
+      _buildDashboardCard(
+        context,
+        'Stock List',
+        Icons.list,
+        Colors.blue,
+            () => sl<Coordinator>().navigateToStockListPage(),
+        isWeb,
+      ),
+      _buildDashboardCard(
+        context,
+        'Sales Report',
+        Icons.bar_chart,
+        Colors.purple,
+            () => sl<Coordinator>().navigateToSalesReportPage(),
+        isWeb,
+      ),
+      _buildDashboardCard(
+        context,
+        'Transactions',
+        Icons.account_balance,
+        Colors.teal,
+            () => sl<Coordinator>().navigateToTransactionsPage(),
+        isWeb,
+      ),
+      _buildDashboardCard(
+        context,
+        'Add Customer',
+        Icons.person_add,
+        Colors.red,
+            () => sl<Coordinator>().navigateToAddUserPage(),
+        isWeb,
+      ),
+      _buildDashboardCard(
+        context,
+        'Store List',
+        Icons.store,
+        Colors.indigo,
+            () => sl<Coordinator>().navigateToStoresListPage(),
+        isWeb,
+      ),
+      _buildDashboardCard(
+        context,
+        'Add Store',
+        Icons.add_business,
+        Colors.amber,
+            () => sl<Coordinator>().navigateToAddStorePage(),
+        isWeb,
+      ),
+      _buildDashboardCard(
+        context,
+        'Overall Stock',
+        Icons.account_balance_wallet,
+        Colors.green,
+            () => sl<Coordinator>().navigateToOverAllStockPage(),
+        isWeb,
+      ),
+      _buildDashboardCard(
+        context,
+        'My Store',
+        Icons.store,
+        Colors.orangeAccent,
+            () => sl<Coordinator>().navigateToStoreDetailsPage(''),
+        isWeb,
+      ),
+      _buildDashboardCard(
+        context,
+        'Store Attendance',
+        Icons.people,
+        Colors.green,
+            () => sl<Coordinator>().navigateToAttendancePage(),
+        isWeb,
+      ),
+      _buildDashboardCard(
+        context,
+        'Add Stock',
+        Icons.inventory_2,
+        Colors.cyan,
+            () => sl<Coordinator>().navigateToAddStockPage(),
+        isWeb,
+      ),
+    ];
+  }
   Widget _buildDashboardCard(
-    BuildContext context,
-    String title,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    return Card(
-      elevation: 4.0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: Colors.white,
-      child: InkWell(
-        onTap: onTap,
+      BuildContext context,
+      String title,
+      IconData icon,
+      Color color,
+      VoidCallback onTap,
+      bool isWeb,
+      ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        elevation: 8,
+        color: Colors.white,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 36, color: color),
-              const SizedBox(height: 8),
+              Icon(
+                icon,
+                size: isWeb ? 48 : 36,
+                color: color,
+              ),
+              SizedBox(height: isWeb ? 12 : 8),
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 14,
+                style: TextStyle(
+                  fontSize: isWeb ? 16 : 14,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

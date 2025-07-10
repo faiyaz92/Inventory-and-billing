@@ -53,6 +53,9 @@ class _AddUserViewState extends State<_AddUserView> {
   final TextEditingController userNameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController dailyWageController = TextEditingController();
+  final TextEditingController mobileNumberController = TextEditingController(); // New
+  final TextEditingController businessNameController = TextEditingController(); // New
+  final TextEditingController addressController = TextEditingController(); // New
   Role? _selectedRole;
   String? _selectedStoreId;
   UserType? _selectedUserType;
@@ -67,9 +70,12 @@ class _AddUserViewState extends State<_AddUserView> {
       emailController.text = widget.user?.email ?? '';
       userNameController.text = widget.user?.userName ?? '';
       dailyWageController.text = widget.user?.dailyWage?.toString() ?? '500.0';
+      mobileNumberController.text = widget.user?.mobileNumber ?? ''; // New
+      businessNameController.text = widget.user?.businessName ?? ''; // New
+      addressController.text = widget.user?.address ?? ''; // New
       _selectedRole = widget.user?.role;
       _selectedStoreId = widget.user?.storeId;
-      _selectedUserType = widget.user?.userType ?? UserType.Employee; // Default to Employee
+      _selectedUserType = widget.user?.userType ?? UserType.Employee;
       print('initState (editing): _selectedStoreId = $_selectedStoreId, _selectedUserType = $_selectedUserType');
     }
     print('AddUserView initState: _selectedStoreId = $_selectedStoreId, _selectedUserType = $_selectedUserType, isEditing = $isEditing');
@@ -82,6 +88,9 @@ class _AddUserViewState extends State<_AddUserView> {
     userNameController.dispose();
     passwordController.dispose();
     dailyWageController.dispose();
+    mobileNumberController.dispose(); // New
+    businessNameController.dispose(); // New
+    addressController.dispose(); // New
     super.dispose();
   }
 
@@ -91,6 +100,9 @@ class _AddUserViewState extends State<_AddUserView> {
     userNameController.clear();
     passwordController.clear();
     dailyWageController.clear();
+    mobileNumberController.clear(); // New
+    businessNameController.clear(); // New
+    addressController.clear(); // New
     setState(() {
       _selectedRole = null;
       _selectedStoreId = null;
@@ -160,7 +172,7 @@ class _AddUserViewState extends State<_AddUserView> {
                 ),
                 child: BlocListener<StoreCubit, StoreState>(
                   listener: (context, storeState) {
-                    if (storeState is StoreLoaded && !isEditing && _selectedStoreId == null) {
+                    if (storeState is StoreLoaded && !isEditing && _selectedStoreId == null && _selectedUserType == UserType.Employee) {
                       final validStoreId = storeState.stores.any((store) => store.storeId == storeState.defaultStoreId)
                           ? storeState.defaultStoreId
                           : storeState.stores.isNotEmpty
@@ -170,7 +182,7 @@ class _AddUserViewState extends State<_AddUserView> {
                         setState(() {
                           _selectedStoreId = validStoreId;
                         });
-                        print('BlocListener: Set _selectedStoreId = $_selectedStoreId for adding');
+                        print('BlocListener: Set _selectedStoreId = $_selectedStoreId for adding employee');
                       }
                     }
                     print('StoreCubit state: $storeState');
@@ -207,11 +219,12 @@ class _AddUserViewState extends State<_AddUserView> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Full Name Field
+                                // Full Name Field (Common for both)
                                 Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 12.0),
                                   child: TextFormField(
                                     controller: nameController,
+                                    textCapitalization: TextCapitalization.words,
                                     decoration: InputDecoration(
                                       labelText: "Full Name",
                                       labelStyle: TextStyle(
@@ -238,7 +251,7 @@ class _AddUserViewState extends State<_AddUserView> {
                                     value!.isEmpty ? "Name is required" : null,
                                   ),
                                 ),
-                                // Email Field
+                                // Email Field (Common for both)
                                 Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 12.0),
                                   child: TextFormField(
@@ -267,94 +280,17 @@ class _AddUserViewState extends State<_AddUserView> {
                                     keyboardType: TextInputType.emailAddress,
                                     style: const TextStyle(fontSize: 16.0),
                                     validator: (value) {
-                                      if (_selectedUserType == UserType.Employee && (value == null || value.isEmpty)) {
-                                        return "Email is required for Employee";
+                                      if (value == null || value.isEmpty) {
+                                        return "Email is required";
                                       }
-                                      if (value != null && value.isNotEmpty && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
                                         return "Enter a valid email";
                                       }
                                       return null;
                                     },
                                   ),
                                 ),
-                                // Username Field
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                                  child: TextFormField(
-                                    controller: userNameController,
-                                    decoration: InputDecoration(
-                                      labelText: "Username",
-                                      labelStyle: TextStyle(
-                                        color: Theme.of(context).primaryColor,
-                                        fontSize: 16.0,
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.grey[100],
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Colors.grey[400]!),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Colors.grey[400]!),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                                      ),
-                                    ),
-                                    style: const TextStyle(fontSize: 16.0),
-                                    validator: (value) {
-                                      if (_selectedUserType == UserType.Employee && (value == null || value.isEmpty)) {
-                                        return "Username is required for Employee";
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                                // Daily Wage Field
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                                  child: TextFormField(
-                                    controller: dailyWageController,
-                                    decoration: InputDecoration(
-                                      labelText: "Daily Wage",
-                                      labelStyle: TextStyle(
-                                        color: Theme.of(context).primaryColor,
-                                        fontSize: 16.0,
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.grey[100],
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Colors.grey[400]!),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Colors.grey[400]!),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                                      ),
-                                    ),
-                                    keyboardType: TextInputType.number,
-                                    style: const TextStyle(fontSize: 16.0),
-                                    validator: (value) {
-                                      if (_selectedUserType == UserType.Employee) {
-                                        if (value == null || value.isEmpty) {
-                                          return "Daily wage is required for Employee";
-                                        }
-                                        final wage = double.tryParse(value);
-                                        if (wage == null || wage <= 0) {
-                                          return "Enter a valid wage";
-                                        }
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                                // UserType Dropdown
+                                // UserType Dropdown (Common for both)
                                 Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 12.0),
                                   child: DropdownButtonFormField<UserType>(
@@ -392,6 +328,18 @@ class _AddUserViewState extends State<_AddUserView> {
                                     onChanged: (value) {
                                       setState(() {
                                         _selectedUserType = value;
+                                        // Reset fields not relevant to the new user type
+                                        if (value == UserType.Customer) {
+                                          userNameController.clear();
+                                          dailyWageController.clear();
+                                          passwordController.clear();
+                                          _selectedRole = null;
+                                          _selectedStoreId = null;
+                                        } else {
+                                          mobileNumberController.clear();
+                                          businessNameController.clear();
+                                          addressController.clear();
+                                        }
                                         print('UserType Dropdown onChanged: _selectedUserType = $_selectedUserType');
                                       });
                                     },
@@ -400,65 +348,15 @@ class _AddUserViewState extends State<_AddUserView> {
                                     style: const TextStyle(fontSize: 16.0, color: Colors.black),
                                   ),
                                 ),
-                                // Role Dropdown
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                                  child: DropdownButtonFormField<Role>(
-                                    value: _selectedRole,
-                                    decoration: InputDecoration(
-                                      labelText: "Select Role",
-                                      labelStyle: TextStyle(
-                                        color: Theme.of(context).primaryColor,
-                                        fontSize: 16.0,
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.grey[100],
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Colors.grey[400]!),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Colors.grey[400]!),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                                      ),
-                                    ),
-                                    items: Role.values.map((role) {
-                                      return DropdownMenuItem(
-                                        value: role,
-                                        child: Text(
-                                          role.name.toUpperCase(),
-                                          style: const TextStyle(fontSize: 16.0, color: Colors.black),
-                                        ),
-                                      );
-                                    }).toList(),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _selectedRole = value;
-                                        print('Role Dropdown onChanged: _selectedRole = $_selectedRole');
-                                      });
-                                    },
-                                    validator: (value) {
-                                      if (_selectedUserType == UserType.Employee && value == null) {
-                                        return "Role is required for Employee";
-                                      }
-                                      return null;
-                                    },
-                                    style: const TextStyle(fontSize: 16.0, color: Colors.black),
-                                  ),
-                                ),
-                                // Store Dropdown
-                                if (storeState is StoreLoaded && stores.length > 1)
+                                // Fields for Customer
+                                if (_selectedUserType == UserType.Customer) ...[
+                                  // Mobile Number Field
                                   Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 12.0),
-                                    child: DropdownButtonFormField<String>(
-                                      key: ValueKey(_selectedStoreId),
-                                      value: _selectedStoreId,
+                                    child: TextFormField(
+                                      controller: mobileNumberController,
                                       decoration: InputDecoration(
-                                        labelText: "Select Store",
+                                        labelText: "Mobile Number",
                                         labelStyle: TextStyle(
                                           color: Theme.of(context).primaryColor,
                                           fontSize: 16.0,
@@ -478,67 +376,301 @@ class _AddUserViewState extends State<_AddUserView> {
                                           borderSide: BorderSide(color: Theme.of(context).primaryColor),
                                         ),
                                       ),
-                                      items: stores.map((store) {
+                                      keyboardType: TextInputType.phone,
+                                      style: const TextStyle(fontSize: 16.0),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return "Mobile number is required for Customer";
+                                        }
+                                        if (!RegExp(r'^\+?\d{10,15}$').hasMatch(value)) {
+                                          return "Enter a valid mobile number";
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                  // Business Name Field
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                    child: TextFormField(
+                                      controller: businessNameController,
+                                      textCapitalization: TextCapitalization.words,
+                                      decoration: InputDecoration(
+                                        labelText: "Business Name",
+                                        labelStyle: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                          fontSize: 16.0,
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.grey[100],
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                        ),
+                                      ),
+                                      style: const TextStyle(fontSize: 16.0),
+                                      validator: (value) =>
+                                      value!.isEmpty ? "Business name is required for Customer" : null,
+                                    ),
+                                  ),
+                                  // Address Field
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                    child: TextFormField(
+                                      controller: addressController,
+                                      textCapitalization: TextCapitalization.sentences,
+                                      decoration: InputDecoration(
+                                        labelText: "Address",
+                                        labelStyle: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                          fontSize: 16.0,
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.grey[100],
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                        ),
+                                      ),
+                                      style: const TextStyle(fontSize: 16.0),
+                                      validator: (value) =>
+                                      value!.isEmpty ? "Address is required for Customer" : null,
+                                    ),
+                                  ),
+                                ],
+                                // Fields for Employee
+                                if (_selectedUserType == UserType.Employee) ...[
+                                  // Username Field
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                    child: TextFormField(
+                                      controller: userNameController,
+                                      decoration: InputDecoration(
+                                        labelText: "Username",
+                                        labelStyle: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                          fontSize: 16.0,
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.grey[100],
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                        ),
+                                      ),
+                                      style: const TextStyle(fontSize: 16.0),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return "Username is required for Employee";
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                  // Daily Wage Field
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                    child: TextFormField(
+                                      controller: dailyWageController,
+                                      decoration: InputDecoration(
+                                        labelText: "Daily Wage",
+                                        labelStyle: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                          fontSize: 16.0,
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.grey[100],
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                        ),
+                                      ),
+                                      keyboardType: TextInputType.number,
+                                      style: const TextStyle(fontSize: 16.0),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return "Daily wage is required for Employee";
+                                        }
+                                        final wage = double.tryParse(value);
+                                        if (wage == null || wage <= 0) {
+                                          return "Enter a valid wage";
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                  // Role Dropdown
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                    child: DropdownButtonFormField<Role>(
+                                      value: _selectedRole,
+                                      decoration: InputDecoration(
+                                        labelText: "Select Role",
+                                        labelStyle: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                          fontSize: 16.0,
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.grey[100],
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                        ),
+                                      ),
+                                      items: Role.values.map((role) {
                                         return DropdownMenuItem(
-                                          value: store.storeId,
+                                          value: role,
                                           child: Text(
-                                            store.name,
+                                            role.name.toUpperCase(),
                                             style: const TextStyle(fontSize: 16.0, color: Colors.black),
                                           ),
                                         );
                                       }).toList(),
                                       onChanged: (value) {
                                         setState(() {
-                                          _selectedStoreId = value;
-                                          print('Store Dropdown onChanged: _selectedStoreId = $_selectedStoreId');
+                                          _selectedRole = value;
+                                          print('Role Dropdown onChanged: _selectedRole = $_selectedRole');
                                         });
                                       },
                                       validator: (value) {
-                                        if (_selectedUserType == UserType.Employee && value == null) {
-                                          return "Store is required for Employee";
+                                        if (value == null) {
+                                          return "Role is required for Employee";
                                         }
                                         return null;
                                       },
                                       style: const TextStyle(fontSize: 16.0, color: Colors.black),
                                     ),
                                   ),
-                                // Password Field
-                                if (!isEditing)
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 12.0),
-                                    child: TextFormField(
-                                      controller: passwordController,
-                                      decoration: InputDecoration(
-                                        labelText: "Password",
-                                        labelStyle: TextStyle(
-                                          color: Theme.of(context).primaryColor,
-                                          fontSize: 16.0,
+                                  // Store Dropdown
+                                  if (storeState is StoreLoaded && stores.length > 1)
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                      child: DropdownButtonFormField<String>(
+                                        key: ValueKey(_selectedStoreId),
+                                        value: _selectedStoreId,
+                                        decoration: InputDecoration(
+                                          labelText: "Select Store",
+                                          labelStyle: TextStyle(
+                                            color: Theme.of(context).primaryColor,
+                                            fontSize: 16.0,
+                                          ),
+                                          filled: true,
+                                          fillColor: Colors.grey[100],
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8.0),
+                                            borderSide: BorderSide(color: Colors.grey[400]!),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8.0),
+                                            borderSide: BorderSide(color: Colors.grey[400]!),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8.0),
+                                            borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                          ),
                                         ),
-                                        filled: true,
-                                        fillColor: Colors.grey[100],
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8.0),
-                                          borderSide: BorderSide(color: Colors.grey[400]!),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8.0),
-                                          borderSide: BorderSide(color: Colors.grey[400]!),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8.0),
-                                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                                        ),
+                                        items: stores.map((store) {
+                                          return DropdownMenuItem(
+                                            value: store.storeId,
+                                            child: Text(
+                                              store.name,
+                                              style: const TextStyle(fontSize: 16.0, color: Colors.black),
+                                            ),
+                                          );
+                                        }).toList(),
+                                        onChanged: (value) {
+                                          setState(() {
+                                            _selectedStoreId = value;
+                                            print('Store Dropdown onChanged: _selectedStoreId = $_selectedStoreId');
+                                          });
+                                        },
+                                        validator: (value) {
+                                          if (value == null) {
+                                            return "Store is required for Employee";
+                                          }
+                                          return null;
+                                        },
+                                        style: const TextStyle(fontSize: 16.0, color: Colors.black),
                                       ),
-                                      obscureText: true,
-                                      style: const TextStyle(fontSize: 16.0),
-                                      validator: (value) {
-                                        if (_selectedUserType == UserType.Employee && (value == null || value.length < 6)) {
-                                          return "Password must be at least 6 characters for Employee";
-                                        }
-                                        return null;
-                                      },
                                     ),
-                                  ),
+                                  // Password Field
+                                  if (!isEditing)
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                      child: TextFormField(
+                                        controller: passwordController,
+                                        decoration: InputDecoration(
+                                          labelText: "Password",
+                                          labelStyle: TextStyle(
+                                            color: Theme.of(context).primaryColor,
+                                            fontSize: 16.0,
+                                          ),
+                                          filled: true,
+                                          fillColor: Colors.grey[100],
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8.0),
+                                            borderSide: BorderSide(color: Colors.grey[400]!),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8.0),
+                                            borderSide: BorderSide(color: Colors.grey[400]!),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8.0),
+                                            borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                          ),
+                                        ),
+                                        obscureText: true,
+                                        style: const TextStyle(fontSize: 16.0),
+                                        validator: (value) {
+                                          if (value == null || value.length < 6) {
+                                            return "Password must be at least 6 characters for Employee";
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ),
+                                ],
                                 const SizedBox(height: 20),
                                 Align(
                                   alignment: Alignment.centerRight,
@@ -566,23 +698,48 @@ class _AddUserViewState extends State<_AddUserView> {
                                           userId: widget.user?.userId,
                                           companyId: widget.user?.companyId,
                                           name: nameController.text.trim(),
-                                          email: emailController.text.trim().isEmpty ? null : emailController.text.trim(),
-                                          userName: userNameController.text.trim().isEmpty ? null : userNameController.text.trim(),
-                                          role: _selectedRole,
-                                          userType: _selectedUserType ?? UserType.Employee, // Default to Employee
-                                          dailyWage: dailyWageController.text.trim().isEmpty ? null : double.tryParse(dailyWageController.text.trim()),
-                                          storeId: _selectedStoreId ?? defaultStoreId,
+                                          email: emailController.text.trim(),
+                                          userName: _selectedUserType == UserType.Employee
+                                              ? userNameController.text.trim().isEmpty
+                                              ? null
+                                              : userNameController.text.trim()
+                                              : null,
+                                          role: _selectedUserType == UserType.Employee ? _selectedRole : null,
+                                          userType: _selectedUserType ?? UserType.Employee,
+                                          dailyWage: _selectedUserType == UserType.Employee
+                                              ? dailyWageController.text.trim().isEmpty
+                                              ? null
+                                              : double.tryParse(dailyWageController.text.trim())
+                                              : null,
+                                          storeId: _selectedUserType == UserType.Employee ? (_selectedStoreId ?? defaultStoreId) : null,
                                           accountLedgerId: widget.user?.accountLedgerId,
+                                          mobileNumber: _selectedUserType == UserType.Customer
+                                              ? mobileNumberController.text.trim().isEmpty
+                                              ? null
+                                              : mobileNumberController.text.trim()
+                                              : null,
+                                          businessName: _selectedUserType == UserType.Customer
+                                              ? businessNameController.text.trim().isEmpty
+                                              ? null
+                                              : businessNameController.text.trim()
+                                              : null,
+                                          address: _selectedUserType == UserType.Customer
+                                              ? addressController.text.trim().isEmpty
+                                              ? null
+                                              : addressController.text.trim()
+                                              : null,
                                         );
 
-                                        print('Submitting userInfo with storeId = ${userInfo.storeId}, userType = ${userInfo.userType}');
+                                        print('Submitting userInfo with userType = ${userInfo.userType}, '
+                                            'storeId = ${userInfo.storeId}, mobileNumber = ${userInfo.mobileNumber}, '
+                                            'businessName = ${userInfo.businessName}, address = ${userInfo.address}');
 
                                         if (isEditing) {
                                           context.read<AddUserCubit>().updateUser(userInfo);
                                         } else {
                                           context.read<AddUserCubit>().addUser(
                                             userInfo,
-                                            passwordController.text.trim(),
+                                            _selectedUserType == UserType.Employee ? passwordController.text.trim() : '',
                                           );
                                         }
                                       }

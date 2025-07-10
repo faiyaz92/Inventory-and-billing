@@ -27,12 +27,11 @@ class TransactionCubit extends Cubit<TransactionState> {
 
   Future<void> fetchTransactions({
     required String storeId,
-    String? userId,
+    String? type,
     String? fromStoreId,
     String? toStoreId,
-    String? type, // New: type filter
-    DateTime? startDate,
-    DateTime? endDate,
+    String? userId,
+    String? customerId,
     required int page,
     required int pageSize,
   }) async {
@@ -42,11 +41,11 @@ class TransactionCubit extends Cubit<TransactionState> {
     try {
       final transactions = await transactionService.getTransactions(
         storeId,
-        userId: userId,
+        type: type,
         fromStoreId: fromStoreId,
         toStoreId: toStoreId,
-        startDate: startDate,
-        endDate: endDate,
+        userId: userId,
+        customerId: customerId,
         page: page,
         pageSize: pageSize,
       );

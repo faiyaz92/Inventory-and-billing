@@ -111,6 +111,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: TextFormField(
+                              textCapitalization: TextCapitalization.words,
                               controller: _nameController,
                               decoration: InputDecoration(
                                 labelText: 'Product Name',

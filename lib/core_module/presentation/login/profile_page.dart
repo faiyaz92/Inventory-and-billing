@@ -207,23 +207,6 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildOptionsList(BuildContext context, UserInfo? userInfo) {
     return ListView(
       children: [
-        _buildListTile(
-          context: context,
-          icon: Icons.receipt,
-          title: 'My Orders',
-          onTap: () => context.read<DashboardCubit>().updateIndex(1),
-        ),
-        const SizedBox(height: 12),
-        _buildListTile(
-          context: context,
-          icon: Icons.settings,
-          title: 'Settings',
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Settings page not implemented')),
-            );
-          },
-        ),
         const SizedBox(height: 12),
         _buildListTile(
           context: context,

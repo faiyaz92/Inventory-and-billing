@@ -93,6 +93,7 @@ class _AddStorePageState extends State<AddStorePage> {
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 12.0),
                               child: TextFormField(
+                                textCapitalization: TextCapitalization.words,
                                 decoration: InputDecoration(
                                   labelText: 'Store Name',
                                   labelStyle: TextStyle(

@@ -15,8 +15,12 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Define demo expiration date
-    final DateTime demoExpirationDate = DateTime(2025, 7, 10);
+    final DateTime demoExpirationDate = DateTime(2025,10 , 10);
     final bool isDemoExpired = DateTime.now().isAfter(demoExpirationDate);
+
+    // Determine screen size for responsive design
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isWeb = screenWidth > 600; // Consider web for screens wider than 600px
 
     return BlocProvider(
       create: (context) => sl<HomeCubit>()..fetchUserInfo(),
@@ -27,56 +31,55 @@ class HomePage extends StatelessWidget {
             return Scaffold(
               body: Center(
                 child: Card(
-                  elevation: 4,
+                  elevation: 8,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   color: Colors.white,
-                  margin: const EdgeInsets.all(16.0),
+                  margin: EdgeInsets.all(isWeb ? 32.0 : 16.0),
                   child: Padding(
-                    padding: const EdgeInsets.all(24.0),
+                    padding: EdgeInsets.all(isWeb ? 32.0 : 24.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Icons.lock,
-                          size: 48,
+                          Icons.lock_outline,
+                          size: isWeb ? 64 : 48,
                           color: Theme.of(context).primaryColor,
                         ),
-                        const SizedBox(height: 16),
-                        const Text(
+                        SizedBox(height: isWeb ? 24 : 16),
+                        Text(
                           'Your free demo period has ended.',
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: isWeb ? 24 : 20,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 8),
-                        const Text(
+                        SizedBox(height: isWeb ? 12 : 8),
+                        Text(
                           'Please purchase a subscription to continue using the app.',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: isWeb ? 18 : 16,
                             color: Colors.black54,
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: isWeb ? 32 : 24),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Theme.of(context).primaryColor,
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24.0,
-                              vertical: 12.0,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isWeb ? 32.0 : 24.0,
+                              vertical: isWeb ? 16.0 : 12.0,
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),
                             ),
                           ),
                           onPressed: () {
-                            // TODO: Implement purchase flow (e.g., navigate to subscription page)
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text(
@@ -84,7 +87,10 @@ class HomePage extends StatelessWidget {
                               ),
                             );
                           },
-                          child: const Text('Purchase Now'),
+                          child: Text(
+                            'Purchase Now',
+                            style: TextStyle(fontSize: isWeb ? 18 : 16),
+                          ),
                         ),
                       ],
                     ),
@@ -109,6 +115,7 @@ class HomePage extends StatelessWidget {
             final List<Widget> gridItems = _buildGridItemsForRole(
               context: context,
               role: state.role,
+              isWeb: isWeb,
             );
 
             return Scaffold(
@@ -125,24 +132,24 @@ class HomePage extends StatelessWidget {
                 ),
                 child: SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: EdgeInsets.all(isWeb ? 24.0 : 16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(
                           width: double.infinity,
                           child: Card(
-                            elevation: 4,
+                            elevation: 8,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                             color: Colors.white,
                             child: Padding(
-                              padding: const EdgeInsets.all(16.0),
+                              padding: EdgeInsets.all(isWeb ? 24.0 : 16.0),
                               child: Text(
                                 "Welcome, ${state.userName}",
                                 style: TextStyle(
-                                  fontSize: 24,
+                                  fontSize: isWeb ? 28 : 24,
                                   fontWeight: FontWeight.bold,
                                   color: Theme.of(context).primaryColor,
                                 ),
@@ -150,13 +157,13 @@ class HomePage extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: isWeb ? 32 : 24),
                         Expanded(
                           child: GridView.count(
-                            crossAxisCount: 3,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                            childAspectRatio: 1.0,
+                            crossAxisCount: isWeb ? 4 : 3, // More columns on web
+                            crossAxisSpacing: isWeb ? 16 : 12,
+                            mainAxisSpacing: isWeb ? 16 : 12,
+                            childAspectRatio: isWeb ? 1.2 : 1.0,
                             children: gridItems,
                           ),
                         ),
@@ -171,7 +178,10 @@ class HomePage extends StatelessWidget {
               body: Center(
                 child: Text(
                   "Error: ${state.message}",
-                  style: const TextStyle(fontSize: 16, color: Colors.red),
+                  style: TextStyle(
+                    fontSize: isWeb ? 18 : 16,
+                    color: Colors.red,
+                  ),
                 ),
               ),
             );
@@ -185,238 +195,215 @@ class HomePage extends StatelessWidget {
   List<Widget> _buildGridItemsForRole({
     required BuildContext context,
     required Role role,
+    required bool isWeb,
   }) {
     final List<Widget> gridItems = [];
 
     if (role == Role.SUPER_ADMIN) {
       gridItems.add(
         _buildGridItem(
-          icon: Icons.admin_panel_settings,
+          icon: Icons.admin_panel_settings_outlined,
           label: 'Super Admin',
           color: Colors.cyan,
           onTap: () {
             sl<Coordinator>().navigateToSuperAdminPage();
           },
+          isWeb: isWeb,
         ),
       );
     } else if (role == Role.COMPANY_ADMIN) {
       gridItems.addAll([
         _buildGridItem(
-          icon: Icons.admin_panel_settings,
+          icon: Icons.admin_panel_settings_outlined,
           label: 'Company Admin',
           color: Colors.deepPurple,
           onTap: () {
             sl<Coordinator>().navigateToCompanyAdminPage();
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.add_task_outlined,
+          icon: Icons.add_task,
           label: 'Add Task',
           color: Colors.blue,
           onTap: () {
             sl<Coordinator>().navigateToAddTaskPage();
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.task,
+          icon: Icons.task_alt,
           label: 'Task List',
           color: Colors.green,
           onTap: () {
             sl<Coordinator>().navigateToTaskListPage();
           },
+          isWeb: isWeb,
         ),
+
+
+
         _buildGridItem(
-          icon: Icons.business,
-          label: 'Add Site',
-          color: Colors.orange,
-          onTap: () {
-            sl<Coordinator>().navigateToAddCompanyPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.add_business,
-          label: 'Site List',
-          color: Colors.purple,
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Site List Coming Soon!"),
-              ),
-            );
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.business,
-          label: 'Add Supplier',
-          color: Colors.red,
-          onTap: () {
-            sl<Coordinator>().navigateToAddEditSupplierPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.add_business,
-          label: 'Supplier List',
-          color: Colors.teal,
-          onTap: () {
-            sl<Coordinator>().navigateToSupplierListPage();
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.lightbulb,
-          label: 'Add Strategy',
-          color: Colors.amber,
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Add Strategy Coming Soon!"),
-              ),
-            );
-          },
-        ),
-        _buildGridItem(
-          icon: Icons.settings,
+          icon: Icons.settings_outlined,
           label: 'Company Settings',
           color: Colors.indigo,
           onTap: () {
             sl<Coordinator>().navigateToCompanySettingsPage();
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.work,
+          icon: Icons.inventory_2_outlined,
           label: 'Product Management',
           color: Colors.lightGreenAccent,
           onTap: () {
             sl<Coordinator>().navigateToProductManagementPage();
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.attach_money,
+          icon: Icons.bar_chart_outlined,
           label: 'Sales Dashboard',
           color: Colors.pink,
           onTap: () {
             sl<Coordinator>().navigateToCartDashboard();
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.inventory,
+          icon: Icons.warehouse_outlined,
           label: 'Inventory',
           color: Colors.teal,
           onTap: () {
             sl<Coordinator>().navigateToInventoryDashBoard();
           },
+          isWeb: isWeb,
         ),
       ]);
     } else if (role == Role.STORE_ADMIN) {
       gridItems.addAll([
         _buildGridItem(
-          icon: Icons.store,
-          label: 'My store',
+          icon: Icons.storefront_outlined,
+          label: 'My Store',
           color: Colors.orangeAccent,
           onTap: () {
             sl<Coordinator>().navigateToStoreDetailsPage('');
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.store,
+          icon: Icons.store_mall_directory_outlined,
           label: 'Store List',
           color: Colors.pink,
           onTap: () {
             sl<Coordinator>().navigateToStoresListPage();
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.web_asset,
+          icon: Icons.inventory_outlined,
           label: 'Stock List',
           color: Colors.blueAccent,
           onTap: () {
             sl<Coordinator>().navigateToStockListPage();
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.store,
-          label: 'Over all stock',
+          icon: Icons.storage_outlined,
+          label: 'Overall Stock',
           color: Colors.pink,
           onTap: () {
             sl<Coordinator>().navigateToOverAllStockPage();
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.store,
+          icon: Icons.event_available_outlined,
           label: 'Store Attendance',
           color: Colors.pink,
           onTap: () {
             sl<Coordinator>().navigateToAttendancePage();
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.add_task_outlined,
+          icon: Icons.add_task,
           label: 'Add Task',
-          color: Colors.blue,
+          color :Colors.blueAccent,
           onTap: () {
             sl<Coordinator>().navigateToAddTaskPage();
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.task,
+          icon: Icons.task_alt,
           label: 'Task List',
           color: Colors.green,
           onTap: () {
             sl<Coordinator>().navigateToTaskListPage();
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.manage_accounts,
+          icon: Icons.person_add_alt_1_outlined,
           label: 'Add Customer',
           color: Colors.pink,
           onTap: () {
             sl<Coordinator>().navigateToAddUserPage();
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.manage_accounts,
+          icon: Icons.receipt_long_outlined,
           label: 'Billing Customer',
           color: Colors.pink,
           onTap: () {
             sl<Coordinator>().navigateToBillingPage();
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.shopping_cart,
+          icon: Icons.shopping_cart_outlined,
           label: 'Cart Management',
           color: Colors.pink,
           onTap: () {
             sl<Coordinator>().navigateToCartDashboard();
           },
+          isWeb: isWeb,
         ),
       ]);
     } else {
       gridItems.addAll([
         _buildGridItem(
-          icon: Icons.add_task_outlined,
+          icon: Icons.add_task,
           label: 'Add Task',
           color: Colors.blue,
           onTap: () {
             sl<Coordinator>().navigateToAddTaskPage();
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.task,
+          icon: Icons.task_alt,
           label: 'Task List',
           color: Colors.green,
           onTap: () {
             sl<Coordinator>().navigateToTaskListPage();
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.business,
+          icon: Icons.add_business_outlined,
           label: 'Add Site',
           color: Colors.orange,
           onTap: () {
             sl<Coordinator>().navigateToAddCompanyPage();
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.add_business,
+          icon: Icons.business_center_outlined,
           label: 'Site List',
           color: Colors.purple,
           onTap: () {
@@ -426,25 +413,28 @@ class HomePage extends StatelessWidget {
               ),
             );
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.business,
+          icon: Icons.group_add_outlined,
           label: 'Add Supplier',
           color: Colors.red,
           onTap: () {
             sl<Coordinator>().navigateToAddEditSupplierPage();
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.add_business,
+          icon: Icons.groups_outlined,
           label: 'Supplier List',
           color: Colors.teal,
           onTap: () {
             sl<Coordinator>().navigateToSupplierListPage();
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.lightbulb,
+          icon: Icons.lightbulb_outline,
           label: 'Add Strategy',
           color: Colors.amber,
           onTap: () {
@@ -454,42 +444,48 @@ class HomePage extends StatelessWidget {
               ),
             );
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.settings,
+          icon: Icons.settings_outlined,
           label: 'Company Settings',
           color: Colors.indigo,
           onTap: () {
             sl<Coordinator>().navigateToCompanySettingsPage();
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.manage_accounts,
+          icon: Icons.inventory_2_outlined,
           label: 'Product Management',
           color: Colors.pink,
           onTap: () {
             sl<Coordinator>().navigateToProductManagementPage();
           },
+          isWeb: isWeb,
         ),
         _buildGridItem(
-          icon: Icons.manage_accounts,
+          icon: Icons.shopping_cart_outlined,
           label: 'Cart Management',
           color: Colors.pink,
           onTap: () {
             sl<Coordinator>().navigateToCartDashboard();
           },
+          isWeb: isWeb,
         ),
       ]);
     }
     gridItems.add(_buildGridItem(
-      icon: Icons.account_balance,
-      label: 'User ledger',
+      icon: Icons.account_balance_wallet_outlined,
+      label: 'User Ledger',
       color: Colors.deepPurple,
       onTap: () async {
         final user = await sl<AccountRepository>().getUserInfo();
-        user?.copyWith(accountLedgerId: '1q3XGuMfV9LunYhnKDh8');
-        sl<Coordinator>().navigateToUserLedgerPage(user: user?.copyWith(accountLedgerId: '1q3XGuMfV9LunYhnKDh8') ?? UserInfo());
+        sl<Coordinator>().navigateToUserLedgerPage(
+          user: user?.copyWith(accountLedgerId: '1q3XGuMfV9LunYhnKDh8') ?? UserInfo(),
+        );
       },
+      isWeb: isWeb,
     ));
     return gridItems;
   }
@@ -499,30 +495,37 @@ class HomePage extends StatelessWidget {
     required String label,
     required VoidCallback onTap,
     required Color color,
+    required bool isWeb,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Card(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
         ),
-        elevation: 4,
+        elevation: 8,
         color: Colors.white,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 36, color: color),
-              const SizedBox(height: 8),
+              Icon(
+                icon,
+                size: isWeb ? 48 : 36,
+                color: color,
+              ),
+              SizedBox(height: isWeb ? 12 : 8),
               Text(
                 label,
-                style: const TextStyle(
-                  fontSize: 14,
+                style: TextStyle(
+                  fontSize: isWeb ? 16 : 14,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

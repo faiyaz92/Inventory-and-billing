@@ -10,12 +10,15 @@ class UserInfo extends Equatable {
   final String? email;
   final String? userName;
   final Role? role;
-  final UserType? userType; // Nullable
+  final UserType? userType;
   final double? latitude;
   final double? longitude;
   final double? dailyWage;
   final String? storeId;
   final String? accountLedgerId;
+  final String? mobileNumber; // New field
+  final String? businessName; // New field
+  final String? address; // New field
 
   const UserInfo({
     this.userId,
@@ -24,17 +27,20 @@ class UserInfo extends Equatable {
     this.email,
     this.userName,
     this.role,
-    this.userType, // Optional
+    this.userType,
     this.latitude,
     this.longitude,
     this.dailyWage,
     this.storeId,
     this.accountLedgerId,
+    this.mobileNumber,
+    this.businessName,
+    this.address,
   });
 
   factory UserInfo.fromJson(Map<String, dynamic> json) {
     final userTypeRaw = json['userType'] as String?;
-    final userType = UserTypeExtension.fromString(userTypeRaw) ?? UserType.Customer; // Default to Customer
+    final userType = UserTypeExtension.fromString(userTypeRaw) ?? UserType.Customer;
     if (userTypeRaw != null && userType == UserType.Customer) {
       print('UserInfo.fromJson: Defaulted userType to Customer for raw value "$userTypeRaw"');
     }
@@ -51,6 +57,9 @@ class UserInfo extends Equatable {
       dailyWage: (json['dailyWage'] as num?)?.toDouble() ?? 500.0,
       storeId: json['storeId'] as String?,
       accountLedgerId: json['accountLedgerId'] as String?,
+      mobileNumber: json['mobileNumber'] as String?,
+      businessName: json['businessName'] as String?,
+      address: json['address'] as String?,
     );
   }
 
@@ -62,12 +71,15 @@ class UserInfo extends Equatable {
       'email': email,
       'userName': userName,
       'role': role?.name,
-      'userType': userType?.name, // Serialize as string
+      'userType': userType?.name,
       'latitude': latitude,
       'longitude': longitude,
       'dailyWage': dailyWage,
       'storeId': storeId,
       'accountLedgerId': accountLedgerId,
+      'mobileNumber': mobileNumber,
+      'businessName': businessName,
+      'address': address,
     };
   }
 
@@ -84,6 +96,9 @@ class UserInfo extends Equatable {
     double? dailyWage,
     String? storeId,
     String? accountLedgerId,
+    String? mobileNumber,
+    String? businessName,
+    String? address,
   }) {
     return UserInfo(
       userId: userId ?? this.userId,
@@ -98,6 +113,9 @@ class UserInfo extends Equatable {
       dailyWage: dailyWage ?? this.dailyWage,
       storeId: storeId ?? this.storeId,
       accountLedgerId: accountLedgerId ?? this.accountLedgerId,
+      mobileNumber: mobileNumber ?? this.mobileNumber,
+      businessName: businessName ?? this.businessName,
+      address: address ?? this.address,
     );
   }
 
@@ -109,12 +127,15 @@ class UserInfo extends Equatable {
       email: email ?? '',
       userName: userName ?? '',
       role: role ?? Role.USER,
-      userType: userType ?? UserType.Customer, // Default to Customer
+      userType: userType ?? UserType.Customer,
       latitude: latitude,
       longitude: longitude,
       dailyWage: dailyWage,
       storeId: storeId,
       accountLedgerId: accountLedgerId,
+      mobileNumber: mobileNumber,
+      businessName: businessName,
+      address: address,
     );
   }
 
@@ -132,6 +153,9 @@ class UserInfo extends Equatable {
       dailyWage: dto.dailyWage,
       storeId: dto.storeId,
       accountLedgerId: dto.accountLedgerId,
+      mobileNumber: dto.mobileNumber,
+      businessName: dto.businessName,
+      address: dto.address,
     );
   }
 
@@ -149,5 +173,8 @@ class UserInfo extends Equatable {
     dailyWage,
     storeId,
     accountLedgerId,
+    mobileNumber,
+    businessName,
+    address,
   ];
 }

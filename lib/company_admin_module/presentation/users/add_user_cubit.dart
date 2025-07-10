@@ -17,7 +17,7 @@ class AddUserCubit extends Cubit<AddUserState> {
   Future<void> addUser(UserInfo userInfo, String password) async {
     try {
       emit(AddUserLoading());
-      final users = await _companyOperationsService.getUsersFromTenantCompany();
+      // final users = await _companyOperationsService.getUsersFromTenantCompany();
 
       // if (users.length >= 5) {
       //   emit(AddUserFailure('Cannot add more than 5 users in the free version'));

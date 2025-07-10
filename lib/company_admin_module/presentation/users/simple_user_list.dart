@@ -6,6 +6,8 @@ import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dar
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 
 @RoutePage()
 class SimpleEmployeesPage extends StatelessWidget {
@@ -43,139 +45,224 @@ class SimpleEmployeesPage extends StatelessWidget {
         builder: (context, state) {
           return Scaffold(
             appBar: const CustomAppBar(
-              title: "Employee List",
+              title: "User List",
             ),
-            body: state is UserListLoading || state is UserDeleting
-                ? const Center(child: CircularProgressIndicator())
-                : CustomScrollView(
-              slivers: [
-                if (state is UserListLoaded && state.users.isEmpty)
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(
-                      child: Card(
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+            body: Column(
+              children: [
+                // Search and Filter Section
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Search by name or email',
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
-                        child: const Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Text(
-                            'No employees found',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: AppColors.textSecondary,
-                              fontWeight: FontWeight.w500,
+                        onChanged: (value) {
+                          context.read<SimpleEmployeeCubit>().filterUsers(
+                            searchQuery: value,
+                            userType: context.read<SimpleEmployeeCubit>().selectedUserType,
+                            role: context.read<SimpleEmployeeCubit>().selectedRole,
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<UserType>(
+                              decoration: InputDecoration(
+                                labelText: 'User Type',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              value: context.read<SimpleEmployeeCubit>().selectedUserType,
+                              items: UserType.values.map((type) {
+                                return DropdownMenuItem(
+                                  value: type,
+                                  child: Text(type.name),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                if (value != null) {
+                                  context.read<SimpleEmployeeCubit>().filterUsers(
+                                    searchQuery: context.read<SimpleEmployeeCubit>().searchQuery,
+                                    userType: value,
+                                    role: value == UserType.Employee
+                                        ? context.read<SimpleEmployeeCubit>().selectedRole
+                                        : null,
+                                  );
+                                }
+                              },
                             ),
                           ),
-                        ),
+                          const SizedBox(width: 12),
+                          if (context.watch<SimpleEmployeeCubit>().selectedUserType == UserType.Employee)
+                            Expanded(
+                              child: DropdownButtonFormField<Role>(
+                                decoration: InputDecoration(
+                                  labelText: 'Role',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                value: context.read<SimpleEmployeeCubit>().selectedRole,
+                                items: Role.values.map((role) {
+                                  return DropdownMenuItem(
+                                    value: role,
+                                    child: Text(role.name),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    context.read<SimpleEmployeeCubit>().filterUsers(
+                                      searchQuery: context.read<SimpleEmployeeCubit>().searchQuery,
+                                      userType: context.read<SimpleEmployeeCubit>().selectedUserType,
+                                      role: value,
+                                    );
+                                  }
+                                },
+                              ),
+                            ),
+                        ],
                       ),
-                    ),
-                  )
-                else if (state is UserListLoaded)
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                        final user = state.users[index];
-                        return Card(
-                          elevation: 3,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: state is UserListLoading || state is UserDeleting
+                      ? const Center(child: CircularProgressIndicator())
+                      : CustomScrollView(
+                    slivers: [
+                      if (state is UserListLoaded && state.users.isEmpty)
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Center(
+                            child: Card(
+                              elevation: 2,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Padding(
+                                padding: EdgeInsets.all(16),
+                                child: Text(
+                                  'No employees found',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Row(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.center,
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                        )
+                      else if (state is UserListLoaded)
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                              final user = state.users[index];
+                              return Card(
+                                elevation: 3,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
-                                      Text(
-                                        user.name ?? "No Name",
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.textPrimary,
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              user.name ?? "No Name",
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppColors.textPrimary,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              user.email ?? "No Email",
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                color: AppColors.textSecondary,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        user.email ?? "No Email",
-                                        style: const TextStyle(
-                                          fontSize: 14,
+                                      PopupMenuButton<String>(
+                                        icon: const Icon(
+                                          Icons.more_vert,
                                           color: AppColors.textSecondary,
                                         ),
+                                        onSelected: (value) {
+                                          if (value == 'edit') {
+                                            sl<Coordinator>().navigateToAddUserPage(user: user);
+                                          } else if (value == 'delete') {
+                                            _showDeleteConfirmation(context, user.userId ?? '');
+                                          } else if (value == 'details') {
+                                            sl<Coordinator>().navigateToEmployeeDetailsPage(
+                                              userId: user.userId,
+                                            );
+                                          }
+                                        },
+                                        itemBuilder: (context) => [
+                                          const PopupMenuItem(
+                                            value: 'edit',
+                                            child: Text(
+                                              'Edit',
+                                              style: TextStyle(
+                                                color: AppColors.textPrimary,
+                                              ),
+                                            ),
+                                          ),
+                                          const PopupMenuItem(
+                                            value: 'delete',
+                                            child: Text(
+                                              'Delete',
+                                              style: TextStyle(
+                                                color: AppColors.red,
+                                              ),
+                                            ),
+                                          ),
+                                          const PopupMenuItem(
+                                            value: 'details',
+                                            child: Text(
+                                              'Details',
+                                              style: TextStyle(
+                                                color: AppColors.textPrimary,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
                                 ),
-                                PopupMenuButton<String>(
-                                  icon: const Icon(
-                                    Icons.more_vert,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                  onSelected: (value) {
-                                    if (value == 'edit') {
-                                      sl<Coordinator>()
-                                          .navigateToAddUserPage(
-                                          user: user);
-                                    } else if (value == 'delete') {
-                                      _showDeleteConfirmation(
-                                          context, user.userId ?? '');
-                                    } else if (value == 'details') {
-                                      sl<Coordinator>()
-                                          .navigateToEmployeeDetailsPage(
-                                        userId: user.userId,
-                                      );
-                                    }
-                                  },
-                                  itemBuilder: (context) => [
-                                    const PopupMenuItem(
-                                      value: 'edit',
-                                      child: Text(
-                                        'Edit',
-                                        style: TextStyle(
-                                          color: AppColors.textPrimary,
-                                        ),
-                                      ),
-                                    ),
-                                    const PopupMenuItem(
-                                      value: 'delete',
-                                      child: Text(
-                                        'Delete',
-                                        style: TextStyle(
-                                          color: AppColors.red,
-                                        ),
-                                      ),
-                                    ),
-                                    const PopupMenuItem(
-                                      value: 'details',
-                                      child: Text(
-                                        'Details',
-                                        style: TextStyle(
-                                          color: AppColors.textPrimary,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                              );
+                            },
+                            childCount: state.users.length,
                           ),
-                        );
-                      },
-                      childCount: state.users.length,
-                    ),
-                  )
-                else
-                  const SliverToBoxAdapter(child: SizedBox.shrink()),
+                        )
+                      else
+                        const SliverToBoxAdapter(child: SizedBox.shrink()),
+                    ],
+                  ),
+                ),
               ],
             ),
           );

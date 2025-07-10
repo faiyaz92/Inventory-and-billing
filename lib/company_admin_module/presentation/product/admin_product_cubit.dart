@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/category.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart';
@@ -9,6 +10,7 @@ import 'package:requirment_gathering_app/company_admin_module/service/product_se
 class AdminProductCubit extends Cubit<ProductState> {
   final ProductService productService;
   final CategoryService categoryService;
+  Timer? _debounce;
 
   List<Category> categoryList = [];
   List<Subcategory> subcategoryList = [];
@@ -16,6 +18,8 @@ class AdminProductCubit extends Cubit<ProductState> {
   String? selectedSubcategoryId;
   String? selectedCategoryName;
   String? selectedSubcategoryName;
+  String searchQuery = '';
+  List<Product> allProducts = [];
 
   AdminProductCubit({
     required this.productService,
@@ -23,10 +27,21 @@ class AdminProductCubit extends Cubit<ProductState> {
   }) : super(ProductInitial());
 
   Future<void> loadCategories({String? categoryId, String? subCatId}) async {
-    emit(ProductLoading());
     try {
       final categories = await categoryService.fetchCategories();
       categoryList = categories;
+      print('loadCategories: Fetched ${categories.length} categories: ${categories.map((c) => c.name).toList()}');
+
+      // Check for duplicate category names
+      final nameCounts = <String, int>{};
+      for (var cat in categories) {
+        if (cat.name != null) {
+          nameCounts[cat.name!] = (nameCounts[cat.name!] ?? 0) + 1;
+        }
+      }
+      nameCounts.forEach((name, count) {
+        if (count > 1) print('Duplicate category name: $name ($count occurrences)');
+      });
 
       Category? selectedCategory;
 
@@ -44,18 +59,18 @@ class AdminProductCubit extends Cubit<ProductState> {
         }
       }
 
-      emit(CategoriesLoaded(
-          categories: categoryList, selectedCategory: selectedCategory));
+      emit(CategoriesLoaded(categories: categoryList, selectedCategory: selectedCategory));
     } catch (e) {
+      print('loadCategories error: $e');
       emit(ProductError(message: 'Failed to load categories: $e'));
     }
   }
 
   Future<void> loadSubcategories(String categoryId, {String? subcategoryId}) async {
-    emit(ProductLoading());
     try {
       final subcategories = await categoryService.fetchSubcategories(categoryId);
       subcategoryList = subcategories;
+      print('loadSubcategories: Fetched ${subcategories.length} subcategories for category $categoryId: ${subcategories.map((s) => s.name).toList()}');
 
       if (subcategoryId != null) {
         final subcategory = subcategoryList.firstWhere(
@@ -65,53 +80,115 @@ class AdminProductCubit extends Cubit<ProductState> {
 
         selectedSubcategoryId = subcategory.id;
         selectedSubcategoryName = subcategory.name;
-        emit(ProductInitial());
-        emit(SubcategoriesLoaded(
-            subcategories: subcategoryList, selectedSubcategory: subcategory));
+        emit(SubcategoriesLoaded(subcategories: subcategoryList, selectedSubcategory: subcategory));
       } else {
         emit(SubcategoriesLoaded(subcategories: subcategoryList));
       }
     } catch (e) {
+      print('loadSubcategories error: $e');
       emit(ProductError(message: 'Failed to load subcategories: $e'));
     }
   }
 
-  void selectCategory(String categoryName) {
+  void selectCategory(String? categoryName) {
+    if (categoryName == null || categoryName.isEmpty || categoryName == 'Select') {
+      selectedCategoryId = null;
+      selectedCategoryName = null;
+      selectedSubcategoryId = null;
+      selectedSubcategoryName = null;
+      subcategoryList = [];
+      print('selectCategory: Reset to Select (null/empty/Select)');
+      emit(CategorySelected(categoryId: '', categoryName: 'Select', categories: categoryList));
+      filterProducts();
+      return;
+    }
+
     final category = categoryList.firstWhere(
           (cat) => cat.name == categoryName,
-      orElse: () => Category(id: null, name: categoryName),
+      orElse: () => Category(id: null, name: null),
     );
 
-    selectedCategoryId = category.id;
-    selectedCategoryName = category.name;
+    if (category.id == null || category.name == null) {
+      selectedCategoryId = null;
+      selectedCategoryName = null;
+      selectedSubcategoryId = null;
+      selectedSubcategoryName = null;
+      subcategoryList = [];
+      print('selectCategory: Invalid category "$categoryName", reset to Select');
+      emit(CategorySelected(categoryId: '', categoryName: 'Select', categories: categoryList));
+    } else {
+      selectedCategoryId = category.id;
+      selectedCategoryName = category.name;
+      selectedSubcategoryId = null;
+      selectedSubcategoryName = null;
+      subcategoryList = [];
+      print('selectCategory: Selected "$categoryName" (ID: ${category.id})');
+      emit(CategorySelected(categoryId: category.id!, categoryName: category.name!, categories: categoryList));
+      loadSubcategories(category.id!);
+    }
 
-    selectedSubcategoryId = null;
-    selectedSubcategoryName = null;
+    filterProducts();
+  }
 
-    emit(CategorySelected(
-      categoryId: category.id ?? '',
-      categoryName: category.name ?? '',
-    ));
-    Future.delayed(const Duration(microseconds: 100), () {
-      if (category.id != null) {
-        loadSubcategories(category.id!);
-      }
+  void selectSubcategory(String? subcategoryName) {
+    if (subcategoryName == null || subcategoryName.isEmpty || subcategoryName == 'Select') {
+      selectedSubcategoryId = null;
+      selectedSubcategoryName = null;
+      print('selectSubcategory: Reset to Select (null/empty/Select)');
+      emit(SubcategorySelected(subcategoryId: '', subcategoryName: 'Select', subcategories: subcategoryList));
+      filterProducts();
+      return;
+    }
+
+    final subcategory = subcategoryList.firstWhere(
+          (subcat) => subcat.name == subcategoryName,
+      orElse: () => Subcategory(id: null, name: null),
+    );
+
+    if (subcategory.id == null || subcategory.name == null) {
+      selectedSubcategoryId = null;
+      selectedSubcategoryName = null;
+      print('selectSubcategory: Invalid subcategory "$subcategoryName", reset to Select');
+      emit(SubcategorySelected(subcategoryId: '', subcategoryName: 'Select', subcategories: subcategoryList));
+    } else {
+      selectedSubcategoryId = subcategory.id;
+      selectedSubcategoryName = subcategory.name;
+      print('selectSubcategory: Selected "$subcategoryName" (ID: ${subcategory.id})');
+      emit(SubcategorySelected(subcategoryId: subcategory.id!, subcategoryName: subcategory.name!, subcategories: subcategoryList));
+    }
+
+    filterProducts();
+  }
+
+  void setSearchQuery(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      searchQuery = query.toLowerCase(); // Store query in lowercase for case-insensitive search
+      print('setSearchQuery: Search query set to "$searchQuery"');
+      emit(ProductInitial());
+      filterProducts();
     });
   }
 
-  void selectSubcategory(String subcategoryName) {
-    final subcategory = subcategoryList.firstWhere(
-          (subcat) => subcat.name == subcategoryName,
-      orElse: () => Subcategory(id: null, name: subcategoryName),
-    );
+  void filterProducts() {
+    print('filterProducts: Starting with allProducts.length=${allProducts.length}, '
+        'searchQuery="$searchQuery", categoryId=$selectedCategoryId, subcategoryId=$selectedSubcategoryId');
 
-    selectedSubcategoryId = subcategory.id;
-    selectedSubcategoryName = subcategory.name;
+    // Log product and category ID alignment
+    print('Product categoryIds: ${allProducts.map((p) => p.categoryId).toSet()}');
+    print('Category IDs: ${categoryList.map((c) => c.id).toSet()}');
 
-    emit(SubcategorySelected(
-      subcategoryId: subcategory.id ?? '',
-      subcategoryName: subcategory.name ?? '',
-    ));
+    final filteredProducts = allProducts.where((product) {
+      final matchesName = product.name != null && product.name!.toLowerCase().contains(searchQuery);
+      final matchesCategory = selectedCategoryId == null || (product.categoryId != null && product.categoryId == selectedCategoryId);
+      final matchesSubcategory = selectedSubcategoryId == null || (product.subcategoryId != null && product.subcategoryId == selectedSubcategoryId);
+      print('filterProducts: Product "${product.name}" - matchesName: $matchesName, '
+          'matchesCategory: $matchesCategory, matchesSubcategory: $matchesSubcategory');
+      return matchesName && matchesCategory && matchesSubcategory;
+    }).toList();
+
+    print('filterProducts: Filtered ${filteredProducts.length} products: ${filteredProducts.map((p) => p.name).toList()}');
+    emit(ProductLoaded(products: filteredProducts));
   }
 
   Future<void> addProduct(Product product) async {
@@ -121,7 +198,8 @@ class AdminProductCubit extends Cubit<ProductState> {
       emit(ProductAdded());
       await loadProducts();
     } catch (e) {
-      emit(ProductError(message: e.toString()));
+      print('addProduct error: $e');
+      emit(ProductError(message: 'Failed to add product: $e'));
     }
   }
 
@@ -132,7 +210,8 @@ class AdminProductCubit extends Cubit<ProductState> {
       emit(ProductUpdated());
       await loadProducts();
     } catch (e) {
-      emit(ProductError(message: e.toString()));
+      print('updateProduct error: $e');
+      emit(ProductError(message: 'Failed to update product: $e'));
     }
   }
 
@@ -143,17 +222,24 @@ class AdminProductCubit extends Cubit<ProductState> {
       emit(ProductDeleted());
       await loadProducts();
     } catch (e) {
-      emit(ProductError(message: e.toString()));
+      print('deleteProduct error: $e');
+      emit(ProductError(message: 'Failed to delete product: $e'));
     }
   }
 
   Future<void> loadProducts() async {
     emit(ProductLoading());
     try {
-      final products = await productService.fetchProducts();
-      emit(ProductLoaded(products: products));
+      allProducts = await productService.fetchProducts();
+      print('loadProducts: Fetched ${allProducts.length} products: ${allProducts.map((p) => p.name).toList()}');
+      if (allProducts.isEmpty) {
+        print('loadProducts: Warning - No products returned from productService.fetchProducts()');
+      }
+      await loadCategories();
+      filterProducts();
     } catch (e) {
-      emit(ProductError(message: e.toString()));
+      print('loadProducts error: $e');
+      emit(ProductError(message: 'Failed to load products: $e'));
     }
   }
 }

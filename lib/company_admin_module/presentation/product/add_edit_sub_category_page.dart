@@ -112,6 +112,7 @@ class _AddEditSubcategoryPageState extends State<AddEditSubcategoryPage> {
                               ),
                               child: TextFormField(
                                 controller: _nameController,
+                                textCapitalization: TextCapitalization.words,
                                 decoration: InputDecoration(
                                   labelText: 'Subcategory Name',
                                   labelStyle: const TextStyle(
