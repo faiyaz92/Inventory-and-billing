@@ -146,6 +146,18 @@ class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
     ));
   }
 
+  void setProductQuantity(String productId, int quantity) {
+    _productQuantities[productId] = quantity.clamp(0, double.maxFinite.toInt());
+    emit(SalesmanOrderLoaded(
+      customers: _customers,
+      products: _products,
+      filteredProducts: _filteredProducts,
+      productQuantities: _productQuantities,
+      selectedCustomer: _selectedCustomer,
+      searchQuery: _searchQuery,
+    ));
+  }
+
   void searchProducts(String query) {
     _searchQuery = query;
     if (query.isEmpty) {

@@ -35,7 +35,7 @@ class _BillingPageState extends State<BillingPage> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _customerNameController = TextEditingController();
   final TextEditingController _productSearchController =
-  TextEditingController();
+      TextEditingController();
   List<StockModel> _filteredProducts = [];
   List<CartItem> _cartItems = [];
   String? _selectedStoreId;
@@ -95,7 +95,7 @@ class _BillingPageState extends State<BillingPage> {
         throw Exception('User ID not found');
       }
       final user = users.firstWhere(
-            (u) => u.userId == userId,
+        (u) => u.userId == userId,
         orElse: () => UserInfo(userId: userId, userName: 'Unknown'),
       );
       return user.storeId;
@@ -112,9 +112,9 @@ class _BillingPageState extends State<BillingPage> {
       _filteredProducts = query.isEmpty
           ? products
           : products.where((product) {
-        final name = product.name?.toLowerCase() ?? '';
-        return name.contains(query.toLowerCase());
-      }).toList();
+              final name = product.name?.toLowerCase() ?? '';
+              return name.contains(query.toLowerCase());
+            }).toList();
     });
   }
 
@@ -128,7 +128,7 @@ class _BillingPageState extends State<BillingPage> {
     }
     setState(() {
       final existingItem = _cartItems.firstWhere(
-            (item) => item.productId == product.productId,
+        (item) => item.productId == product.productId,
         orElse: () => CartItem(
           productId: product.productId!,
           productName: product.name!,
@@ -159,20 +159,17 @@ class _BillingPageState extends State<BillingPage> {
   }
 
   void _updateQuantity(String productId, int change) {
+    print('Updating quantity for productId: $productId, change: $change, existingBillNumber: $_existingBillNumber');
     setState(() {
       _cartItems = _cartItems.map((item) {
         if (item.productId == productId) {
-          final originalQuantity = _cartItems.firstWhere(
-                (cartItem) => cartItem.productId == productId,
-            orElse: () => item,
-          ).quantity;
-          final newQuantity = (item.quantity + change).clamp(0, originalQuantity);
+          final newQuantity = (item.quantity + change).clamp(0, 9999999); // Max 7 digits
           if (change > 0 && _existingBillNumber != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                   content: Text('Cannot increase quantity for existing bill')),
             );
-            return item;
+            return item; // Return unchanged item if increasing quantity for existing bill
           }
           return item.copyWith(
             quantity: newQuantity,
@@ -184,8 +181,90 @@ class _BillingPageState extends State<BillingPage> {
       _cartItems.removeWhere((item) => item.quantity == 0);
     });
   }
+  Future<void> _showQuantityInputDialog(String productId) async {
+    int quantity = 0;
+    final _formKey = GlobalKey<FormState>();
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: const Text('Set Quantity'),
+          content: Form(
+            key: _formKey,
+            child: TextFormField(
+              decoration: InputDecoration(
+                labelText: 'Enter Quantity',
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                filled: true,
+                fillColor: Colors.grey[100],
+              ),
+              keyboardType: TextInputType.number,
+              maxLength: 7,
+              onChanged: (value) => quantity = int.tryParse(value) ?? 0,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a quantity';
+                }
+                final parsedValue = int.tryParse(value);
+                if (parsedValue == null || parsedValue < 0) {
+                  return 'Please enter a valid quantity';
+                }
+                if (parsedValue > 9999999) {
+                  return 'Quantity cannot exceed 7 digits';
+                }
+                if (_existingBillNumber != null &&
+                    parsedValue >
+                        _cartItems
+                            .firstWhere((item) => item.productId == productId)
+                            .quantity) {
+                  return 'Cannot increase quantity for existing bill';
+                }
+                return null;
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  setState(() {
+                    _cartItems = _cartItems.map((item) {
+                      if (item.productId == productId) {
+                        return item.copyWith(
+                          quantity: quantity,
+                          taxAmount: item.price * quantity * item.taxRate / 100,
+                        );
+                      }
+                      return item;
+                    }).toList();
+                    _cartItems.removeWhere((item) => item.quantity == 0);
+                  });
+                  Navigator.pop(dialogContext);
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-  Widget _buildSelectionButtons(List<StockModel> products, List<StoreDto> stores) {
+  Widget _buildSelectionButtons(
+      List<StockModel> products, List<StoreDto> stores) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -206,14 +285,14 @@ class _BillingPageState extends State<BillingPage> {
                 icon: Icons.store,
                 label: _selectedStoreId != null
                     ? stores
-                    .firstWhere(
-                        (store) => store.storeId == _selectedStoreId,
-                    orElse: () => StoreDto(
-                        name: 'Unknown',
-                        storeId: '',
-                        createdBy: '',
-                        createdAt: DateTime.now()))
-                    .name
+                        .firstWhere(
+                            (store) => store.storeId == _selectedStoreId,
+                            orElse: () => StoreDto(
+                                name: 'Unknown',
+                                storeId: '',
+                                createdBy: '',
+                                createdAt: DateTime.now()))
+                        .name
                     : 'Select Store',
                 onPressed: () => _showStoreSelectionDialog(stores),
                 hasError: _selectedStoreId == null,
@@ -232,7 +311,8 @@ class _BillingPageState extends State<BillingPage> {
         const SizedBox(height: 8),
         Card(
           elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Padding(
             padding: const EdgeInsets.all(12.0),
             child: DropdownButtonFormField<String>(
@@ -246,7 +326,7 @@ class _BillingPageState extends State<BillingPage> {
                 filled: true,
                 fillColor: Colors.grey[50],
                 contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               ),
               value: _selectedBillType,
               items: ['Cash', 'Credit'].map((type) {
@@ -270,14 +350,15 @@ class _BillingPageState extends State<BillingPage> {
   Future<void> _showCustomerSelectionDialog() async {
     final userServices = sl<UserServices>();
     final addUserCubit = sl<AddUserCubit>();
-    final TextEditingController searchController = TextEditingController(); // Controller for search bar
-    List<UserInfo> filteredCustomers = []; // List for filtered customers
-    List<UserInfo> allCustomers = []; // Store all customers for filtering
+    final TextEditingController searchController = TextEditingController();
+    List<UserInfo> filteredCustomers = [];
+    List<UserInfo> allCustomers = [];
 
     try {
       final users = await userServices.getUsersFromTenantCompany();
-      allCustomers = users.where((u) => u.userType == UserType.Customer).toList();
-      filteredCustomers = allCustomers; // Initialize with all customers
+      allCustomers =
+          users.where((u) => u.userType == UserType.Customer).toList();
+      filteredCustomers = allCustomers;
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -310,32 +391,38 @@ class _BillingPageState extends State<BillingPage> {
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.close, color: AppColors.primary),
+                          icon:
+                              const Icon(Icons.close, color: AppColors.primary),
                           onPressed: () => Navigator.of(context).pop(),
                         ),
                       ],
                     ),
                   ),
-                  // Search Bar
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 8.0),
                     child: TextField(
                       controller: searchController,
                       decoration: InputDecoration(
                         hintText: 'Search Customers',
-                        hintStyle: const TextStyle(color: AppColors.textSecondary),
-                        prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+                        hintStyle:
+                            const TextStyle(color: AppColors.textSecondary),
+                        prefixIcon: const Icon(Icons.search,
+                            color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
+                          borderSide: BorderSide(
+                              color: AppColors.textSecondary.withOpacity(0.3)),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
+                          borderSide: BorderSide(
+                              color: AppColors.textSecondary.withOpacity(0.3)),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
                       ),
                       onChanged: (value) {
                         setState(() {
@@ -344,8 +431,14 @@ class _BillingPageState extends State<BillingPage> {
                           } else {
                             filteredCustomers = allCustomers
                                 .where((customer) =>
-                            (customer.name?.toLowerCase().contains(value.toLowerCase()) ?? false) ||
-                                (customer.userName?.toLowerCase().contains(value.toLowerCase()) ?? false))
+                                    (customer.name
+                                            ?.toLowerCase()
+                                            .contains(value.toLowerCase()) ??
+                                        false) ||
+                                    (customer.userName
+                                            ?.toLowerCase()
+                                            .contains(value.toLowerCase()) ??
+                                        false))
                                 .toList();
                           }
                         });
@@ -353,7 +446,8 @@ class _BillingPageState extends State<BillingPage> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 8.0),
                     child: TextField(
                       controller: _customerNameController,
                       decoration: InputDecoration(
@@ -361,7 +455,8 @@ class _BillingPageState extends State<BillingPage> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        errorText: _customerNameController.text.isEmpty && filteredCustomers.isEmpty
+                        errorText: _customerNameController.text.isEmpty &&
+                                filteredCustomers.isEmpty
                             ? 'Name is required'
                             : null,
                       ),
@@ -371,7 +466,8 @@ class _BillingPageState extends State<BillingPage> {
                     listener: (context, state) {
                       if (state is AddUserSuccess) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Customer added successfully')),
+                          const SnackBar(
+                              content: Text('Customer added successfully')),
                         );
                         setState(() {
                           _isLoading = false;
@@ -392,38 +488,47 @@ class _BillingPageState extends State<BillingPage> {
                         onPressed: () async {
                           if (_customerNameController.text.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Customer name is required')),
+                              const SnackBar(
+                                  content: Text('Customer name is required')),
                             );
                             return;
                           }
                           setState(() => _isLoading = true);
                           try {
-                            final companyId = (await sl<AccountRepository>().getUserInfo())?.companyId;
+                            final companyId =
+                                (await sl<AccountRepository>().getUserInfo())
+                                    ?.companyId;
                             final userInfo = UserInfo(
                               name: _customerNameController.text.trim(),
                               userType: UserType.Customer,
                               companyId: companyId,
                             );
                             await addUserCubit.addUser(userInfo, '');
-                            final users = await userServices.getUsersFromTenantCompany();
+                            final users =
+                                await userServices.getUsersFromTenantCompany();
                             final newCustomer = users.firstWhere(
-                                  (u) => u.name == userInfo.name,
+                              (u) => u.name == userInfo.name,
                               orElse: () => userInfo.copyWith(
-                                userId: DateTime.now().millisecondsSinceEpoch.toString(),
+                                userId: DateTime.now()
+                                    .millisecondsSinceEpoch
+                                    .toString(),
                               ),
                             );
                             setState(() {
                               _selectedCustomer = newCustomer;
-                              _newCustomerLedgerId = newCustomer.accountLedgerId;
+                              _newCustomerLedgerId =
+                                  newCustomer.accountLedgerId;
                               _customerNameController.clear();
                             });
-                            // Refresh customer list after adding a new customer
-                            allCustomers = users.where((u) => u.userType == UserType.Customer).toList();
+                            allCustomers = users
+                                .where((u) => u.userType == UserType.Customer)
+                                .toList();
                             filteredCustomers = allCustomers;
                             searchController.clear();
                           } catch (e) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Failed to add customer: $e')),
+                              SnackBar(
+                                  content: Text('Failed to add customer: $e')),
                             );
                             setState(() => _isLoading = false);
                           }
@@ -451,26 +556,27 @@ class _BillingPageState extends State<BillingPage> {
                     child: filteredCustomers.isEmpty
                         ? const Center(child: Text('No customers available'))
                         : ListView.builder(
-                      controller: scrollController,
-                      itemCount: filteredCustomers.length,
-                      itemBuilder: (context, index) {
-                        final user = filteredCustomers[index];
-                        return ListTile(
-                          title: Text(
-                            user.name ?? user.userName ?? 'Unknown',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            controller: scrollController,
+                            itemCount: filteredCustomers.length,
+                            itemBuilder: (context, index) {
+                              final user = filteredCustomers[index];
+                              return ListTile(
+                                title: Text(
+                                  user.name ?? user.userName ?? 'Unknown',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                subtitle: Text('ID: ${user.userId}'),
+                                onTap: () {
+                                  setState(() {
+                                    _selectedCustomer = user;
+                                    _newCustomerLedgerId = user.accountLedgerId;
+                                  });
+                                  Navigator.of(context).pop();
+                                },
+                              );
+                            },
                           ),
-                          subtitle: Text('ID: ${user.userId}'),
-                          onTap: () {
-                            setState(() {
-                              _selectedCustomer = user;
-                              _newCustomerLedgerId = user.accountLedgerId;
-                            });
-                            Navigator.of(context).pop();
-                          },
-                        );
-                      },
-                    ),
                   ),
                 ],
               ),
@@ -480,10 +586,11 @@ class _BillingPageState extends State<BillingPage> {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('error')),
+        SnackBar(content: Text('Error')),
       );
     }
   }
+
   Future<void> _generateBill() async {
     if (_cartItems.isEmpty && _existingBillNumber == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -522,61 +629,63 @@ class _BillingPageState extends State<BillingPage> {
       final stockState = _stockCubit.state;
       final totalAmount = _cartItems.fold<double>(
         0.0,
-            (sum, item) => sum + (item.price * item.quantity) + item.taxAmount,
+        (sum, item) => sum + (item.price * item.quantity) + item.taxAmount,
       );
-      final billNumber = _existingBillNumber ?? 'BILL-${DateTime.now().millisecondsSinceEpoch}';
+      final billNumber = _existingBillNumber ??
+          'BILL-${DateTime.now().millisecondsSinceEpoch}';
       Order order;
 
-      print('Processing bill: existingBillNumber=$_existingBillNumber, cartItems=${_cartItems.length}, totalAmount=$totalAmount');
+      print(
+          'Processing bill: existingBillNumber=$_existingBillNumber, cartItems=${_cartItems.length}, totalAmount=$totalAmount');
 
       if (_existingBillNumber == null) {
-        // New bill: Deduct stock
-        if (stockState is StockLoaded) {
-          for (var item in _cartItems) {
-            final stock = stockState.stockItems.firstWhere(
+        for (var item in _cartItems) {
+          final stock = stockState is StockLoaded
+              ? stockState.stockItems.firstWhere(
                   (stock) =>
-              stock.productId == item.productId &&
-                  stock.storeId == _selectedStoreId,
-              orElse: () => StockModel(
-                id: '${item.productId}_$_selectedStoreId',
-                productId: item.productId,
-                storeId: _selectedStoreId!,
-                quantity: 0,
-                lastUpdated: DateTime.now(),
-              ),
+                      stock.productId == item.productId &&
+                      stock.storeId == _selectedStoreId,
+                  orElse: () => StockModel(
+                    id: '${item.productId}_$_selectedStoreId',
+                    productId: item.productId,
+                    storeId: _selectedStoreId!,
+                    quantity: 0,
+                    lastUpdated: DateTime.now(),
+                  ),
+                )
+              : null;
+          if (stock == null || stock.quantity < item.quantity) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text('Insufficient stock for ${item.productName}')),
             );
-            if (stock.quantity < item.quantity) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                    content: Text('Insufficient stock for ${item.productName}')),
-              );
-              setState(() => _isLoading = false);
-              return;
-            }
+            setState(() => _isLoading = false);
+            return;
           }
+        }
 
-          for (var item in _cartItems) {
-            final stock = stockState.stockItems.firstWhere(
+        for (var item in _cartItems) {
+          final stock = stockState is StockLoaded
+              ? stockState.stockItems.firstWhere(
                   (stock) =>
-              stock.productId == item.productId &&
-                  stock.storeId == _selectedStoreId,
-            );
+                      stock.productId == item.productId &&
+                      stock.storeId == _selectedStoreId,
+                )
+              : null;
+          if (stock != null) {
             await _stockCubit.generateBill(
               stock,
               item.quantity,
               _selectedCustomer!.userId!,
               remarks:
-              'Bill generated for $_selectedBillType sale (Order: ${widget.orderId ?? 'New'})',
+                  'Bill generated for $_selectedBillType sale (Order: ${widget.orderId ?? 'New'})',
             );
           }
-        } else if (stockState is StockError) {
-          throw Exception(stockState.error);
-        } else {
-          throw Exception('Stock data not loaded');
         }
 
         order = Order(
-          id: widget.orderId ?? DateTime.now().millisecondsSinceEpoch.toString(),
+          id: widget.orderId ??
+              DateTime.now().millisecondsSinceEpoch.toString(),
           userId: _selectedCustomer!.userId!,
           userName: _selectedCustomer!.name ??
               _selectedCustomer!.userName ??
@@ -592,30 +701,29 @@ class _BillingPageState extends State<BillingPage> {
         );
         await orderService.placeOrder(order);
       } else {
-        // Update bill: Handle returns and update order without stock deduction
         if (widget.orderId != null) {
-          final originalOrder = (await orderService.getOrderById(widget.orderId!))!;
+          final originalOrder =
+              (await orderService.getOrderById(widget.orderId!))!;
           for (var item in originalOrder.items) {
             final currentItem = _cartItems.firstWhere(
-                  (i) => i.productId == item.productId,
+              (i) => i.productId == item.productId,
               orElse: () => item.copyWith(quantity: 0),
             );
             final returnQuantity = item.quantity - currentItem.quantity;
             if (returnQuantity > 0) {
-              // Handle return
               final stock = stockState is StockLoaded
                   ? stockState.stockItems.firstWhere(
-                    (stock) =>
-                stock.productId == item.productId &&
-                    stock.storeId == _selectedStoreId,
-                orElse: () => StockModel(
-                  id: '${item.productId}_$_selectedStoreId',
-                  productId: item.productId,
-                  storeId: _selectedStoreId!,
-                  quantity: 0,
-                  lastUpdated: DateTime.now(),
-                ),
-              )
+                      (stock) =>
+                          stock.productId == item.productId &&
+                          stock.storeId == _selectedStoreId,
+                      orElse: () => StockModel(
+                        id: '${item.productId}_$_selectedStoreId',
+                        productId: item.productId,
+                        storeId: _selectedStoreId!,
+                        quantity: 0,
+                        lastUpdated: DateTime.now(),
+                      ),
+                    )
                   : null;
               if (stock != null) {
                 await _stockCubit.updateStock(
@@ -623,7 +731,8 @@ class _BillingPageState extends State<BillingPage> {
                     quantity: stock.quantity + returnQuantity,
                     lastUpdated: DateTime.now(),
                   ),
-                  remarks: 'Return of $returnQuantity units of ${item.productName}',
+                  remarks:
+                      'Return of $returnQuantity units of ${item.productName}',
                 );
                 final ledgerId = _selectedCustomer!.accountLedgerId;
                 if (ledgerId != null) {
@@ -634,7 +743,8 @@ class _BillingPageState extends State<BillingPage> {
                     billNumber: billNumber,
                     purpose: 'Return',
                     typeOfPurpose: _selectedBillType,
-                    remarks: 'Return of $returnQuantity units of ${item.productName} for order ${widget.orderId}',
+                    remarks:
+                        'Return of $returnQuantity units of ${item.productName} for order ${widget.orderId}',
                     userType: UserType.Customer,
                   );
                 }
@@ -662,10 +772,8 @@ class _BillingPageState extends State<BillingPage> {
         await orderService.updateOrder(order);
       }
 
-      // Ledger entry logic (only if ledgerId exists)
       final ledgerId = _selectedCustomer!.accountLedgerId;
       if (ledgerId != null) {
-        // Debit entry for both Cash and Credit (only for new bill)
         if (_existingBillNumber == null) {
           await ledgerCubit.addTransaction(
             ledgerId: ledgerId,
@@ -679,7 +787,6 @@ class _BillingPageState extends State<BillingPage> {
           );
         }
 
-        // Credit entry for Cash only (only for new bill)
         if (_selectedBillType == 'Cash' && _existingBillNumber == null) {
           await ledgerCubit.addTransaction(
             ledgerId: ledgerId,
@@ -693,7 +800,8 @@ class _BillingPageState extends State<BillingPage> {
           );
         }
       } else {
-        print('No ledger ID found for customer: ${_selectedCustomer!.name}, skipping ledger entries');
+        print(
+            'No ledger ID found for customer: ${_selectedCustomer!.name}, skipping ledger entries');
       }
 
       final pdf = await _generatePdf(order);
@@ -703,10 +811,9 @@ class _BillingPageState extends State<BillingPage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(
-                _existingBillNumber == null
-                    ? 'Bill generated successfully'
-                    : 'Bill updated successfully')),
+            content: Text(_existingBillNumber == null
+                ? 'Bill generated successfully'
+                : 'Bill updated successfully')),
       );
     } catch (e) {
       print('Error in generateBill: $e');
@@ -717,6 +824,7 @@ class _BillingPageState extends State<BillingPage> {
       setState(() => _isLoading = false);
     }
   }
+
   Widget _buildGenerateBillButton() {
     return ElevatedButton(
       onPressed: _generateBill,
@@ -728,7 +836,8 @@ class _BillingPageState extends State<BillingPage> {
         textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         minimumSize: const Size(double.infinity, 50),
       ),
-      child: Text(_existingBillNumber == null ? 'Generate Bill' : 'Update Bill'),
+      child:
+          Text(_existingBillNumber == null ? 'Generate Bill' : 'Update Bill'),
     );
   }
 
@@ -749,7 +858,7 @@ class _BillingPageState extends State<BillingPage> {
             filled: true,
             fillColor: Colors.grey[50],
             contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             errorStyle: const TextStyle(color: Colors.red),
           ),
           value: _selectedStatus,
@@ -784,33 +893,151 @@ class _BillingPageState extends State<BillingPage> {
                 padding: EdgeInsets.symmetric(vertical: 8.0),
                 child: Text(
                   'No items in cart',
-                  style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                  style:
+                      TextStyle(fontSize: 16, color: AppColors.textSecondary),
                 ),
               )
             else
               ..._cartItems.asMap().entries.map((entry) {
                 final index = entry.key;
                 final item = entry.value;
-                return ListTile(
-                  contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  title: Text(item.productName,
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text(
-                    'Price: ₹${item.price.toStringAsFixed(2)} | Quantity: ${item.quantity} | Tax: ₹${item.taxAmount.toStringAsFixed(2)}',
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.remove, color: AppColors.primary),
-                        onPressed: () => _updateQuantity(item.productId, -1),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.add, color: AppColors.primary),
-                        onPressed: () => _updateQuantity(item.productId, 1),
-                      ),
-                    ],
+                print(
+                    'Rendering buttons for ${item.productName}, quantity: ${item.quantity}');
+                return Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  child: ListTile(
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    title: Text(item.productName,
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text(
+                      'Price: ₹${item.price.toStringAsFixed(2)} | Quantity: ${item.quantity} | Tax: ₹${item.taxAmount.toStringAsFixed(2)}',
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: 100,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ElevatedButton(
+                                onPressed: () =>
+                                    _showQuantityInputDialog(item.productId),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  minimumSize: const Size(80, 28),
+                                ),
+                                child: const Text(
+                                  'Manual Entry',
+                                  style: TextStyle(
+                                    color: AppColors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              ElevatedButton(
+                                onPressed: item.quantity > 0
+                                    ? () {
+                                  setState(() {
+                                    _cartItems =
+                                        _cartItems.map((cartItem) {
+                                          if (cartItem.productId ==
+                                              item.productId) {
+                                            return cartItem.copyWith(
+                                              quantity: 0,
+                                              taxAmount: 0.0,
+                                            );
+                                          }
+                                          return cartItem;
+                                        }).toList();
+                                    _cartItems.removeWhere((cartItem) =>
+                                    cartItem.quantity == 0);
+                                  });
+                                }
+                                    : null,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.red,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  minimumSize: const Size(80, 28),
+                                ),
+                                child: const Text(
+                                  'Clear',
+                                  style: TextStyle(
+                                    color: AppColors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                                color:
+                                    AppColors.textSecondary.withOpacity(0.3)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  Icons.remove,
+                                  color: item.quantity > 0
+                                      ? AppColors.red
+                                      : AppColors.textSecondary,
+                                  size: 20,
+                                ),
+                                onPressed: () =>
+                                    _updateQuantity(item.productId, -1),
+                              ),
+                              SizedBox(
+                                width: 48,
+                                child: Text(
+                                  '${item.quantity}',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.add,
+                                  color: AppColors.green,
+                                  size: 20,
+                                ),
+                                onPressed: () =>
+                                    _updateQuantity(item.productId, 1),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                      ],
+                    ),
                   ),
                 );
               }).toList(),
@@ -862,7 +1089,7 @@ class _BillingPageState extends State<BillingPage> {
             ),
             Padding(
               padding:
-              const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: TextField(
                 controller: _productSearchController,
                 decoration: InputDecoration(
@@ -877,41 +1104,41 @@ class _BillingPageState extends State<BillingPage> {
             Expanded(
               child: _filteredProducts.isEmpty
                   ? const Center(
-                child: Text(
-                  'No products available',
-                  style: TextStyle(
-                      fontSize: 16, color: AppColors.textSecondary),
-                ),
-              )
+                      child: Text(
+                        'No products available',
+                        style: TextStyle(
+                            fontSize: 16, color: AppColors.textSecondary),
+                      ),
+                    )
                   : ListView.builder(
-                controller: scrollController,
-                itemCount: _filteredProducts.length,
-                itemBuilder: (context, index) {
-                  final product = _filteredProducts[index];
-                  return Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
-                      title: Text(
-                        product.name ?? 'Unknown',
-                        style:
-                        const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(
-                        'Price: ₹${product.price?.toStringAsFixed(2) ?? '0.00'} | Stock: ${product.quantity}',
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.add,
-                            color: AppColors.primary),
-                        onPressed: () => _addToCart(product),
-                      ),
+                      controller: scrollController,
+                      itemCount: _filteredProducts.length,
+                      itemBuilder: (context, index) {
+                        final product = _filteredProducts[index];
+                        return Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            title: Text(
+                              product.name ?? 'Unknown',
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: Text(
+                              'Price: ₹${product.price?.toStringAsFixed(2) ?? '0.00'} | Stock: ${product.quantity}',
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.add,
+                                  color: AppColors.primary),
+                              onPressed: () => _addToCart(product),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),
@@ -964,27 +1191,27 @@ class _BillingPageState extends State<BillingPage> {
               child: storeList.isEmpty
                   ? const Center(child: Text('No stores available'))
                   : ListView.builder(
-                controller: scrollController,
-                itemCount: storeList.length,
-                itemBuilder: (context, index) {
-                  final store = storeList[index];
-                  return ListTile(
-                    title: Text(
-                      store.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      controller: scrollController,
+                      itemCount: storeList.length,
+                      itemBuilder: (context, index) {
+                        final store = storeList[index];
+                        return ListTile(
+                          title: Text(
+                            store.name,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          onTap: () {
+                            setState(() {
+                              _selectedStoreId = store.storeId;
+                              if (_selectedStoreId != null) {
+                                _stockCubit.fetchStock(_selectedStoreId!);
+                              }
+                            });
+                            Navigator.of(context).pop();
+                          },
+                        );
+                      },
                     ),
-                    onTap: () {
-                      setState(() {
-                        _selectedStoreId = store.storeId;
-                        if (_selectedStoreId != null) {
-                          _stockCubit.fetchStock(_selectedStoreId!);
-                        }
-                      });
-                      Navigator.of(context).pop();
-                    },
-                  );
-                },
-              ),
             ),
           ],
         ),
@@ -1020,7 +1247,8 @@ class _BillingPageState extends State<BillingPage> {
         header: (context) => pw.Container(
           padding: const pw.EdgeInsets.only(bottom: 12),
           decoration: pw.BoxDecoration(
-            border: pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
+            border:
+                pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
           ),
           child: pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -1037,7 +1265,9 @@ class _BillingPageState extends State<BillingPage> {
                   pw.Text(
                     '123 Business Street, City, Country',
                     style: pw.TextStyle(
-                        font: regularFont, fontSize: 12, color: textSecondaryColor),
+                        font: regularFont,
+                        fontSize: 12,
+                        color: textSecondaryColor),
                   ),
                 ],
               ),
@@ -1077,7 +1307,8 @@ class _BillingPageState extends State<BillingPage> {
           pw.SizedBox(height: 8),
           pw.Text(
             order.userName ?? 'Unknown Customer',
-            style: pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
+            style:
+                pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
           ),
           pw.Text(
             'Store ID: ${order.storeId ?? 'N/A'}',
@@ -1131,53 +1362,54 @@ class _BillingPageState extends State<BillingPage> {
                 ],
               ),
               ...order.items.map((item) => pw.TableRow(
-                decoration: pw.BoxDecoration(
-                  border: pw.Border(bottom: pw.BorderSide(color: greyColor, width: 0.5)),
-                ),
-                children: [
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text(
-                      item.productName,
-                      style: pw.TextStyle(font: regularFont, fontSize: 12),
-                      softWrap: true,
+                    decoration: pw.BoxDecoration(
+                      border: pw.Border(
+                          bottom: pw.BorderSide(color: greyColor, width: 0.5)),
                     ),
-                  ),
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text(
-                      item.quantity.toString(),
-                      style: pw.TextStyle(font: regularFont, fontSize: 12),
-                      textAlign: pw.TextAlign.center,
-                    ),
-                  ),
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text(
-                      item.price.toStringAsFixed(2),
-                      style: pw.TextStyle(font: regularFont, fontSize: 12),
-                      textAlign: pw.TextAlign.right,
-                    ),
-                  ),
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text(
-                      item.taxAmount.toStringAsFixed(2),
-                      style: pw.TextStyle(font: regularFont, fontSize: 12),
-                      textAlign: pw.TextAlign.right,
-                    ),
-                  ),
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text(
-                      ((item.price * item.quantity) + item.taxAmount)
-                          .toStringAsFixed(2),
-                      style: pw.TextStyle(font: regularFont, fontSize: 12),
-                      textAlign: pw.TextAlign.right,
-                    ),
-                  ),
-                ],
-              )),
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(10),
+                        child: pw.Text(
+                          item.productName,
+                          style: pw.TextStyle(font: regularFont, fontSize: 12),
+                          softWrap: true,
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(10),
+                        child: pw.Text(
+                          item.quantity.toString(),
+                          style: pw.TextStyle(font: regularFont, fontSize: 12),
+                          textAlign: pw.TextAlign.center,
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(10),
+                        child: pw.Text(
+                          item.price.toStringAsFixed(2),
+                          style: pw.TextStyle(font: regularFont, fontSize: 12),
+                          textAlign: pw.TextAlign.right,
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(10),
+                        child: pw.Text(
+                          item.taxAmount.toStringAsFixed(2),
+                          style: pw.TextStyle(font: regularFont, fontSize: 12),
+                          textAlign: pw.TextAlign.right,
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(10),
+                        child: pw.Text(
+                          ((item.price * item.quantity) + item.taxAmount)
+                              .toStringAsFixed(2),
+                          style: pw.TextStyle(font: regularFont, fontSize: 12),
+                          textAlign: pw.TextAlign.right,
+                        ),
+                      ),
+                    ],
+                  )),
             ],
           ),
           pw.SizedBox(height: 24),
@@ -1295,87 +1527,87 @@ class _BillingPageState extends State<BillingPage> {
             child: _isLoading
                 ? const CustomLoadingDialog(message: 'Loading...')
                 : SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: MediaQuery.of(context).size.height -
-                      MediaQuery.of(context).padding.top -
-                      kToolbarHeight,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: BlocListener<AdminOrderCubit, AdminOrderState>(
-                    listener: (context, state) {
-                      if (state is AdminOrderFetchSuccess &&
-                          widget.orderId != null) {
-                        setState(() {
-                          _cartItems = state.order.items;
-                          _selectedStatus = state.normalizedStatus;
-                          _selectedStoreId =
-                              state.order.storeId ?? _selectedStoreId;
-                          _existingBillNumber = state.order.billNumber;
-                          if (state.order.userId != null) {
-                            sl<UserServices>()
-                                .getUsersFromTenantCompany()
-                                .then((users) {
-                              final customer = users.firstWhere(
-                                    (u) => u.userId == state.order.userId,
-                                orElse: () => UserInfo(
-                                  userId: state.order.userId!,
-                                  userName:
-                                  state.order.userName ?? 'Unknown',
-                                ),
-                              );
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: MediaQuery.of(context).size.height -
+                            MediaQuery.of(context).padding.top -
+                            kToolbarHeight,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: BlocListener<AdminOrderCubit, AdminOrderState>(
+                          listener: (context, state) {
+                            if (state is AdminOrderFetchSuccess &&
+                                widget.orderId != null) {
                               setState(() {
-                                _selectedCustomer = customer;
-                                _newCustomerLedgerId =
-                                    customer.accountLedgerId;
+                                _cartItems = state.order.items;
+                                _selectedStatus = state.normalizedStatus;
+                                _selectedStoreId =
+                                    state.order.storeId ?? _selectedStoreId;
+                                _existingBillNumber = state.order.billNumber;
+                                if (state.order.userId != null) {
+                                  sl<UserServices>()
+                                      .getUsersFromTenantCompany()
+                                      .then((users) {
+                                    final customer = users.firstWhere(
+                                      (u) => u.userId == state.order.userId,
+                                      orElse: () => UserInfo(
+                                        userId: state.order.userId!,
+                                        userName:
+                                            state.order.userName ?? 'Unknown',
+                                      ),
+                                    );
+                                    setState(() {
+                                      _selectedCustomer = customer;
+                                      _newCustomerLedgerId =
+                                          customer.accountLedgerId;
+                                    });
+                                  });
+                                }
                               });
-                            });
-                          }
-                        });
-                        if (_selectedStoreId != null) {
-                          _stockCubit.fetchStock(_selectedStoreId!);
-                        }
-                      } else if (state is AdminOrderFetchError) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(state.message)),
-                        );
-                      }
-                    },
-                    child: BlocBuilder<StockCubit, StockState>(
-                      builder: (context, stockState) {
-                        final products = stockState is StockLoaded
-                            ? stockState.stockItems
-                            : <StockModel>[];
-                        final stores = stockState is StockLoaded
-                            ? stockState.stores
-                            : <StoreDto>[];
-                        if (stockState is StockError) {
-                          return Center(
-                              child: Text('Error: ${stockState.error}'));
-                        }
-                        if (_filteredProducts.isEmpty &&
-                            products.isNotEmpty) {
-                          _filteredProducts = products;
-                        }
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _buildSelectionButtons(products, stores),
-                            const SizedBox(height: 16),
-                            _buildCart(),
-                            const SizedBox(height: 16),
-                            _buildStatusSelector(),
-                            const SizedBox(height: 16),
-                            _buildGenerateBillButton(),
-                          ],
-                        );
-                      },
+                              if (_selectedStoreId != null) {
+                                _stockCubit.fetchStock(_selectedStoreId!);
+                              }
+                            } else if (state is AdminOrderFetchError) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(state.message)),
+                              );
+                            }
+                          },
+                          child: BlocBuilder<StockCubit, StockState>(
+                            builder: (context, stockState) {
+                              final products = stockState is StockLoaded
+                                  ? stockState.stockItems
+                                  : <StockModel>[];
+                              final stores = stockState is StockLoaded
+                                  ? stockState.stores
+                                  : <StoreDto>[];
+                              if (stockState is StockError) {
+                                return Center(
+                                    child: Text('Error: ${stockState.error}'));
+                              }
+                              if (_filteredProducts.isEmpty &&
+                                  products.isNotEmpty) {
+                                _filteredProducts = products;
+                              }
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  _buildSelectionButtons(products, stores),
+                                  const SizedBox(height: 16),
+                                  _buildCart(),
+                                  const SizedBox(height: 16),
+                                  _buildStatusSelector(),
+                                  const SizedBox(height: 16),
+                                  _buildGenerateBillButton(),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-            ),
           ),
         ),
       ),

@@ -18,10 +18,10 @@ class SalesmanOrderPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userServices = sl<UserServices>();
-    final cubit = sl<SalesmanOrderCubit>(); // Single cubit instance
+    final cubit = sl<SalesmanOrderCubit>();
 
     return BlocProvider(
-      create: (_) => cubit, // Use the single instance
+      create: (_) => cubit,
       child: BlocConsumer<SalesmanOrderCubit, SalesmanOrderState>(
         listenWhen: (previous, current) =>
         current is SalesmanOrderPlaced || current is SalesmanOrderError,
@@ -39,7 +39,7 @@ class SalesmanOrderPage extends StatelessWidget {
               ),
             );
             Navigator.of(context).pop();
-            cubit.searchProducts(''); // Use cubit directly
+            cubit.searchProducts('');
           } else if (state is SalesmanOrderError) {
             Navigator.of(context, rootNavigator: true)
                 .popUntil((route) => route.isFirst);
@@ -82,7 +82,6 @@ class SalesmanOrderPage extends StatelessWidget {
                     TextButton(
                       onPressed: () {
                         Navigator.of(dialogContext).pop();
-                        // cubit.retry(); // Uncomment if retry method exists
                       },
                       child: const Text(
                         'Retry',
@@ -150,7 +149,7 @@ class SalesmanOrderPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 12),
                         InkWell(
-                          onTap: () => _showCustomerSelectionDialog(context, userServices, cubit), // Pass cubit
+                          onTap: () => _showCustomerSelectionDialog(context, userServices, cubit),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 12),
@@ -199,7 +198,7 @@ class SalesmanOrderPage extends StatelessWidget {
                   pinned: true,
                   delegate: _StickySearchBarDelegate(
                     onSearchChanged: (value) {
-                      cubit.searchProducts(value); // Use cubit directly
+                      cubit.searchProducts(value);
                     },
                   ),
                 ),
@@ -284,55 +283,112 @@ class SalesmanOrderPage extends StatelessWidget {
                                       ),
                                     ),
                                     const SizedBox(width: 8),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: AppColors.white,
-                                        borderRadius: BorderRadius.circular(24),
-                                        border: Border.all(
-                                            color: AppColors.textSecondary
-                                                .withOpacity(0.3)),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                            icon: Icon(
-                                              Icons.remove,
-                                              color: quantity > 0
-                                                  ? AppColors.red
-                                                  : AppColors.textSecondary,
-                                              size: 20,
-                                            ),
-                                            onPressed: () {
-                                              cubit.updateProductQuantity(
-                                                  product.id, false); // Use cubit
-                                            },
+                                    Column(
+                                      children: [
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            color: AppColors.white,
+                                            borderRadius: BorderRadius.circular(24),
+                                            border: Border.all(
+                                                color: AppColors.textSecondary
+                                                    .withOpacity(0.3)),
                                           ),
-                                          SizedBox(
-                                            width: 24,
-                                            child: Text(
-                                              '$quantity',
-                                              textAlign: TextAlign.center,
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                                color: AppColors.textPrimary,
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              IconButton(
+                                                icon: Icon(
+                                                  Icons.remove,
+                                                  color: quantity > 0
+                                                      ? AppColors.red
+                                                      : AppColors.textSecondary,
+                                                  size: 20,
+                                                ),
+                                                onPressed: () {
+                                                  cubit.updateProductQuantity(
+                                                      product.id, false);
+                                                },
+                                              ),
+                                              SizedBox(
+                                                width: 48, // Increased width for 7-digit support
+                                                child: Text(
+                                                  '$quantity',
+                                                  textAlign: TextAlign.center,
+                                                  style: const TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AppColors.textPrimary,
+                                                  ),
+                                                ),
+                                              ),
+                                              IconButton(
+                                                icon: const Icon(
+                                                  Icons.add,
+                                                  color: AppColors.green,
+                                                  size: 20,
+                                                ),
+                                                onPressed: () {
+                                                  if (quantity < 9999999) {
+                                                    cubit.updateProductQuantity(
+                                                        product.id, true);
+                                                  }
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          children: [
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                _showQuantityInputDialog(
+                                                    context, cubit, product.id);
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: AppColors.primary,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                                padding: const EdgeInsets.symmetric(
+                                                    horizontal: 8, vertical: 4),
+                                              ),
+                                              child: const Text(
+                                                'Enter Manual Qty',
+                                                style: TextStyle(
+                                                  color: AppColors.white,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          IconButton(
-                                            icon: const Icon(
-                                              Icons.add,
-                                              color: AppColors.green,
-                                              size: 20,
+                                            const SizedBox(width: 8),
+                                            ElevatedButton(
+                                              onPressed: quantity > 0
+                                                  ? () {
+                                                cubit.setProductQuantity(product.id, 0);
+                                              }
+                                                  : null,
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: AppColors.red,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                                padding: const EdgeInsets.symmetric(
+                                                    horizontal: 8, vertical: 4),
+                                              ),
+                                              child: const Text(
+                                                'Clear',
+                                                style: TextStyle(
+                                                  color: AppColors.white,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
                                             ),
-                                            onPressed: () {
-                                              cubit.updateProductQuantity(
-                                                  product.id, true); // Use cubit
-                                            },
-                                          ),
-                                        ],
-                                      ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -376,7 +432,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                               padding: const EdgeInsets.symmetric(
                                                   vertical: 8, horizontal: 12),
                                               child: Text(
-                                                '₹${cubit.calculateProductSubtotal(product.id).toStringAsFixed(2)}', // Use cubit
+                                                '₹${cubit.calculateProductSubtotal(product.id).toStringAsFixed(2)}',
                                                 textAlign: TextAlign.right,
                                                 style: const TextStyle(
                                                   fontSize: 14,
@@ -404,7 +460,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                               padding: const EdgeInsets.symmetric(
                                                   vertical: 8, horizontal: 12),
                                               child: Text(
-                                                '₹${cubit.calculateProductTax(product.id).toStringAsFixed(2)}', // Use cubit
+                                                '₹${cubit.calculateProductTax(product.id).toStringAsFixed(2)}',
                                                 textAlign: TextAlign.right,
                                                 style: const TextStyle(
                                                   fontSize: 14,
@@ -440,7 +496,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                               padding: const EdgeInsets.symmetric(
                                                   vertical: 8, horizontal: 12),
                                               child: Text(
-                                                '₹${cubit.calculateProductTotal(product.id).toStringAsFixed(2)}', // Use cubit
+                                                '₹${cubit.calculateProductTotal(product.id).toStringAsFixed(2)}',
                                                 textAlign: TextAlign.right,
                                                 style: const TextStyle(
                                                   fontSize: 14,
@@ -472,7 +528,7 @@ class SalesmanOrderPage extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: ElevatedButton(
                 onPressed: () {
-                  final currentState = cubit.state; // Use cubit
+                  final currentState = cubit.state;
                   if (currentState is SalesmanOrderLoaded) {
                     bool hasItems = currentState.productQuantities.values
                         .any((quantity) => quantity > 0);
@@ -566,7 +622,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: 12, vertical: 16),
                                           child: Text(
-                                            '₹${cubit.calculateOverallSubtotal().toStringAsFixed(2)}', // Use cubit
+                                            '₹${cubit.calculateOverallSubtotal().toStringAsFixed(2)}',
                                             textAlign: TextAlign.right,
                                             style: const TextStyle(
                                               fontSize: 16,
@@ -594,7 +650,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 12, horizontal: 16),
                                           child: Text(
-                                            '₹${cubit.calculateOverallTax().toStringAsFixed(2)}', // Use cubit
+                                            '₹${cubit.calculateOverallTax().toStringAsFixed(2)}',
                                             textAlign: TextAlign.right,
                                             style: const TextStyle(
                                               fontSize: 16,
@@ -629,7 +685,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 12, horizontal: 16),
                                           child: Text(
-                                            '₹${cubit.calculateOverallTotal().toStringAsFixed(2)}', // Use cubit
+                                            '₹${cubit.calculateOverallTotal().toStringAsFixed(2)}',
                                             textAlign: TextAlign.right,
                                             style: const TextStyle(
                                               fontSize: 18,
@@ -649,7 +705,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                 child: ElevatedButton(
                                   onPressed: () {
                                     Navigator.pop(context);
-                                    cubit.placeOrder(); // Use cubit
+                                    cubit.placeOrder();
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.primary,
@@ -699,6 +755,69 @@ class SalesmanOrderPage extends StatelessWidget {
     );
   }
 
+  Future<void> _showQuantityInputDialog(
+      BuildContext context, SalesmanOrderCubit cubit, String productId) async {
+    int quantity = 0;
+    final _formKey = GlobalKey<FormState>();
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: const Text('Set Quantity'),
+          content: Form(
+            key: _formKey,
+            child: TextFormField(
+              decoration: InputDecoration(
+                labelText: 'Enter Quantity',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                filled: true,
+                fillColor: Colors.grey[100],
+              ),
+              keyboardType: TextInputType.number,
+              maxLength: 7, // Restrict to 7 digits
+              onChanged: (value) => quantity = int.tryParse(value) ?? 0,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a quantity';
+                }
+                final parsedValue = int.tryParse(value);
+                if (parsedValue == null || parsedValue < 0) {
+                  return 'Please enter a valid quantity';
+                }
+                if (parsedValue > 9999999) {
+                  return 'Quantity cannot exceed 7 digits';
+                }
+                return null;
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  cubit.setProductQuantity(productId, quantity);
+                  Navigator.pop(dialogContext);
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _showCustomerSelectionDialog(
       BuildContext context, UserServices userServices, SalesmanOrderCubit cubit) async {
     final TextEditingController customerNameController = TextEditingController();
@@ -709,7 +828,7 @@ class SalesmanOrderPage extends StatelessWidget {
     try {
       final users = await userServices.getUsersFromTenantCompany();
       final customerUsers = users.where((u) => u.userType == UserType.Customer).toList();
-      filteredCustomers = customerUsers; // Initialize with all customers
+      filteredCustomers = customerUsers;
       if (!context.mounted) return;
       showModalBottomSheet(
         context: context,
@@ -792,7 +911,7 @@ class SalesmanOrderPage extends StatelessWidget {
                           : null,
                     ),
                     onChanged: (value) {
-                      setState(() {}); // Update error text dynamically
+                      setState(() {});
                     },
                   ),
                 ),
@@ -824,7 +943,7 @@ class SalesmanOrderPage extends StatelessWidget {
                           const SnackBar(
                               content: Text('Customer added successfully')),
                         );
-                        cubit.refreshCustomers(); // Use cubit
+                        cubit.refreshCustomers();
                         if (context.mounted) Navigator.of(context).pop();
                       } catch (e) {
                         if (context.mounted) {
@@ -841,7 +960,7 @@ class SalesmanOrderPage extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 12,horizontal: 12),
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                     ),
                     child: isLoading
                         ? const SizedBox(
@@ -879,7 +998,7 @@ class SalesmanOrderPage extends StatelessWidget {
                         subtitle: Text('ID: ${user.userId}'),
                         onTap: () {
                           print('Selecting customer: ${user.name} (ID: ${user.userId})');
-                          cubit.selectCustomer(user); // Use cubit
+                          cubit.selectCustomer(user);
                           Navigator.of(dialogContext).pop();
                         },
                       );
