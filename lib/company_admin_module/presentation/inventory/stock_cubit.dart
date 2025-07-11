@@ -422,7 +422,81 @@ class StockCubit extends Cubit<StockState> {
       emit(StockError(e.toString()));
     }
   }
+// In StockCubit class
+  Future<void> addStockBatch(List<StockModel> stocks, {List<Product>? products, String? remarks}) async {
+    emit(StockLoading());
+    try {
+      final userInfo = await _getCurrentUserInfo();
+      final storeId = stocks.isNotEmpty ? stocks.first.storeId : '';
 
+      for (int i = 0; i < stocks.length; i++) {
+        final stock = stocks[i];
+        final product = products != null && i < products.length ? products[i] : null;
+
+        final existingStocks = await stockService.getStock(stock.storeId);
+        final existingStock = existingStocks.firstWhere(
+              (item) => item.productId == stock.productId,
+          orElse: () => StockModel(
+            id: '${stock.productId}_${stock.storeId}',
+            productId: stock.productId,
+            storeId: stock.storeId,
+            quantity: 0,
+            lastUpdated: DateTime.now(),
+            name: product?.name,
+            price: product?.price,
+            stock: null,
+            category: product?.category,
+            categoryId: product?.categoryId,
+            subcategoryId: product?.subcategoryId,
+            subcategoryName: product?.subcategoryName,
+            tax: product?.tax,
+          ),
+        );
+
+        final updatedStock = StockModel(
+          id: existingStock.id,
+          productId: existingStock.productId,
+          storeId: existingStock.storeId,
+          quantity: existingStock.quantity + stock.quantity,
+          lastUpdated: DateTime.now(),
+          name: product?.name ?? existingStock.name,
+          price: product?.price ?? existingStock.price,
+          stock: null,
+          category: product?.category ?? existingStock.category,
+          categoryId: product?.categoryId ?? existingStock.categoryId,
+          subcategoryId: product?.subcategoryId ?? existingStock.subcategoryId,
+          subcategoryName: product?.subcategoryName ?? existingStock.subcategoryName,
+          tax: product?.tax ?? existingStock.tax,
+        );
+
+        if (existingStock.quantity == 0) {
+          await stockService.addStock(updatedStock);
+        } else {
+          await stockService.updateStock(updatedStock);
+        }
+
+        final transaction = TransactionModel(
+          id: DateTime.now().millisecondsSinceEpoch.toString() + '_$i',
+          type: 'add',
+          productId: stock.productId,
+          quantity: stock.quantity,
+          fromStoreId: stock.storeId,
+          toStoreId: null,
+          customerId: null,
+          timestamp: DateTime.now(),
+          userName: userInfo['userName']!,
+          userId: userInfo['userId']!,
+          remarks: remarks,
+          productName: stock.name ?? '',
+        );
+        await transactionService.addTransaction(transaction);
+      }
+
+      await fetchStock(storeId);
+    } catch (e) {
+      emit(StockError(e.toString()));
+    }
+  }
   Future<void> addStore(StoreDto store) async {
     emit(StockLoading());
     try {

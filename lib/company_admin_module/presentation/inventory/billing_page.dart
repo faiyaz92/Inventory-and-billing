@@ -107,16 +107,6 @@ class _BillingPageState extends State<BillingPage> {
     }
   }
 
-  void _searchProducts(String query, List<StockModel> products) {
-    setState(() {
-      _filteredProducts = query.isEmpty
-          ? products
-          : products.where((product) {
-              final name = product.name?.toLowerCase() ?? '';
-              return name.contains(query.toLowerCase());
-            }).toList();
-    });
-  }
 
   void _addToCart(StockModel product) {
     if (_existingBillNumber != null) {
@@ -1053,100 +1043,150 @@ class _BillingPageState extends State<BillingPage> {
     );
   }
 
+  void _searchProducts(String query, List<StockModel> products, ValueNotifier<List<StockModel>> filteredProducts) {
+    debugPrint('Dialog: Searching for "$query"');
+    filteredProducts.value = query.isEmpty
+        ? List.from(products)
+        : products
+        .where((product) =>
+    product.name?.toLowerCase().contains(query.toLowerCase()) ?? false)
+        .toList();
+    debugPrint('Dialog: Filtered ${filteredProducts.value.length} products');
+  }
+
   void _showProductSelectionDialog(List<StockModel> products) {
     _productSearchController.clear();
-    _searchProducts('', products);
+    debugPrint('Dialog: Opening product selection dialog');
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (context) => DraggableScrollableSheet(
+      builder: (dialogContext) => DraggableScrollableSheet(
         initialChildSize: 0.9,
         minChildSize: 0.5,
         maxChildSize: 0.9,
         expand: false,
-        builder: (context, scrollController) => Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Select Products',
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: AppColors.primary),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: TextField(
-                controller: _productSearchController,
-                decoration: InputDecoration(
-                  labelText: 'Search Products',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                ),
-                onChanged: (query) => _searchProducts(query, products),
-              ),
-            ),
-            Expanded(
-              child: _filteredProducts.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'No products available',
+        builder: (dialogContext, scrollController) => StatefulBuilder(
+          builder: (dialogContext, setState) {
+            final ValueNotifier<List<StockModel>> filteredProducts = ValueNotifier([]);
+            bool isDialogInitialized = false;
+
+            if (!isDialogInitialized && filteredProducts.value.isEmpty && products.isNotEmpty) {
+              setState(() {
+                filteredProducts.value = List.from(products);
+                isDialogInitialized = true;
+              });
+              debugPrint('Dialog: Initialized filteredProducts with ${filteredProducts.value.length} items');
+            }
+
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Select Products',
                         style: TextStyle(
-                            fontSize: 16, color: AppColors.textSecondary),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
                       ),
-                    )
-                  : ListView.builder(
-                      controller: scrollController,
-                      itemCount: _filteredProducts.length,
-                      itemBuilder: (context, index) {
-                        final product = _filteredProducts[index];
-                        return Card(
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
-                            title: Text(
-                              product.name ?? 'Unknown',
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            subtitle: Text(
-                              'Price: ₹${product.price?.toStringAsFixed(2) ?? '0.00'} | Stock: ${product.quantity}',
-                            ),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.add,
-                                  color: AppColors.primary),
-                              onPressed: () => _addToCart(product),
-                            ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: AppColors.primary),
+                        onPressed: () {
+                          debugPrint('Dialog: Closing dialog');
+                          Navigator.of(dialogContext).pop();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: TextField(
+                    controller: _productSearchController,
+                    decoration: InputDecoration(
+                      labelText: 'Search Products',
+                      prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+                      hintStyle: const TextStyle(color: AppColors.textSecondary),
+                      filled: true,
+                      fillColor: AppColors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: AppColors.textSecondary, width: 0.3),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: AppColors.textSecondary, width: 0.3),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    onChanged: (query) => _searchProducts(query, products, filteredProducts),
+                  ),
+                ),
+                Expanded(
+                  child: ValueListenableBuilder<List<StockModel>>(
+                    valueListenable: filteredProducts,
+                    builder: (context, productsList, child) {
+                      if (productsList.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            'No products available',
+                            style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
                           ),
                         );
-                      },
-                    ),
-            ),
-          ],
+                      }
+                      return ListView.builder(
+                        controller: scrollController,
+                        itemCount: productsList.length,
+                        itemBuilder: (context, index) {
+                          final product = productsList[index];
+                          return Card(
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              title: Text(
+                                product.name ?? 'Unknown',
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Text(
+                                'Price: ₹${product.price?.toStringAsFixed(2) ?? '0.00'} | Stock: ${product.quantity}',
+                              ),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.add, color: AppColors.primary),
+                                onPressed: () {
+                                  _addToCart(product);
+                                  setState(() {
+                                    _productSearchController.clear();
+                                    filteredProducts.value = List.from(products);
+                                  });
+                                  debugPrint('Dialog: Added product "${product.name}"');
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
-    );
+    ).whenComplete(() {
+      debugPrint('Dialog: Dialog closed');
+    });
   }
-
   void _showStoreSelectionDialog(List<StoreDto> stores) {
     final uniqueStores = <String, StoreDto>{};
     for (var store in stores) {
