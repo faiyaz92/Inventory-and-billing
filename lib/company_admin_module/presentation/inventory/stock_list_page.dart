@@ -20,6 +20,7 @@ class StockListPage extends StatefulWidget {
 class _StockListPageState extends State<StockListPage> {
   String? _selectedStoreId;
   late StockCubit _stockCubit;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -321,6 +322,11 @@ class _StockListPageState extends State<StockListPage> {
                       final stores = (state is StockLoaded) ? state.stores : [];
                       final stockItems = (state is StockLoaded) ? state.stockItems : [];
 
+                      final filteredItems = stockItems
+                          .where((item) =>
+                      item.name?.toLowerCase().contains(_searchQuery) ?? false)
+                          .toList();
+
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -360,6 +366,31 @@ class _StockListPageState extends State<StockListPage> {
                               ),
                             ),
                           ),
+                          Card(
+                            elevation: 4,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                              child: TextField(
+                                decoration: InputDecoration(
+                                  hintText: 'Search products...',
+                                  border: InputBorder.none,
+                                  prefixIcon: Icon(
+                                    Icons.search,
+                                    color: Theme.of(context).primaryColor,
+                                  ),
+                                ),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _searchQuery = value.toLowerCase();
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
                           Expanded(
                             child: _selectedStoreId == null
                                 ? Center(
@@ -380,18 +411,20 @@ class _StockListPageState extends State<StockListPage> {
                                 ),
                               ),
                             )
-                                : stockItems.isEmpty
+                                : filteredItems.isEmpty
                                 ? Center(
                               child: Card(
                                 elevation: 4,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: const Padding(
-                                  padding: EdgeInsets.all(16.0),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
                                   child: Text(
-                                    'No stock available',
-                                    style: TextStyle(
+                                    _searchQuery.isEmpty
+                                        ? 'No stock available'
+                                        : 'No products found matching "$_searchQuery"',
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       color: Colors.black87,
                                     ),
@@ -400,10 +433,10 @@ class _StockListPageState extends State<StockListPage> {
                               ),
                             )
                                 : ListView.separated(
-                              itemCount: stockItems.length,
+                              itemCount: filteredItems.length,
                               separatorBuilder: (context, index) => const SizedBox(height: 12),
                               itemBuilder: (context, index) {
-                                final stock = stockItems[index];
+                                final stock = filteredItems[index];
                                 return Card(
                                   elevation: 4,
                                   shape: RoundedRectangleBorder(
@@ -453,7 +486,7 @@ class _StockListPageState extends State<StockListPage> {
                                             Icons.swap_horiz,
                                             color: Theme.of(context).primaryColor,
                                           ),
-                                          onPressed: () => _showTransferStockDialog(context, stock, stores as List<StoreDto>),
+                                          onPressed: () => _showTransferStockDialog(context, stock, stores as  List<StoreDto>),
                                           tooltip: 'Transfer Stock',
                                         ),
                                       ],

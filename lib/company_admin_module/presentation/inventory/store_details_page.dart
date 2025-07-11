@@ -21,6 +21,7 @@ class StoreDetailsPage extends StatefulWidget {
 
 class _StoreDetailsPageState extends State<StoreDetailsPage> {
   late StockCubit _stockCubit;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -35,24 +36,23 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: const Text('Add Stock'),
           content: Form(
             key: _formKey,
             child: TextFormField(
               decoration: InputDecoration(
                 labelText: 'Quantity to Add',
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 filled: true,
                 fillColor: Colors.grey[100],
               ),
               keyboardType: TextInputType.number,
               onChanged: (value) => quantity = int.tryParse(value) ?? 0,
               validator: (value) {
-                if (value == null || value.isEmpty)
+                if (value == null || value.isEmpty) {
                   return 'Please enter quantity';
+                }
                 if (int.tryParse(value) == null || int.parse(value) <= 0) {
                   return 'Please enter a valid quantity';
                 }
@@ -101,8 +101,7 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: const Text('Subtract Stock'),
           content: Form(
             key: _formKey,
@@ -120,8 +119,9 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                   keyboardType: TextInputType.number,
                   onChanged: (value) => quantity = int.tryParse(value) ?? 0,
                   validator: (value) {
-                    if (value == null || value.isEmpty)
+                    if (value == null || value.isEmpty) {
                       return 'Please enter quantity';
+                    }
                     if (int.tryParse(value) == null || int.parse(value) <= 0) {
                       return 'Please enter a valid quantity';
                     }
@@ -180,8 +180,7 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: const Text('Transfer Stock'),
           content: Form(
             key: _formKey,
@@ -200,13 +199,13 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                   items: stores
                       .where((store) => store.storeId != stock.storeId)
                       .map((store) => DropdownMenuItem(
-                            value: store.storeId,
-                            child: Text(store.name),
-                          ))
+                    value: store.storeId,
+                    child: Text(store.name),
+                  ))
                       .toList(),
                   onChanged: (value) => selectedStoreId = value,
                   validator: (value) =>
-                      value == null ? 'Please select a store' : null,
+                  value == null ? 'Please select a store' : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -220,8 +219,9 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                   keyboardType: TextInputType.number,
                   onChanged: (value) => quantity = int.tryParse(value) ?? 0,
                   validator: (value) {
-                    if (value == null || value.isEmpty)
+                    if (value == null || value.isEmpty) {
                       return 'Please enter quantity';
+                    }
                     if (int.tryParse(value) == null || int.parse(value) <= 0) {
                       return 'Please enter a valid quantity';
                     }
@@ -288,12 +288,13 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                       String storeName = 'Store';
                       if (state is StockLoaded) {
                         final store = state.stores.firstWhere(
-                          (s) => s.storeId == widget.storeId,
+                              (s) => s.storeId == widget.storeId,
                           orElse: () => StoreDto(
-                              storeId: widget.storeId,
-                              name: 'Store',
-                              createdBy: '',
-                              createdAt: DateTime.now()),
+                            storeId: widget.storeId,
+                            name: 'Store',
+                            createdBy: '',
+                            createdAt: DateTime.now(),
+                          ),
                         );
                         storeName = store.name;
                       }
@@ -320,6 +321,31 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                       );
                     },
                   ),
+                  const SizedBox(height: 16),
+                  Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Search products...',
+                          border: InputBorder.none,
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            _searchQuery = value.toLowerCase();
+                          });
+                        },
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 24),
                   Expanded(
                     child: BlocConsumer<StockCubit, StockState>(
@@ -335,8 +361,7 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                       },
                       builder: (context, state) {
                         if (state is StockLoading) {
-                          return const Center(
-                              child: CircularProgressIndicator());
+                          return const Center(child: CircularProgressIndicator());
                         } else if (state is StockError) {
                           return Center(
                             child: Card(
@@ -353,23 +378,21 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                                       'Error: ${state.error}',
                                       style: const TextStyle(
                                         color: Colors.red,
-                                        fontSize: 16,
+                                        fontSize:  14,
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
                                     const SizedBox(height: 16),
                                     ElevatedButton(
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            Theme.of(context).primaryColor,
+                                        backgroundColor: Theme.of(context).primaryColor,
                                         foregroundColor: Colors.white,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(8),
                                         ),
                                       ),
-                                      onPressed: () => _stockCubit
-                                          .fetchStock(widget.storeId),
+                                      onPressed: () =>
+                                          _stockCubit.fetchStock(widget.storeId),
                                       child: const Text('Retry'),
                                     ),
                                   ],
@@ -380,22 +403,30 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                         }
 
                         final stockItems =
-                            (state is StockLoaded) ? state.stockItems : [];
+                        (state is StockLoaded) ? state.stockItems : [];
                         final stores =
-                            (state is StockLoaded) ? state.stores : [];
+                        (state is StockLoaded) ? state.stores : [];
 
-                        if (stockItems.isEmpty) {
+                        final filteredItems = stockItems
+                            .where((item) =>
+                        item.name?.toLowerCase().contains(_searchQuery) ??
+                            false)
+                            .toList();
+
+                        if (filteredItems.isEmpty) {
                           return Center(
                             child: Card(
                               elevation: 4,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Padding(
-                                padding: EdgeInsets.all(16.0),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
                                 child: Text(
-                                  'No stock found for this store',
-                                  style: TextStyle(
+                                  _searchQuery.isEmpty
+                                      ? 'No stock found for this store'
+                                      : 'No products found matching "$_searchQuery"',
+                                  style: const TextStyle(
                                     fontSize: 16,
                                     color: Colors.black87,
                                   ),
@@ -406,11 +437,11 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                         }
 
                         return ListView.separated(
-                          itemCount: stockItems.length,
+                          itemCount: filteredItems.length,
                           separatorBuilder: (context, index) =>
-                              const SizedBox(height: 12),
+                          const SizedBox(height: 12),
                           itemBuilder: (context, index) {
-                            final stock = stockItems[index];
+                            final stock = filteredItems[index];
                             return Card(
                               elevation: 4,
                               shape: RoundedRectangleBorder(
@@ -453,8 +484,8 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                                         Icons.remove,
                                         color: Theme.of(context).primaryColor,
                                       ),
-                                      onPressed: () => _showSubtractStockDialog(
-                                          context, stock),
+                                      onPressed: () =>
+                                          _showSubtractStockDialog(context, stock),
                                       tooltip: 'Subtract Stock',
                                     ),
                                     IconButton(
@@ -463,9 +494,7 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                                         color: Theme.of(context).primaryColor,
                                       ),
                                       onPressed: () => _showTransferStockDialog(
-                                          context,
-                                          stock,
-                                          stores as List<StoreDto>),
+                                          context, stock, stores as  List<StoreDto>),
                                       tooltip: 'Transfer Stock',
                                     ),
                                   ],

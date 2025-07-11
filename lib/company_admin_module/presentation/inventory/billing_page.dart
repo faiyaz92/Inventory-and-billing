@@ -733,6 +733,7 @@ class _BillingPageState extends State<BillingPage> {
                   ),
                   remarks:
                       'Return of $returnQuantity units of ${item.productName}',
+                  isReturn: true,
                 );
                 final ledgerId = _selectedCustomer!.accountLedgerId;
                 if (ledgerId != null) {

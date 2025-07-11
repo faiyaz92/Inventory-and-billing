@@ -184,7 +184,7 @@ class StockCubit extends Cubit<StockState> {
   }
 
   Future<void> updateStock(StockModel stock,
-      {Product? product, String? remarks}) async {
+      {Product? product, String? remarks, bool isReturn = false}) async {
     emit(StockLoading());
     try {
       final stockItems = await stockService.getStock(stock.storeId);
@@ -230,13 +230,13 @@ class StockCubit extends Cubit<StockState> {
       );
       await stockService.updateStock(updatedStock);
 
-      if (quantityAdded > 0) {
+      if (quantityAdded != 0) {
         final userInfo = await _getCurrentUserInfo();
         final transaction = TransactionModel(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
-          type: 'add',
+          type: isReturn ? 'return' : 'add',
           productId: stock.productId,
-          quantity: quantityAdded,
+          quantity: quantityAdded.abs(),
           fromStoreId: stock.storeId,
           toStoreId: null,
           customerId: null,
@@ -365,7 +365,7 @@ class StockCubit extends Cubit<StockState> {
       StockModel stock,
       int quantity,
       String customerId,
-      {String? remarks}) async {
+      {String? remarks, bool isReturn = false}) async {
     emit(StockLoading());
     try {
       final stockItems = await stockService.getStock(stock.storeId);
@@ -374,7 +374,11 @@ class StockCubit extends Cubit<StockState> {
         orElse: () => stock,
       );
 
-      if (quantity > existingStock.quantity) {
+      final updatedQuantity = isReturn
+          ? existingStock.quantity + quantity
+          : existingStock.quantity - quantity;
+
+      if (!isReturn && quantity > existingStock.quantity) {
         throw Exception('Quantity to bill exceeds available stock');
       }
 
@@ -382,7 +386,7 @@ class StockCubit extends Cubit<StockState> {
         id: existingStock.id,
         productId: existingStock.productId,
         storeId: existingStock.storeId,
-        quantity: existingStock.quantity - quantity,
+        quantity: updatedQuantity,
         lastUpdated: DateTime.now(),
         name: existingStock.name,
         price: existingStock.price,
@@ -398,7 +402,7 @@ class StockCubit extends Cubit<StockState> {
       final userInfo = await _getCurrentUserInfo();
       final billTransaction = TransactionModel(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        type: 'bill',
+        type: isReturn ? 'return' : 'bill',
         productId: stock.productId,
         quantity: quantity,
         fromStoreId: stock.storeId,

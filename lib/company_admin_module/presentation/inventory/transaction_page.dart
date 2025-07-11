@@ -267,10 +267,10 @@ class _TransactionsPageState extends State<TransactionsPage> {
           value: null,
           child: Text('All Types', style: TextStyle(color: AppColors.textPrimary)),
         ),
-        ...['add', 'subtract', 'out', 'received', 'bill'].map((type) => DropdownMenuItem<String>(
+        ...['add', 'subtract', 'out', 'received', 'bill', 'return'].map((type) => DropdownMenuItem<String>(
           value: type,
           child: Text(
-            type == 'add' ? 'New Stock' : (type == 'bill' ? 'Bill' : type.capitalize()),
+            type == 'add' ? 'New Stock' : (type == 'bill' ? 'Bill' : (type == 'return' ? 'Return' : type.capitalize())),
             style: const TextStyle(color: AppColors.textPrimary),
           ),
         )),
@@ -562,13 +562,23 @@ class _TransactionsPageState extends State<TransactionsPage> {
             horizontalInside: BorderSide(color: Colors.grey[300]!, width: 0.5),
           ),
           children: [
-            _buildTableRow('Type', transaction.type == 'add' ? 'New Stock' : transaction.type.capitalize(), Colors.blue[50]!),
+            _buildTableRow(
+              'Type',
+              transaction.type == 'add'
+                  ? 'New Stock'
+                  : (transaction.type == 'bill'
+                  ? 'Bill'
+                  : (transaction.type == 'return' ? 'Return' : transaction.type.capitalize())),
+              Colors.blue[50]!,
+            ),
             _buildTableRow('Product', transaction.productName, Colors.green[50]!),
             _buildTableRow('Quantity', transaction.quantity.toString(), Colors.orange[50]!),
             _buildTableRow('From Store', transaction.fromStoreId != null ? fromStoreName : '-', Colors.white),
             _buildTableRow(
               'To Store/Customer',
-              transaction.type == 'bill' ? (customerDisplay ?? '-') : (toStoreName ?? '-'),
+              transaction.type == 'bill' || transaction.type == 'return'
+                  ? (customerDisplay ?? '-')
+                  : (toStoreName ?? '-'),
               Colors.white,
             ),
             _buildTableRow('User', '${transaction.userName} (ID: ${transaction.userId})', Colors.white),
