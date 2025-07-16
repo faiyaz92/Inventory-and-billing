@@ -69,17 +69,9 @@ class AddUserCubit extends Cubit<AddUserState> {
         userType: userInfo.userType ?? UserType.Employee,
       );
 
-      final userId = await _companyOperationsService.addUserToCompany(updatedUserInfo, password);
-      final newLedger = AccountLedger(
-        totalOutstanding: 0,
-        promiseAmount: null,
-        promiseDate: null,
-        transactions: [],
-      );
-      final ledgerId = await _accountLedgerService.createLedger(newLedger);
-      await _companyOperationsService.updateUser(
-        updatedUserInfo.copyWith(userId: userId, accountLedgerId: ledgerId),
-      );
+       await _companyOperationsService.addUserToCompany(updatedUserInfo, password);
+
+
       emit(AddUserSuccess());
     } catch (e) {
       // Ensure the error is a meaningful string

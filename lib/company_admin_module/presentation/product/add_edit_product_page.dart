@@ -22,7 +22,6 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
-  final TextEditingController _stockController = TextEditingController();
   final TextEditingController _taxController = TextEditingController();
 
   late AdminProductCubit _cubit;
@@ -37,7 +36,6 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
           subCatId: widget.product!.subcategoryId);
       _nameController.text = widget.product!.name;
       _priceController.text = widget.product!.price.toString();
-      _stockController.text = widget.product!.stock.toString();
       _taxController.text = widget.product!.tax.toString();
     } else {
       _cubit.loadCategories();
@@ -50,12 +48,12 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
         id: widget.product?.id ?? '',
         name: _nameController.text,
         price: double.parse(_priceController.text),
-        stock: int.parse(_stockController.text),
         category: _cubit.selectedCategoryName ?? '',
         categoryId: _cubit.selectedCategoryId ?? '',
         subcategoryId: _cubit.selectedSubcategoryId ?? '',
         subcategoryName: _cubit.selectedSubcategoryName ?? '',
         tax: double.parse(_taxController.text),
+        stock: 0, // Default value since stock is not in UI
       );
 
       if (widget.product == null) {
@@ -164,40 +162,6 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                                   : double.tryParse(value) == null ||
                                   double.parse(value) < 0
                                   ? 'Enter a valid price'
-                                  : null,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Stock
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey[50],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: TextFormField(
-                              controller: _stockController,
-                              decoration: InputDecoration(
-                                labelText: 'Stock',
-                                labelStyle: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide.none,
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 12,
-                                ),
-                                errorStyle: const TextStyle(color: Colors.red),
-                              ),
-                              keyboardType: TextInputType.number,
-                              validator: (value) => value!.isEmpty
-                                  ? 'Enter stock'
-                                  : int.tryParse(value) == null ||
-                                  int.parse(value) < 0
-                                  ? 'Enter a valid stock'
                                   : null,
                             ),
                           ),
@@ -391,7 +355,6 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
   void dispose() {
     _nameController.dispose();
     _priceController.dispose();
-    _stockController.dispose();
     _taxController.dispose();
     super.dispose();
   }

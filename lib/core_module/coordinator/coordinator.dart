@@ -6,6 +6,7 @@ import 'package:requirment_gathering_app/company_admin_module/data/product/sub_c
 import 'package:requirment_gathering_app/company_admin_module/data/task/task_model.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/tenant_company.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 import 'package:requirment_gathering_app/user_module/data/partner.dart';
 
 abstract class Coordinator {
@@ -104,8 +105,7 @@ abstract class Coordinator {
   Future<dynamic> navigateToUserOrderDetailsPage(String? orderId);
   Future<dynamic> navigateToCartDashboard();
   Future<dynamic> navigateToSalesManOrderPage();
-  Future<dynamic> navigateToSimpleEmployeeList();
-  // New Navigation Methods
+  Future<dynamic> navigateToSimpleUserList({UserType? userType}); // Updated line  // New Navigation Methods
   Future<dynamic> navigateToSalesmanOrderListPage();
   Future<dynamic> navigateToDeliveryManOrderListPage();
   Future<dynamic> navigateToStoreOrderListPage();
@@ -116,5 +116,7 @@ abstract class Coordinator {
   Future<dynamic> navigateToUserLedgerPage({required UserInfo user});
   Future<dynamic> navigateToBillingPage({String? orderId});
   Future<dynamic> navigateToBillPdfPage({required pw.Document pdf, required String billNumber});
+  Future<dynamic> navigateToAccountsDashboard(); // Add this line
+
 
 }

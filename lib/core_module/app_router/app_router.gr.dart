@@ -48,6 +48,22 @@ class AccountLedgerRouteArgs {
 }
 
 /// generated route for
+/// [AccountsDashboardPage]
+class AccountsDashboardRoute extends PageRouteInfo<void> {
+  const AccountsDashboardRoute({List<PageRouteInfo>? children})
+    : super(AccountsDashboardRoute.name, initialChildren: children);
+
+  static const String name = 'AccountsDashboardRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AccountsDashboardPage();
+    },
+  );
+}
+
+/// generated route for
 /// [AddCompanyPage]
 class AddCompanyRoute extends PageRouteInfo<AddCompanyRouteArgs> {
   AddCompanyRoute({Key? key, Partner? company, List<PageRouteInfo>? children})
@@ -1234,19 +1250,42 @@ class SalesmanOrderRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [SimpleEmployeesPage]
-class SimpleEmployeesRoute extends PageRouteInfo<void> {
-  const SimpleEmployeesRoute({List<PageRouteInfo>? children})
-    : super(SimpleEmployeesRoute.name, initialChildren: children);
+/// [SimpleUsersPage]
+class SimpleUsersRoute extends PageRouteInfo<SimpleUsersRouteArgs> {
+  SimpleUsersRoute({
+    Key? key,
+    UserType? userType,
+    List<PageRouteInfo>? children,
+  }) : super(
+         SimpleUsersRoute.name,
+         args: SimpleUsersRouteArgs(key: key, userType: userType),
+         initialChildren: children,
+       );
 
-  static const String name = 'SimpleEmployeesRoute';
+  static const String name = 'SimpleUsersRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const SimpleEmployeesPage();
+      final args = data.argsAs<SimpleUsersRouteArgs>(
+        orElse: () => const SimpleUsersRouteArgs(),
+      );
+      return SimpleUsersPage(key: args.key, userType: args.userType);
     },
   );
+}
+
+class SimpleUsersRouteArgs {
+  const SimpleUsersRouteArgs({this.key, this.userType});
+
+  final Key? key;
+
+  final UserType? userType;
+
+  @override
+  String toString() {
+    return 'SimpleUsersRouteArgs{key: $key, userType: $userType}';
+  }
 }
 
 /// generated route for

@@ -1,11 +1,8 @@
-// File: company_admin_module/presentation/ledger/user_ledger_cubit.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_ledger_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/ledger/transaction_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/account_ledger_state.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/account_ledger_service.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
-import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 import 'package:requirment_gathering_app/user_module/services/customer_company_service.dart';
 
@@ -33,7 +30,7 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
     }
   }
 
-  Future<void> openTransactionPopup(bool isDebit, String? userTypeName) async {
+  Future<void> openTransactionPopup(bool isDebit) async {
     try {
       final result = await _companyService.getSettings();
       final purposeTypeMap = result.fold<Map<String, List<String>>>(
@@ -54,7 +51,7 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
           : null;
       emit(TransactionPopupOpened(
         isDebit: isDebit,
-        companyType: userTypeName,
+        companyType: null, // Removed userTypeName
         purposeTypeMap: purposeTypeMap,
         selectedPurpose: defaultPurpose,
         selectedType: defaultType,
@@ -63,7 +60,7 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
     } catch (e) {
       emit(TransactionPopupOpened(
         isDebit: isDebit,
-        companyType: userTypeName,
+        companyType: null, // Removed userTypeName
         purposeTypeMap: {'Material': [], 'Labor': []},
         selectedPurpose: null,
         selectedType: null,
@@ -106,23 +103,16 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
       );
       final currentLedger = await _accountLedgerService.getLedger(ledgerId);
       double updatedDue = currentLedger.currentDue ?? 0.0;
-      double updatedPayable = currentLedger.currentPayable ?? 0.0;
       double updatedOutstanding = currentLedger.totalOutstanding;
 
-      if (userType == UserType.Customer || userType == null) {
-        updatedDue += (type == "Debit" ? amount : -amount);
-        if (updatedDue < 0) updatedDue = 0;
-        updatedOutstanding += (type == "Debit" ? amount : -amount);
-      } else {
-        updatedPayable += (type == "Credit" ? amount : -amount);
-        if (updatedPayable < 0) updatedPayable = 0;
-        updatedOutstanding += (type == "Credit" ? amount : -amount);
-      }
+      // Update currentDue and totalOutstanding for all UserTypes
+      updatedDue += (type == "Debit" ? amount : -amount);
+      updatedOutstanding += (type == "Debit" ? amount : -amount);
 
       final updatedLedger = currentLedger.copyWith(
         totalOutstanding: updatedOutstanding,
-        currentDue: userType == UserType.Customer || userType == null ? updatedDue : null,
-        currentPayable: userType != null && userType != UserType.Customer ? updatedPayable : null,
+        currentDue: updatedDue,
+        currentPayable: null, // Set to null as it's not used
         transactions: [...?currentLedger.transactions, transaction],
       );
       await _accountLedgerService.updateLedger(ledgerId, updatedLedger);
@@ -134,30 +124,24 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
     }
   }
 
-  Future<void> createLedger(UserInfo user, {double totalOutstanding = 0.0, double? promiseAmount, DateTime? promiseDate}) async {
-    emit(AccountLedgerPosting());
-    try {
-      final newLedger = AccountLedger(
-        entityType: 'User',
-        totalOutstanding: totalOutstanding,
-        currentDue: user.userType == UserType.Customer || user.userType == null ? totalOutstanding : null,
-        currentPayable: user.userType != null && user.userType != UserType.Customer ? totalOutstanding : null,
-        promiseAmount: promiseAmount,
-        promiseDate: promiseDate,
-        transactions: [],
-      );
-      final ledgerId = await _accountLedgerService.createLedger(newLedger);
-      final updatedUser = user.copyWith(accountLedgerId: ledgerId);
-      // await _accountRepository.updateUserInfo(updatedUser.toDto());
-      emit(const AccountLedgerSuccess("Ledger created successfully"));
-    } catch (e) {
-      emit(AccountLedgerError("Ledger creation failed: $e"));
-    }
-  }
-
   Future<void> deleteTransaction(String ledgerId, TransactionModel transaction, UserType? userType) async {
     emit(AccountLedgerPosting());
     try {
+      final currentLedger = await _accountLedgerService.getLedger(ledgerId);
+      double updatedDue = currentLedger.currentDue ?? 0.0;
+      double updatedOutstanding = currentLedger.totalOutstanding;
+
+      // Reverse the transaction effect on currentDue and totalOutstanding
+      updatedDue -= (transaction.type == "Debit" ? transaction.amount : -transaction.amount);
+      updatedOutstanding -= (transaction.type == "Debit" ? transaction.amount : -transaction.amount);
+
+      final updatedLedger = currentLedger.copyWith(
+        totalOutstanding: updatedOutstanding,
+        currentDue: updatedDue,
+        currentPayable: null, // Set to null as it's not used
+        transactions: currentLedger.transactions?.where((txn) => txn.transactionId != transaction.transactionId).toList(),
+      );
+      await _accountLedgerService.updateLedger(ledgerId, updatedLedger);
       await _accountLedgerService.deleteTransaction(ledgerId, transaction.transactionId!);
       emit(const AccountLedgerSuccess("Transaction deleted successfully"));
       await fetchLedger(ledgerId, userType);

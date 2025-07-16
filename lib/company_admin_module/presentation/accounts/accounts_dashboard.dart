@@ -1,12 +1,14 @@
-import 'package:auto_route/annotations.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
+import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 
 @RoutePage()
-class CompanyAdminPage extends StatelessWidget {
-  const CompanyAdminPage({Key? key}) : super(key: key);
+class AccountsDashboardPage extends StatelessWidget {
+  const AccountsDashboardPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +16,9 @@ class CompanyAdminPage extends StatelessWidget {
     final bool isWeb = screenWidth > 600;
 
     return Scaffold(
-      appBar: const CustomAppBar(title: 'Company Admin Dashboard'),
+      appBar: const CustomAppBar(
+        title: 'Accounts Dashboard',
+      ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -43,7 +47,7 @@ class CompanyAdminPage extends StatelessWidget {
                     child: Padding(
                       padding: EdgeInsets.all(isWeb ? 24.0 : 16.0),
                       child: Text(
-                        'Welcome to Company Admin Dashboard',
+                        'Accounts Dashboard',
                         style: TextStyle(
                           fontSize: isWeb ? 28 : 24,
                           fontWeight: FontWeight.bold,
@@ -72,68 +76,38 @@ class CompanyAdminPage extends StatelessWidget {
   }
 
   List<Widget> _buildGridItems(BuildContext context, bool isWeb) {
-    return [
-      _buildGridItem(
-        context:context,
-        icon: Icons.person_add,
-        label: 'Add User',
-        color: Colors.blue,
-        onTap: () => sl<Coordinator>().navigateToAddUserPage(),
-        isWeb: isWeb,
-      ),
-      _buildGridItem(
-        context:context,
-        icon: Icons.monetization_on_sharp,
-        label: 'User Salary List',
-        color: Colors.orangeAccent,
-        onTap: () => sl<Coordinator>().navigateToUserListPage(),
-        isWeb: isWeb,
-      ),
-      _buildGridItem(
-        context:context,
-        icon: Icons.list,
-        label: 'User List',
-        color: Colors.green,
-        onTap: () => sl<Coordinator>().navigateToSimpleUserList(),
-        isWeb: isWeb,
-      ),
-      _buildGridItem(
-        context:context,
-        icon: Icons.task,
-        label: 'Add Task',
-        color: Colors.orange,
-        onTap: () => sl<Coordinator>().navigateToAddTaskPage(),
-        isWeb: isWeb,
-      ),
-      _buildGridItem(
-        context:context,
-        icon: Icons.task,
-        label: 'Task List',
-        color: Colors.purple,
-        onTap: () => sl<Coordinator>().navigateToTaskListPage(),
-        isWeb: isWeb,
-      ),
-      _buildGridItem(
-        context:context,
-        icon: Icons.add_chart,
-        label: 'Attendance',
-        color: Colors.lightGreen,
-        onTap: () => sl<Coordinator>().navigateToAttendancePage(),
-        isWeb: isWeb,
-      ),
-
-
+    final colors = [
+      Colors.blue,
+      Colors.purple,
+      Colors.teal,
+      Colors.red,
+      Colors.indigo,
+      Colors.amber,
+      Colors.green,
     ];
+
+    return UserType.values.asMap().entries.map((entry) {
+      final index = entry.key;
+      final userType = entry.value;
+      return _buildDashboardCard(
+        context,
+        '${userType.name} Accounts',
+        Icons.group,
+        colors[index % colors.length],
+            () => sl<Coordinator>().navigateToSimpleUserList(userType: userType),
+        isWeb,
+      );
+    }).toList();
   }
 
-  Widget _buildGridItem({
-    required BuildContext context,
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    required Color color,
-    required bool isWeb,
-  }) {
+  Widget _buildDashboardCard(
+      BuildContext context,
+      String title,
+      IconData icon,
+      Color color,
+      VoidCallback onTap,
+      bool isWeb,
+      ) {
     return GestureDetector(
       onTap: onTap,
       child: Card(
@@ -154,7 +128,7 @@ class CompanyAdminPage extends StatelessWidget {
               ),
               SizedBox(height: isWeb ? 12 : 8),
               Text(
-                label,
+                title,
                 style: TextStyle(
                   fontSize: isWeb ? 16 : 14,
                   fontWeight: FontWeight.bold,

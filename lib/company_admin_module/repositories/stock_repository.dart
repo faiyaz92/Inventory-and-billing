@@ -1,19 +1,26 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/inventory/stock_model_dto.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_ledger_model.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/account_ledger_service.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/core_module/services/firestore_provider.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 
 class StoreDto {
   final String storeId;
   final String name;
   final String createdBy;
   final DateTime createdAt;
+  final String? accountLedgerId; // New field added
 
   StoreDto({
     required this.storeId,
     required this.name,
     required this.createdBy,
     required this.createdAt,
+    this.accountLedgerId,
   });
 
   factory StoreDto.fromFirestore(DocumentSnapshot doc) {
@@ -23,6 +30,7 @@ class StoreDto {
       name: data['name'] as String,
       createdBy: data['createdBy'] as String,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
+      accountLedgerId: data['accountLedgerId'] as String?, // Handle new field
     );
   }
 
@@ -32,6 +40,7 @@ class StoreDto {
       'name': name,
       'createdBy': createdBy,
       'createdAt': Timestamp.fromDate(createdAt),
+      'accountLedgerId': accountLedgerId, // Include new field
     };
   }
 
@@ -40,12 +49,14 @@ class StoreDto {
     String? name,
     String? createdBy,
     DateTime? createdAt,
+    String? accountLedgerId,
   }) {
     return StoreDto(
       storeId: storeId ?? this.storeId,
       name: name ?? this.name,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
+      accountLedgerId: accountLedgerId ?? this.accountLedgerId,
     );
   }
 }
@@ -70,10 +81,11 @@ abstract class StockRepository {
 class StockRepositoryImpl implements StockRepository {
   final IFirestorePathProvider firestorePathProvider;
   final AccountRepository accountRepository;
-
+final IAccountLedgerService accountLedgerService;
   StockRepositoryImpl({
     required this.firestorePathProvider,
     required this.accountRepository,
+    required this.accountLedgerService,
   });
 
   @override
@@ -165,11 +177,19 @@ class StockRepositoryImpl implements StockRepository {
     if (stores.isEmpty) {
       final userInfo = await accountRepository.getUserInfo();
       final adminUserId = userInfo?.userId ?? 'system';
+      final ledgerId = await accountLedgerService.createLedger(AccountLedger(
+        totalOutstanding: 0,
+        promiseAmount: null,
+        promiseDate: null,
+        transactions: [],
+        entityType: UserType.Store,
+      ));
       final defaultStore = StoreDto(
         storeId: 'default',
         name: 'Default Store',
         createdBy: adminUserId,
         createdAt: DateTime.now(),
+        accountLedgerId: ledgerId,
       );
       await firestorePathProvider
           .getStoresCollectionRef(companyId)

@@ -306,6 +306,14 @@ class HomePage extends StatelessWidget {
               sl<Coordinator>().navigateToInventoryDashBoard();
             },
             isWeb: isWeb,
+          ),_buildGridItem(
+            icon: Icons.account_balance_wallet,
+            label: 'Accounts',
+            color: Colors.green,
+            onTap: () {
+              sl<Coordinator>().navigateToAccountsDashboard();
+            },
+            isWeb: isWeb,
           ),
         ]);
         break;

@@ -13,7 +13,7 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/users
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/attendance_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/employee_details_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/employess_list_cubit.dart';
-import 'package:requirment_gathering_app/company_admin_module/presentation/users/simple_employee_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/users/simple_user_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/account_ledger_repository.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/category_repository.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/product_repository.dart';
@@ -158,6 +158,7 @@ void _initRepositories() {
   sl.registerLazySingleton<StockRepository>(() => StockRepositoryImpl(
         firestorePathProvider: sl<IFirestorePathProvider>(),
         accountRepository: sl<AccountRepository>(),
+    accountLedgerService: sl<IAccountLedgerService>(),
       ));
   sl.registerLazySingleton<TransactionRepository>(
       () => TransactionRepositoryImpl(
@@ -197,6 +198,7 @@ void _initServices() {
     () => userSerivceImpl.UserServiceImpl(
       sl<ITenantCompanyRepository>(),
       sl<AccountRepository>(),
+      sl<IAccountLedgerService>(),
     ),
   );
   sl.registerLazySingleton<TaskService>(
@@ -223,6 +225,7 @@ void _initServices() {
   sl.registerLazySingleton<StockService>(() => StockServiceImpl(
         stockRepository: sl<StockRepository>(),
         accountRepository: sl<AccountRepository>(),
+    accountLedgerService: sl<IAccountLedgerService>(),
       ));
   sl.registerLazySingleton<TransactionService>(() => TransactionServiceImpl(
         stockRepository: sl<StockRepository>(),
@@ -293,7 +296,7 @@ void _initCubits() {
       ));
   sl.registerFactory(() => HomeCubit(sl<IUserService>()));
   sl.registerFactory(() => EmployeeCubit(sl<UserServices>()));
-  sl.registerFactory(() => SimpleEmployeeCubit(sl<UserServices>()));
+  sl.registerFactory(() => SimpleUserCubit(sl<UserServices>()));
   sl.registerFactory(() => AdminProductCubit(
         productService: sl<ProductService>(),
         categoryService: sl<CategoryService>(),

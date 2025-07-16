@@ -2,15 +2,13 @@ import 'package:requirment_gathering_app/company_admin_module/data/ledger/transc
 
 class AccountLedgerDto {
   final String? ledgerId;
-  final String? entityType; // New: "Partner" or "User"
+  final String? entityType; // Kept as String? for serialization
   final double totalOutstanding;
-  final double? currentDue; // New: For CUSTOMER
-  final double? currentPayable; // New: For SUPPLIER, EMPLOYEE, etc.
+  final double? currentDue;
+  final double? currentPayable;
   final double? promiseAmount;
   final String? promiseDate;
   final List<TransactionDto>? transactions;
-
-  // Civil site-specific fields
   final double? baseConstructionCost;
   final double? totalConstructionCost;
   final double? currentBaseDue;
@@ -43,7 +41,7 @@ class AccountLedgerDto {
       Map<String, dynamic> map, String id, List<TransactionDto> transactions) {
     return AccountLedgerDto(
       ledgerId: id,
-      entityType: map['entityType'],
+      entityType: map['entityType'], // Store as String
       totalOutstanding: map['totalOutstanding']?.toDouble() ?? 0.0,
       currentDue: map['currentDue']?.toDouble(),
       currentPayable: map['currentPayable']?.toDouble(),
@@ -55,7 +53,7 @@ class AccountLedgerDto {
       currentBaseDue: map['currentBaseDue']?.toDouble(),
       currentTotalDue: map['currentTotalDue']?.toDouble(),
       serviceChargePercentage: map['serviceChargePercentage']?.toDouble(),
-      estimatedProfit: map['estimatedProfit']?.toDouble(), // Fixed: Added null-safe handling
+      estimatedProfit: map['estimatedProfit']?.toDouble(),
       currentProfit: map['currentProfit']?.toDouble(),
       totalPaymentReceived: map['totalPaymentReceived']?.toDouble(),
     );
@@ -63,7 +61,7 @@ class AccountLedgerDto {
 
   Map<String, dynamic> toMap() {
     return {
-      'entityType': entityType,
+      'entityType': entityType, // Store as String
       'totalOutstanding': totalOutstanding,
       'currentDue': currentDue,
       'currentPayable': currentPayable,

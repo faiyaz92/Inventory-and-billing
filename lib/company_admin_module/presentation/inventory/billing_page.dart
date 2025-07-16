@@ -8,6 +8,7 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/inven
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/add_user_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/account_ledger_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
@@ -34,20 +35,14 @@ class BillingPage extends StatefulWidget {
 class _BillingPageState extends State<BillingPage> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _customerNameController = TextEditingController();
-  final TextEditingController _productSearchController =
-      TextEditingController();
+  final TextEditingController _productSearchController = TextEditingController();
   List<StockModel> _filteredProducts = [];
   List<CartItem> _cartItems = [];
   String? _selectedStoreId;
   String _selectedStatus = 'pending';
   UserInfo? _selectedCustomer;
   String? _newCustomerLedgerId;
-  final List<String> _statuses = [
-    'pending',
-    'processing',
-    'shipped',
-    'completed'
-  ];
+  final List<String> _statuses = ['pending', 'processing', 'shipped', 'completed'];
   bool _isLoading = false;
   String? _selectedBillType = 'Cash';
   String? _existingBillNumber;
@@ -76,8 +71,7 @@ class _BillingPageState extends State<BillingPage> {
 
     if (_selectedStoreId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('No store assigned to user. Please select a store.')),
+        const SnackBar(content: Text('No store assigned to user. Please select a store.')),
       );
     } else {
       _stockCubit.fetchStock(_selectedStoreId!);
@@ -95,7 +89,7 @@ class _BillingPageState extends State<BillingPage> {
         throw Exception('User ID not found');
       }
       final user = users.firstWhere(
-        (u) => u.userId == userId,
+            (u) => u.userId == userId,
         orElse: () => UserInfo(userId: userId, userName: 'Unknown'),
       );
       return user.storeId;
@@ -107,18 +101,16 @@ class _BillingPageState extends State<BillingPage> {
     }
   }
 
-
   void _addToCart(StockModel product) {
     if (_existingBillNumber != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Cannot add new items to an existing bill')),
+        const SnackBar(content: Text('Cannot add new items to an existing bill')),
       );
       return;
     }
     setState(() {
       final existingItem = _cartItems.firstWhere(
-        (item) => item.productId == product.productId,
+            (item) => item.productId == product.productId,
         orElse: () => CartItem(
           productId: product.productId!,
           productName: product.name!,
@@ -153,13 +145,12 @@ class _BillingPageState extends State<BillingPage> {
     setState(() {
       _cartItems = _cartItems.map((item) {
         if (item.productId == productId) {
-          final newQuantity = (item.quantity + change).clamp(0, 9999999); // Max 7 digits
+          final newQuantity = (item.quantity + change).clamp(0, 9999999);
           if (change > 0 && _existingBillNumber != null) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text('Cannot increase quantity for existing bill')),
+              const SnackBar(content: Text('Cannot increase quantity for existing bill')),
             );
-            return item; // Return unchanged item if increasing quantity for existing bill
+            return item;
           }
           return item.copyWith(
             quantity: newQuantity,
@@ -171,6 +162,7 @@ class _BillingPageState extends State<BillingPage> {
       _cartItems.removeWhere((item) => item.quantity == 0);
     });
   }
+
   Future<void> _showQuantityInputDialog(String productId) async {
     int quantity = 0;
     final _formKey = GlobalKey<FormState>();
@@ -178,16 +170,14 @@ class _BillingPageState extends State<BillingPage> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: const Text('Set Quantity'),
           content: Form(
             key: _formKey,
             child: TextFormField(
               decoration: InputDecoration(
                 labelText: 'Enter Quantity',
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 filled: true,
                 fillColor: Colors.grey[100],
               ),
@@ -206,10 +196,7 @@ class _BillingPageState extends State<BillingPage> {
                   return 'Quantity cannot exceed 7 digits';
                 }
                 if (_existingBillNumber != null &&
-                    parsedValue >
-                        _cartItems
-                            .firstWhere((item) => item.productId == productId)
-                            .quantity) {
+                    parsedValue > _cartItems.firstWhere((item) => item.productId == productId).quantity) {
                   return 'Cannot increase quantity for existing bill';
                 }
                 return null;
@@ -225,8 +212,7 @@ class _BillingPageState extends State<BillingPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.white,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
@@ -252,17 +238,15 @@ class _BillingPageState extends State<BillingPage> {
       },
     );
   }
+  String? _selectedReturnMethod = 'Credit';
 
-  Widget _buildSelectionButtons(
-      List<StockModel> products, List<StoreDto> stores) {
+  Widget _buildSelectionButtons(List<StockModel> products, List<StoreDto> stores) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _buildSelectionButton(
           icon: Icons.person,
-          label: _selectedCustomer?.name ??
-              _selectedCustomer?.userName ??
-              'Select Customer',
+          label: _selectedCustomer?.name ?? _selectedCustomer?.userName ?? 'Select Customer',
           onPressed: _showCustomerSelectionDialog,
           hasError: _selectedCustomer == null,
         ),
@@ -275,14 +259,16 @@ class _BillingPageState extends State<BillingPage> {
                 icon: Icons.store,
                 label: _selectedStoreId != null
                     ? stores
-                        .firstWhere(
-                            (store) => store.storeId == _selectedStoreId,
-                            orElse: () => StoreDto(
-                                name: 'Unknown',
-                                storeId: '',
-                                createdBy: '',
-                                createdAt: DateTime.now()))
-                        .name
+                    .firstWhere(
+                      (store) => store.storeId == _selectedStoreId,
+                  orElse: () => StoreDto(
+                    name: 'Unknown',
+                    storeId: '',
+                    createdBy: '',
+                    createdAt: DateTime.now(),
+                  ),
+                )
+                    .name
                     : 'Select Store',
                 onPressed: () => _showStoreSelectionDialog(stores),
                 hasError: _selectedStoreId == null,
@@ -301,22 +287,17 @@ class _BillingPageState extends State<BillingPage> {
         const SizedBox(height: 8),
         Card(
           elevation: 4,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Padding(
             padding: const EdgeInsets.all(12.0),
             child: DropdownButtonFormField<String>(
               decoration: InputDecoration(
                 labelText: 'Bill Type',
-                labelStyle: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.black87),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none),
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
                 filled: true,
                 fillColor: Colors.grey[50],
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               ),
               value: _selectedBillType,
               items: ['Cash', 'Credit'].map((type) {
@@ -325,19 +306,51 @@ class _BillingPageState extends State<BillingPage> {
                   child: Text(type),
                 );
               }).toList(),
-              onChanged: (value) {
+              onChanged: _existingBillNumber == null
+                  ? (value) {
                 setState(() {
                   _selectedBillType = value ?? 'Cash';
                 });
-              },
+              }
+                  : null, // Disable dropdown when editing an existing bill
             ),
           ),
         ),
+        if (_existingBillNumber != null && _selectedBillType == 'Cash') ...[
+          const SizedBox(height: 8),
+          Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: DropdownButtonFormField<String>(
+                decoration: InputDecoration(
+                  labelText: 'Return Method',
+                  labelStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                  filled: true,
+                  fillColor: Colors.grey[50],
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
+                value: _selectedReturnMethod,
+                items: ['Cash', 'Credit'].map((method) {
+                  return DropdownMenuItem(
+                    value: method,
+                    child: Text(method),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedReturnMethod = value ?? 'Credit';
+                  });
+                },
+              ),
+            ),
+          ),
+        ],
       ],
     );
-  }
-
-  Future<void> _showCustomerSelectionDialog() async {
+  }  Future<void> _showCustomerSelectionDialog() async {
     final userServices = sl<UserServices>();
     final addUserCubit = sl<AddUserCubit>();
     final TextEditingController searchController = TextEditingController();
@@ -346,8 +359,7 @@ class _BillingPageState extends State<BillingPage> {
 
     try {
       final users = await userServices.getUsersFromTenantCompany();
-      allCustomers =
-          users.where((u) => u.userType == UserType.Customer).toList();
+      allCustomers = users.where((u) => u.userType == UserType.Customer).toList();
       filteredCustomers = allCustomers;
       showModalBottomSheet(
         context: context,
@@ -381,38 +393,31 @@ class _BillingPageState extends State<BillingPage> {
                           ),
                         ),
                         IconButton(
-                          icon:
-                              const Icon(Icons.close, color: AppColors.primary),
+                          icon: const Icon(Icons.close, color: AppColors.primary),
                           onPressed: () => Navigator.of(context).pop(),
                         ),
                       ],
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     child: TextField(
                       controller: searchController,
                       decoration: InputDecoration(
                         hintText: 'Search Customers',
-                        hintStyle:
-                            const TextStyle(color: AppColors.textSecondary),
-                        prefixIcon: const Icon(Icons.search,
-                            color: AppColors.textSecondary),
+                        hintStyle: const TextStyle(color: AppColors.textSecondary),
+                        prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                              color: AppColors.textSecondary.withOpacity(0.3)),
+                          borderSide: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                              color: AppColors.textSecondary.withOpacity(0.3)),
+                          borderSide: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       ),
                       onChanged: (value) {
                         setState(() {
@@ -421,14 +426,8 @@ class _BillingPageState extends State<BillingPage> {
                           } else {
                             filteredCustomers = allCustomers
                                 .where((customer) =>
-                                    (customer.name
-                                            ?.toLowerCase()
-                                            .contains(value.toLowerCase()) ??
-                                        false) ||
-                                    (customer.userName
-                                            ?.toLowerCase()
-                                            .contains(value.toLowerCase()) ??
-                                        false))
+                            (customer.name?.toLowerCase().contains(value.toLowerCase()) ?? false) ||
+                                (customer.userName?.toLowerCase().contains(value.toLowerCase()) ?? false))
                                 .toList();
                           }
                         });
@@ -436,17 +435,13 @@ class _BillingPageState extends State<BillingPage> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     child: TextField(
                       controller: _customerNameController,
                       decoration: InputDecoration(
                         labelText: 'New Customer Name',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        errorText: _customerNameController.text.isEmpty &&
-                                filteredCustomers.isEmpty
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        errorText: _customerNameController.text.isEmpty && filteredCustomers.isEmpty
                             ? 'Name is required'
                             : null,
                       ),
@@ -456,8 +451,7 @@ class _BillingPageState extends State<BillingPage> {
                     listener: (context, state) {
                       if (state is AddUserSuccess) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Customer added successfully')),
+                          const SnackBar(content: Text('Customer added successfully')),
                         );
                         setState(() {
                           _isLoading = false;
@@ -478,56 +472,44 @@ class _BillingPageState extends State<BillingPage> {
                         onPressed: () async {
                           if (_customerNameController.text.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text('Customer name is required')),
+                              const SnackBar(content: Text('Customer name is required')),
                             );
                             return;
                           }
                           setState(() => _isLoading = true);
                           try {
-                            final companyId =
-                                (await sl<AccountRepository>().getUserInfo())
-                                    ?.companyId;
+                            final companyId = (await sl<AccountRepository>().getUserInfo())?.companyId;
                             final userInfo = UserInfo(
                               name: _customerNameController.text.trim(),
                               userType: UserType.Customer,
                               companyId: companyId,
                             );
-                            await addUserCubit.addUser(userInfo, '');
-                            final users =
-                                await userServices.getUsersFromTenantCompany();
+                            await sl<UserServices>().addUserToCompany(userInfo, '');
+                            final users = await userServices.getUsersFromTenantCompany();
                             final newCustomer = users.firstWhere(
-                              (u) => u.name == userInfo.name,
+                                  (u) => u.name == userInfo.name,
                               orElse: () => userInfo.copyWith(
-                                userId: DateTime.now()
-                                    .millisecondsSinceEpoch
-                                    .toString(),
+                                userId: DateTime.now().millisecondsSinceEpoch.toString(),
                               ),
                             );
                             setState(() {
                               _selectedCustomer = newCustomer;
-                              _newCustomerLedgerId =
-                                  newCustomer.accountLedgerId;
+                              _newCustomerLedgerId = newCustomer.accountLedgerId;
                               _customerNameController.clear();
                             });
-                            allCustomers = users
-                                .where((u) => u.userType == UserType.Customer)
-                                .toList();
+                            allCustomers = users.where((u) => u.userType == UserType.Customer).toList();
                             filteredCustomers = allCustomers;
                             searchController.clear();
                           } catch (e) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text('Failed to add customer: $e')),
+                              SnackBar(content: Text('Failed to add customer: $e')),
                             );
                             setState(() => _isLoading = false);
                           }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                         child: const Text(
@@ -546,27 +528,26 @@ class _BillingPageState extends State<BillingPage> {
                     child: filteredCustomers.isEmpty
                         ? const Center(child: Text('No customers available'))
                         : ListView.builder(
-                            controller: scrollController,
-                            itemCount: filteredCustomers.length,
-                            itemBuilder: (context, index) {
-                              final user = filteredCustomers[index];
-                              return ListTile(
-                                title: Text(
-                                  user.name ?? user.userName ?? 'Unknown',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                subtitle: Text('ID: ${user.userId}'),
-                                onTap: () {
-                                  setState(() {
-                                    _selectedCustomer = user;
-                                    _newCustomerLedgerId = user.accountLedgerId;
-                                  });
-                                  Navigator.of(context).pop();
-                                },
-                              );
-                            },
+                      controller: scrollController,
+                      itemCount: filteredCustomers.length,
+                      itemBuilder: (context, index) {
+                        final user = filteredCustomers[index];
+                        return ListTile(
+                          title: Text(
+                            user.name ?? user.userName ?? 'Unknown',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
+                          subtitle: Text('ID: ${user.userId}'),
+                          onTap: () {
+                            setState(() {
+                              _selectedCustomer = user;
+                              _newCustomerLedgerId = user.accountLedgerId;
+                            });
+                            Navigator.of(context).pop();
+                          },
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -619,35 +600,30 @@ class _BillingPageState extends State<BillingPage> {
       final stockState = _stockCubit.state;
       final totalAmount = _cartItems.fold<double>(
         0.0,
-        (sum, item) => sum + (item.price * item.quantity) + item.taxAmount,
+            (sum, item) => sum + (item.price * item.quantity) + item.taxAmount,
       );
-      final billNumber = _existingBillNumber ??
-          'BILL-${DateTime.now().millisecondsSinceEpoch}';
+      final billNumber = _existingBillNumber ?? 'BILL-${DateTime.now().millisecondsSinceEpoch}';
       Order order;
 
-      print(
-          'Processing bill: existingBillNumber=$_existingBillNumber, cartItems=${_cartItems.length}, totalAmount=$totalAmount');
+      print('Processing bill: existingBillNumber=$_existingBillNumber, cartItems=${_cartItems.length}, totalAmount=$totalAmount');
 
       if (_existingBillNumber == null) {
         for (var item in _cartItems) {
           final stock = stockState is StockLoaded
               ? stockState.stockItems.firstWhere(
-                  (stock) =>
-                      stock.productId == item.productId &&
-                      stock.storeId == _selectedStoreId,
-                  orElse: () => StockModel(
-                    id: '${item.productId}_$_selectedStoreId',
-                    productId: item.productId,
-                    storeId: _selectedStoreId!,
-                    quantity: 0,
-                    lastUpdated: DateTime.now(),
-                  ),
-                )
+                (stock) => stock.productId == item.productId && stock.storeId == _selectedStoreId,
+            orElse: () => StockModel(
+              id: '${item.productId}_$_selectedStoreId',
+              productId: item.productId,
+              storeId: _selectedStoreId!,
+              quantity: 0,
+              lastUpdated: DateTime.now(),
+            ),
+          )
               : null;
           if (stock == null || stock.quantity < item.quantity) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                  content: Text('Insufficient stock for ${item.productName}')),
+              SnackBar(content: Text('Insufficient stock for ${item.productName}')),
             );
             setState(() => _isLoading = false);
             return;
@@ -657,29 +633,23 @@ class _BillingPageState extends State<BillingPage> {
         for (var item in _cartItems) {
           final stock = stockState is StockLoaded
               ? stockState.stockItems.firstWhere(
-                  (stock) =>
-                      stock.productId == item.productId &&
-                      stock.storeId == _selectedStoreId,
-                )
+                (stock) => stock.productId == item.productId && stock.storeId == _selectedStoreId,
+          )
               : null;
           if (stock != null) {
             await _stockCubit.generateBill(
               stock,
               item.quantity,
               _selectedCustomer!.userId!,
-              remarks:
-                  'Bill generated for $_selectedBillType sale (Order: ${widget.orderId ?? 'New'})',
+              remarks: 'Bill generated for $_selectedBillType sale (Order: ${widget.orderId ?? 'New'})',
             );
           }
         }
 
         order = Order(
-          id: widget.orderId ??
-              DateTime.now().millisecondsSinceEpoch.toString(),
+          id: widget.orderId ?? DateTime.now().millisecondsSinceEpoch.toString(),
           userId: _selectedCustomer!.userId!,
-          userName: _selectedCustomer!.name ??
-              _selectedCustomer!.userName ??
-              'Unknown',
+          userName: _selectedCustomer!.name ?? _selectedCustomer!.userName ?? 'Unknown',
           items: _cartItems,
           totalAmount: totalAmount,
           status: _selectedStatus,
@@ -692,28 +662,25 @@ class _BillingPageState extends State<BillingPage> {
         await orderService.placeOrder(order);
       } else {
         if (widget.orderId != null) {
-          final originalOrder =
-              (await orderService.getOrderById(widget.orderId!))!;
+          final originalOrder = (await orderService.getOrderById(widget.orderId!))!;
           for (var item in originalOrder.items) {
             final currentItem = _cartItems.firstWhere(
-              (i) => i.productId == item.productId,
+                  (i) => i.productId == item.productId,
               orElse: () => item.copyWith(quantity: 0),
             );
             final returnQuantity = item.quantity - currentItem.quantity;
             if (returnQuantity > 0) {
               final stock = stockState is StockLoaded
                   ? stockState.stockItems.firstWhere(
-                      (stock) =>
-                          stock.productId == item.productId &&
-                          stock.storeId == _selectedStoreId,
-                      orElse: () => StockModel(
-                        id: '${item.productId}_$_selectedStoreId',
-                        productId: item.productId,
-                        storeId: _selectedStoreId!,
-                        quantity: 0,
-                        lastUpdated: DateTime.now(),
-                      ),
-                    )
+                    (stock) => stock.productId == item.productId && stock.storeId == _selectedStoreId,
+                orElse: () => StockModel(
+                  id: '${item.productId}_$_selectedStoreId',
+                  productId: item.productId,
+                  storeId: _selectedStoreId!,
+                  quantity: 0,
+                  lastUpdated: DateTime.now(),
+                ),
+              )
                   : null;
               if (stock != null) {
                 await _stockCubit.updateStock(
@@ -721,23 +688,37 @@ class _BillingPageState extends State<BillingPage> {
                     quantity: stock.quantity + returnQuantity,
                     lastUpdated: DateTime.now(),
                   ),
-                  remarks:
-                      'Return of $returnQuantity units of ${item.productName}',
+                  remarks: 'Return of $returnQuantity units of ${item.productName}',
                   isReturn: true,
                 );
                 final ledgerId = _selectedCustomer!.accountLedgerId;
                 if (ledgerId != null) {
+                  final perUnitTax = item.quantity > 0 ? item.taxAmount / item.quantity : 0.0;
+                  final returnAmount = (item.price + perUnitTax) * returnQuantity;
+                  // Credit entry for the return amount (always created)
                   await ledgerCubit.addTransaction(
                     ledgerId: ledgerId,
-                    amount: item.price * returnQuantity,
+                    amount: returnAmount,
                     type: 'Credit',
                     billNumber: billNumber,
                     purpose: 'Return',
                     typeOfPurpose: _selectedBillType,
-                    remarks:
-                        'Return of $returnQuantity units of ${item.productName} for order ${widget.orderId}',
+                    remarks: 'Return of $returnQuantity units of ${item.productName} for order ${widget.orderId}',
                     userType: UserType.Customer,
                   );
+                  // For Cash bill with Cash return, add Debit entry to reflect cash paid back
+                  if (_selectedBillType == 'Cash' && _selectedReturnMethod == 'Cash') {
+                    await ledgerCubit.addTransaction(
+                      ledgerId: ledgerId,
+                      amount: returnAmount,
+                      type: 'Debit',
+                      billNumber: billNumber,
+                      purpose: 'Return Payment',
+                      typeOfPurpose: 'Cash',
+                      remarks: 'Cash paid back for return of $returnQuantity units of ${item.productName} for order ${widget.orderId}',
+                      userType: UserType.Customer,
+                    );
+                  }
                 }
               }
             }
@@ -747,9 +728,7 @@ class _BillingPageState extends State<BillingPage> {
         order = Order(
           id: widget.orderId!,
           userId: _selectedCustomer!.userId!,
-          userName: _selectedCustomer!.name ??
-              _selectedCustomer!.userName ??
-              'Unknown',
+          userName: _selectedCustomer!.name ?? _selectedCustomer!.userName ?? 'Unknown',
           items: _cartItems,
           totalAmount: totalAmount,
           status: _selectedStatus,
@@ -791,20 +770,16 @@ class _BillingPageState extends State<BillingPage> {
           );
         }
       } else {
-        print(
-            'No ledger ID found for customer: ${_selectedCustomer!.name}, skipping ledger entries');
+        print('No ledger ID found for customer: ${_selectedCustomer!.name}, skipping ledger entries');
       }
 
       final pdf = await _generatePdf(order);
 
-      await sl<Coordinator>()
-          .navigateToBillPdfPage(pdf: pdf, billNumber: billNumber);
+      await sl<Coordinator>().navigateToBillPdfPage(pdf: pdf, billNumber: billNumber);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(_existingBillNumber == null
-                ? 'Bill generated successfully'
-                : 'Bill updated successfully')),
+            content: Text(_existingBillNumber == null ? 'Bill generated successfully' : 'Bill updated successfully')),
       );
     } catch (e) {
       print('Error in generateBill: $e');
@@ -815,7 +790,6 @@ class _BillingPageState extends State<BillingPage> {
       setState(() => _isLoading = false);
     }
   }
-
   Widget _buildGenerateBillButton() {
     return ElevatedButton(
       onPressed: _generateBill,
@@ -827,8 +801,7 @@ class _BillingPageState extends State<BillingPage> {
         textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         minimumSize: const Size(double.infinity, 50),
       ),
-      child:
-          Text(_existingBillNumber == null ? 'Generate Bill' : 'Update Bill'),
+      child: Text(_existingBillNumber == null ? 'Generate Bill' : 'Update Bill'),
     );
   }
 
@@ -841,21 +814,16 @@ class _BillingPageState extends State<BillingPage> {
         child: DropdownButtonFormField<String>(
           decoration: InputDecoration(
             labelText: 'Order Status',
-            labelStyle: const TextStyle(
-                fontWeight: FontWeight.bold, color: Colors.black87),
-            border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none),
+            labelStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
             filled: true,
             fillColor: Colors.grey[50],
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             errorStyle: const TextStyle(color: Colors.red),
           ),
           value: _selectedStatus,
           items: _statuses.map((status) {
-            return DropdownMenuItem(
-                value: status, child: Text(status.capitalize()));
+            return DropdownMenuItem(value: status, child: Text(status.capitalize()));
           }).toList(),
           onChanged: (value) {
             setState(() {
@@ -876,157 +844,265 @@ class _BillingPageState extends State<BillingPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Cart',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('Cart', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             if (_cartItems.isEmpty)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 8.0),
                 child: Text(
                   'No items in cart',
-                  style:
-                      TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                  style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
                 ),
               )
             else
               ..._cartItems.asMap().entries.map((entry) {
                 final index = entry.key;
                 final item = entry.value;
-                print(
-                    'Rendering buttons for ${item.productName}, quantity: ${item.quantity}');
                 return Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  margin: const EdgeInsets.symmetric(vertical: 4),
-                  child: ListTile(
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    title: Text(item.productName,
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(
-                      'Price: ₹${item.price.toStringAsFixed(2)} | Quantity: ${item.quantity} | Tax: ₹${item.taxAmount.toStringAsFixed(2)}',
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          width: 100,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ElevatedButton(
-                                onPressed: () =>
-                                    _showQuantityInputDialog(item.productId),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.productName,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textPrimary,
+                                    ),
                                   ),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 4),
-                                  minimumSize: const Size(80, 28),
-                                ),
-                                child: const Text(
-                                  'Manual Entry',
-                                  style: TextStyle(
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Price: ₹${item.price.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Tax Rate: ${(item.taxRate * 100).toStringAsFixed(0)}%',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Column(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
                                     color: AppColors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
+                                    borderRadius: BorderRadius.circular(24),
+                                    border: Border.all(color: AppColors.textSecondary.withOpacity(0.3)),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.remove,
+                                          color: item.quantity > 0 ? AppColors.red : AppColors.textSecondary,
+                                          size: 20,
+                                        ),
+                                        onPressed: () => _updateQuantity(item.productId, -1),
+                                      ),
+                                      SizedBox(
+                                        width: 48,
+                                        child: Text(
+                                          '${item.quantity}',
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.textPrimary,
+                                          ),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.add,
+                                          color: AppColors.green,
+                                          size: 20,
+                                        ),
+                                        onPressed: () => _updateQuantity(item.productId, 1),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              ElevatedButton(
-                                onPressed: item.quantity > 0
-                                    ? () {
-                                  setState(() {
-                                    _cartItems =
-                                        _cartItems.map((cartItem) {
-                                          if (cartItem.productId ==
-                                              item.productId) {
-                                            return cartItem.copyWith(
-                                              quantity: 0,
-                                              taxAmount: 0.0,
-                                            );
-                                          }
-                                          return cartItem;
-                                        }).toList();
-                                    _cartItems.removeWhere((cartItem) =>
-                                    cartItem.quantity == 0);
-                                  });
-                                }
-                                    : null,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.red,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 4),
-                                  minimumSize: const Size(80, 28),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    ElevatedButton(
+                                      onPressed: () => _showQuantityInputDialog(item.productId),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.primary,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      ),
+                                      child: const Text(
+                                        'Enter Manual Qty',
+                                        style: TextStyle(
+                                          color: AppColors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    ElevatedButton(
+                                      onPressed: item.quantity > 0
+                                          ? () {
+                                        setState(() {
+                                          _cartItems = _cartItems.map((cartItem) {
+                                            if (cartItem.productId == item.productId) {
+                                              return cartItem.copyWith(quantity: 0, taxAmount: 0.0);
+                                            }
+                                            return cartItem;
+                                          }).toList();
+                                          _cartItems.removeWhere((cartItem) => cartItem.quantity == 0);
+                                        });
+                                      }
+                                          : null,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.red,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      ),
+                                      child: const Text(
+                                        'Clear',
+                                        style: TextStyle(
+                                          color: AppColors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                child: const Text(
-                                  'Clear',
-                                  style: TextStyle(
-                                    color: AppColors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                              ],
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-
-                        Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.white,
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                                color:
-                                    AppColors.textSecondary.withOpacity(0.3)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  Icons.remove,
-                                  color: item.quantity > 0
-                                      ? AppColors.red
-                                      : AppColors.textSecondary,
-                                  size: 20,
-                                ),
-                                onPressed: () =>
-                                    _updateQuantity(item.productId, -1),
+                        if (item.quantity > 0) ...[
+                          const SizedBox(height: 12),
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: AppColors.textSecondary.withOpacity(0.3)),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Table(
+                              border: TableBorder(
+                                verticalInside: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
+                                horizontalInside: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
                               ),
-                              SizedBox(
-                                width: 48,
-                                child: Text(
-                                  '${item.quantity}',
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textPrimary,
+                              columnWidths: const {
+                                0: FlexColumnWidth(3),
+                                1: FlexColumnWidth(2),
+                              },
+                              children: [
+                                TableRow(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                      child: Text(
+                                        'Subtotal (₹${item.price.toStringAsFixed(2)} x ${item.quantity})',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                      child: Text(
+                                        '₹${(item.price * item.quantity).toStringAsFixed(2)}',
+                                        textAlign: TextAlign.right,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                TableRow(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                      child: Text(
+                                        'Tax (${(item.taxRate * 100).toStringAsFixed(0)}%)',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                      child: Text(
+                                        '₹${item.taxAmount.toStringAsFixed(2)}',
+                                        textAlign: TextAlign.right,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                TableRow(
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withOpacity(0.05),
+                                    borderRadius: const BorderRadius.only(
+                                      bottomLeft: Radius.circular(12),
+                                      bottomRight: Radius.circular(12),
+                                    ),
                                   ),
+                                  children: [
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                      child: Text(
+                                        'Total',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                      child: Text(
+                                        '₹${((item.price * item.quantity) + item.taxAmount).toStringAsFixed(2)}',
+                                        textAlign: TextAlign.right,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.add,
-                                  color: AppColors.green,
-                                  size: 20,
-                                ),
-                                onPressed: () =>
-                                    _updateQuantity(item.productId, 1),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-
+                        ],
                       ],
                     ),
                   ),
@@ -1047,10 +1123,7 @@ class _BillingPageState extends State<BillingPage> {
     debugPrint('Dialog: Searching for "$query"');
     filteredProducts.value = query.isEmpty
         ? List.from(products)
-        : products
-        .where((product) =>
-    product.name?.toLowerCase().contains(query.toLowerCase()) ?? false)
-        .toList();
+        : products.where((product) => product.name?.toLowerCase().contains(query.toLowerCase()) ?? false).toList();
     debugPrint('Dialog: Filtered ${filteredProducts.value.length} products');
   }
 
@@ -1118,11 +1191,11 @@ class _BillingPageState extends State<BillingPage> {
                       fillColor: AppColors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: AppColors.textSecondary, width: 0.3),
+                        borderSide: BorderSide(color: AppColors.textSecondary, width: 0.3),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: AppColors.textSecondary, width: 0.3),
+                        borderSide: BorderSide(color: AppColors.textSecondary, width: 0.3),
                       ),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     ),
@@ -1148,9 +1221,7 @@ class _BillingPageState extends State<BillingPage> {
                           final product = productsList[index];
                           return Card(
                             elevation: 2,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             child: ListTile(
                               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                               title: Text(
@@ -1187,6 +1258,7 @@ class _BillingPageState extends State<BillingPage> {
       debugPrint('Dialog: Dialog closed');
     });
   }
+
   void _showStoreSelectionDialog(List<StoreDto> stores) {
     final uniqueStores = <String, StoreDto>{};
     for (var store in stores) {
@@ -1216,10 +1288,7 @@ class _BillingPageState extends State<BillingPage> {
                 children: [
                   Text(
                     'Select Store',
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close, color: AppColors.primary),
@@ -1232,27 +1301,27 @@ class _BillingPageState extends State<BillingPage> {
               child: storeList.isEmpty
                   ? const Center(child: Text('No stores available'))
                   : ListView.builder(
-                      controller: scrollController,
-                      itemCount: storeList.length,
-                      itemBuilder: (context, index) {
-                        final store = storeList[index];
-                        return ListTile(
-                          title: Text(
-                            store.name,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          onTap: () {
-                            setState(() {
-                              _selectedStoreId = store.storeId;
-                              if (_selectedStoreId != null) {
-                                _stockCubit.fetchStock(_selectedStoreId!);
-                              }
-                            });
-                            Navigator.of(context).pop();
-                          },
-                        );
-                      },
+                controller: scrollController,
+                itemCount: storeList.length,
+                itemBuilder: (context, index) {
+                  final store = storeList[index];
+                  return ListTile(
+                    title: Text(
+                      store.name,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
+                    onTap: () {
+                      setState(() {
+                        _selectedStoreId = store.storeId;
+                        if (_selectedStoreId != null) {
+                          _stockCubit.fetchStock(_selectedStoreId!);
+                        }
+                      });
+                      Navigator.of(context).pop();
+                    },
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -1288,8 +1357,7 @@ class _BillingPageState extends State<BillingPage> {
         header: (context) => pw.Container(
           padding: const pw.EdgeInsets.only(bottom: 12),
           decoration: pw.BoxDecoration(
-            border:
-                pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
+            border: pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
           ),
           child: pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -1299,16 +1367,12 @@ class _BillingPageState extends State<BillingPage> {
                 children: [
                   pw.Text(
                     companyName,
-                    style: pw.TextStyle(
-                        font: boldFont, fontSize: 22, color: primaryColor),
+                    style: pw.TextStyle(font: boldFont, fontSize: 22, color: primaryColor),
                   ),
                   pw.SizedBox(height: 4),
                   pw.Text(
                     '123 Business Street, City, Country',
-                    style: pw.TextStyle(
-                        font: regularFont,
-                        fontSize: 12,
-                        color: textSecondaryColor),
+                    style: pw.TextStyle(font: regularFont, fontSize: 12, color: textSecondaryColor),
                   ),
                 ],
               ),
@@ -1317,8 +1381,7 @@ class _BillingPageState extends State<BillingPage> {
                 children: [
                   pw.Text(
                     'INVOICE',
-                    style: pw.TextStyle(
-                        font: boldFont, fontSize: 28, color: primaryColor),
+                    style: pw.TextStyle(font: boldFont, fontSize: 28, color: primaryColor),
                   ),
                   pw.SizedBox(height: 4),
                   pw.Text(
@@ -1342,19 +1405,16 @@ class _BillingPageState extends State<BillingPage> {
           pw.SizedBox(height: 24),
           pw.Text(
             'Bill To:',
-            style: pw.TextStyle(
-                font: boldFont, fontSize: 18, color: PdfColors.black),
+            style: pw.TextStyle(font: boldFont, fontSize: 18, color: PdfColors.black),
           ),
           pw.SizedBox(height: 8),
           pw.Text(
             order.userName ?? 'Unknown Customer',
-            style:
-                pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
+            style: pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
           ),
           pw.Text(
             'Store ID: ${order.storeId ?? 'N/A'}',
-            style: pw.TextStyle(
-                font: regularFont, fontSize: 12, color: textSecondaryColor),
+            style: pw.TextStyle(font: regularFont, fontSize: 12, color: textSecondaryColor),
           ),
           pw.SizedBox(height: 24),
           pw.Text(
@@ -1377,80 +1437,73 @@ class _BillingPageState extends State<BillingPage> {
                 children: [
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Product',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                    child: pw.Text('Product', style: pw.TextStyle(font: boldFont, fontSize: 13)),
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Qty',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                    child: pw.Text('Qty', style: pw.TextStyle(font: boldFont, fontSize: 13)),
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Unit Price',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                    child: pw.Text('Unit Price', style: pw.TextStyle(font: boldFont, fontSize: 13)),
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Tax',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                    child: pw.Text('Tax', style: pw.TextStyle(font: boldFont, fontSize: 13)),
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Total',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                    child: pw.Text('Total', style: pw.TextStyle(font: boldFont, fontSize: 13)),
                   ),
                 ],
               ),
               ...order.items.map((item) => pw.TableRow(
-                    decoration: pw.BoxDecoration(
-                      border: pw.Border(
-                          bottom: pw.BorderSide(color: greyColor, width: 0.5)),
+                decoration: pw.BoxDecoration(
+                  border: pw.Border(bottom: pw.BorderSide(color: greyColor, width: 0.5)),
+                ),
+                children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text(
+                      item.productName,
+                      style: pw.TextStyle(font: regularFont, fontSize: 12),
+                      softWrap: true,
                     ),
-                    children: [
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(10),
-                        child: pw.Text(
-                          item.productName,
-                          style: pw.TextStyle(font: regularFont, fontSize: 12),
-                          softWrap: true,
-                        ),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(10),
-                        child: pw.Text(
-                          item.quantity.toString(),
-                          style: pw.TextStyle(font: regularFont, fontSize: 12),
-                          textAlign: pw.TextAlign.center,
-                        ),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(10),
-                        child: pw.Text(
-                          item.price.toStringAsFixed(2),
-                          style: pw.TextStyle(font: regularFont, fontSize: 12),
-                          textAlign: pw.TextAlign.right,
-                        ),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(10),
-                        child: pw.Text(
-                          item.taxAmount.toStringAsFixed(2),
-                          style: pw.TextStyle(font: regularFont, fontSize: 12),
-                          textAlign: pw.TextAlign.right,
-                        ),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(10),
-                        child: pw.Text(
-                          ((item.price * item.quantity) + item.taxAmount)
-                              .toStringAsFixed(2),
-                          style: pw.TextStyle(font: regularFont, fontSize: 12),
-                          textAlign: pw.TextAlign.right,
-                        ),
-                      ),
-                    ],
-                  )),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text(
+                      item.quantity.toString(),
+                      style: pw.TextStyle(font: regularFont, fontSize: 12),
+                      textAlign: pw.TextAlign.center,
+                    ),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text(
+                      item.price.toStringAsFixed(2),
+                      style: pw.TextStyle(font: regularFont, fontSize: 12),
+                      textAlign: pw.TextAlign.right,
+                    ),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text(
+                      item.taxAmount.toStringAsFixed(2),
+                      style: pw.TextStyle(font: regularFont, fontSize: 12),
+                      textAlign: pw.TextAlign.right,
+                    ),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text(
+                      ((item.price * item.quantity) + item.taxAmount).toStringAsFixed(2),
+                      style: pw.TextStyle(font: regularFont, fontSize: 12),
+                      textAlign: pw.TextAlign.right,
+                    ),
+                  ),
+                ],
+              )),
             ],
           ),
           pw.SizedBox(height: 24),
@@ -1478,8 +1531,7 @@ class _BillingPageState extends State<BillingPage> {
                     pw.SizedBox(height: 8),
                     pw.Text(
                       'Total Amount: ${order.totalAmount.toStringAsFixed(2)}',
-                      style: pw.TextStyle(
-                          font: boldFont, fontSize: 16, color: primaryColor),
+                      style: pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
                     ),
                   ],
                 ),
@@ -1492,8 +1544,7 @@ class _BillingPageState extends State<BillingPage> {
           padding: const pw.EdgeInsets.only(top: 12),
           child: pw.Text(
             'Generated by $companyName | Page ${context.pageNumber} of ${context.pagesCount}',
-            style: pw.TextStyle(
-                font: regularFont, fontSize: 10, color: textSecondaryColor),
+            style: pw.TextStyle(font: regularFont, fontSize: 10, color: textSecondaryColor),
           ),
         ),
       ),
@@ -1568,87 +1619,75 @@ class _BillingPageState extends State<BillingPage> {
             child: _isLoading
                 ? const CustomLoadingDialog(message: 'Loading...')
                 : SingleChildScrollView(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: MediaQuery.of(context).size.height -
-                            MediaQuery.of(context).padding.top -
-                            kToolbarHeight,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: BlocListener<AdminOrderCubit, AdminOrderState>(
-                          listener: (context, state) {
-                            if (state is AdminOrderFetchSuccess &&
-                                widget.orderId != null) {
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: MediaQuery.of(context).size.height -
+                      MediaQuery.of(context).padding.top -
+                      kToolbarHeight,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: BlocListener<AdminOrderCubit, AdminOrderState>(
+                    listener: (context, state) {
+                      if (state is AdminOrderFetchSuccess && widget.orderId != null) {
+                        setState(() {
+                          _cartItems = state.order.items;
+                          _selectedStatus = state.normalizedStatus;
+                          _selectedStoreId = state.order.storeId ?? _selectedStoreId;
+                          _existingBillNumber = state.order.billNumber;
+                          if (state.order.userId != null) {
+                            sl<UserServices>().getUsersFromTenantCompany().then((users) {
+                              final customer = users.firstWhere(
+                                    (u) => u.userId == state.order.userId,
+                                orElse: () => UserInfo(
+                                  userId: state.order.userId!,
+                                  userName: state.order.userName ?? 'Unknown',
+                                ),
+                              );
                               setState(() {
-                                _cartItems = state.order.items;
-                                _selectedStatus = state.normalizedStatus;
-                                _selectedStoreId =
-                                    state.order.storeId ?? _selectedStoreId;
-                                _existingBillNumber = state.order.billNumber;
-                                if (state.order.userId != null) {
-                                  sl<UserServices>()
-                                      .getUsersFromTenantCompany()
-                                      .then((users) {
-                                    final customer = users.firstWhere(
-                                      (u) => u.userId == state.order.userId,
-                                      orElse: () => UserInfo(
-                                        userId: state.order.userId!,
-                                        userName:
-                                            state.order.userName ?? 'Unknown',
-                                      ),
-                                    );
-                                    setState(() {
-                                      _selectedCustomer = customer;
-                                      _newCustomerLedgerId =
-                                          customer.accountLedgerId;
-                                    });
-                                  });
-                                }
+                                _selectedCustomer = customer;
+                                _newCustomerLedgerId = customer.accountLedgerId;
                               });
-                              if (_selectedStoreId != null) {
-                                _stockCubit.fetchStock(_selectedStoreId!);
-                              }
-                            } else if (state is AdminOrderFetchError) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(state.message)),
-                              );
-                            }
-                          },
-                          child: BlocBuilder<StockCubit, StockState>(
-                            builder: (context, stockState) {
-                              final products = stockState is StockLoaded
-                                  ? stockState.stockItems
-                                  : <StockModel>[];
-                              final stores = stockState is StockLoaded
-                                  ? stockState.stores
-                                  : <StoreDto>[];
-                              if (stockState is StockError) {
-                                return Center(
-                                    child: Text('Error: ${stockState.error}'));
-                              }
-                              if (_filteredProducts.isEmpty &&
-                                  products.isNotEmpty) {
-                                _filteredProducts = products;
-                              }
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  _buildSelectionButtons(products, stores),
-                                  const SizedBox(height: 16),
-                                  _buildCart(),
-                                  const SizedBox(height: 16),
-                                  _buildStatusSelector(),
-                                  const SizedBox(height: 16),
-                                  _buildGenerateBillButton(),
-                                ],
-                              );
-                            },
-                          ),
-                        ),
-                      ),
+                            });
+                          }
+                        });
+                        if (_selectedStoreId != null) {
+                          _stockCubit.fetchStock(_selectedStoreId!);
+                        }
+                      } else if (state is AdminOrderFetchError) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(state.message)),
+                        );
+                      }
+                    },
+                    child: BlocBuilder<StockCubit, StockState>(
+                      builder: (context, stockState) {
+                        final products = stockState is StockLoaded ? stockState.stockItems : <StockModel>[];
+                        final stores = stockState is StockLoaded ? stockState.stores : <StoreDto>[];
+                        if (stockState is StockError) {
+                          return Center(child: Text('Error: ${stockState.error}'));
+                        }
+                        if (_filteredProducts.isEmpty && products.isNotEmpty) {
+                          _filteredProducts = products;
+                        }
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _buildSelectionButtons(products, stores),
+                            const SizedBox(height: 16),
+                            _buildCart(),
+                            const SizedBox(height: 16),
+                            _buildStatusSelector(),
+                            const SizedBox(height: 16),
+                            _buildGenerateBillButton(),
+                          ],
+                        );
+                      },
                     ),
                   ),
+                ),
+              ),
+            ),
           ),
         ),
       ),

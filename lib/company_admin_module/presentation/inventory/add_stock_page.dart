@@ -25,8 +25,10 @@ class _AddStockPageState extends State<AddStockPage> {
   String? _selectedStoreId;
   String? _selectedProductId;
   int _quantity = 0;
-  List<Map<String, dynamic>> _stockEntries = []; // {productId, quantity, product}
-  final TextEditingController _productSearchController = TextEditingController();
+  List<Map<String, dynamic>> _stockEntries =
+      []; // {productId, quantity, product}
+  final TextEditingController _productSearchController =
+      TextEditingController();
   bool _useBatchMode = true; // Toggle between batch and single-item mode
   bool _isStockAdded = false; // Flag to track user-initiated stock addition
   late StockCubit _stockCubit;
@@ -44,8 +46,9 @@ class _AddStockPageState extends State<AddStockPage> {
   void _addToStockEntries(Product product, int quantity) {
     setState(() {
       final existingEntry = _stockEntries.firstWhere(
-            (entry) => entry['productId'] == product.id,
-        orElse: () => {'productId': product.id, 'quantity': 0, 'product': product},
+        (entry) => entry['productId'] == product.id,
+        orElse: () =>
+            {'productId': product.id, 'quantity': 0, 'product': product},
       );
       if (!_stockEntries.contains(existingEntry)) {
         _stockEntries.add({
@@ -88,16 +91,19 @@ class _AddStockPageState extends State<AddStockPage> {
     });
   }
 
-  Future<void> _showQuantityInputDialog(String productId, {int initialQuantity = 1}) async {
+  Future<void> _showQuantityInputDialog(String productId,
+      {int initialQuantity = 1}) async {
     final product = _stockEntries
-        .firstWhere((entry) => entry['productId'] == productId, orElse: () => {})
-        .isNotEmpty
-        ? _stockEntries.firstWhere((entry) => entry['productId'] == productId)['product'] as Product
+            .firstWhere((entry) => entry['productId'] == productId,
+                orElse: () => {})
+            .isNotEmpty
+        ? _stockEntries.firstWhere(
+            (entry) => entry['productId'] == productId)['product'] as Product
         : null;
     if (product == null) return;
 
     final TextEditingController quantityController =
-    TextEditingController(text: initialQuantity.toString());
+        TextEditingController(text: initialQuantity.toString());
     final _dialogFormKey = GlobalKey<FormState>();
 
     showDialog(
@@ -111,7 +117,8 @@ class _AddStockPageState extends State<AddStockPage> {
             controller: quantityController,
             decoration: InputDecoration(
               labelText: 'Quantity',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               filled: true,
               fillColor: Colors.grey[100],
             ),
@@ -159,7 +166,8 @@ class _AddStockPageState extends State<AddStockPage> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             child: const Text('Save'),
           ),
@@ -185,11 +193,14 @@ class _AddStockPageState extends State<AddStockPage> {
           minChildSize: 0.5,
           maxChildSize: 0.9,
           expand: false,
-          builder: (BuildContext dialogContext, ScrollController scrollController) {
+          builder:
+              (BuildContext dialogContext, ScrollController scrollController) {
             return BlocBuilder<AdminProductCubit, ProductState>(
               bloc: _productCubit,
               buildWhen: (previous, current) =>
-              current is ProductLoading || current is ProductError || current is ProductLoaded,
+                  current is ProductLoading ||
+                  current is ProductError ||
+                  current is ProductLoaded,
               builder: (BuildContext context, ProductState productState) {
                 if (productState is ProductLoading) {
                   debugPrint('Dialog: Loading products');
@@ -222,10 +233,13 @@ class _AddStockPageState extends State<AddStockPage> {
                 } else if (productState is ProductLoaded) {
                   final List<Product> products = productState.products;
                   debugPrint('Dialog: Loaded ${products.length} products');
-                  if (!isDialogInitialized && filteredProducts.value.isEmpty && products.isNotEmpty) {
+                  if (!isDialogInitialized &&
+                      filteredProducts.value.isEmpty &&
+                      products.isNotEmpty) {
                     filteredProducts.value = List.from(products);
                     isDialogInitialized = true;
-                    debugPrint('Dialog: Initialized filteredProducts with ${filteredProducts.value.length} items');
+                    debugPrint(
+                        'Dialog: Initialized filteredProducts with ${filteredProducts.value.length} items');
                   }
 
                   return Column(
@@ -244,7 +258,8 @@ class _AddStockPageState extends State<AddStockPage> {
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.close, color: AppColors.primary),
+                              icon: const Icon(Icons.close,
+                                  color: AppColors.primary),
                               onPressed: () {
                                 debugPrint('Dialog: Closing dialog');
                                 Navigator.of(dialogContext).pop();
@@ -254,37 +269,42 @@ class _AddStockPageState extends State<AddStockPage> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 8.0),
                         child: TextField(
                           controller: _productSearchController,
                           decoration: InputDecoration(
                             hintText: 'Search Products',
-                            hintStyle: const TextStyle(color: AppColors.textSecondary),
-                            prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+                            hintStyle:
+                                const TextStyle(color: AppColors.textSecondary),
+                            prefixIcon: const Icon(Icons.search,
+                                color: AppColors.textSecondary),
                             filled: true,
                             fillColor: AppColors.white,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: AppColors.textSecondary, width: 0.3),
+                              borderSide: const BorderSide(
+                                  color: AppColors.textSecondary, width: 0.3),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: AppColors.textSecondary, width: 0.3),
+                              borderSide: const BorderSide(
+                                  color: AppColors.textSecondary, width: 0.3),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
                           ),
                           onChanged: (value) {
-                            // debugPrint('Dialog: Searching for "$value"');
                             filteredProducts.value = [];
                             if (value.isEmpty) {
                               filteredProducts.value = List.from(products);
                             } else {
                               filteredProducts.value = products
-                                  .where((product) =>
-                                  product.name.toLowerCase().contains(value.toLowerCase()))
+                                  .where((product) => product.name
+                                      .toLowerCase()
+                                      .contains(value.toLowerCase()))
                                   .toList();
                             }
-                            // debugPrint('Dialog: Filtered ${filteredProducts.value.length} products');
                           },
                         ),
                       ),
@@ -296,14 +316,17 @@ class _AddStockPageState extends State<AddStockPage> {
                               return const Center(
                                 child: Text(
                                   'No products found',
-                                  style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      color: AppColors.textSecondary),
                                 ),
                               );
                             }
                             return ListView.builder(
                               controller: scrollController,
                               itemCount: products.length,
-                              itemBuilder: (BuildContext dialogContext, int index) {
+                              itemBuilder:
+                                  (BuildContext dialogContext, int index) {
                                 final product = products[index];
                                 return Card(
                                   elevation: 2,
@@ -317,20 +340,53 @@ class _AddStockPageState extends State<AddStockPage> {
                                     ),
                                     title: Text(
                                       product.name,
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
                                     ),
-                                    subtitle: Text(
-                                      'Price: ₹${product.price.toStringAsFixed(2)} | Stock: ${product.stock}',
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Price: ₹${product.price.toStringAsFixed(2)}',
+                                          style: const TextStyle(
+                                              fontSize: 14,
+                                              color: AppColors.textSecondary),
+                                        ),
+                                        Text(
+                                          'Tax: ${(product.tax).toStringAsFixed(0)}%',
+                                          style: const TextStyle(
+                                              fontSize: 14,
+                                              color: AppColors.textSecondary),
+                                        ),
+                                        if (product.category.isNotEmpty)
+                                          Text(
+                                            'Category: ${product.category}',
+                                            style: const TextStyle(
+                                                fontSize: 14,
+                                                color: AppColors.textSecondary),
+                                          ),
+                                        if (product.subcategoryName.isNotEmpty)
+                                          Text(
+                                            'Subcategory: ${product.subcategoryName}',
+                                            style: const TextStyle(
+                                                fontSize: 14,
+                                                color: AppColors.textSecondary),
+                                          ),
+                                      ],
                                     ),
                                     trailing: IconButton(
-                                      icon: const Icon(Icons.add, color: AppColors.primary),
+                                      icon: const Icon(Icons.add,
+                                          color: AppColors.primary),
                                       onPressed: () {
                                         _addToStockEntries(product, 1);
                                         setState(() {
                                           _productSearchController.clear();
-                                          filteredProducts.value = List.from(products);
+                                          filteredProducts.value =
+                                              List.from(products);
                                         });
-                                        debugPrint('Dialog: Added product "${product.name}"');
+                                        debugPrint(
+                                            'Dialog: Added product "${product.name}"');
                                       },
                                     ),
                                   ),
@@ -344,11 +400,13 @@ class _AddStockPageState extends State<AddStockPage> {
                   );
                 }
 
-                debugPrint('Dialog: Unexpected state ${productState.runtimeType}');
+                debugPrint(
+                    'Dialog: Unexpected state ${productState.runtimeType}');
                 return const Center(
                   child: Text(
                     'No products available',
-                    style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                    style:
+                        TextStyle(fontSize: 16, color: AppColors.textSecondary),
                   ),
                 );
               },
@@ -386,153 +444,300 @@ class _AddStockPageState extends State<AddStockPage> {
   }
 
   Widget _buildStockEntries() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Stock Entries',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            if (_stockEntries.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
-                  'No products selected',
-                  style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
-                ),
-              )
-            else
-              ..._stockEntries.asMap().entries.map((entry) {
-                final index = entry.key;
-                final item = entry.value;
-                final product = item['product'] as Product;
-                final quantity = item['quantity'] as int;
-                return Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  margin: const EdgeInsets.symmetric(vertical: 4),
-                  child: ListTile(
-                    contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    title: Text(
-                      product.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      'Price: ₹${product.price.toStringAsFixed(2)} | Quantity: $quantity',
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Text(
+            'Stock Entries',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ),
+        if (_stockEntries.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text(
+              'No products selected',
+              style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+            ),
+          )
+        else
+          ..._stockEntries.asMap().entries.map((entry) {
+            final index = entry.key;
+            final item = entry.value;
+            final product = item['product'] as Product;
+            final quantity = item['quantity'] as int;
+            final subtotal = product.price * quantity;
+            final taxAmount = subtotal *
+                (product.tax / 100); // Tax as percentage (e.g., 5% = 5/100)
+            return Card(
+              elevation: 3,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          width: 100,
+                        Expanded(
                           child: Column(
-                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              ElevatedButton(
-                                onPressed: () =>
-                                    _showQuantityInputDialog(product.id, initialQuantity: quantity),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 4),
-                                  minimumSize: const Size(80, 28),
-                                ),
-                                child: const Text(
-                                  'Manual Entry',
-                                  style: TextStyle(
-                                    color: AppColors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                              Text(
+                                product.name,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
                                 ),
                               ),
-                              const SizedBox(height: 4),
-                              ElevatedButton(
-                                onPressed: () => _clearStockEntry(product.id),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.red,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 4),
-                                  minimumSize: const Size(80, 28),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Price: ₹${product.price.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.textSecondary,
                                 ),
-                                child: const Text(
-                                  'Clear',
-                                  style: TextStyle(
-                                    color: AppColors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                              ),
+                              Text(
+                                'Tax Rate: ${product.tax.toStringAsFixed(0)}%',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                             ],
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.white,
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                                color: AppColors.textSecondary.withOpacity(0.3)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  Icons.remove,
-                                  color: quantity > 0
-                                      ? AppColors.red
-                                      : AppColors.textSecondary,
-                                  size: 20,
+                        Column(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.white,
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(
+                                  color:
+                                      AppColors.textSecondary.withOpacity(0.3),
                                 ),
-                                onPressed: () =>
-                                    _updateStockEntryQuantity(product.id, -1),
                               ),
-                              SizedBox(
-                                width: 48,
-                                child: Text(
-                                  '$quantity',
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textPrimary,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.remove,
+                                      color: quantity > 0
+                                          ? AppColors.red
+                                          : AppColors.textSecondary,
+                                      size: 20,
+                                    ),
+                                    onPressed: () => _updateStockEntryQuantity(
+                                        product.id, -1),
+                                  ),
+                                  SizedBox(
+                                    width: 48,
+                                    child: Text(
+                                      '$quantity',
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.add,
+                                      color: AppColors.green,
+                                      size: 20,
+                                    ),
+                                    onPressed: () => _updateStockEntryQuantity(
+                                        product.id, 1),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () => _showQuantityInputDialog(
+                                      product.id,
+                                      initialQuantity: quantity),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                  ),
+                                  child: const Text(
+                                    'Enter Manual Qty',
+                                    style: TextStyle(
+                                      color: AppColors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.add,
-                                  color: AppColors.green,
-                                  size: 20,
+                                const SizedBox(width: 8),
+                                ElevatedButton(
+                                  onPressed: () => _clearStockEntry(product.id),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.red,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                  ),
+                                  child: const Text(
+                                    'Clear',
+                                    style: TextStyle(
+                                      color: AppColors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                 ),
-                                onPressed: () =>
-                                    _updateStockEntryQuantity(product.id, 1),
-                              ),
-                            ],
-                          ),
+                              ],
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ),
-                );
-              }).toList(),
-          ],
-        ),
-      ),
+                    if (quantity > 0) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              color: AppColors.textSecondary.withOpacity(0.3)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Table(
+                          border: TableBorder(
+                            verticalInside: BorderSide(
+                                color:
+                                    AppColors.textSecondary.withOpacity(0.3)),
+                            horizontalInside: BorderSide(
+                                color:
+                                    AppColors.textSecondary.withOpacity(0.3)),
+                          ),
+                          columnWidths: const {
+                            0: FlexColumnWidth(3),
+                            1: FlexColumnWidth(2),
+                          },
+                          children: [
+                            TableRow(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 12),
+                                  child: Text(
+                                    'Subtotal (₹${product.price.toStringAsFixed(2)} x $quantity)',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 12),
+                                  child: Text(
+                                    '₹${subtotal.toStringAsFixed(2)}',
+                                    textAlign: TextAlign.right,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            TableRow(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 12),
+                                  child: Text(
+                                    'Tax (${product.tax.toStringAsFixed(0)}%)',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 12),
+                                  child: Text(
+                                    '₹${taxAmount.toStringAsFixed(2)}',
+                                    textAlign: TextAlign.right,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            TableRow(
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.05),
+                                borderRadius: const BorderRadius.only(
+                                  bottomLeft: Radius.circular(12),
+                                  bottomRight: Radius.circular(12),
+                                ),
+                              ),
+                              children: [
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 12),
+                                  child: Text(
+                                    'Total',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 12),
+                                  child: Text(
+                                    '₹${(subtotal + taxAmount).toStringAsFixed(2)}',
+                                    textAlign: TextAlign.right,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+      ],
     );
   }
 
@@ -541,7 +746,7 @@ class _AddStockPageState extends State<AddStockPage> {
     return MultiBlocProvider(
       providers: [
         BlocProvider.value(value: _stockCubit),
-        BlocProvider.value(value: _productCubit), // Provide the same _productCubit instance
+        BlocProvider.value(value: _productCubit),
       ],
       child: Scaffold(
         appBar: CustomAppBar(
@@ -557,13 +762,17 @@ class _AddStockPageState extends State<AddStockPage> {
                       onPressed: () {
                         setState(() {
                           _useBatchMode = !_useBatchMode;
-                          _stockEntries = []; // Clear entries when switching modes
+                          _stockEntries =
+                              []; // Clear entries when switching modes
                           _selectedProductId = null;
                           _quantity = 0;
-                          _isStockAdded = false; // Reset flag when switching modes
+                          _isStockAdded =
+                              false; // Reset flag when switching modes
                         });
                       },
-                      tooltip: _useBatchMode ? 'Switch to Single Mode' : 'Switch to Batch Mode',
+                      tooltip: _useBatchMode
+                          ? 'Switch to Single Mode'
+                          : 'Switch to Batch Mode',
                     ),
                     if (_stockEntries.isNotEmpty)
                       Positioned(
@@ -614,7 +823,8 @@ class _AddStockPageState extends State<AddStockPage> {
                 padding: const EdgeInsets.all(16.0),
                 child: Card(
                   elevation: 4,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Form(
@@ -635,29 +845,35 @@ class _AddStockPageState extends State<AddStockPage> {
                                   content: Text(state.error),
                                   backgroundColor: AppColors.red),
                             );
-                            setState(() => _isStockAdded = false); // Reset on error
+                            setState(
+                                () => _isStockAdded = false); // Reset on error
                           }
                         },
                         builder: (context, state) {
                           if (state is StockLoading) {
-                            return const Center(child: CircularProgressIndicator());
+                            return const Center(
+                                child: CircularProgressIndicator());
                           } else if (state is StockError) {
                             return Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text('Error: ${state.error}',
-                                      style: const TextStyle(color: Colors.red)),
+                                      style:
+                                          const TextStyle(color: Colors.red)),
                                   const SizedBox(height: 16),
                                   ElevatedButton(
                                     onPressed: () => _stockCubit.fetchStock(''),
                                     child: const Text('Retry'),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Theme.of(context).primaryColor,
+                                      backgroundColor:
+                                          Theme.of(context).primaryColor,
                                       foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(vertical: 16),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 16),
                                       shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8)),
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
                                     ),
                                   ),
                                 ],
@@ -665,39 +881,43 @@ class _AddStockPageState extends State<AddStockPage> {
                             );
                           }
 
-                          final stores = (state is StockLoaded) ? state.stores : [];
+                          final stores =
+                              (state is StockLoaded) ? state.stores : [];
 
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               // Store Dropdown
-                              Card(
-                                elevation: 4,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12.0),
-                                  child: DropdownButtonFormField<String>(
-                                    decoration: InputDecoration(
-                                      labelText: 'Store',
-                                      labelStyle: const TextStyle(
-                                          fontWeight: FontWeight.bold, color: Colors.black87),
-                                      border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                          borderSide: BorderSide.none),
-                                      filled: true,
-                                      fillColor: Colors.grey[50],
-                                      contentPadding:
-                                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                                      errorStyle: const TextStyle(color: Colors.red),
-                                    ),
-                                    value: _selectedStoreId,
-                                    items: stores.map((store) => DropdownMenuItem<String>(
-                                      value: store.storeId,
-                                      child: Text(store.name),
-                                    )).toList(),
-                                    onChanged: (value) => setState(() => _selectedStoreId = value),
-                                    validator: (value) => value == null ? 'Please select a store' : null,
+                              Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: DropdownButtonFormField<String>(
+                                  decoration: InputDecoration(
+                                    labelText: 'Store',
+                                    labelStyle: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87),
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide.none),
+                                    filled: true,
+                                    fillColor: Colors.grey[50],
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 12),
+                                    errorStyle:
+                                        const TextStyle(color: Colors.red),
                                   ),
+                                  value: _selectedStoreId,
+                                  items: stores
+                                      .map((store) => DropdownMenuItem<String>(
+                                            value: store.storeId,
+                                            child: Text(store.name),
+                                          ))
+                                      .toList(),
+                                  onChanged: (value) =>
+                                      setState(() => _selectedStoreId = value),
+                                  validator: (value) => value == null
+                                      ? 'Please select a store'
+                                      : null,
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -705,15 +925,18 @@ class _AddStockPageState extends State<AddStockPage> {
                                 // Add Product Button
                                 Card(
                                   elevation: 4,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
                                   child: InkWell(
                                     onTap: () => _showProductSelectionDialog(),
                                     child: Container(
                                       padding: const EdgeInsets.all(12.0),
                                       child: const Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
-                                          Icon(Icons.inventory, color: AppColors.primary),
+                                          Icon(Icons.inventory,
+                                              color: AppColors.primary),
                                           SizedBox(width: 8),
                                           Text(
                                             'Add Products',
@@ -734,102 +957,120 @@ class _AddStockPageState extends State<AddStockPage> {
                                 const SizedBox(height: 24),
                                 // Save Button for Batch Mode
                                 ElevatedButton(
-                                  onPressed: _stockEntries.isEmpty || _selectedStoreId == null
+                                  onPressed: _stockEntries.isEmpty ||
+                                          _selectedStoreId == null
                                       ? null
                                       : () => _saveBatchStock(),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Theme.of(context).primaryColor,
+                                    backgroundColor:
+                                        Theme.of(context).primaryColor,
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16),
                                     shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8)),
                                     textStyle: const TextStyle(
-                                        fontSize: 16, fontWeight: FontWeight.bold),
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                   child: const Text('Save All Stock'),
                                 ),
                               ] else ...[
                                 // Single Item Form
                                 BlocBuilder<AdminProductCubit, ProductState>(
-                                  bloc: _productCubit, // Use _productCubit directly
+                                  bloc: _productCubit,
                                   builder: (context, productState) {
-                                    final products = productState is ProductLoaded
-                                        ? productState.products
-                                        : [];
-                                    return Card(
-                                      elevation: 4,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(12.0),
-                                        child: DropdownButtonFormField<String>(
-                                          decoration: InputDecoration(
-                                            labelText: 'Product',
-                                            labelStyle: const TextStyle(
-                                                fontWeight: FontWeight.bold, color: Colors.black87),
-                                            border: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(8),
-                                                borderSide: BorderSide.none),
-                                            filled: true,
-                                            fillColor: Colors.grey[50],
-                                            contentPadding:
-                                            const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                                            errorStyle: const TextStyle(color: Colors.red),
-                                          ),
-                                          value: _selectedProductId,
-                                          items: products.map((product) => DropdownMenuItem<String>(
-                                            value: product.id,
-                                            child: Text(product.name),
-                                          )).toList(),
-                                          onChanged: (value) => setState(() => _selectedProductId = value),
-                                          validator: (value) => value == null ? 'Please select a product' : null,
+                                    final products =
+                                        productState is ProductLoaded
+                                            ? productState.products
+                                            : [];
+                                    return Padding(
+                                      padding: const EdgeInsets.all(12.0),
+                                      child: DropdownButtonFormField<String>(
+                                        decoration: InputDecoration(
+                                          labelText: 'Product',
+                                          labelStyle: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black87),
+                                          border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              borderSide: BorderSide.none),
+                                          filled: true,
+                                          fillColor: Colors.grey[50],
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 12, vertical: 12),
+                                          errorStyle: const TextStyle(
+                                              color: Colors.red),
                                         ),
+                                        value: _selectedProductId,
+                                        items: products
+                                            .map((product) =>
+                                                DropdownMenuItem<String>(
+                                                  value: product.id,
+                                                  child: Text(product.name),
+                                                ))
+                                            .toList(),
+                                        onChanged: (value) => setState(
+                                            () => _selectedProductId = value),
+                                        validator: (value) => value == null
+                                            ? 'Please select a product'
+                                            : null,
                                       ),
                                     );
                                   },
                                 ),
                                 const SizedBox(height: 16),
-                                Card(
-                                  elevation: 4,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(12.0),
-                                    child: TextFormField(
-                                      decoration: InputDecoration(
-                                        labelText: 'Quantity',
-                                        labelStyle: const TextStyle(
-                                            fontWeight: FontWeight.bold, color: Colors.black87),
-                                        border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(8),
-                                            borderSide: BorderSide.none),
-                                        filled: true,
-                                        fillColor: Colors.grey[50],
-                                        contentPadding:
-                                        const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                                        errorStyle: const TextStyle(color: Colors.red),
-                                      ),
-                                      keyboardType: TextInputType.number,
-                                      onChanged: (value) => setState(() => _quantity = int.tryParse(value) ?? 0),
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'Please enter quantity';
-                                        }
-                                        if (int.tryParse(value) == null || int.parse(value) <= 0) {
-                                          return 'Please enter a valid quantity';
-                                        }
-                                        return null;
-                                      },
+                                Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: TextFormField(
+                                    decoration: InputDecoration(
+                                      labelText: 'Quantity',
+                                      labelStyle: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black87),
+                                      border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          borderSide: BorderSide.none),
+                                      filled: true,
+                                      fillColor: Colors.grey[50],
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 12),
+                                      errorStyle:
+                                          const TextStyle(color: Colors.red),
                                     ),
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) => setState(() =>
+                                        _quantity = int.tryParse(value) ?? 0),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter quantity';
+                                      }
+                                      if (int.tryParse(value) == null ||
+                                          int.parse(value) <= 0) {
+                                        return 'Please enter a valid quantity';
+                                      }
+                                      return null;
+                                    },
                                   ),
                                 ),
                                 const SizedBox(height: 24),
                                 ElevatedButton(
                                   onPressed: () {
                                     if (_formKey.currentState!.validate()) {
-                                      final products = _productCubit.state is ProductLoaded
-                                          ? (_productCubit.state as ProductLoaded).products
-                                          : []; // Use _productCubit directly
-                                      final selectedProduct = products.firstWhere(
-                                            (product) => product.id == _selectedProductId,
+                                      final products =
+                                          _productCubit.state is ProductLoaded
+                                              ? (_productCubit.state
+                                                      as ProductLoaded)
+                                                  .products
+                                              : [];
+                                      final selectedProduct =
+                                          products.firstWhere(
+                                        (product) =>
+                                            product.id == _selectedProductId,
                                         orElse: () => Product(
                                           id: _selectedProductId ?? '',
                                           name: '',
@@ -853,22 +1094,29 @@ class _AddStockPageState extends State<AddStockPage> {
                                         stock: null,
                                         category: selectedProduct.category,
                                         categoryId: selectedProduct.categoryId,
-                                        subcategoryId: selectedProduct.subcategoryId,
-                                        subcategoryName: selectedProduct.subcategoryName,
+                                        subcategoryId:
+                                            selectedProduct.subcategoryId,
+                                        subcategoryName:
+                                            selectedProduct.subcategoryName,
                                         tax: selectedProduct.tax,
                                       );
-                                      setState(() => _isStockAdded = true); // Set flag before adding
-                                      _stockCubit.addStock(stock, product: selectedProduct);
+                                      setState(() => _isStockAdded =
+                                          true); // Set flag before adding
+                                      _stockCubit.addStock(stock,
+                                          product: selectedProduct);
                                     }
                                   },
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Theme.of(context).primaryColor,
+                                    backgroundColor:
+                                        Theme.of(context).primaryColor,
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16),
                                     shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8)),
                                     textStyle: const TextStyle(
-                                        fontSize: 16, fontWeight: FontWeight.bold),
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                   child: const Text(AppLabels.saveButtonText),
                                 ),

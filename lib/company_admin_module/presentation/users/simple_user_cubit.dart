@@ -23,14 +23,14 @@ class UserListError extends EmployeesState {
 
 class UserDeleting extends EmployeesState {}
 
-class SimpleEmployeeCubit extends Cubit<EmployeesState> {
+class SimpleUserCubit extends Cubit<EmployeesState> {
   final UserServices _employeeServices;
   String searchQuery = '';
   UserType? selectedUserType;
   Role? selectedRole;
   List<UserInfo> allUsers = [];
 
-  SimpleEmployeeCubit(this._employeeServices) : super(UserListInitial());
+  SimpleUserCubit(this._employeeServices) : super(UserListInitial());
 
   Future<void> fetchUsers() async {
     try {

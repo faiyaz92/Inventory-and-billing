@@ -94,6 +94,7 @@ class _AddEditCategoryPageState extends State<AddEditCategoryPage> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: TextFormField(
+                                textCapitalization: TextCapitalization.words,
                                 controller: _nameController,
                                 decoration: InputDecoration(
                                   labelText: 'Category Name',

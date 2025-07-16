@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:requirment_gathering_app/company_admin_module/presentation/users/simple_employee_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/users/simple_user_cubit.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
@@ -10,14 +10,18 @@ import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 
 @RoutePage()
-class SimpleEmployeesPage extends StatelessWidget {
-  const SimpleEmployeesPage({Key? key}) : super(key: key);
+class SimpleUsersPage extends StatelessWidget {
+  final UserType? userType; // Optional UserType parameter
+
+  const SimpleUsersPage({Key? key, this.userType}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => sl<SimpleEmployeeCubit>()..fetchUsers(),
-      child: BlocConsumer<SimpleEmployeeCubit, EmployeesState>(
+      create: (_) => sl<SimpleUserCubit>()
+        ..fetchUsers()
+        ..filterUsers(userType: userType), // Apply initial filter if userType is provided
+      child: BlocConsumer<SimpleUserCubit, EmployeesState>(
         listenWhen: (previous, current) => current is UserListError,
         listener: (context, state) {
           if (state is UserListError) {
@@ -44,96 +48,97 @@ class SimpleEmployeesPage extends StatelessWidget {
             previous is UserDeleting,
         builder: (context, state) {
           return Scaffold(
-            appBar: const CustomAppBar(
-              title: "User List",
+            appBar: CustomAppBar(
+              title: userType != null ? '${userType!.name} Accounts' : 'User List',
             ),
             body: Column(
               children: [
-                // Search and Filter Section
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Search by name or email',
-                          prefixIcon: const Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onChanged: (value) {
-                          context.read<SimpleEmployeeCubit>().filterUsers(
-                            searchQuery: value,
-                            userType: context.read<SimpleEmployeeCubit>().selectedUserType,
-                            role: context.read<SimpleEmployeeCubit>().selectedRole,
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: DropdownButtonFormField<UserType>(
-                              decoration: InputDecoration(
-                                labelText: 'User Type',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              value: context.read<SimpleEmployeeCubit>().selectedUserType,
-                              items: UserType.values.map((type) {
-                                return DropdownMenuItem(
-                                  value: type,
-                                  child: Text(type.name),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                if (value != null) {
-                                  context.read<SimpleEmployeeCubit>().filterUsers(
-                                    searchQuery: context.read<SimpleEmployeeCubit>().searchQuery,
-                                    userType: value,
-                                    role: value == UserType.Employee
-                                        ? context.read<SimpleEmployeeCubit>().selectedRole
-                                        : null,
-                                  );
-                                }
-                              },
+                // Show filter UI only if userType is null
+                if (userType == null)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        TextField(
+                          decoration: InputDecoration(
+                            hintText: 'Search by name or email',
+                            prefixIcon: const Icon(Icons.search),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          if (context.watch<SimpleEmployeeCubit>().selectedUserType == UserType.Employee)
+                          onChanged: (value) {
+                            context.read<SimpleUserCubit>().filterUsers(
+                              searchQuery: value,
+                              userType: context.read<SimpleUserCubit>().selectedUserType,
+                              role: context.read<SimpleUserCubit>().selectedRole,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
                             Expanded(
-                              child: DropdownButtonFormField<Role>(
+                              child: DropdownButtonFormField<UserType>(
                                 decoration: InputDecoration(
-                                  labelText: 'Role',
+                                  labelText: 'User Type',
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
-                                value: context.read<SimpleEmployeeCubit>().selectedRole,
-                                items: Role.values.map((role) {
+                                value: context.read<SimpleUserCubit>().selectedUserType,
+                                items: UserType.values.map((type) {
                                   return DropdownMenuItem(
-                                    value: role,
-                                    child: Text(role.name),
+                                    value: type,
+                                    child: Text(type.name),
                                   );
                                 }).toList(),
                                 onChanged: (value) {
                                   if (value != null) {
-                                    context.read<SimpleEmployeeCubit>().filterUsers(
-                                      searchQuery: context.read<SimpleEmployeeCubit>().searchQuery,
-                                      userType: context.read<SimpleEmployeeCubit>().selectedUserType,
-                                      role: value,
+                                    context.read<SimpleUserCubit>().filterUsers(
+                                      searchQuery: context.read<SimpleUserCubit>().searchQuery,
+                                      userType: value,
+                                      role: value == UserType.Employee
+                                          ? context.read<SimpleUserCubit>().selectedRole
+                                          : null,
                                     );
                                   }
                                 },
                               ),
                             ),
-                        ],
-                      ),
-                    ],
+                            const SizedBox(width: 12),
+                            if (context.watch<SimpleUserCubit>().selectedUserType == UserType.Employee)
+                              Expanded(
+                                child: DropdownButtonFormField<Role>(
+                                  decoration: InputDecoration(
+                                    labelText: 'Role',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  value: context.read<SimpleUserCubit>().selectedRole,
+                                  items: Role.values.map((role) {
+                                    return DropdownMenuItem(
+                                      value: role,
+                                      child: Text(role.name),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    if (value != null) {
+                                      context.read<SimpleUserCubit>().filterUsers(
+                                        searchQuery: context.read<SimpleUserCubit>().searchQuery,
+                                        userType: context.read<SimpleUserCubit>().selectedUserType,
+                                        role: value,
+                                      );
+                                    }
+                                  },
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
                 Expanded(
                   child: state is UserListLoading || state is UserDeleting
                       ? const Center(child: CircularProgressIndicator())
@@ -148,11 +153,11 @@ class SimpleEmployeesPage extends StatelessWidget {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Padding(
-                                padding: EdgeInsets.all(16),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
                                 child: Text(
-                                  'No employees found',
-                                  style: TextStyle(
+                                  userType != null ? 'No ${userType!.name.toLowerCase()} accounts found' : 'No users found',
+                                  style: const TextStyle(
                                     fontSize: 16,
                                     color: AppColors.textSecondary,
                                     fontWeight: FontWeight.w500,
@@ -204,6 +209,17 @@ class SimpleEmployeesPage extends StatelessWidget {
                                           ],
                                         ),
                                       ),
+                                      if (userType != null)
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.account_balance_wallet,
+                                            color: AppColors.textPrimary,
+                                          ),
+                                          tooltip: 'View Ledger',
+                                          onPressed: () {
+                                            sl<Coordinator>().navigateToUserLedgerPage(user: user);
+                                          },
+                                        ),
                                       PopupMenuButton<String>(
                                         icon: const Icon(
                                           Icons.more_vert,
@@ -288,7 +304,7 @@ class SimpleEmployeesPage extends StatelessWidget {
             ),
           ),
           content: const Text(
-            'Are you sure you want to delete this employee?',
+            'Are you sure you want to delete this user?',
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 16,
@@ -307,7 +323,7 @@ class SimpleEmployeesPage extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                context.read<SimpleEmployeeCubit>().deleteUser(userId);
+                context.read<SimpleUserCubit>().deleteUser(userId);
                 Navigator.of(context).pop();
               },
               child: const Text(

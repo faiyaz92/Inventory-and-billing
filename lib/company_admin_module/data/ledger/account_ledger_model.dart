@@ -1,9 +1,11 @@
 import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_ledger_dto.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/ledger/transaction_model.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
+
 
 class AccountLedger {
   final String? ledgerId;
-  final String? entityType;
+  final UserType? entityType; // Changed from String? to UserType?
   final double totalOutstanding;
   final double? currentDue;
   final double? currentPayable;
@@ -41,7 +43,7 @@ class AccountLedger {
   factory AccountLedger.fromDto(AccountLedgerDto dto) {
     return AccountLedger(
       ledgerId: dto.ledgerId,
-      entityType: dto.entityType,
+      entityType: UserTypeExtension.fromString(dto.entityType), // Convert String to UserType
       totalOutstanding: dto.totalOutstanding,
       currentDue: dto.currentDue,
       currentPayable: dto.currentPayable,
@@ -62,7 +64,7 @@ class AccountLedger {
   AccountLedgerDto toDto() {
     return AccountLedgerDto(
       ledgerId: ledgerId,
-      entityType: entityType,
+      entityType: entityType?.name, // Convert UserType to String
       totalOutstanding: totalOutstanding,
       currentDue: currentDue,
       currentPayable: currentPayable,
@@ -82,7 +84,7 @@ class AccountLedger {
 
   AccountLedger copyWith({
     String? ledgerId,
-    String? entityType,
+    UserType? entityType, // Changed from String? to UserType?
     double? totalOutstanding,
     double? currentDue,
     double? currentPayable,

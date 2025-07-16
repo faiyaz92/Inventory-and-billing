@@ -245,7 +245,8 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
   }
 
   Widget _buildBalanceTable(AccountLedger ledger) {
-    final isCustomer = widget.user.userType == UserType.Customer || widget.user.userType == null;
+    final currentDue = ledger.currentDue ?? 0.0;
+    final isDuePositive = currentDue >= 0;
     return Table(
       border: TableBorder.all(color: Colors.grey.shade300),
       columnWidths: const {
@@ -259,7 +260,7 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                isCustomer ? "Current Due" : "Current Payable",
+                isDuePositive ? "Current Due" : "Current Payable",
                 style: defaultTextStyle(
                     fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
               ),
@@ -267,7 +268,7 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                (isCustomer ? (ledger.currentDue ?? 0.0) : (ledger.currentPayable ?? 0.0)).toStringAsFixed(2),
+                (currentDue.abs()).toStringAsFixed(2),
                 style: defaultTextStyle(fontSize: 16, color: Colors.red),
                 textAlign: TextAlign.right,
               ),
@@ -306,24 +307,20 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         ElevatedButton(
-          onPressed: () => context
-              .read<UserLedgerCubit>()
-              .openTransactionPopup(false, widget.user.userType?.name),
+          onPressed: () => context.read<UserLedgerCubit>().openTransactionPopup(false),
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
-          child: const Text("Credit (Jama)"),
+          child: const Text("Credit"),
         ),
         ElevatedButton(
-          onPressed: () => context
-              .read<UserLedgerCubit>()
-              .openTransactionPopup(true, widget.user.userType?.name),
+          onPressed: () => context.read<UserLedgerCubit>().openTransactionPopup(true),
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
-          child: const Text("Debit (Udhar)"),
+          child: const Text("Debit"),
         ),
       ],
     );
@@ -367,8 +364,8 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
                         children: [
                           Text(
                             txn.type == "Debit"
-                                ? "Udhar: ₹${txn.amount.toStringAsFixed(2)}"
-                                : "Jama: ₹${txn.amount.toStringAsFixed(2)}",
+                                ? "Debit: ₹${txn.amount.toStringAsFixed(2)}"
+                                : "Credit: ₹${txn.amount.toStringAsFixed(2)}",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -435,7 +432,7 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
         return BlocProvider.value(
           value: _ledgerCubit,
           child: AlertDialog(
-            title: Text(state.isDebit ? "Add Debit (Udhar)" : "Add Credit (Jama)"),
+            title: Text(state.isDebit ? "Add Debit" : "Add Credit"),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,

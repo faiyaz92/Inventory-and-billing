@@ -372,7 +372,6 @@ class _TransactionsPageState extends State<TransactionsPage> {
       },
     );
   }
-
   Widget _buildUserFilter() {
     final employeeUsers = _users.where((u) => u.userType == UserType.Employee).toList();
     return DropdownButtonFormField<String>(
@@ -401,8 +400,9 @@ class _TransactionsPageState extends State<TransactionsPage> {
         ...employeeUsers.map((user) => DropdownMenuItem<String>(
           value: user.userId,
           child: Text(
-            '${user.name ?? user.userName ?? 'Unknown'} (ID: ${user.userId})',
+            user.name ?? user.userName ?? 'Unknown',
             style: const TextStyle(color: AppColors.textPrimary),
+            overflow: TextOverflow.ellipsis,
           ),
         )),
       ],
@@ -444,8 +444,9 @@ class _TransactionsPageState extends State<TransactionsPage> {
         ...customerUsers.map((user) => DropdownMenuItem<String>(
           value: user.userId,
           child: Text(
-            '${user.name ?? user.userName ?? 'Unknown'} (ID: ${user.userId})',
+            user.name ?? user.userName ?? 'Unknown',
             style: const TextStyle(color: AppColors.textPrimary),
+            overflow: TextOverflow.ellipsis,
           ),
         )),
       ],

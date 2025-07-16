@@ -38,159 +38,159 @@ class ProductListPage extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  Row(
+                  Column(
                     children: [
-                      Expanded(
-                        flex: 2,
-                        child: TextField(
-                          controller: _searchController,
-                          decoration: InputDecoration(
-                            hintText: 'Search products...',
-                            prefixIcon: const Icon(Icons.search),
-                            suffixIcon: _searchController.text.isNotEmpty
-                                ? IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                _searchController.clear();
-                                _cubit.setSearchQuery('');
-                              },
-                            )
-                                : null,
-                            filled: true,
-                            fillColor: Colors.grey[100],
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                              borderSide: BorderSide.none,
-                            ),
-                            contentPadding:
-                            const EdgeInsets.symmetric(vertical: 10.0),
+                      // Search bar row
+                      TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Search products...',
+                          prefixIcon: const Icon(Icons.search),
+                          suffixIcon: _searchController.text.isNotEmpty
+                              ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              _searchController.clear();
+                              _cubit.setSearchQuery('');
+                            },
+                          )
+                              : null,
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            borderSide: BorderSide.none,
                           ),
-                          onChanged: (value) {
-                            print('Search input: $value');
-                            _cubit.setSearchQuery(value);
-                          },
+                          contentPadding: const EdgeInsets.symmetric(vertical: 10.0),
                         ),
+                        onChanged: (value) {
+                          print('Search input: $value');
+                          _cubit.setSearchQuery(value);
+                        },
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: BlocBuilder<AdminProductCubit, ProductState>(
-                          bloc: _cubit,
-                          buildWhen: (previous, current) =>
-                          current is CategoriesLoaded ||
-                              current is CategorySelected,
-                          builder: (context, state) {
-                            List<String> categoryNames = ['Select'];
-                            if (state is CategoriesLoaded) {
-                              categoryNames.addAll(
-                                state.categories
-                                    .where((cat) => cat.name != null)
-                                    .map((cat) => cat.name!)
-                                    .toSet()
-                                    .toList(),
-                              );
-                            } else if (state is CategorySelected) {
-                              categoryNames.addAll(
-                                state.categories
-                                    .where((cat) => cat.name != null)
-                                    .map((cat) => cat.name!)
-                                    .toSet()
-                                    .toList(),
-                              );
-                            }
-                            String? selectedCategory = _cubit.selectedCategoryName;
-                            if (selectedCategory == null || !categoryNames.contains(selectedCategory)) {
-                              selectedCategory = 'Select';
-                            }
-                            print('Category Dropdown: items=$categoryNames, selected=$selectedCategory');
-                            return DropdownButtonFormField<String>(
-                              value: selectedCategory,
-                              decoration: InputDecoration(
-                                filled: true,
-                                fillColor: Colors.grey[100],
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  borderSide: BorderSide.none,
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 10.0, vertical: 10.0),
-                              ),
-                              items: categoryNames.map((name) {
-                                return DropdownMenuItem(
-                                  value: name,
-                                  child: Text(
-                                    name,
-                                    style: const TextStyle(fontSize: 14.0),
-                                    overflow: TextOverflow.ellipsis,
+                      const SizedBox(height: 16),
+                      // Filter row (Category and Subcategory)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: BlocBuilder<AdminProductCubit, ProductState>(
+                              bloc: _cubit,
+                              buildWhen: (previous, current) =>
+                              current is CategoriesLoaded || current is CategorySelected,
+                              builder: (context, state) {
+                                List<String> categoryNames = ['Select'];
+                                if (state is CategoriesLoaded) {
+                                  categoryNames.addAll(
+                                    state.categories
+                                        .where((cat) => cat.name != null)
+                                        .map((cat) => cat.name!)
+                                        .toSet()
+                                        .toList(),
+                                  );
+                                } else if (state is CategorySelected) {
+                                  categoryNames.addAll(
+                                    state.categories
+                                        .where((cat) => cat.name != null)
+                                        .map((cat) => cat.name!)
+                                        .toSet()
+                                        .toList(),
+                                  );
+                                }
+                                String? selectedCategory = _cubit.selectedCategoryName;
+                                if (selectedCategory == null || !categoryNames.contains(selectedCategory)) {
+                                  selectedCategory = 'Select';
+                                }
+                                print('Category Dropdown: items=$categoryNames, selected=$selectedCategory');
+                                return DropdownButtonFormField<String>(
+                                  value: selectedCategory,
+                                  decoration: InputDecoration(
+                                    filled: true,
+                                    fillColor: Colors.grey[100],
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 10.0, vertical: 10.0),
                                   ),
+                                  items: categoryNames.map((name) {
+                                    return DropdownMenuItem(
+                                      value: name,
+                                      child: Text(
+                                        name,
+                                        style: const TextStyle(fontSize: 14.0),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    print('Category selected: $value');
+                                    _cubit.selectCategory(value);
+                                  },
                                 );
-                              }).toList(),
-                              onChanged: (value) {
-                                print('Category selected: $value');
-                                _cubit.selectCategory(value);
                               },
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: BlocBuilder<AdminProductCubit, ProductState>(
-                          buildWhen: (previous, current) =>
-                          current is SubcategoriesLoaded ||
-                              current is SubcategorySelected,
-                          builder: (context, state) {
-                            List<String> subcategoryNames = ['Select'];
-                            if (state is SubcategoriesLoaded) {
-                              subcategoryNames.addAll(
-                                state.subcategories
-                                    .where((subcat) => subcat.name != null)
-                                    .map((subcat) => subcat.name!)
-                                    .toSet()
-                                    .toList(),
-                              );
-                            } else if (state is SubcategorySelected) {
-                              subcategoryNames.addAll(
-                                state.subcategories
-                                    .where((subcat) => subcat.name != null)
-                                    .map((subcat) => subcat.name!)
-                                    .toSet()
-                                    .toList(),
-                              );
-                            }
-                            String? selectedSubcategory = _cubit.selectedSubcategoryName;
-                            if (selectedSubcategory == null || !subcategoryNames.contains(selectedSubcategory)) {
-                              selectedSubcategory = 'Select';
-                            }
-                            print('Subcategory Dropdown: items=$subcategoryNames, selected=$selectedSubcategory');
-                            return DropdownButtonFormField<String>(
-                              value: selectedSubcategory,
-                              decoration: InputDecoration(
-                                filled: true,
-                                fillColor: Colors.grey[100],
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  borderSide: BorderSide.none,
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 10.0, vertical: 10.0),
-                              ),
-                              items: subcategoryNames.map((name) {
-                                return DropdownMenuItem(
-                                  value: name,
-                                  child: Text(
-                                    name,
-                                    style: const TextStyle(fontSize: 14.0),
-                                    overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: BlocBuilder<AdminProductCubit, ProductState>(
+                              buildWhen: (previous, current) =>
+                              current is SubcategoriesLoaded || current is SubcategorySelected,
+                              builder: (context, state) {
+                                List<String> subcategoryNames = ['Select'];
+                                if (state is SubcategoriesLoaded) {
+                                  subcategoryNames.addAll(
+                                    state.subcategories
+                                        .where((subcat) => subcat.name != null)
+                                        .map((subcat) => subcat.name!)
+                                        .toSet()
+                                        .toList(),
+                                  );
+                                } else if (state is SubcategorySelected) {
+                                  subcategoryNames.addAll(
+                                    state.subcategories
+                                        .where((subcat) => subcat.name != null)
+                                        .map((subcat) => subcat.name!)
+                                        .toSet()
+                                        .toList(),
+                                  );
+                                }
+                                String? selectedSubcategory = _cubit.selectedSubcategoryName;
+                                if (selectedSubcategory == null || !subcategoryNames.contains(selectedSubcategory)) {
+                                  selectedSubcategory = 'Select';
+                                }
+                                print('Subcategory Dropdown: items=$subcategoryNames, selected=$selectedSubcategory');
+                                return DropdownButtonFormField<String>(
+                                  value: selectedSubcategory,
+                                  decoration: InputDecoration(
+                                    filled: true,
+                                    fillColor: Colors.grey[100],
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 10.0, vertical: 10.0),
                                   ),
+                                  items: subcategoryNames.map((name) {
+                                    return DropdownMenuItem(
+                                      value: name,
+                                      child: Text(
+                                        name,
+                                        style: const TextStyle(fontSize: 14.0),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    print('Subcategory selected: $value');
+                                    _cubit.selectSubcategory(value);
+                                  },
                                 );
-                              }).toList(),
-                              onChanged: (value) {
-                                print('Subcategory selected: $value');
-                                _cubit.selectSubcategory(value);
                               },
-                            );
-                          },
-                        ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

@@ -1,4 +1,4 @@
-enum UserType { Employee, Supplier, Customer, Boss, ThirdPartyVendor, Contractor }
+enum UserType { Employee, Supplier, Customer, Boss, ThirdPartyVendor, Contractor, Store }
 
 extension UserTypeExtension on UserType {
   String get name {
@@ -15,6 +15,8 @@ extension UserTypeExtension on UserType {
         return 'ThirdPartyVendor';
       case UserType.Contractor:
         return 'Contractor';
+      case UserType.Store:
+        return 'Store';
     }
   }
 
@@ -50,6 +52,10 @@ extension UserTypeExtension on UserType {
       case 'Contractor':
       case 'CONTRACTOR':
         return UserType.Contractor;
+      case 'store':
+      case 'Store':
+      case 'STORE':
+        return UserType.Store;
       default:
         print('UserTypeExtension: Unknown userType "$name"');
         return null;
