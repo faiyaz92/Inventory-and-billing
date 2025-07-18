@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/attendance/attendance_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 
 class AttendanceCubit extends Cubit<AttendanceState> {
   final UserServices _employeeServices;
@@ -13,11 +14,13 @@ class AttendanceCubit extends Cubit<AttendanceState> {
   Future<void> fetchUsers({String? date}) async {
     try {
       emit(AttendanceLoading());
-      final users = await _employeeServices.getUsersFromTenantCompany();
-      // Fetch attendance for the given date (or today) for all users
+      // Fetch all users and filter for employees only
+      final allUsers = await _employeeServices.getUsersFromTenantCompany();
+      final employees = allUsers.where((user) => user.userType == UserType.Employee).toList();
+      // Fetch attendance for the given date (or today) for employees
       final dateToFetch = date ?? DateFormat('dd-MM-yyyy').format(DateTime.now());
-      final attendanceMap = await _fetchAttendanceForUsers(users, dateToFetch);
-      emit(AttendanceLoaded(users: users, attendance: attendanceMap));
+      final attendanceMap = await _fetchAttendanceForUsers(employees, dateToFetch);
+      emit(AttendanceLoaded(users: employees, attendance: attendanceMap));
     } catch (e) {
       emit(AttendanceError(e.toString()));
     }
@@ -27,13 +30,16 @@ class AttendanceCubit extends Cubit<AttendanceState> {
     final attendanceMap = <String, AttendanceModel>{};
     final month = DateFormat('yyyy-MM').format(DateFormat('dd-MM-yyyy').parse(date));
     for (var user in users) {
-      final attendanceList = await _employeeServices.getAttendance(user.userId!, month);
-      // Find attendance for the specific date
-      final attendance = attendanceList.firstWhere(
-            (a) => a.date == date,
-        orElse: () => AttendanceModel(date: date, status: 'absent'), // Default to absent if no record
-      );
-      attendanceMap[user.userId!] = attendance;
+      // Only process users with a valid userId and of type Employee
+      if (user.userId != null && user.userType == UserType.Employee) {
+        final attendanceList = await _employeeServices.getAttendance(user.userId!, month);
+        // Find attendance for the specific date
+        final attendance = attendanceList.firstWhere(
+              (a) => a.date == date,
+          orElse: () => AttendanceModel(date: date, status: 'absent'), // Default to absent if no record
+        );
+        attendanceMap[user.userId!] = attendance;
+      }
     }
     return attendanceMap;
   }
@@ -57,10 +63,11 @@ class AttendanceCubit extends Cubit<AttendanceState> {
   Future<void> fetchAttendance(String date) async {
     try {
       emit(AttendanceLoading());
-      // final currentState = state as AttendanceLoaded?;
-      final users = /*currentState?.users ??*/ await _employeeServices.getUsersFromTenantCompany();
-      final attendanceMap = await _fetchAttendanceForUsers(users, date);
-      emit(AttendanceLoaded(users: users, attendance: attendanceMap));
+      // Fetch all users and filter for employees only
+      final allUsers = await _employeeServices.getUsersFromTenantCompany();
+      final employees = allUsers.where((user) => user.userType == UserType.Employee).toList();
+      final attendanceMap = await _fetchAttendanceForUsers(employees, date);
+      emit(AttendanceLoaded(users: employees, attendance: attendanceMap));
     } catch (e) {
       emit(AttendanceError(e.toString()));
     }

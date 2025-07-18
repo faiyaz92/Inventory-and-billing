@@ -1,18 +1,57 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_ledger_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/ledger/transaction_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/account_ledger_state.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/account_ledger_service.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
+import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 import 'package:requirment_gathering_app/user_module/services/customer_company_service.dart';
 
 class UserLedgerCubit extends Cubit<AccountLedgerState> {
   final IAccountLedgerService _accountLedgerService;
   final AccountRepository _accountRepository;
-  final CustomerCompanyService _companyService;
+  final CustomerCompanyService _companyService; // Keep for getSettings
+  final UserServices _userService; // New for updateUser
 
-  UserLedgerCubit(this._accountLedgerService, this._accountRepository, this._companyService)
+  UserLedgerCubit(this._accountLedgerService, this._accountRepository, this._companyService, this._userService)
       : super(AccountLedgerInitial());
+
+  Future<void> ensureLedger(String? ledgerId, UserType? userType, UserInfo user) async {
+    if (ledgerId == null || ledgerId.isEmpty) {
+      emit(AccountLedgerFetching());
+      try {
+        // Validate user info
+        if (user.userId == null || user.companyId == null) {
+          emit(const AccountLedgerError("User ID or Company ID missing"));
+          return;
+        }
+
+        // Create a new ledger
+        final newLedger = AccountLedger(
+          totalOutstanding: 0,
+          promiseAmount: null,
+          promiseDate: null,
+          transactions: [],
+          entityType: userType ?? UserType.Customer,
+        );
+        final newLedgerId = await _accountLedgerService.createLedger(newLedger);
+
+        // Update UserInfo with new ledgerId
+        final updatedUserInfo = user.copyWith(accountLedgerId: newLedgerId);
+        await _userService.updateUser(updatedUserInfo);
+
+        // Fetch the new ledger
+        await fetchLedger(newLedgerId, userType);
+      } catch (e) {
+        emit(AccountLedgerError("Failed to create or update ledger: $e"));
+        return;
+      }
+    } else {
+      await fetchLedger(ledgerId, userType);
+    }
+  }
 
   Future<void> fetchLedger(String? ledgerId, UserType? userType) async {
     if (ledgerId == null || ledgerId.isEmpty) {
@@ -51,7 +90,7 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
           : null;
       emit(TransactionPopupOpened(
         isDebit: isDebit,
-        companyType: null, // Removed userTypeName
+        companyType: null,
         purposeTypeMap: purposeTypeMap,
         selectedPurpose: defaultPurpose,
         selectedType: defaultType,
@@ -60,7 +99,7 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
     } catch (e) {
       emit(TransactionPopupOpened(
         isDebit: isDebit,
-        companyType: null, // Removed userTypeName
+        companyType: null,
         purposeTypeMap: {'Material': [], 'Labor': []},
         selectedPurpose: null,
         selectedType: null,
@@ -105,14 +144,13 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
       double updatedDue = currentLedger.currentDue ?? 0.0;
       double updatedOutstanding = currentLedger.totalOutstanding;
 
-      // Update currentDue and totalOutstanding for all UserTypes
       updatedDue += (type == "Debit" ? amount : -amount);
       updatedOutstanding += (type == "Debit" ? amount : -amount);
 
       final updatedLedger = currentLedger.copyWith(
         totalOutstanding: updatedOutstanding,
         currentDue: updatedDue,
-        currentPayable: null, // Set to null as it's not used
+        currentPayable: null,
         transactions: [...?currentLedger.transactions, transaction],
       );
       await _accountLedgerService.updateLedger(ledgerId, updatedLedger);
@@ -131,14 +169,13 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
       double updatedDue = currentLedger.currentDue ?? 0.0;
       double updatedOutstanding = currentLedger.totalOutstanding;
 
-      // Reverse the transaction effect on currentDue and totalOutstanding
       updatedDue -= (transaction.type == "Debit" ? transaction.amount : -transaction.amount);
       updatedOutstanding -= (transaction.type == "Debit" ? transaction.amount : -transaction.amount);
 
       final updatedLedger = currentLedger.copyWith(
         totalOutstanding: updatedOutstanding,
         currentDue: updatedDue,
-        currentPayable: null, // Set to null as it's not used
+        currentPayable: null,
         transactions: currentLedger.transactions?.where((txn) => txn.transactionId != transaction.transactionId).toList(),
       );
       await _accountLedgerService.updateLedger(ledgerId, updatedLedger);

@@ -4,11 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_ledger_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/account_ledger_state.dart';
+import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/utils/text_styles.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
+import 'package:auto_route/auto_route.dart';
 
 @RoutePage()
 class UserLedgerPage extends StatefulWidget {
@@ -26,12 +28,20 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
   final TextEditingController billNumberController = TextEditingController();
   final TextEditingController remarksController = TextEditingController();
   bool _isPopupOpen = false;
+  String? _ledgerId;
+  bool _ledgerCreated = false; // Track if a new ledger was created
 
   @override
   void initState() {
     super.initState();
     _ledgerCubit = sl<UserLedgerCubit>();
-    _ledgerCubit.fetchLedger(widget.user.accountLedgerId, widget.user.userType);
+    _ledgerId = widget.user.accountLedgerId;
+    _ledgerCreated = widget.user.accountLedgerId == null || widget.user.accountLedgerId!.isEmpty;
+    if (_ledgerCreated) {
+      _ledgerCubit.ensureLedger(widget.user.accountLedgerId, widget.user.userType, widget.user);
+    } else {
+      _ledgerCubit.fetchLedger(widget.user.accountLedgerId, widget.user.userType);
+    }
   }
 
   @override
@@ -48,7 +58,13 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
     return BlocProvider(
       create: (_) => _ledgerCubit,
       child: Scaffold(
-        appBar: const CustomAppBar(title: "User Ledger"),
+        appBar: CustomAppBar(
+          title: "User Ledger",
+          onBackPressed: () {
+            // Return result when back button is pressed
+            sl<Coordinator>().navigateBack(isUpdated: _ledgerCreated);
+          },
+        ),
         body: Column(
           children: [
             BlocListener<UserLedgerCubit, AccountLedgerState>(
@@ -57,7 +73,9 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
                   current.isInitialOpen &&
                   !_isPopupOpen) ||
                   current is TransactionSuccess ||
-                  current is TransactionAddFailed,
+                  current is TransactionAddFailed ||
+                  current is AccountLedgerUpdated ||
+                  current is AccountLedgerError,
               listener: (context, state) {
                 if (state is TransactionSuccess) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -74,6 +92,22 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
                     !_isPopupOpen) {
                   _isPopupOpen = true;
                   _showTransactionPopup(context, state);
+                }
+                if (state is AccountLedgerUpdated) {
+                  setState(() {
+                    _ledgerId = state.ledger.ledgerId ?? _ledgerId;
+                    // Confirm ledger creation if it was initially null
+                    _ledgerCreated = _ledgerCreated && _ledgerId != null;
+                  });
+                }
+                if (state is AccountLedgerError) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(state.message)),
+                  );
+                  // If ledger creation failed, reset _ledgerCreated
+                  if (_ledgerCreated) {
+                    _ledgerCreated = false;
+                  }
                 }
               },
               child: const SizedBox.shrink(),
@@ -426,6 +460,14 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
   }
 
   void _showTransactionPopup(BuildContext context, TransactionPopupOpened state) {
+    if (_ledgerId == null && widget.user.accountLedgerId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Ledger ID not available. Please wait or try again.")),
+      );
+      _isPopupOpen = false;
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (dialogContext) {
@@ -553,7 +595,7 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
                     selectedPurpose = currentState.selectedPurpose;
                   }
                   context.read<UserLedgerCubit>().addTransaction(
-                    ledgerId: widget.user.accountLedgerId!,
+                    ledgerId: _ledgerId ?? widget.user.accountLedgerId!,
                     amount: double.tryParse(amountController.text) ?? 0.0,
                     type: state.isDebit ? "Debit" : "Credit",
                     billNumber: billNumberController.text,
@@ -564,6 +606,9 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
                   );
                   _isPopupOpen = false;
                   Navigator.pop(dialogContext);
+                  amountController.clear();
+                  billNumberController.clear();
+                  remarksController.clear();
                 },
                 child: const Text("Add"),
               ),

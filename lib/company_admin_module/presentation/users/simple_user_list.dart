@@ -11,7 +11,7 @@ import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart
 
 @RoutePage()
 class SimpleUsersPage extends StatelessWidget {
-  final UserType? userType; // Optional UserType parameter
+  final UserType? userType;
 
   const SimpleUsersPage({Key? key, this.userType}) : super(key: key);
 
@@ -20,7 +20,7 @@ class SimpleUsersPage extends StatelessWidget {
     return BlocProvider(
       create: (_) => sl<SimpleUserCubit>()
         ..fetchUsers()
-        ..filterUsers(userType: userType), // Apply initial filter if userType is provided
+        ..filterUsers(userType: userType),
       child: BlocConsumer<SimpleUserCubit, EmployeesState>(
         listenWhen: (previous, current) => current is UserListError,
         listener: (context, state) {
@@ -53,7 +53,6 @@ class SimpleUsersPage extends StatelessWidget {
             ),
             body: Column(
               children: [
-                // Show filter UI only if userType is null
                 if (userType == null)
                   Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -217,7 +216,16 @@ class SimpleUsersPage extends StatelessWidget {
                                           ),
                                           tooltip: 'View Ledger',
                                           onPressed: () {
-                                            sl<Coordinator>().navigateToUserLedgerPage(user: user);
+                                            sl<Coordinator>().navigateToUserLedgerPage(user: user).then((result) {
+                                              if (result is bool && result == true) {
+                                                context.read<SimpleUserCubit>().fetchUsers();
+                                                context.read<SimpleUserCubit>().filterUsers(
+                                                  searchQuery: context.read<SimpleUserCubit>().searchQuery,
+                                                  userType: context.read<SimpleUserCubit>().selectedUserType,
+                                                  role: context.read<SimpleUserCubit>().selectedRole,
+                                                );
+                                              }
+                                            });
                                           },
                                         ),
                                       PopupMenuButton<String>(

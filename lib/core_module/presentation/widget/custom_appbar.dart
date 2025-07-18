@@ -6,14 +6,16 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool centerTitle;
   final bool automaticallyImplyLeading;
-  final List<Widget>? actions; // Optional actions for the AppBar
+  final List<Widget>? actions;
+  final VoidCallback? onBackPressed; // New optional callback for back press
 
   const CustomAppBar({
     Key? key,
     required this.title,
     this.centerTitle = true,
-    this.automaticallyImplyLeading = true, // Enables back button by default
-    this.actions, // Accepts a list of actions
+    this.automaticallyImplyLeading = true,
+    this.actions,
+    this.onBackPressed, // Add to constructor
   }) : super(key: key);
 
   @override
@@ -26,17 +28,17 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         style: defaultTextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w600,
-          color: AppColors.appBarTitleColor, // Use centralized title color
+          color: AppColors.appBarTitleColor,
         ),
       ),
-      iconTheme: const IconThemeData(color: AppColors.appBarIconColor), // Use centralized icon color
+      iconTheme: const IconThemeData(color: AppColors.appBarIconColor),
       flexibleSpace: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              AppColors.appBarStartColor, // Gradient start
-              AppColors.appBarMiddleColor, // Gradient middle
-              AppColors.appBarEndColor, // Gradient end
+              AppColors.appBarStartColor,
+              AppColors.appBarMiddleColor,
+              AppColors.appBarEndColor,
             ],
             stops: [0.0, 0.8, 1.0],
             begin: Alignment.topCenter,
@@ -44,7 +46,13 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ),
       ),
-      actions: actions, // Add actions to the AppBar
+      actions: actions,
+      leading: automaticallyImplyLeading
+          ? IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
+      )
+          : null,
     );
   }
 

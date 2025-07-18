@@ -1,11 +1,14 @@
 import 'package:requirment_gathering_app/company_admin_module/data/inventory/stock_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/inventory/stock_model_dto.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_ledger_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/account_ledger_service.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
+import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
+import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
-
-import '../data/ledger/account_ledger_model.dart';
 
 abstract class StockService {
   Future<List<StockModel>> getStock(String storeId);
@@ -16,19 +19,65 @@ abstract class StockService {
 
   Future<List<StoreDto>> getStores();
 
-  Future<void> addStore(StoreDto store); // New method
+  Future<void> addStore(StoreDto store);
+
+  Future<void> addSalesmanAsStore(UserInfo? employee); // New method
 }
 
 class StockServiceImpl implements StockService {
   final StockRepository stockRepository;
   final AccountRepository accountRepository;
   final IAccountLedgerService accountLedgerService;
+  final UserServices userServices;
 
-  StockServiceImpl( {
+  StockServiceImpl({
     required this.stockRepository,
     required this.accountRepository,
-   required this.accountLedgerService,
+    required this.accountLedgerService,
+    required this.userServices,
   });
+
+  @override
+  Future<void> addSalesmanAsStore(UserInfo? employee) async {
+    final userInfo = await accountRepository.getUserInfo();
+    final companyId = userInfo?.companyId ?? '';
+    if (companyId.isEmpty) {
+      throw Exception('Company ID not found');
+    }
+
+    final storeDto = StoreDto(
+      storeId: employee?.userId ?? '',
+      // Use userId as storeId
+      name: employee?.userName ?? '',
+      createdBy: userInfo?.userId ?? 'system',
+      createdAt: DateTime.now(),
+      accountLedgerId: employee?.accountLedgerId ?? '',
+    );
+    await stockRepository.addStore(companyId, storeDto);
+
+    // Update UserInfo to link to store and set userType
+    // final user = await accountRepository.getUser(userId, companyId);
+    if (employee != null) {
+      final updatedUser = UserInfo(
+        userId: employee.userId ?? '',
+        companyId: employee.companyId ?? '',
+        name: employee.name ?? '',
+        email: employee.email ?? '',
+        userName: employee.userName ?? '',
+        role: employee.role ?? Role.SALES_MAN,
+        userType: UserType.Employee,
+        latitude: employee.latitude,
+        longitude: employee.longitude,
+        dailyWage: employee.dailyWage,
+        storeId: employee.userName ?? '',
+        accountLedgerId: employee.accountLedgerId ?? '',
+      );
+      await userServices.updateUser(updatedUser);
+      // await accountRepository.updateUser('', companyId, updatedUser);
+    } else {
+      throw Exception('User not found');
+    }
+  }
 
   @override
   Future<List<StockModel>> getStock(String storeId) async {
@@ -38,7 +87,10 @@ class StockServiceImpl implements StockService {
       throw Exception('Company ID not found');
     }
     final stockDtos = await stockRepository.getStock(
-        companyId, storeId.isEmpty ? userInfo?.storeId : storeId); // if not store id then it will fetch from own store
+        companyId,
+        storeId.isEmpty
+            ? userInfo?.storeId
+            : storeId); // if not store id then it will fetch from own store
     return stockDtos
         .map((dto) => StockModel(
               id: dto.id,
@@ -140,6 +192,8 @@ class StockServiceImpl implements StockService {
       entityType: UserType.Store,
     ));
     await stockRepository.addStore(
-        companyId, store.copyWith(createdBy: userInfo?.userId ?? '',accountLedgerId: ledgerId));
+        companyId,
+        store.copyWith(
+            createdBy: userInfo?.userId ?? '', accountLedgerId: ledgerId));
   }
 }

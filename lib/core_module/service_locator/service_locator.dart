@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
-import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/stock_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/store_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/transaction_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/account_ledger_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/add_edit_category_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/admin_product_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/tasks/task_cubit.dart';
@@ -43,7 +43,6 @@ import 'package:requirment_gathering_app/core_module/presentation/dashboard/dash
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/home_cubit.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/forgot_password_cubit.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/login_cubit.dart';
-import 'package:requirment_gathering_app/core_module/presentation/login/profile_cubit.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/splash_cubit.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository_impl.dart';
@@ -62,7 +61,6 @@ import 'package:requirment_gathering_app/super_admin_module/repository/tenant_co
 import 'package:requirment_gathering_app/super_admin_module/repository/tenant_company_repository_impl.dart';
 import 'package:requirment_gathering_app/super_admin_module/services/tenant_company_service.dart';
 import 'package:requirment_gathering_app/super_admin_module/services/tenant_company_service_impl.dart';
-
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_cubit.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/cart_cubit.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/order_cubit.dart';
@@ -95,7 +93,7 @@ import 'package:requirment_gathering_app/user_module/services/update_location_se
 
 final sl = GetIt.instance;
 
-Future<void> setupServiceLocator() async{
+Future<void> setupServiceLocator() async {
   _initFirebase();
   _initRepositories();
   _initServices();
@@ -158,7 +156,7 @@ void _initRepositories() {
   sl.registerLazySingleton<StockRepository>(() => StockRepositoryImpl(
         firestorePathProvider: sl<IFirestorePathProvider>(),
         accountRepository: sl<AccountRepository>(),
-    accountLedgerService: sl<IAccountLedgerService>(),
+        accountLedgerService: sl<IAccountLedgerService>(),
       ));
   sl.registerLazySingleton<TransactionRepository>(
       () => TransactionRepositoryImpl(
@@ -172,8 +170,6 @@ void _initRepositories() {
   sl.registerLazySingleton<IWishlistRepository>(() => WishlistRepositoryImpl(
         firestorePathProvider: sl<IFirestorePathProvider>(),
       ));
-
-
 }
 
 /// **3. Initialize Services**
@@ -213,7 +209,9 @@ void _initServices() {
       () => UserServiceImpl(sl<AccountRepository>()));
   // Register Product Service
   sl.registerLazySingleton<ProductService>(() => ProductServiceImpl(
-      productRepository: sl<ProductRepository>(), sl<AccountRepository>(),stockRepository: sl<StockRepository>()));
+      productRepository: sl<ProductRepository>(),
+      sl<AccountRepository>(),
+      stockRepository: sl<StockRepository>()));
   sl.registerLazySingleton<CategoryService>(() => CategoryServiceImpl(
         categoryRepository: sl<CategoryRepository>(),
         accountRepository: sl<AccountRepository>(),
@@ -225,7 +223,8 @@ void _initServices() {
   sl.registerLazySingleton<StockService>(() => StockServiceImpl(
         stockRepository: sl<StockRepository>(),
         accountRepository: sl<AccountRepository>(),
-    accountLedgerService: sl<IAccountLedgerService>(),
+        accountLedgerService: sl<IAccountLedgerService>(),
+        userServices: sl<UserServices>(),
       ));
   sl.registerLazySingleton<TransactionService>(() => TransactionServiceImpl(
         stockRepository: sl<StockRepository>(),
@@ -254,8 +253,6 @@ void _initServices() {
       accountRepository: sl<AccountRepository>(),
     ),
   );
-
-
 }
 
 /// **4. Initialize Cubits (State Management)**
@@ -286,6 +283,7 @@ void _initCubits() {
         sl<UserServices>(),
         sl<StoreService>(),
         sl<IAccountLedgerService>(),
+        sl<StockService>(),
       ));
   sl.registerFactory(() => TaskCubit(sl<TaskService>(), sl<UserServices>(),
       sl<CustomerCompanyService>(), sl<AccountRepository>()));
@@ -346,8 +344,8 @@ void _initCubits() {
         sl<IAccountLedgerService>(),
         sl<AccountRepository>(),
         sl<CustomerCompanyService>(),
+        sl<UserServices>(),
       ));
-
 }
 
 /// **5. Initialize App Navigation & Coordinator**

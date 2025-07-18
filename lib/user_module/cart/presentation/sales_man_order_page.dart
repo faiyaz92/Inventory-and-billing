@@ -232,17 +232,17 @@ class SalesmanOrderPage extends StatelessWidget {
                         final product = state.filteredProducts[index];
                         final quantity = state.productQuantities[product.id] ?? 0;
                         return Card(
-                          elevation: 3,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16)),
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
+                            elevation: 3,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                  Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Expanded(
@@ -311,7 +311,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                                 },
                                               ),
                                               SizedBox(
-                                                width: 48, // Increased width for 7-digit support
+                                                width: 48,
                                                 child: Text(
                                                   '$quantity',
                                                   textAlign: TextAlign.center,
@@ -367,7 +367,8 @@ class SalesmanOrderPage extends StatelessWidget {
                                             ElevatedButton(
                                               onPressed: quantity > 0
                                                   ? () {
-                                                cubit.setProductQuantity(product.id, 0);
+                                                cubit.setProductQuantity(
+                                                    product.id, 0);
                                               }
                                                   : null,
                                               style: ElevatedButton.styleFrom(
@@ -394,127 +395,127 @@ class SalesmanOrderPage extends StatelessWidget {
                                   ],
                                 ),
                                 if (quantity > 0) ...[
-                                  const SizedBox(height: 12),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                          color: AppColors.textSecondary
-                                              .withOpacity(0.3)),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Table(
-                                      border: TableBorder(
-                                        verticalInside: BorderSide(
-                                            color: AppColors.textSecondary
-                                                .withOpacity(0.3)),
-                                        horizontalInside: BorderSide(
-                                            color: AppColors.textSecondary
-                                                .withOpacity(0.3)),
-                                      ),
-                                      columnWidths: const {
-                                        0: FlexColumnWidth(3),
-                                        1: FlexColumnWidth(2),
-                                      },
-                                      children: [
-                                        TableRow(
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 8, horizontal: 12),
-                                              child: Text(
-                                                'Subtotal (₹${product.price.toStringAsFixed(2)} x $quantity)',
-                                                style: const TextStyle(
-                                                  fontSize: 14,
-                                                  color: AppColors.textSecondary,
-                                                ),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 8, horizontal: 12),
-                                              child: Text(
-                                                '₹${cubit.calculateProductSubtotal(product.id).toStringAsFixed(2)}',
-                                                textAlign: TextAlign.right,
-                                                style: const TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: AppColors.textPrimary,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        TableRow(
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 8, horizontal: 12),
-                                              child: Text(
-                                                'Tax (${(product.taxRate * 100).toStringAsFixed(0)}%)',
-                                                style: const TextStyle(
-                                                  fontSize: 14,
-                                                  color: AppColors.textSecondary,
-                                                ),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 8, horizontal: 12),
-                                              child: Text(
-                                                '₹${cubit.calculateProductTax(product.id).toStringAsFixed(2)}',
-                                                textAlign: TextAlign.right,
-                                                style: const TextStyle(
-                                                  fontSize: 14,
-                                                  color: AppColors.textSecondary,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        TableRow(
-                                          decoration: BoxDecoration(
-                                            color:
-                                            AppColors.primary.withOpacity(0.05),
-                                            borderRadius: const BorderRadius.only(
-                                              bottomLeft: Radius.circular(12),
-                                              bottomRight: Radius.circular(12),
-                                            ),
-                                          ),
-                                          children: [
-                                            const Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                  vertical: 8, horizontal: 12),
-                                              child: Text(
-                                                'Total',
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: AppColors.textPrimary,
-                                                ),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 8, horizontal: 12),
-                                              child: Text(
-                                                '₹${cubit.calculateProductTotal(product.id).toStringAsFixed(2)}',
-                                                textAlign: TextAlign.right,
-                                                style: const TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: AppColors.textPrimary,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
+                            const SizedBox(height: 12),
+                        Container(
+                        decoration: BoxDecoration(
+                        border: Border.all(
+                        color: AppColors.textSecondary
+                            .withOpacity(0.3)),
+                        borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Table(
+                        border: TableBorder(
+                        verticalInside: BorderSide(
+                        color: AppColors.textSecondary
+                            .withOpacity(0.3)),
+                        horizontalInside: BorderSide(
+                        color: AppColors.textSecondary
+                            .withOpacity(0.3)),
+                        ),
+                        columnWidths: const {
+                        0: FlexColumnWidth(3),
+                        1: FlexColumnWidth(2),
+                        },
+                        children: [
+                        TableRow(
+                        children: [
+                        Padding(
+                        padding: const EdgeInsets.symmetric(
+                        vertical: 8, horizontal: 12),
+                        child: Text(
+                        'Subtotal (₹${product.price.toStringAsFixed(2)} x $quantity)',
+                        style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                        ),
+                        ),
+                        ),
+                        Padding(
+                        padding: const EdgeInsets.symmetric(
+                        vertical: 8, horizontal: 12),
+                        child: Text(
+                        '₹${cubit.calculateProductSubtotal(product.id).toStringAsFixed(2)}',
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                        ),
+                        ),
+                        ),
+                        ],
+                        ),
+                        TableRow(
+                        children: [
+                        Padding(
+                        padding: const EdgeInsets.symmetric(
+                        vertical: 8, horizontal: 12),
+                        child: Text(
+                        'Tax (${(product.taxRate * 100).toStringAsFixed(0)}%)',
+                        style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                        ),
+                        ),
+                        ),
+                        Padding(
+                        padding: const EdgeInsets.symmetric(
+                        vertical: 8, horizontal: 12),
+                        child: Text(
+                        '₹${cubit.calculateProductTax(product.id).toStringAsFixed(2)}',
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                        ),
+                        ),
+                        ),
+                        ],
+                        ),
+                        TableRow(
+                        decoration: BoxDecoration(
+                        color:
+                        AppColors.primary.withOpacity(0.05),
+                        borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(12),
+                        bottomRight: Radius.circular(12),
+                        ),
+                        ),
+                        children: [
+                        const Padding(
+                        padding: EdgeInsets.symmetric(
+                        vertical: 8, horizontal: 12),
+                        child: Text(
+                        'Total',
+                        style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                        ),
+                        ),
+                        ),
+                        Padding(
+                        padding: const EdgeInsets.symmetric(
+                        vertical: 8, horizontal: 12),
+                        child: Text(
+                        '₹${cubit.calculateProductTotal(product.id).toStringAsFixed(2)}',
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                        ),
+                        ),
+                        ),
+                        ],
+                        ),
+                        ],
+                        ),
+                        ),
+                        ],
+                        ],
+                        ),
+                        ),
                         );
                       },
                       childCount: state.filteredProducts.length,
@@ -556,177 +557,420 @@ class SalesmanOrderPage extends StatelessWidget {
                       isScrollControlled: true,
                       backgroundColor: AppColors.white,
                       builder: (context) {
-                        return Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text(
-                                    'Order Summary',
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.close,
-                                      color: AppColors.textSecondary,
-                                      size: 24,
-                                    ),
-                                    onPressed: () => Navigator.pop(context),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                      color: AppColors.textSecondary
-                                          .withOpacity(0.3)),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Table(
-                                  border: TableBorder(
-                                    verticalInside: BorderSide(
-                                        color: AppColors.textSecondary
-                                            .withOpacity(0.3)),
-                                    horizontalInside: BorderSide(
-                                        color: AppColors.textSecondary
-                                            .withOpacity(0.3)),
-                                  ),
-                                  columnWidths: const {
-                                    0: FlexColumnWidth(3),
-                                    1: FlexColumnWidth(2),
-                                  },
+                        final TextEditingController discountController =
+                        TextEditingController(
+                            text: cubit.discount.toStringAsFixed(2));
+                        return StatefulBuilder(
+                          builder: (context, setState) => Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
                                   children: [
-                                    TableRow(
-                                      children: [
-                                        const Padding(
-                                          padding: EdgeInsets.symmetric(
-                                              vertical: 12, horizontal: 16),
-                                          child: Text(
-                                            'Subtotal (All Items)',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                              color: AppColors.textPrimary,
-                                            ),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 16),
-                                          child: Text(
-                                            '₹${cubit.calculateOverallSubtotal().toStringAsFixed(2)}',
-                                            textAlign: TextAlign.right,
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                              color: AppColors.textPrimary,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    TableRow(
-                                      children: [
-                                        const Padding(
-                                          padding: EdgeInsets.symmetric(
-                                              vertical: 12, horizontal: 16),
-                                          child: Text(
-                                            'Total Tax',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              color: AppColors.textSecondary,
-                                            ),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 12, horizontal: 16),
-                                          child: Text(
-                                            '₹${cubit.calculateOverallTax().toStringAsFixed(2)}',
-                                            textAlign: TextAlign.right,
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              color: AppColors.textSecondary,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    TableRow(
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primary.withOpacity(0.05),
-                                        borderRadius: const BorderRadius.only(
-                                          bottomLeft: Radius.circular(12),
-                                          bottomRight: Radius.circular(12),
-                                        ),
+                                    const Text(
+                                      'Order Summary',
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.textPrimary,
                                       ),
-                                      children: [
-                                        const Padding(
-                                          padding: EdgeInsets.symmetric(
-                                              vertical: 12, horizontal: 16),
-                                          child: Text(
-                                            'Total',
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700,
-                                              color: AppColors.textPrimary,
-                                            ),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 12, horizontal: 16),
-                                          child: Text(
-                                            '₹${cubit.calculateOverallTotal().toStringAsFixed(2)}',
-                                            textAlign: TextAlign.right,
-                                            style: const TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700,
-                                              color: AppColors.textPrimary,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.close,
+                                        color: AppColors.textSecondary,
+                                        size: 24,
+                                      ),
+                                      onPressed: () => Navigator.pop(context),
                                     ),
                                   ],
                                 ),
-                              ),
-                              const SizedBox(height: 20),
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                    cubit.placeOrder();
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.primary,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 16),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'Order Details',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textPrimary,
                                   ),
-                                  child: const Text(
-                                    'Place Order',
-                                    style: TextStyle(
-                                      color: AppColors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
+                                ),
+                                const SizedBox(height: 8),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: AppColors.textSecondary
+                                            .withOpacity(0.3)),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Table(
+                                    border: TableBorder(
+                                      verticalInside: BorderSide(
+                                          color: AppColors.textSecondary
+                                              .withOpacity(0.3)),
+                                      horizontalInside: BorderSide(
+                                          color: AppColors.textSecondary
+                                              .withOpacity(0.3)),
+                                    ),
+                                    columnWidths: const {
+                                      0: FlexColumnWidth(3),
+                                      1: FlexColumnWidth(1),
+                                      2: FlexColumnWidth(1),
+                                      3: FlexColumnWidth(1),
+                                      4: FlexColumnWidth(1),
+                                    },
+                                    children: [
+                                      TableRow(
+                                        decoration: BoxDecoration(
+                                          color:
+                                          AppColors.primary.withOpacity(0.05),
+                                        ),
+                                        children: [
+                                          const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 8, horizontal: 12),
+                                            child: Text(
+                                              'Product',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppColors.textPrimary,
+                                              ),
+                                            ),
+                                          ),
+                                          const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 8, horizontal: 12),
+                                            child: Text(
+                                              'Qty',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppColors.textPrimary,
+                                              ),
+                                            ),
+                                          ),
+                                          const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 8, horizontal: 12),
+                                            child: Text(
+                                              'Subtotal',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppColors.textPrimary,
+                                              ),
+                                            ),
+                                          ),
+                                          const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 8, horizontal: 12),
+                                            child: Text(
+                                              'Tax',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppColors.textPrimary,
+                                              ),
+                                            ),
+                                          ),
+                                          const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 8, horizontal: 12),
+                                            child: Text(
+                                              'Total',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppColors.textPrimary,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      ...currentState.filteredProducts
+                                          .asMap()
+                                          .entries
+                                          .where((entry) =>
+                                      currentState
+                                          .productQuantities[entry
+                                          .value.id]! >
+                                          0)
+                                          .map((entry) {
+                                        final product = entry.value;
+                                        final quantity = currentState
+                                            .productQuantities[product.id]!;
+                                        return TableRow(
+                                          children: [
+                                            Padding(
+                                              padding:
+                                              const EdgeInsets.symmetric(
+                                                  vertical: 8,
+                                                  horizontal: 12),
+                                              child: Text(
+                                                product.name,
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  color: AppColors.textPrimary,
+                                                ),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                              const EdgeInsets.symmetric(
+                                                  vertical: 8,
+                                                  horizontal: 12),
+                                              child: Text(
+                                                '$quantity',
+                                                textAlign: TextAlign.right,
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  color: AppColors.textPrimary,
+                                                ),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                              const EdgeInsets.symmetric(
+                                                  vertical: 8,
+                                                  horizontal: 12),
+                                              child: Text(
+                                                '₹${cubit.calculateProductSubtotal(product.id).toStringAsFixed(2)}',
+                                                textAlign: TextAlign.right,
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  color: AppColors.textPrimary,
+                                                ),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                              const EdgeInsets.symmetric(
+                                                  vertical: 8,
+                                                  horizontal: 12),
+                                              child: Text(
+                                                '₹${cubit.calculateProductTax(product.id).toStringAsFixed(2)}',
+                                                textAlign: TextAlign.right,
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  color: AppColors.textSecondary,
+                                                ),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                              const EdgeInsets.symmetric(
+                                                  vertical: 8,
+                                                  horizontal: 12),
+                                              child: Text(
+                                                '₹${cubit.calculateProductTotal(product.id).toStringAsFixed(2)}',
+                                                textAlign: TextAlign.right,
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: AppColors.textPrimary,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      }).toList(),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                TextField(
+                                  controller: discountController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Discount (₹)',
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8)),
+                                    filled: true,
+                                    fillColor: Colors.grey[100],
+                                  ),
+                                  keyboardType: TextInputType.number,
+                                  onChanged: (value) {
+                                    final discount = double.tryParse(value) ?? 0.0;
+                                    cubit.setDiscount(discount);
+                                    setState(() {});
+                                  },
+                                ),
+                                const SizedBox(height: 20),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: AppColors.textSecondary
+                                            .withOpacity(0.3)),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Table(
+                                    border: TableBorder(
+                                      verticalInside: BorderSide(
+                                          color: AppColors.textSecondary
+                                              .withOpacity(0.3)),
+                                      horizontalInside: BorderSide(
+                                          color: AppColors.textSecondary
+                                              .withOpacity(0.3)),
+                                    ),
+                                    columnWidths: const {
+                                      0: FlexColumnWidth(3),
+                                      1: FlexColumnWidth(2),
+                                    },
+                                    children: [
+                                      TableRow(
+                                        children: [
+                                          const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 12, horizontal: 16),
+                                            child: Text(
+                                              'Subtotal (All Items)',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppColors.textPrimary,
+                                              ),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 16),
+                                            child: Text(
+                                              '₹${cubit.calculateOverallSubtotal().toStringAsFixed(2)}',
+                                              textAlign: TextAlign.right,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppColors.textPrimary,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      TableRow(
+                                        children: [
+                                          const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 12, horizontal: 16),
+                                            child: Text(
+                                              'Total Tax',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                color: AppColors.textSecondary,
+                                              ),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 12, horizontal: 16),
+                                            child: Text(
+                                              '₹${cubit.calculateOverallTax().toStringAsFixed(2)}',
+                                              textAlign: TextAlign.right,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                color: AppColors.textSecondary,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      TableRow(
+                                        children: [
+                                          const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 12, horizontal: 16),
+                                            child: Text(
+                                              'Discount',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                color: AppColors.textSecondary,
+                                              ),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 12, horizontal: 16),
+                                            child: Text(
+                                              '₹${cubit.discount.toStringAsFixed(2)}',
+                                              textAlign: TextAlign.right,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                color: AppColors.textSecondary,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      TableRow(
+                                        decoration: BoxDecoration(
+                                          color:
+                                          AppColors.primary.withOpacity(0.05),
+                                          borderRadius: const BorderRadius.only(
+                                            bottomLeft: Radius.circular(12),
+                                            bottomRight: Radius.circular(12),
+                                          ),
+                                        ),
+                                        children: [
+                                          const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 12, horizontal: 16),
+                                            child: Text(
+                                              'Final Total',
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppColors.textPrimary,
+                                              ),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 12, horizontal: 16),
+                                            child: Text(
+                                              '₹${cubit.calculateFinalTotal().toStringAsFixed(2)}',
+                                              textAlign: TextAlign.right,
+                                              style: const TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppColors.textPrimary,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      cubit.placeOrder();
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.primary,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                    ),
+                                    child: const Text(
+                                      'Place Order',
+                                      style: TextStyle(
+                                        color: AppColors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         );
                       },
@@ -776,7 +1020,7 @@ class SalesmanOrderPage extends StatelessWidget {
                 fillColor: Colors.grey[100],
               ),
               keyboardType: TextInputType.number,
-              maxLength: 7, // Restrict to 7 digits
+              maxLength: 7,
               onChanged: (value) => quantity = int.tryParse(value) ?? 0,
               validator: (value) {
                 if (value == null || value.isEmpty) {
