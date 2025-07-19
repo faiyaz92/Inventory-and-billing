@@ -1,156 +1,191 @@
 import 'package:requirment_gathering_app/user_module/cart/data/order_dto.dart';
 
 class Order {
-final String id;
-final String userId; // customer id
-final String userName;
-final List<CartItem> items;
-final double totalAmount;
-final double? discount; // Changed to nullable
-final String status;
-final DateTime orderDate;
-final DateTime? expectedDeliveryDate;
-final DateTime? orderDeliveryDate;
-final String? orderTakenBy;
-final String? orderDeliveredBy;
-final String? responsibleForDelivery;
-final String? lastUpdatedBy;
-final String? storeId;
-final String? billNumber;
+  final String id;
+  final String userId; // customer id
+  final String userName;
+  final List<CartItem> items;
+  final double totalAmount;
+  final double? discount;
+  final String status;
+  final DateTime orderDate;
+  final DateTime? expectedDeliveryDate;
+  final DateTime? orderDeliveryDate;
+  final String? orderTakenBy;
+  final String? orderDeliveredBy;
+  final String? responsibleForDelivery;
+  final String? lastUpdatedBy;
+  final String? storeId;
+  final String? billNumber;
+  final String? invoiceLastUpdatedBy; // Added for invoice tracking, nullable
+  final DateTime? invoiceGeneratedDate; // Added for invoice tracking, nullable
+  final String? invoiceType; // Added: Cash or Credit, nullable
+  final String? paymentStatus; // Added: Paid, Partial Paid, Not Paid, nullable
+  final double? amountReceived; // Added: Total amount received for the invoice
+  final List<Map<String, dynamic>>? paymentDetails; // Added: List of payment details
+  final int? slipNumber; // Added: Current slip number for the latest payment
 
-Order({
-required this.id,
-required this.userId,
-required this.userName,
-required this.items,
-required this.totalAmount,
-this.discount, // Optional field
-required this.status,
-required this.orderDate,
-this.expectedDeliveryDate,
-this.orderDeliveryDate,
-this.orderTakenBy,
-this.orderDeliveredBy,
-this.responsibleForDelivery,
-this.lastUpdatedBy,
-this.storeId,
-this.billNumber,
-});
+  Order({
+    required this.id,
+    required this.userId,
+    required this.userName,
+    required this.items,
+    required this.totalAmount,
+    this.discount,
+    required this.status,
+    required this.orderDate,
+    this.expectedDeliveryDate,
+    this.orderDeliveryDate,
+    this.orderTakenBy,
+    this.orderDeliveredBy,
+    this.responsibleForDelivery,
+    this.lastUpdatedBy,
+    this.storeId,
+    this.billNumber,
+    this.invoiceLastUpdatedBy,
+    this.invoiceGeneratedDate,
+    this.invoiceType,
+    this.paymentStatus,
+    this.amountReceived,
+    this.paymentDetails,
+    this.slipNumber,
+  });
 
-factory Order.fromDto(OrderDto dto) {
-return Order(
-id: dto.id,
-userId: dto.userId,
-userName: dto.userName,
-items: dto.items.map((itemDto) => CartItem.fromDto(itemDto)).toList(),
-totalAmount: dto.totalAmount,
-discount: dto.discount,
-status: dto.status,
-orderDate: dto.orderDate,
-expectedDeliveryDate: dto.expectedDeliveryDate,
-orderDeliveryDate: dto.orderDeliveryDate,
-orderTakenBy: dto.orderTakenBy,
-orderDeliveredBy: dto.orderDeliveredBy,
-responsibleForDelivery: dto.responsibleForDelivery,
-lastUpdatedBy: dto.lastUpdatedBy,
-storeId: dto.storeId,
-billNumber: dto.billNumber,
-);
-}
+  factory Order.fromDto(OrderDto dto) {
+    return Order(
+      id: dto.id,
+      userId: dto.userId,
+      userName: dto.userName,
+      items: dto.items.map((itemDto) => CartItem.fromDto(itemDto)).toList(),
+      totalAmount: dto.totalAmount,
+      discount: dto.discount,
+      status: dto.status,
+      orderDate: dto.orderDate,
+      expectedDeliveryDate: dto.expectedDeliveryDate,
+      orderDeliveryDate: dto.orderDeliveryDate,
+      orderTakenBy: dto.orderTakenBy,
+      orderDeliveredBy: dto.orderDeliveredBy,
+      responsibleForDelivery: dto.responsibleForDelivery,
+      lastUpdatedBy: dto.lastUpdatedBy,
+      storeId: dto.storeId,
+      billNumber: dto.billNumber,
+      invoiceLastUpdatedBy: dto.invoiceLastUpdatedBy,
+      invoiceGeneratedDate: dto.invoiceGeneratedDate,
+      invoiceType: dto.invoiceType,
+      paymentStatus: dto.paymentStatus,
+      amountReceived: dto.amountReceived,
+      paymentDetails: dto.paymentDetails,
+      slipNumber: dto.slipNumber,
+    );
+  }
 
-Order copyWith({
-String? id,
-String? userId,
-String? userName,
-List<CartItem>? items,
-double? totalAmount,
-double? discount,
-String? status,
-DateTime? orderDate,
-DateTime? expectedDeliveryDate,
-DateTime? orderDeliveryDate,
-String? orderTakenBy,
-String? orderDeliveredBy,
-String? responsibleForDelivery,
-String? lastUpdatedBy,
-String? storeId,
-String? billNumber,
-}) {
-return Order(
-id: id ?? this.id,
-userId: userId ?? this.userId,
-userName: userName ?? this.userName,
-items: items ?? this.items,
-totalAmount: totalAmount ?? this.totalAmount,
-discount: discount ?? this.discount,
-status: status ?? this.status,
-orderDate: orderDate ?? this.orderDate,
-expectedDeliveryDate: expectedDeliveryDate ?? this.expectedDeliveryDate,
-orderDeliveryDate: orderDeliveryDate ?? this.orderDeliveryDate,
-orderTakenBy: orderTakenBy ?? this.orderTakenBy,
-orderDeliveredBy: orderDeliveredBy ?? this.orderDeliveredBy,
-responsibleForDelivery: responsibleForDelivery ?? this.responsibleForDelivery,
-lastUpdatedBy: lastUpdatedBy ?? this.lastUpdatedBy,
-storeId: storeId ?? this.storeId,
-billNumber: billNumber ?? this.billNumber,
-);
-}
+  Order copyWith({
+    String? id,
+    String? userId,
+    String? userName,
+    List<CartItem>? items,
+    double? totalAmount,
+    double? discount,
+    String? status,
+    DateTime? orderDate,
+    DateTime? expectedDeliveryDate,
+    DateTime? orderDeliveryDate,
+    String? orderTakenBy,
+    String? orderDeliveredBy,
+    String? responsibleForDelivery,
+    String? lastUpdatedBy,
+    String? storeId,
+    String? billNumber,
+    String? invoiceLastUpdatedBy,
+    DateTime? invoiceGeneratedDate,
+    String? invoiceType,
+    String? paymentStatus,
+    double? amountReceived,
+    List<Map<String, dynamic>>? paymentDetails,
+    int? slipNumber,
+  }) {
+    return Order(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      userName: userName ?? this.userName,
+      items: items ?? this.items,
+      totalAmount: totalAmount ?? this.totalAmount,
+      discount: discount ?? this.discount,
+      status: status ?? this.status,
+      orderDate: orderDate ?? this.orderDate,
+      expectedDeliveryDate: expectedDeliveryDate ?? this.expectedDeliveryDate,
+      orderDeliveryDate: orderDeliveryDate ?? this.orderDeliveryDate,
+      orderTakenBy: orderTakenBy ?? this.orderTakenBy,
+      orderDeliveredBy: orderDeliveredBy ?? this.orderDeliveredBy,
+      responsibleForDelivery: responsibleForDelivery ?? this.responsibleForDelivery,
+      lastUpdatedBy: lastUpdatedBy ?? this.lastUpdatedBy,
+      storeId: storeId ?? this.storeId,
+      billNumber: billNumber ?? this.billNumber,
+      invoiceLastUpdatedBy: invoiceLastUpdatedBy ?? this.invoiceLastUpdatedBy,
+      invoiceGeneratedDate: invoiceGeneratedDate ?? this.invoiceGeneratedDate,
+      invoiceType: invoiceType ?? this.invoiceType,
+      paymentStatus: paymentStatus ?? this.paymentStatus,
+      amountReceived: amountReceived ?? this.amountReceived,
+      paymentDetails: paymentDetails ?? this.paymentDetails,
+      slipNumber: slipNumber ?? this.slipNumber,
+    );
+  }
 }
 
 class CartItem {
-final String productId;
-final String productName;
-final double price;
-final int quantity;
-final double taxRate;
-final double taxAmount;
+  final String productId;
+  final String productName;
+  final double price;
+  final int quantity;
+  final double taxRate;
+  final double taxAmount;
 
-CartItem({
-required this.productId,
-required this.productName,
-required this.price,
-required this.quantity,
-required this.taxRate,
-required this.taxAmount,
-});
+  CartItem({
+    required this.productId,
+    required this.productName,
+    required this.price,
+    required this.quantity,
+    required this.taxRate,
+    required this.taxAmount,
+  });
 
-factory CartItem.fromDto(CartItemDto dto) {
-return CartItem(
-productId: dto.productId,
-productName: dto.productName,
-price: dto.price,
-quantity: dto.quantity,
-taxRate: dto.taxRate,
-taxAmount: dto.taxAmount,
-);
-}
+  factory CartItem.fromDto(CartItemDto dto) {
+    return CartItem(
+      productId: dto.productId,
+      productName: dto.productName,
+      price: dto.price,
+      quantity: dto.quantity,
+      taxRate: dto.taxRate,
+      taxAmount: dto.taxAmount,
+    );
+  }
 
-CartItem copyWith({
-String? productId,
-String? productName,
-double? price,
-int? quantity,
-double? taxRate,
-double? taxAmount,
-}) {
-return CartItem(
-productId: productId ?? this.productId,
-productName: productName ?? this.productName,
-price: price ?? this.price,
-quantity: quantity ?? this.quantity,
-taxRate: taxRate ?? this.taxRate,
-taxAmount: taxAmount ?? this.taxAmount,
-);
-}
+  CartItem copyWith({
+    String? productId,
+    String? productName,
+    double? price,
+    int? quantity,
+    double? taxRate,
+    double? taxAmount,
+  }) {
+    return CartItem(
+      productId: productId ?? this.productId,
+      productName: productName ?? this.productName,
+      price: price ?? this.price,
+      quantity: quantity ?? this.quantity,
+      taxRate: taxRate ?? this.taxRate,
+      taxAmount: taxAmount ?? this.taxAmount,
+    );
+  }
 
-Map<String, dynamic> toJson() {
-return {
-'productId': productId,
-'productName': productName,
-'price': price,
-'quantity': quantity,
-'taxRate': taxRate,
-'taxAmount': taxAmount,
-};
-}
+  Map<String, dynamic> toJson() {
+    return {
+      'productId': productId,
+      'productName': productName,
+      'price': price,
+      'quantity': quantity,
+      'taxRate': taxRate,
+      'taxAmount': taxAmount,
+    };
+  }
 }

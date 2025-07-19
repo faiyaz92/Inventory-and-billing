@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
-import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 
 @RoutePage()
@@ -64,7 +63,27 @@ class AccountsDashboardPage extends StatelessWidget {
                     crossAxisSpacing: isWeb ? 16 : 12,
                     mainAxisSpacing: isWeb ? 16 : 12,
                     childAspectRatio: isWeb ? 1.2 : 1.0,
-                    children: _buildGridItems(context, isWeb),
+                    children: [
+                      ..._buildGridItems(context, isWeb),
+                      _buildDashboardCard(
+                        context,
+                        'Stores accounts',
+                        Icons.account_balance,
+                        Colors.orangeAccent,
+                        () {
+                          sl<Coordinator>().navigateToStoresListPage(fromAccountPage: true);
+                        },
+                        isWeb,
+                      ),
+                      _buildDashboardCard(
+                        context,
+                        'Invoices',
+                        Icons.receipt,
+                        Colors.cyan,
+                            () => sl<Coordinator>().navigateToInvoiceListPage(),
+                        isWeb,
+                      )
+                    ],
                   ),
                 ),
               ],
@@ -94,20 +113,20 @@ class AccountsDashboardPage extends StatelessWidget {
         '${userType.name} Accounts',
         Icons.group,
         colors[index % colors.length],
-            () => sl<Coordinator>().navigateToSimpleUserList(userType: userType),
+        () => sl<Coordinator>().navigateToSimpleUserList(userType: userType),
         isWeb,
       );
     }).toList();
   }
 
   Widget _buildDashboardCard(
-      BuildContext context,
-      String title,
-      IconData icon,
-      Color color,
-      VoidCallback onTap,
-      bool isWeb,
-      ) {
+    BuildContext context,
+    String title,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+    bool isWeb,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: Card(

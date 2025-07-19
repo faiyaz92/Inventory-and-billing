@@ -88,4 +88,64 @@ class OrderService implements IOrderService {
     final orderDto = OrderDto.fromModel(order);
     await orderRepository.updateOrder(userInfo?.companyId ?? '', orderDto);
   }
+
+  @override
+  Future<void> placeInvoice(Order order) async {
+    final userInfo = await accountRepository.getUserInfo();
+    final orderDto = OrderDto.fromModel(order);
+    await orderRepository.addInvoice(userInfo?.companyId ?? '', orderDto);
+  }
+
+  @override
+  Future<List<Order>> getInvoicesByUser() async {
+    final userInfo = await accountRepository.getUserInfo();
+    final orderDtos = await orderRepository.getInvoicesByUser(
+        userInfo?.companyId ?? '', userInfo?.userId ?? '');
+    return orderDtos.map((dto) => Order.fromDto(dto)).toList();
+  }
+
+  @override
+  Future<List<Order>> getAllInvoices() async {
+    final userInfo = await accountRepository.getUserInfo();
+    final orderDtos = await orderRepository.getAllInvoices(
+        userInfo?.companyId ?? '',
+        userInfo?.role == Role.COMPANY_ADMIN ? null : userInfo?.storeId);
+    return orderDtos.map((dto) => Order.fromDto(dto)).toList();
+  }
+
+  @override
+  Future<Order> getInvoiceById(String invoiceId) async {
+    final userInfo = await accountRepository.getUserInfo();
+    final orderDto =
+    await orderRepository.getInvoiceById(userInfo?.companyId ?? '', invoiceId);
+    return Order.fromDto(orderDto);
+  }
+
+  @override
+  Future<void> updateInvoice(Order order) async {
+    final userInfo = await accountRepository.getUserInfo();
+    final orderDto = OrderDto.fromModel(order);
+    await orderRepository.updateInvoice(userInfo?.companyId ?? '', orderDto);
+  }
+
+  @override
+  Future<void> setInvoiceGeneratedDate(String invoiceId, DateTime date) async {
+    final userInfo = await accountRepository.getUserInfo();
+    await orderRepository.setInvoiceGeneratedDate(
+        userInfo?.companyId ?? '', invoiceId, date, userInfo?.userId);
+  }
+
+  @override
+  Future<void> setInvoiceType(String invoiceId, String invoiceType) async {
+    final userInfo = await accountRepository.getUserInfo();
+    await orderRepository.setInvoiceType(
+        userInfo?.companyId ?? '', invoiceId, invoiceType, userInfo?.userId);
+  }
+
+  @override
+  Future<void> setPaymentStatus(String invoiceId, String paymentStatus) async {
+    final userInfo = await accountRepository.getUserInfo();
+    await orderRepository.setPaymentStatus(
+        userInfo?.companyId ?? '', invoiceId, paymentStatus, userInfo?.userId);
+  }
 }

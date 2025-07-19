@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/accounts/invoice_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/stock_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/store_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/transaction_cubit.dart';
@@ -284,6 +285,7 @@ void _initCubits() {
         sl<StoreService>(),
         sl<IAccountLedgerService>(),
         sl<StockService>(),
+        sl<AccountRepository>(),
       ));
   sl.registerFactory(() => TaskCubit(sl<TaskService>(), sl<UserServices>(),
       sl<CustomerCompanyService>(), sl<AccountRepository>()));
@@ -345,7 +347,12 @@ void _initCubits() {
         sl<AccountRepository>(),
         sl<CustomerCompanyService>(),
         sl<UserServices>(),
+        sl<StockService>(),
       ));
+  sl.registerFactory(() => AdminInvoiceCubit(
+    orderService: sl<IOrderService>(),
+    storeService: sl<StoreService>(), employeeServices: sl<UserServices>(),
+  ));
 }
 
 /// **5. Initialize App Navigation & Coordinator**

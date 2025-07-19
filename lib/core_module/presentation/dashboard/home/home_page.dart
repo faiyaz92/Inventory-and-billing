@@ -241,7 +241,7 @@ class HomePage extends StatelessWidget {
           ),
         );
         break;
-
+      case Role.COMPANY_ACCOUNTANT:
       case Role.COMPANY_ADMIN:
         gridItems.addAll([
           _buildGridItem(

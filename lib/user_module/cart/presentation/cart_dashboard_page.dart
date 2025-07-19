@@ -162,6 +162,14 @@ class CartDashboardPage extends StatelessWidget {
             () => sl<Coordinator>().navigateToBillingPage(),
         isWeb,
       ),
+      _buildDashboardCard(
+        context,
+        'Invoices',
+        Icons.receipt_long,
+        Colors.cyan,
+            () => sl<Coordinator>().navigateToInvoiceListPage(),
+        isWeb,
+      ),
     ];
   }
 

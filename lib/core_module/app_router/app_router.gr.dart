@@ -410,6 +410,22 @@ class AddUserRouteArgs {
 }
 
 /// generated route for
+/// [AdminInvoicePanelPage]
+class AdminInvoicePanelRoute extends PageRouteInfo<void> {
+  const AdminInvoicePanelRoute({List<PageRouteInfo>? children})
+    : super(AdminInvoicePanelRoute.name, initialChildren: children);
+
+  static const String name = 'AdminInvoicePanelRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AdminInvoicePanelPage();
+    },
+  );
+}
+
+/// generated route for
 /// [AdminOrderDetailsPage]
 class AdminOrderDetailsRoute extends PageRouteInfo<AdminOrderDetailsRouteArgs> {
   AdminOrderDetailsRoute({
@@ -1404,18 +1420,47 @@ class StoreOrderListRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [StoresListPage]
-class StoresListRoute extends PageRouteInfo<void> {
-  const StoresListRoute({List<PageRouteInfo>? children})
-    : super(StoresListRoute.name, initialChildren: children);
+class StoresListRoute extends PageRouteInfo<StoresListRouteArgs> {
+  StoresListRoute({
+    Key? key,
+    bool fromAccountsPage = false,
+    List<PageRouteInfo>? children,
+  }) : super(
+         StoresListRoute.name,
+         args: StoresListRouteArgs(
+           key: key,
+           fromAccountsPage: fromAccountsPage,
+         ),
+         initialChildren: children,
+       );
 
   static const String name = 'StoresListRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const StoresListPage();
+      final args = data.argsAs<StoresListRouteArgs>(
+        orElse: () => const StoresListRouteArgs(),
+      );
+      return StoresListPage(
+        key: args.key,
+        fromAccountsPage: args.fromAccountsPage,
+      );
     },
   );
+}
+
+class StoresListRouteArgs {
+  const StoresListRouteArgs({this.key, this.fromAccountsPage = false});
+
+  final Key? key;
+
+  final bool fromAccountsPage;
+
+  @override
+  String toString() {
+    return 'StoresListRouteArgs{key: $key, fromAccountsPage: $fromAccountsPage}';
+  }
 }
 
 /// generated route for
@@ -1524,11 +1569,12 @@ class TransactionsRoute extends PageRouteInfo<void> {
 class UserLedgerRoute extends PageRouteInfo<UserLedgerRouteArgs> {
   UserLedgerRoute({
     Key? key,
-    required UserInfo user,
+    UserInfo? user,
+    StoreDto? store,
     List<PageRouteInfo>? children,
   }) : super(
          UserLedgerRoute.name,
-         args: UserLedgerRouteArgs(key: key, user: user),
+         args: UserLedgerRouteArgs(key: key, user: user, store: store),
          initialChildren: children,
        );
 
@@ -1537,22 +1583,26 @@ class UserLedgerRoute extends PageRouteInfo<UserLedgerRouteArgs> {
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      final args = data.argsAs<UserLedgerRouteArgs>();
-      return UserLedgerPage(key: args.key, user: args.user);
+      final args = data.argsAs<UserLedgerRouteArgs>(
+        orElse: () => const UserLedgerRouteArgs(),
+      );
+      return UserLedgerPage(key: args.key, user: args.user, store: args.store);
     },
   );
 }
 
 class UserLedgerRouteArgs {
-  const UserLedgerRouteArgs({this.key, required this.user});
+  const UserLedgerRouteArgs({this.key, this.user, this.store});
 
   final Key? key;
 
-  final UserInfo user;
+  final UserInfo? user;
+
+  final StoreDto? store;
 
   @override
   String toString() {
-    return 'UserLedgerRouteArgs{key: $key, user: $user}';
+    return 'UserLedgerRouteArgs{key: $key, user: $user, store: $store}';
   }
 }
 

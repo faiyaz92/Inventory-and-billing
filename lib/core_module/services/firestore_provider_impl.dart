@@ -11,16 +11,18 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
   static const String usersCollection = 'users';
   static const String superAdmins = 'superAdmins';
   static const String companiesCollection = 'companies';
-  static const String tasksCollection =
-      'tasks'; // ✅ New Task Collection Constant
-  static const String productCollection =
-      'products'; // ✅ New Task Collection Constant
-  static const String users = 'users'; // ✅ New Task Collection Constant
+  static const String tasksCollection = 'tasks';
+  static const String productCollection = 'products';
+  static const String users = 'users';
   static const String categoriesCollection = 'categories';
   static const String subcategoriesCollection = 'subcategories';
   static const String accountLedgers = 'accountLedgers';
   static const String transactions = 'transactions';
-  static const String cartsCollection = 'carts'; // New Cart Collection Constant
+  static const String cartsCollection = 'carts';
+  static const String wishlistCollection = 'wishlists';
+  static const String ordersCollection = 'orders'; // New
+  static const String invoicesCollection = 'invoices'; // New
+
   FirestorePathProviderImpl(this._firestore);
 
   @override
@@ -57,7 +59,7 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
 
   @override
   CollectionReference getCommonUsersPath() {
-    return basePath.collection(users); // 🔥 Global users ke liye
+    return basePath.collection(users);
   }
 
   @override
@@ -66,11 +68,9 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
     return snapshot.exists;
   }
 
-  /// ✅ Now referring to `companies` as `customerCompany` in variables
   @override
   CollectionReference getCustomerCompanyRef(String companyId) {
-    return getTenantCompanyRef(companyId).collection(
-        companiesCollection); // 🔹 Actual collection name remains `companies`
+    return getTenantCompanyRef(companyId).collection(companiesCollection);
   }
 
   @override
@@ -79,13 +79,11 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
     return getCustomerCompanyRef(companyId).doc(customerCompanyId);
   }
 
-  /// ✅ Task Collection Under Tenant Company
   @override
   CollectionReference getTaskCollectionRef(String companyId) {
     return getTenantCompanyRef(companyId).collection(tasksCollection);
   }
 
-  /// ✅ Task Collection Under Tenant Company
   @override
   CollectionReference getProductCollectionRef(String companyId) {
     return getTenantCompanyRef(companyId).collection(productCollection);
@@ -96,7 +94,6 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
     return getTaskCollectionRef(companyId).doc(taskId);
   }
 
-  // 🔹 Path for Account Ledger
   @override
   DocumentReference getAccountLedgerRef(String companyId, String ledgerId) {
     return getTenantCompanyRef(companyId)
@@ -106,12 +103,11 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
 
   @override
   CollectionReference getAccountLedger(
-    String companyId,
-  ) {
+      String companyId,
+      ) {
     return getTenantCompanyRef(companyId).collection(accountLedgers);
   }
 
-// 🔹 Path for Transactions under a Ledger
   @override
   CollectionReference getTransactionsRef(String companyId, String ledgerId) {
     return getAccountLedgerRef(companyId, ledgerId).collection(transactions);
@@ -119,29 +115,25 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
 
   @override
   CollectionReference getCategoryCollectionRef(String companyId) {
-    // Category collection will be under each tenant company
-    return _firestore
-        .collection(rootPath) // Root path
-        .doc(companyDirectory) // Company directory
-        .collection(tenantCompanies) // Tenant companies collection
-        .doc(companyId) // Specific company document
-        .collection(categoriesCollection); // Categories subcollection
-  }
-
-  @override
-  CollectionReference getSubcategoryCollectionRef(String companyId) {
-    // Now the subcategories collection is at the company level, not under category.
     return _firestore
         .collection(rootPath)
         .doc(companyDirectory)
         .collection(tenantCompanies)
         .doc(companyId)
-        .collection(
-            subcategoriesCollection); // Top-level subcategories collection
+        .collection(categoriesCollection);
   }
 
   @override
-  // New paths for Stock and Inventory
+  CollectionReference getSubcategoryCollectionRef(String companyId) {
+    return _firestore
+        .collection(rootPath)
+        .doc(companyDirectory)
+        .collection(tenantCompanies)
+        .doc(companyId)
+        .collection(subcategoriesCollection);
+  }
+
+  @override
   CollectionReference getStoresCollectionRef(String companyId) => _firestore
       .collection(rootPath)
       .doc(companyDirectory)
@@ -153,24 +145,39 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
   CollectionReference getStockCollectionRef(String companyId, String storeId) =>
       getStoresCollectionRef(companyId).doc(storeId).collection('stock');
 
-  // '${getStoresCollectionRef(companyId)}/$storeId/stock';
-
   @override
   CollectionReference getTransactionsCollectionRef(
-          String companyId, String storeId) =>
+      String companyId, String storeId) =>
       getStoresCollectionRef(companyId).doc(storeId).collection('transactions');
-
-  // '${getStoresCollectionRef(companyId)}/$storeId/transactions';
 
   @override
   CollectionReference getOrdersCollectionRef(String companyId) {
     return _firestore
-        .collection(rootPath) // Root path
-        .doc(companyDirectory) // Company directory
-        .collection(tenantCompanies) // Tenant companies collection
-        .doc(companyId) // Specific company document
-        .collection('orders');
-    // return '/tenantCompanies/$companyId/orders';
+        .collection(rootPath)
+        .doc(companyDirectory)
+        .collection(tenantCompanies)
+        .doc(companyId)
+        .collection(ordersCollection);
+  }
+
+  @override
+  DocumentReference getSingleOrderRef(String companyId, String orderId) {
+    return getOrdersCollectionRef(companyId).doc(orderId);
+  }
+
+  @override
+  CollectionReference getInvoicesCollectionRef(String companyId) {
+    return _firestore
+        .collection(rootPath)
+        .doc(companyDirectory)
+        .collection(tenantCompanies)
+        .doc(companyId)
+        .collection(invoicesCollection);
+  }
+
+  @override
+  DocumentReference getSingleInvoiceRef(String companyId, String invoiceId) {
+    return getInvoicesCollectionRef(companyId).doc(invoiceId);
   }
 
   @override
@@ -183,13 +190,10 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
         .collection(cartsCollection);
   }
 
-  // Get a specific user's cart
   @override
   DocumentReference getUserCartRef(String companyId, String userId) {
     return getCartsCollectionRef(companyId).doc(userId);
   }
-
-  static const String wishlistCollection = 'wishlists';
 
   @override
   CollectionReference getWishlistCollectionRef(String companyId) {
@@ -274,8 +278,8 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
         .collection('settings')
         .doc('taxiBookingSettings');
   }
+
   @override
-// Visitor Counter Collection
   CollectionReference getVisitorCountersCollectionRef(String companyId) {
     return _firestore
         .collection(rootPath)

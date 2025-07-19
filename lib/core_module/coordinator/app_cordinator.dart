@@ -3,6 +3,7 @@ import 'package:requirment_gathering_app/company_admin_module/data/product/categ
 import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/sub_category.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/task/task_model.dart';
+import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
 import 'package:requirment_gathering_app/core_module/app_router/app_router.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/tenant_company.dart';
@@ -234,9 +235,9 @@ class AppCoordinator implements Coordinator {
   }
 
   @override
-  Future navigateToStoresListPage() {
+  Future navigateToStoresListPage({bool fromAccountPage =false}) {
     // TODO: implement navigateToStoresListPage
-    return _router.push(const StoresListRoute());
+    return _router.push( StoresListRoute(fromAccountsPage: fromAccountPage));
   }
 
   @override
@@ -363,10 +364,7 @@ class AppCoordinator implements Coordinator {
       _router.push(const ProductTrendingListRoute());
 
   // File: core_module/coordinator/app_coordinator.dart
-  @override
-  Future<dynamic> navigateToUserLedgerPage({required UserInfo user}) {
-    return _router.push(UserLedgerRoute(user: user));
-  }
+
 
   @override
   Future<dynamic> navigateToBillingPage({String? orderId}) {
@@ -381,5 +379,15 @@ class AppCoordinator implements Coordinator {
   @override
   Future navigateToAccountsDashboard() {
     return _router.push(const AccountsDashboardRoute());
+  }
+
+  @override
+  Future navigateToUserLedgerPage({UserInfo? user, StoreDto? store}) {
+    // TODO: implement navigateToUserLedgerPage
+    return _router.push(UserLedgerRoute(user: user,store: store));
+  }
+  @override
+  Future<dynamic> navigateToInvoiceListPage() {
+    return _router.push(const AdminInvoicePanelRoute());
   }
 }

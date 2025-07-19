@@ -8,6 +8,7 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/users
 import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
+import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
@@ -58,12 +59,15 @@ class _AddUserViewState extends State<_AddUserView> {
   Role? _selectedRole;
   String? _selectedStoreId;
   UserType? _selectedUserType;
-  AccountType? _selectedAccountType; // New
+  AccountType? _selectedAccountType;
   bool isEditing = false;
+  UserInfo? loggedInUser; // To store logged-in user info
 
   @override
   void initState() {
     super.initState();
+    // Fetch logged-in user info
+    _fetchLoggedInUser();
     if (widget.user != null) {
       isEditing = true;
       nameController.text = widget.user?.name ?? '';
@@ -76,10 +80,17 @@ class _AddUserViewState extends State<_AddUserView> {
       _selectedRole = widget.user?.role;
       _selectedStoreId = widget.user?.storeId;
       _selectedUserType = widget.user?.userType ?? UserType.Employee;
-      _selectedAccountType = widget.user?.accountType; // New
+      _selectedAccountType = widget.user?.accountType;
       print('initState (editing): _selectedStoreId = $_selectedStoreId, _selectedUserType = $_selectedUserType, _selectedAccountType = $_selectedAccountType');
     }
     print('AddUserView initState: _selectedStoreId = $_selectedStoreId, _selectedUserType = $_selectedUserType, _selectedAccountType = $_selectedAccountType, isEditing = $isEditing');
+  }
+
+  Future<void> _fetchLoggedInUser() async {
+    final accountRepository = sl<AccountRepository>();
+    loggedInUser = await accountRepository.getUserInfo();
+    setState(() {}); // Trigger rebuild to reflect logged-in user info
+    print('Fetched loggedInUser: userId = ${loggedInUser?.userId}, role = ${loggedInUser?.role}');
   }
 
   @override
@@ -108,7 +119,7 @@ class _AddUserViewState extends State<_AddUserView> {
       _selectedRole = null;
       _selectedStoreId = null;
       _selectedUserType = null;
-      _selectedAccountType = null; // New
+      _selectedAccountType = null;
     });
   }
 
@@ -138,6 +149,13 @@ class _AddUserViewState extends State<_AddUserView> {
 
   @override
   Widget build(BuildContext context) {
+    // Determine if the logged-in user is editing their own profile
+    final isSelfEditing = isEditing &&
+        loggedInUser != null &&
+        widget.user?.userId == loggedInUser?.userId;
+    // Determine if the logged-in user is a company admin
+    final isCompanyAdmin = loggedInUser?.role == Role.COMPANY_ADMIN;
+
     return Scaffold(
       appBar: CustomAppBar(
         title: isEditing ? "Edit User" : "Add User",
@@ -567,7 +585,60 @@ class _AddUserViewState extends State<_AddUserView> {
                                     ),
                                   ),
                                 ],
-                                // Fields for Employee
+                                // Role Dropdown (for Employee only, conditionally enabled)
+                                if (_selectedUserType == UserType.Employee)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                    child: DropdownButtonFormField<Role>(
+                                      value: _selectedRole,
+                                      decoration: InputDecoration(
+                                        labelText: "Select Role",
+                                        labelStyle: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                          fontSize: 16.0,
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.grey[100],
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                        ),
+                                      ),
+                                      items: Role.values.map((role) {
+                                        return DropdownMenuItem(
+                                          value: role,
+                                          child: Text(
+                                            role.name.toUpperCase(),
+                                            style: const TextStyle(fontSize: 16.0, color: Colors.black),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: isSelfEditing || !isCompanyAdmin
+                                          ? null // Disable dropdown if self-editing or not company admin
+                                          : (value) {
+                                        setState(() {
+                                          _selectedRole = value;
+                                          print('Role Dropdown onChanged: _selectedRole = $_selectedRole');
+                                        });
+                                      },
+                                      validator: (value) {
+                                        if (value == null) {
+                                          return "Role is required for Employee";
+                                        }
+                                        return null;
+                                      },
+                                      style: const TextStyle(fontSize: 16.0, color: Colors.black),
+                                    ),
+                                  ),
+                                // Fields for Employee (continued)
                                 if (_selectedUserType == UserType.Employee) ...[
                                   // Username Field
                                   Padding(
@@ -642,56 +713,6 @@ class _AddUserViewState extends State<_AddUserView> {
                                         }
                                         return null;
                                       },
-                                    ),
-                                  ),
-                                  // Role Dropdown
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 12.0),
-                                    child: DropdownButtonFormField<Role>(
-                                      value: _selectedRole,
-                                      decoration: InputDecoration(
-                                        labelText: "Select Role",
-                                        labelStyle: TextStyle(
-                                          color: Theme.of(context).primaryColor,
-                                          fontSize: 16.0,
-                                        ),
-                                        filled: true,
-                                        fillColor: Colors.grey[100],
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8.0),
-                                          borderSide: BorderSide(color: Colors.grey[400]!),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8.0),
-                                          borderSide: BorderSide(color: Colors.grey[400]!),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8.0),
-                                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                                        ),
-                                      ),
-                                      items: Role.values.map((role) {
-                                        return DropdownMenuItem(
-                                          value: role,
-                                          child: Text(
-                                            role.name.toUpperCase(),
-                                            style: const TextStyle(fontSize: 16.0, color: Colors.black),
-                                          ),
-                                        );
-                                      }).toList(),
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _selectedRole = value;
-                                          print('Role Dropdown onChanged: _selectedRole = $_selectedRole');
-                                        });
-                                      },
-                                      validator: (value) {
-                                        if (value == null) {
-                                          return "Role is required for Employee";
-                                        }
-                                        return null;
-                                      },
-                                      style: const TextStyle(fontSize: 16.0, color: Colors.black),
                                     ),
                                   ),
                                   // Password Field

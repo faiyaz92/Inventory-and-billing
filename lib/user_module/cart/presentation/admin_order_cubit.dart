@@ -13,7 +13,7 @@ abstract class AdminOrderState {}
 
 class AdminOrderInitial extends AdminOrderState {}
 
-// States for AdminPanelPage
+// States for AdminPanelPage and AdminInvoicePanelPage
 class AdminOrderListFetchLoading extends AdminOrderState {}
 
 class AdminOrderListFetchSuccess extends AdminOrderState {
@@ -33,6 +33,9 @@ class AdminOrderListFetchSuccess extends AdminOrderState {
   final String? userId;
   final double? minTotalAmount;
   final double? maxTotalAmount;
+  final String? invoiceType;
+  final String? paymentStatus;
+  final String? invoiceLastUpdatedBy;
   final Map<String, List<Order>> groupedOrders;
   final String dateRangeLabel;
   final String expectedDeliveryRangeLabel;
@@ -56,6 +59,9 @@ class AdminOrderListFetchSuccess extends AdminOrderState {
     this.userId,
     this.minTotalAmount,
     this.maxTotalAmount,
+    this.invoiceType,
+    this.paymentStatus,
+    this.invoiceLastUpdatedBy,
     required this.groupedOrders,
     required this.dateRangeLabel,
     required this.expectedDeliveryRangeLabel,
@@ -63,12 +69,13 @@ class AdminOrderListFetchSuccess extends AdminOrderState {
     required this.showTodayStats,
   });
 }
+
 class AdminOrderListFetchError extends AdminOrderState {
   final String message;
   AdminOrderListFetchError(this.message);
 }
 
-// States for AdminOrderDetailsPage (unchanged)
+// States for AdminOrderDetailsPage
 class AdminOrderFetchLoading extends AdminOrderState {}
 
 class AdminOrderFetchSuccess extends AdminOrderState {
@@ -408,7 +415,6 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
         order.totalAmount >= minTotalAmount && order.totalAmount <= maxTotalAmount).toList();
       }
 
-      // Apply search query if present
       if (_searchQuery.isNotEmpty) {
         filteredOrders = filteredOrders
             .where((order) => order.id.toLowerCase().contains(_searchQuery.toLowerCase()))
@@ -433,6 +439,9 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
         userId: userId,
         minTotalAmount: minTotalAmount,
         maxTotalAmount: maxTotalAmount,
+        invoiceType: null,
+        paymentStatus: null,
+        invoiceLastUpdatedBy: null,
         groupedOrders: _groupOrdersByDate(filteredOrders),
         dateRangeLabel: _formatDateRange(startDate, endDate),
         expectedDeliveryRangeLabel: _formatExpectedDeliveryRange(
@@ -534,6 +543,9 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
         userId: currentState.userId,
         minTotalAmount: currentState.minTotalAmount,
         maxTotalAmount: currentState.maxTotalAmount,
+        invoiceType: null,
+        paymentStatus: null,
+        invoiceLastUpdatedBy: null,
         groupedOrders: _groupOrdersByDate(filteredOrders),
         dateRangeLabel: _formatDateRange(currentState.startDate, currentState.endDate),
         expectedDeliveryRangeLabel: _formatExpectedDeliveryRange(
@@ -573,6 +585,7 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
       emit(AdminOrderFetchError('Failed to fetch order: ${e.toString()}'));
     }
   }
+
   Future<void> updateOrderStatus(String orderId, String status) async {
     emit(AdminOrderUpdateStatusLoading());
     try {
@@ -670,6 +683,7 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
       emit(AdminOrderListFetchError('Failed to fetch orders: $e'));
     }
   }
+
   Future<String> fetchEntityName(String entityType, String entityId,
       {String? entityName}) async {
     try {
@@ -693,15 +707,15 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
                 (user) => user.userId == entityId,
             orElse: () => UserInfo(userId: entityId, userName: entityId),
           );
-          return user.name ?? entityId;
+          return user.userName ?? entityId;
         case 'store':
           final store = stores.firstWhere(
                 (store) => store.storeId == entityId,
-            orElse: () => StoreDto(storeId: entityId, name: entityId, createdBy: '', createdAt: DateTime.timestamp()),
+            orElse: () => StoreDto(storeId: entityId, name: entityId, createdBy: '', createdAt: DateTime.now()),
           );
           return store.name;
         case 'product':
-          return entityName??'Unknown';
+          return entityName ?? 'Unknown';
         default:
           return entityId;
       }

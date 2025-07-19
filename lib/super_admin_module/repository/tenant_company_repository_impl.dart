@@ -233,9 +233,12 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
           if (loggedInUserStoreId == null || loggedInUserStoreId.isEmpty) {
             throw Exception('Logged-in user has no store ID assigned.');
           }
-          querySnapshot = await usersRef
-              .where('storeId', isEqualTo: loggedInUserStoreId)
-              .get();
+          // querySnapshot = await usersRef
+          //     .where('storeId', isEqualTo: loggedInUserStoreId)
+          //     .get(); // TODO need to uncomment this
+
+          querySnapshot = await usersRef.get();  //TODO need to comment this
+
         }
       }
 

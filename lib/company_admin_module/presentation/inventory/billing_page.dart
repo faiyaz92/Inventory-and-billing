@@ -779,6 +779,13 @@ class _BillingPageState extends State<BillingPage> {
     _cartItems.fold(0.0, (sum, item) => sum + item.taxAmount);
     final double totalAmount = subtotal + totalTax - (_discount ?? 0.0);
 
+    // Get current user ID for invoiceLastUpdatedBy
+    final userInfo = await sl<AccountRepository>().getUserInfo();
+    final userId = userInfo?.userId;
+    if (userId == null) {
+      throw Exception('User ID not found');
+    }
+
     // Create a temporary Order object for review dialog
     Order tempOrder;
     if (_existingBillNumber != null && widget.orderId != null) {
@@ -792,6 +799,13 @@ class _BillingPageState extends State<BillingPage> {
           storeId: _selectedStoreId,
           billNumber: _existingBillNumber,
           discount: _discount ?? state.order.discount ?? 0.0,
+          invoiceLastUpdatedBy: userId, // Added
+          invoiceGeneratedDate: state.order.invoiceGeneratedDate ?? DateTime.now(), // Added
+          invoiceType: _selectedBillType, // Added
+          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid', // Added
+          amountReceived: _selectedBillType == 'Cash' ? totalAmount : 0.0, // Added
+          paymentDetails: state.order.paymentDetails ?? [], // Added
+          slipNumber: state.order.slipNumber, // Added
         );
       } else {
         tempOrder = Order(
@@ -804,11 +818,18 @@ class _BillingPageState extends State<BillingPage> {
           totalAmount: totalAmount,
           status: _selectedStatus,
           orderDate: DateTime.now(),
-          orderTakenBy: (await sl<AccountRepository>().getUserInfo())?.userId,
+          orderTakenBy: userId,
           storeId: _selectedStoreId,
-          lastUpdatedBy: (await sl<AccountRepository>().getUserInfo())?.userId,
+          lastUpdatedBy: userId,
           billNumber: _existingBillNumber,
           discount: _discount ?? 0.0,
+          invoiceLastUpdatedBy: userId, // Added
+          invoiceGeneratedDate: DateTime.now(), // Added
+          invoiceType: _selectedBillType, // Added
+          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid', // Added
+          amountReceived: _selectedBillType == 'Cash' ? totalAmount : 0.0, // Added
+          paymentDetails: [], // Added
+          slipNumber: null, // Added
         );
       }
     } else {
@@ -821,11 +842,18 @@ class _BillingPageState extends State<BillingPage> {
         totalAmount: totalAmount,
         status: _selectedStatus,
         orderDate: DateTime.now(),
-        orderTakenBy: (await sl<AccountRepository>().getUserInfo())?.userId,
+        orderTakenBy: userId,
         storeId: _selectedStoreId,
-        lastUpdatedBy: (await sl<AccountRepository>().getUserInfo())?.userId,
+        lastUpdatedBy: userId,
         billNumber: 'BILL-${DateTime.now().millisecondsSinceEpoch}',
         discount: _discount ?? 0.0,
+        invoiceLastUpdatedBy: userId, // Added
+        invoiceGeneratedDate: DateTime.now(), // Added
+        invoiceType: _selectedBillType, // Added
+        paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid', // Added
+        amountReceived: _selectedBillType == 'Cash' ? totalAmount : 0.0, // Added
+        paymentDetails: [], // Added
+        slipNumber: null, // Added
       );
     }
 
@@ -835,7 +863,7 @@ class _BillingPageState extends State<BillingPage> {
       return;
     }
 
-    // Recreate Order object with updated discount after dialog confirmation
+    // Recreate Order object with updated discount and invoice fields after dialog confirmation
     Order order;
     final updatedTotalAmount = subtotal + totalTax - (_discount ?? 0.0);
     if (_existingBillNumber != null && widget.orderId != null) {
@@ -849,6 +877,13 @@ class _BillingPageState extends State<BillingPage> {
           storeId: _selectedStoreId,
           billNumber: _existingBillNumber,
           discount: _discount ?? state.order.discount ?? 0.0,
+          invoiceLastUpdatedBy: userId, // Added
+          invoiceGeneratedDate: state.order.invoiceGeneratedDate ?? DateTime.now(), // Added
+          invoiceType: _selectedBillType, // Added
+          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid', // Added
+          amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : 0.0, // Added
+          paymentDetails: state.order.paymentDetails ?? [], // Added
+          slipNumber: state.order.slipNumber, // Added
         );
       } else {
         order = Order(
@@ -861,11 +896,18 @@ class _BillingPageState extends State<BillingPage> {
           totalAmount: updatedTotalAmount,
           status: _selectedStatus,
           orderDate: DateTime.now(),
-          orderTakenBy: (await sl<AccountRepository>().getUserInfo())?.userId,
+          orderTakenBy: userId,
           storeId: _selectedStoreId,
-          lastUpdatedBy: (await sl<AccountRepository>().getUserInfo())?.userId,
+          lastUpdatedBy: userId,
           billNumber: _existingBillNumber,
           discount: _discount ?? 0.0,
+          invoiceLastUpdatedBy: userId, // Added
+          invoiceGeneratedDate: DateTime.now(), // Added
+          invoiceType: _selectedBillType, // Added
+          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid', // Added
+          amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : 0.0, // Added
+          paymentDetails: [], // Added
+          slipNumber: null, // Added
         );
       }
     } else {
@@ -878,11 +920,18 @@ class _BillingPageState extends State<BillingPage> {
         totalAmount: updatedTotalAmount,
         status: _selectedStatus,
         orderDate: DateTime.now(),
-        orderTakenBy: (await sl<AccountRepository>().getUserInfo())?.userId,
+        orderTakenBy: userId,
         storeId: _selectedStoreId,
-        lastUpdatedBy: (await sl<AccountRepository>().getUserInfo())?.userId,
+        lastUpdatedBy: userId,
         billNumber: 'BILL-${DateTime.now().millisecondsSinceEpoch}',
         discount: _discount ?? 0.0,
+        invoiceLastUpdatedBy: userId, // Added
+        invoiceGeneratedDate: DateTime.now(), // Added
+        invoiceType: _selectedBillType, // Added
+        paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid', // Added
+        amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : 0.0, // Added
+        paymentDetails: [], // Added
+        slipNumber: null, // Added
       );
     }
 
@@ -890,13 +939,6 @@ class _BillingPageState extends State<BillingPage> {
     try {
       final orderService = sl<IOrderService>();
       final ledgerCubit = sl<UserLedgerCubit>();
-      final userInfo = await sl<AccountRepository>().getUserInfo();
-      final userId = userInfo?.userId;
-      if (userId == null) {
-        throw Exception('User ID not found');
-      }
-
-      final stockState = _stockCubit.state;
       final billNumber = _existingBillNumber ??
           'BILL-${DateTime.now().millisecondsSinceEpoch}';
       final customerLedgerId = _selectedCustomer!.accountLedgerId;
@@ -941,8 +983,8 @@ class _BillingPageState extends State<BillingPage> {
 
       if (_existingBillNumber == null) {
         // New order: Validate and update stock
-        if (stockState is! StockLoaded) {
-          print('Stock state is not StockLoaded: ${stockState.runtimeType}');
+        if (_stockCubit.state is! StockLoaded) {
+          print('Stock state is not StockLoaded: ${_stockCubit.state.runtimeType}');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Stock data not loaded')),
           );
@@ -951,7 +993,7 @@ class _BillingPageState extends State<BillingPage> {
         }
 
         for (var item in _cartItems) {
-          final stock = stockState.stockItems.firstWhere(
+          final stock = (_stockCubit.state as StockLoaded).stockItems.firstWhere(
                 (stock) =>
             stock.productId == item.productId &&
                 stock.storeId == _selectedStoreId,
@@ -976,7 +1018,7 @@ class _BillingPageState extends State<BillingPage> {
 
         // Update stock for new order
         for (var item in _cartItems) {
-          final stock = stockState.stockItems.firstWhere(
+          final stock = (_stockCubit.state as StockLoaded).stockItems.firstWhere(
                 (stock) =>
             stock.productId == item.productId &&
                 stock.storeId == _selectedStoreId,
@@ -1077,8 +1119,8 @@ class _BillingPageState extends State<BillingPage> {
             );
             final returnQuantity = item.quantity - currentItem.quantity;
             if (returnQuantity > 0) {
-              final stock = stockState is StockLoaded
-                  ? stockState.stockItems.firstWhere(
+              final stock = _stockCubit.state is StockLoaded
+                  ? (_stockCubit.state as StockLoaded).stockItems.firstWhere(
                     (stock) =>
                 stock.productId == item.productId &&
                     stock.storeId == _selectedStoreId,
@@ -1258,7 +1300,365 @@ class _BillingPageState extends State<BillingPage> {
     } finally {
       setState(() => _isLoading = false);
     }
-  }  Widget _buildGenerateBillButton() {
+  }
+
+  Future<pw.Document> _generatePdf(Order order) async {
+    final pdf = pw.Document();
+    final accountRepository = sl<AccountRepository>();
+
+    String companyName = 'Abc Pvt. Ltd.';
+    String issuerName = 'Unknown Issuer';
+    try {
+      final userInfo = await accountRepository.getUserInfo();
+      companyName = userInfo?.companyId ?? companyName;
+      issuerName = userInfo?.name ?? userInfo?.userName ?? issuerName;
+    } catch (e) {
+      print('Error fetching company or issuer name: $e');
+    }
+
+    final primaryColor = PdfColor.fromInt(AppColors.primary.value);
+    final textSecondaryColor = PdfColor.fromInt(AppColors.textSecondary.value);
+    final greyColor = PdfColors.grey300;
+
+    final regularFont = pw.Font.times();
+    final boldFont = pw.Font.timesBold();
+
+    final double subtotal = order.items
+        .fold(0.0, (sum, item) => sum + (item.price * item.quantity));
+    final double totalTax =
+    order.items.fold(0.0, (sum, item) => sum + item.taxAmount);
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(40),
+        header: (context) => pw.Container(
+          padding: const pw.EdgeInsets.only(bottom: 12),
+          decoration: pw.BoxDecoration(
+            border:
+            pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
+          ),
+          child: pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    companyName,
+                    style: pw.TextStyle(
+                        font: boldFont, fontSize: 22, color: primaryColor),
+                  ),
+                  pw.SizedBox(height: 4),
+                  pw.Text(
+                    '123 Business Street, City, Country',
+                    style: pw.TextStyle(
+                        font: regularFont,
+                        fontSize: 12,
+                        color: textSecondaryColor),
+                  ),
+                ],
+              ),
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.end,
+                children: [
+                  pw.Text(
+                    'INVOICE',
+                    style: pw.TextStyle(
+                        font: boldFont, fontSize: 28, color: primaryColor),
+                  ),
+                  pw.SizedBox(height: 4),
+                  pw.Text(
+                    'Bill #: ${order.billNumber ?? 'N/A'}',
+                    style: pw.TextStyle(font: regularFont, fontSize: 14),
+                  ),
+                  pw.Text(
+                    'Date: ${order.orderDate.toString().substring(0, 10)}',
+                    style: pw.TextStyle(font: regularFont, fontSize: 14),
+                  ),
+                  pw.Text(
+                    'Issuer: $issuerName',
+                    style: pw.TextStyle(font: regularFont, fontSize: 14),
+                  ),
+                  pw.Text(
+                    'Invoice Type: ${order.invoiceType ?? 'N/A'}',
+                    style: pw.TextStyle(font: regularFont, fontSize: 14),
+                  ),
+                  pw.Text(
+                    'Payment Status: ${order.paymentStatus ?? 'N/A'}',
+                    style: pw.TextStyle(font: regularFont, fontSize: 14),
+                  ),
+                  if (order.amountReceived != null)
+                    pw.Text(
+                      'Amount Received: ${order.amountReceived!.toStringAsFixed(2)}',
+                      style: pw.TextStyle(font: regularFont, fontSize: 14),
+                    ),
+                  if (order.slipNumber != null)
+                    pw.Text(
+                      'Slip Number: ${order.slipNumber}',
+                      style: pw.TextStyle(font: regularFont, fontSize: 14),
+                    ),
+                  if (order.invoiceLastUpdatedBy != null)
+                    pw.Text(
+                      'Last Updated By: ${order.invoiceLastUpdatedBy}',
+                      style: pw.TextStyle(font: regularFont, fontSize: 14),
+                    ),
+                  if (order.invoiceGeneratedDate != null)
+                    pw.Text(
+                      'Invoice Generated: ${order.invoiceGeneratedDate!.toString().substring(0, 10)}',
+                      style: pw.TextStyle(font: regularFont, fontSize: 14),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        build: (context) => [
+          pw.SizedBox(height: 24),
+          pw.Text(
+            'Bill To:',
+            style: pw.TextStyle(
+                font: boldFont, fontSize: 18, color: PdfColors.black),
+          ),
+          pw.SizedBox(height: 8),
+          pw.Text(
+            order.userName ?? 'Unknown Customer',
+            style:
+            pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
+          ),
+          pw.Text(
+            'Store ID: ${order.storeId ?? 'N/A'}',
+            style: pw.TextStyle(
+                font: regularFont, fontSize: 12, color: textSecondaryColor),
+          ),
+          pw.SizedBox(height: 24),
+          pw.Text(
+            'Items',
+            style: pw.TextStyle(font: boldFont, fontSize: 18),
+          ),
+          pw.SizedBox(height: 12),
+          pw.Table(
+            border: pw.TableBorder.all(color: greyColor, width: 1),
+            columnWidths: {
+              0: const pw.FlexColumnWidth(3),
+              1: const pw.FlexColumnWidth(1),
+              2: const pw.FlexColumnWidth(1.5),
+              3: const pw.FlexColumnWidth(1.5),
+              4: const pw.FlexColumnWidth(2),
+            },
+            children: [
+              pw.TableRow(
+                decoration: const pw.BoxDecoration(color: PdfColors.grey100),
+                children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text('Product',
+                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text('Qty',
+                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text('Unit Price',
+                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text('Tax',
+                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text('Total',
+                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                  ),
+                ],
+              ),
+              ...order.items.map((item) => pw.TableRow(
+                decoration: pw.BoxDecoration(
+                  border: pw.Border(
+                      bottom: pw.BorderSide(color: greyColor, width: 0.5)),
+                ),
+                children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text(
+                      item.productName,
+                      style: pw.TextStyle(font: regularFont, fontSize: 12),
+                      softWrap: true,
+                    ),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text(
+                      item.quantity.toString(),
+                      style: pw.TextStyle(font: regularFont, fontSize: 12),
+                      textAlign: pw.TextAlign.center,
+                    ),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text(
+                      item.price.toStringAsFixed(2),
+                      style: pw.TextStyle(font: regularFont, fontSize: 12),
+                      textAlign: pw.TextAlign.right,
+                    ),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text(
+                      item.taxAmount.toStringAsFixed(2),
+                      style: pw.TextStyle(font: regularFont, fontSize: 12),
+                      textAlign: pw.TextAlign.right,
+                    ),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text(
+                      ((item.price * item.quantity) + item.taxAmount)
+                          .toStringAsFixed(2),
+                      style: pw.TextStyle(font: regularFont, fontSize: 12),
+                      textAlign: pw.TextAlign.right,
+                    ),
+                  ),
+                ],
+              )),
+            ],
+          ),
+          pw.SizedBox(height: 24),
+          if (order.paymentDetails != null && order.paymentDetails!.isNotEmpty)
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  'Payment Details',
+                  style: pw.TextStyle(font: boldFont, fontSize: 18),
+                ),
+                pw.SizedBox(height: 12),
+                pw.Table(
+                  border: pw.TableBorder.all(color: greyColor, width: 1),
+                  columnWidths: {
+                    0: const pw.FlexColumnWidth(2),
+                    1: const pw.FlexColumnWidth(2),
+                    2: const pw.FlexColumnWidth(2),
+                  },
+                  children: [
+                    pw.TableRow(
+                      decoration: const pw.BoxDecoration(color: PdfColors.grey100),
+                      children: [
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(10),
+                          child: pw.Text('Date',
+                              style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(10),
+                          child: pw.Text('Amount',
+                              style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(10),
+                          child: pw.Text('Method',
+                              style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                        ),
+                      ],
+                    ),
+                    ...order.paymentDetails!.map((payment) => pw.TableRow(
+                      decoration: pw.BoxDecoration(
+                        border: pw.Border(
+                            bottom:
+                            pw.BorderSide(color: greyColor, width: 0.5)),
+                      ),
+                      children: [
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(10),
+                          child: pw.Text(
+                            payment['date']?.toString().substring(0, 10) ??
+                                'N/A',
+                            style:
+                            pw.TextStyle(font: regularFont, fontSize: 12),
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(10),
+                          child: pw.Text(
+                            payment['amount']?.toStringAsFixed(2) ?? '0.00',
+                            style:
+                            pw.TextStyle(font: regularFont, fontSize: 12),
+                            textAlign: pw.TextAlign.right,
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(10),
+                          child: pw.Text(
+                            payment['method'] ?? 'N/A',
+                            style:
+                            pw.TextStyle(font: regularFont, fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    )),
+                  ],
+                ),
+                pw.SizedBox(height: 24),
+              ],
+            ),
+          pw.Container(
+            padding: const pw.EdgeInsets.all(12),
+            decoration: pw.BoxDecoration(
+              color: PdfColors.grey50,
+              border: pw.Border.all(color: greyColor, width: 1),
+            ),
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.end,
+              children: [
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                  children: [
+                    pw.Text(
+                      'Subtotal: ${subtotal.toStringAsFixed(2)}',
+                      style: pw.TextStyle(font: regularFont, fontSize: 14),
+                    ),
+                    pw.SizedBox(height: 8),
+                    pw.Text(
+                      'Total Tax: ${totalTax.toStringAsFixed(2)}',
+                      style: pw.TextStyle(font: regularFont, fontSize: 14),
+                    ),
+                    pw.SizedBox(height: 8),
+                    pw.Text(
+                      'Discount: ${(order.discount ?? 0.0).toStringAsFixed(2)}',
+                      style: pw.TextStyle(font: regularFont, fontSize: 14),
+                    ),
+                    pw.SizedBox(height: 8),
+                    pw.Text(
+                      'Total Amount: ${order.totalAmount.toStringAsFixed(2)}',
+                      style: pw.TextStyle(
+                          font: boldFont, fontSize: 16, color: primaryColor),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+        footer: (context) => pw.Container(
+          alignment: pw.Alignment.center,
+          padding: const pw.EdgeInsets.only(top: 12),
+          child: pw.Text(
+            'Generated by $companyName | Page ${context.pageNumber} of ${context.pagesCount}',
+            style: pw.TextStyle(
+                font: regularFont, fontSize: 10, color: textSecondaryColor),
+          ),
+        ),
+      ),
+    );
+
+    return pdf;
+  }
+  Widget _buildGenerateBillButton() {
     return ElevatedButton(
       onPressed: _generateBill,
       style: ElevatedButton.styleFrom(
@@ -1880,258 +2280,6 @@ class _BillingPageState extends State<BillingPage> {
         ),
       ),
     );
-  }
-
-  Future<pw.Document> _generatePdf(Order order) async {
-    final pdf = pw.Document();
-    final accountRepository = sl<AccountRepository>();
-
-    String companyName = 'Abc Pvt. Ltd.';
-    String issuerName = 'Unknown Issuer';
-    try {
-      final userInfo = await accountRepository.getUserInfo();
-      companyName = userInfo?.companyId ?? companyName;
-      issuerName = userInfo?.name ?? userInfo?.userName ?? issuerName;
-    } catch (e) {
-      print('Error fetching company or issuer name: $e');
-    }
-
-    final primaryColor = PdfColor.fromInt(AppColors.primary.value);
-    final textSecondaryColor = PdfColor.fromInt(AppColors.textSecondary.value);
-    final greyColor = PdfColors.grey300;
-
-    final regularFont = pw.Font.times();
-    final boldFont = pw.Font.timesBold();
-
-    final double subtotal = order.items
-        .fold(0.0, (sum, item) => sum + (item.price * item.quantity));
-    final double totalTax =
-        order.items.fold(0.0, (sum, item) => sum + item.taxAmount);
-
-    pdf.addPage(
-      pw.MultiPage(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(40),
-        header: (context) => pw.Container(
-          padding: const pw.EdgeInsets.only(bottom: 12),
-          decoration: pw.BoxDecoration(
-            border:
-                pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
-          ),
-          child: pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text(
-                    companyName,
-                    style: pw.TextStyle(
-                        font: boldFont, fontSize: 22, color: primaryColor),
-                  ),
-                  pw.SizedBox(height: 4),
-                  pw.Text(
-                    '123 Business Street, City, Country',
-                    style: pw.TextStyle(
-                        font: regularFont,
-                        fontSize: 12,
-                        color: textSecondaryColor),
-                  ),
-                ],
-              ),
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.end,
-                children: [
-                  pw.Text(
-                    'INVOICE',
-                    style: pw.TextStyle(
-                        font: boldFont, fontSize: 28, color: primaryColor),
-                  ),
-                  pw.SizedBox(height: 4),
-                  pw.Text(
-                    'Bill #: ${order.billNumber ?? 'N/A'}',
-                    style: pw.TextStyle(font: regularFont, fontSize: 14),
-                  ),
-                  pw.Text(
-                    'Date: ${order.orderDate.toString().substring(0, 10)}',
-                    style: pw.TextStyle(font: regularFont, fontSize: 14),
-                  ),
-                  pw.Text(
-                    'Issuer: $issuerName',
-                    style: pw.TextStyle(font: regularFont, fontSize: 14),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        build: (context) => [
-          pw.SizedBox(height: 24),
-          pw.Text(
-            'Bill To:',
-            style: pw.TextStyle(
-                font: boldFont, fontSize: 18, color: PdfColors.black),
-          ),
-          pw.SizedBox(height: 8),
-          pw.Text(
-            order.userName ?? 'Unknown Customer',
-            style:
-                pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
-          ),
-          pw.Text(
-            'Store ID: ${order.storeId ?? 'N/A'}',
-            style: pw.TextStyle(
-                font: regularFont, fontSize: 12, color: textSecondaryColor),
-          ),
-          pw.SizedBox(height: 24),
-          pw.Text(
-            'Items',
-            style: pw.TextStyle(font: boldFont, fontSize: 18),
-          ),
-          pw.SizedBox(height: 12),
-          pw.Table(
-            border: pw.TableBorder.all(color: greyColor, width: 1),
-            columnWidths: {
-              0: const pw.FlexColumnWidth(3),
-              1: const pw.FlexColumnWidth(1),
-              2: const pw.FlexColumnWidth(1.5),
-              3: const pw.FlexColumnWidth(1.5),
-              4: const pw.FlexColumnWidth(2),
-            },
-            children: [
-              pw.TableRow(
-                decoration: const pw.BoxDecoration(color: PdfColors.grey100),
-                children: [
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Product',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
-                  ),
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Qty',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
-                  ),
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Unit Price',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
-                  ),
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Tax',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
-                  ),
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Total',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
-                  ),
-                ],
-              ),
-              ...order.items.map((item) => pw.TableRow(
-                    decoration: pw.BoxDecoration(
-                      border: pw.Border(
-                          bottom: pw.BorderSide(color: greyColor, width: 0.5)),
-                    ),
-                    children: [
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(10),
-                        child: pw.Text(
-                          item.productName,
-                          style: pw.TextStyle(font: regularFont, fontSize: 12),
-                          softWrap: true,
-                        ),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(10),
-                        child: pw.Text(
-                          item.quantity.toString(),
-                          style: pw.TextStyle(font: regularFont, fontSize: 12),
-                          textAlign: pw.TextAlign.center,
-                        ),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(10),
-                        child: pw.Text(
-                          item.price.toStringAsFixed(2),
-                          style: pw.TextStyle(font: regularFont, fontSize: 12),
-                          textAlign: pw.TextAlign.right,
-                        ),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(10),
-                        child: pw.Text(
-                          item.taxAmount.toStringAsFixed(2),
-                          style: pw.TextStyle(font: regularFont, fontSize: 12),
-                          textAlign: pw.TextAlign.right,
-                        ),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(10),
-                        child: pw.Text(
-                          ((item.price * item.quantity) + item.taxAmount)
-                              .toStringAsFixed(2),
-                          style: pw.TextStyle(font: regularFont, fontSize: 12),
-                          textAlign: pw.TextAlign.right,
-                        ),
-                      ),
-                    ],
-                  )),
-            ],
-          ),
-          pw.SizedBox(height: 24),
-          pw.Container(
-            padding: const pw.EdgeInsets.all(12),
-            decoration: pw.BoxDecoration(
-              color: PdfColors.grey50,
-              border: pw.Border.all(color: greyColor, width: 1),
-            ),
-            child: pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.end,
-              children: [
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.end,
-                  children: [
-                    pw.Text(
-                      'Subtotal: ₹${subtotal.toStringAsFixed(2)}',
-                      style: pw.TextStyle(font: regularFont, fontSize: 14),
-                    ),
-                    pw.SizedBox(height: 8),
-                    pw.Text(
-                      'Total Tax: ₹${totalTax.toStringAsFixed(2)}',
-                      style: pw.TextStyle(font: regularFont, fontSize: 14),
-                    ),
-                    pw.SizedBox(height: 8),
-                    pw.Text(
-                      'Discount: ₹${(order.discount ?? 0.0).toStringAsFixed(2)}',
-                      style: pw.TextStyle(font: regularFont, fontSize: 14),
-                    ),
-                    pw.SizedBox(height: 8),
-                    pw.Text(
-                      'Total Amount: ₹${order.totalAmount.toStringAsFixed(2)}',
-                      style: pw.TextStyle(
-                          font: boldFont, fontSize: 16, color: primaryColor),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-        footer: (context) => pw.Container(
-          alignment: pw.Alignment.center,
-          padding: const pw.EdgeInsets.only(top: 12),
-          child: pw.Text(
-            'Generated by $companyName | Page ${context.pageNumber} of ${context.pagesCount}',
-            style: pw.TextStyle(
-                font: regularFont, fontSize: 10, color: textSecondaryColor),
-          ),
-        ),
-      ),
-    );
-
-    return pdf;
   }
 
   @override
