@@ -45,7 +45,6 @@ class _AddUserView extends StatefulWidget {
   State<_AddUserView> createState() => _AddUserViewState();
 }
 
-
 class _AddUserViewState extends State<_AddUserView> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController nameController = TextEditingController();
@@ -53,12 +52,13 @@ class _AddUserViewState extends State<_AddUserView> {
   final TextEditingController userNameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController dailyWageController = TextEditingController();
-  final TextEditingController mobileNumberController = TextEditingController(); // New
-  final TextEditingController businessNameController = TextEditingController(); // New
-  final TextEditingController addressController = TextEditingController(); // New
+  final TextEditingController mobileNumberController = TextEditingController();
+  final TextEditingController businessNameController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
   Role? _selectedRole;
   String? _selectedStoreId;
   UserType? _selectedUserType;
+  AccountType? _selectedAccountType; // New
   bool isEditing = false;
 
   @override
@@ -70,15 +70,16 @@ class _AddUserViewState extends State<_AddUserView> {
       emailController.text = widget.user?.email ?? '';
       userNameController.text = widget.user?.userName ?? '';
       dailyWageController.text = widget.user?.dailyWage?.toString() ?? '500.0';
-      mobileNumberController.text = widget.user?.mobileNumber ?? ''; // New
-      businessNameController.text = widget.user?.businessName ?? ''; // New
-      addressController.text = widget.user?.address ?? ''; // New
+      mobileNumberController.text = widget.user?.mobileNumber ?? '';
+      businessNameController.text = widget.user?.businessName ?? '';
+      addressController.text = widget.user?.address ?? '';
       _selectedRole = widget.user?.role;
       _selectedStoreId = widget.user?.storeId;
       _selectedUserType = widget.user?.userType ?? UserType.Employee;
-      print('initState (editing): _selectedStoreId = $_selectedStoreId, _selectedUserType = $_selectedUserType');
+      _selectedAccountType = widget.user?.accountType; // New
+      print('initState (editing): _selectedStoreId = $_selectedStoreId, _selectedUserType = $_selectedUserType, _selectedAccountType = $_selectedAccountType');
     }
-    print('AddUserView initState: _selectedStoreId = $_selectedStoreId, _selectedUserType = $_selectedUserType, isEditing = $isEditing');
+    print('AddUserView initState: _selectedStoreId = $_selectedStoreId, _selectedUserType = $_selectedUserType, _selectedAccountType = $_selectedAccountType, isEditing = $isEditing');
   }
 
   @override
@@ -88,9 +89,9 @@ class _AddUserViewState extends State<_AddUserView> {
     userNameController.dispose();
     passwordController.dispose();
     dailyWageController.dispose();
-    mobileNumberController.dispose(); // New
-    businessNameController.dispose(); // New
-    addressController.dispose(); // New
+    mobileNumberController.dispose();
+    businessNameController.dispose();
+    addressController.dispose();
     super.dispose();
   }
 
@@ -100,13 +101,14 @@ class _AddUserViewState extends State<_AddUserView> {
     userNameController.clear();
     passwordController.clear();
     dailyWageController.clear();
-    mobileNumberController.clear(); // New
-    businessNameController.clear(); // New
-    addressController.clear(); // New
+    mobileNumberController.clear();
+    businessNameController.clear();
+    addressController.clear();
     setState(() {
       _selectedRole = null;
       _selectedStoreId = null;
       _selectedUserType = null;
+      _selectedAccountType = null; // New
     });
   }
 
@@ -172,7 +174,7 @@ class _AddUserViewState extends State<_AddUserView> {
                 ),
                 child: BlocListener<StoreCubit, StoreState>(
                   listener: (context, storeState) {
-                    if (storeState is StoreLoaded && !isEditing && _selectedStoreId == null && _selectedUserType == UserType.Employee) {
+                    if (storeState is StoreLoaded && !isEditing && _selectedStoreId == null && (_selectedUserType == UserType.Employee || _selectedUserType == UserType.Accounts)) {
                       final validStoreId = storeState.stores.any((store) => store.storeId == storeState.defaultStoreId)
                           ? storeState.defaultStoreId
                           : storeState.stores.isNotEmpty
@@ -182,7 +184,7 @@ class _AddUserViewState extends State<_AddUserView> {
                         setState(() {
                           _selectedStoreId = validStoreId;
                         });
-                        print('BlocListener: Set _selectedStoreId = $_selectedStoreId for adding employee');
+                        print('BlocListener: Set _selectedStoreId = $_selectedStoreId for adding ${_selectedUserType}');
                       }
                     }
                     print('StoreCubit state: $storeState');
@@ -219,14 +221,14 @@ class _AddUserViewState extends State<_AddUserView> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Full Name Field (Common for both)
+                                // Account Name Field (for all user types)
                                 Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 12.0),
                                   child: TextFormField(
                                     controller: nameController,
                                     textCapitalization: TextCapitalization.words,
                                     decoration: InputDecoration(
-                                      labelText: "Full Name",
+                                      labelText: _selectedUserType == UserType.Accounts ? "Account Name" : "Full Name",
                                       labelStyle: TextStyle(
                                         color: Theme.of(context).primaryColor,
                                         fontSize: 16.0,
@@ -248,49 +250,50 @@ class _AddUserViewState extends State<_AddUserView> {
                                     ),
                                     style: const TextStyle(fontSize: 16.0),
                                     validator: (value) =>
-                                    value!.isEmpty ? "Name is required" : null,
+                                    value!.isEmpty ? (_selectedUserType == UserType.Accounts ? "Account name is required" : "Name is required") : null,
                                   ),
                                 ),
-                                // Email Field (Common for both)
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                                  child: TextFormField(
-                                    controller: emailController,
-                                    decoration: InputDecoration(
-                                      labelText: "Email",
-                                      labelStyle: TextStyle(
-                                        color: Theme.of(context).primaryColor,
-                                        fontSize: 16.0,
+                                // Email Field (for Employee only)
+                                if (_selectedUserType == UserType.Employee)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                    child: TextFormField(
+                                      controller: emailController,
+                                      decoration: InputDecoration(
+                                        labelText: "Email",
+                                        labelStyle: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                          fontSize: 16.0,
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.grey[100],
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                        ),
                                       ),
-                                      filled: true,
-                                      fillColor: Colors.grey[100],
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Colors.grey[400]!),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Colors.grey[400]!),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                                      ),
+                                      keyboardType: TextInputType.emailAddress,
+                                      style: const TextStyle(fontSize: 16.0),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return "Email is required for Employee";
+                                        }
+                                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                                          return "Enter a valid email";
+                                        }
+                                        return null;
+                                      },
                                     ),
-                                    keyboardType: TextInputType.emailAddress,
-                                    style: const TextStyle(fontSize: 16.0),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return "Email is required";
-                                      }
-                                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                                        return "Enter a valid email";
-                                      }
-                                      return null;
-                                    },
                                   ),
-                                ),
-                                // UserType Dropdown (Common for both)
+                                // UserType Dropdown
                                 Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 12.0),
                                   child: DropdownButtonFormField<UserType>(
@@ -335,12 +338,23 @@ class _AddUserViewState extends State<_AddUserView> {
                                           passwordController.clear();
                                           _selectedRole = null;
                                           _selectedStoreId = null;
+                                          _selectedAccountType = null;
+                                        } else if (value == UserType.Accounts) {
+                                          emailController.clear();
+                                          userNameController.clear();
+                                          dailyWageController.clear();
+                                          passwordController.clear();
+                                          mobileNumberController.clear();
+                                          businessNameController.clear();
+                                          addressController.clear();
+                                          _selectedRole = null;
                                         } else {
                                           mobileNumberController.clear();
                                           businessNameController.clear();
                                           addressController.clear();
+                                          _selectedAccountType = null;
                                         }
-                                        print('UserType Dropdown onChanged: _selectedUserType = $_selectedUserType');
+                                        print('UserType Dropdown onChanged: _selectedUserType = $_selectedUserType, _selectedAccountType = $_selectedAccountType');
                                       });
                                     },
                                     validator: (value) =>
@@ -348,6 +362,105 @@ class _AddUserViewState extends State<_AddUserView> {
                                     style: const TextStyle(fontSize: 16.0, color: Colors.black),
                                   ),
                                 ),
+                                // AccountType Dropdown (for Accounts only)
+                                if (_selectedUserType == UserType.Accounts)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                    child: DropdownButtonFormField<AccountType>(
+                                      value: _selectedAccountType,
+                                      decoration: InputDecoration(
+                                        labelText: "Select Account Type",
+                                        labelStyle: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                          fontSize: 16.0,
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.grey[100],
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                        ),
+                                      ),
+                                      items: AccountType.values.map((accountType) {
+                                        return DropdownMenuItem(
+                                          value: accountType,
+                                          child: Text(
+                                            accountType.name,
+                                            style: const TextStyle(fontSize: 16.0, color: Colors.black),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _selectedAccountType = value;
+                                          print('AccountType Dropdown onChanged: _selectedAccountType = $_selectedAccountType');
+                                        });
+                                      },
+                                      validator: (value) =>
+                                      value == null ? "Account Type is required for Accounts" : null,
+                                      style: const TextStyle(fontSize: 16.0, color: Colors.black),
+                                    ),
+                                  ),
+                                // Store Dropdown (for Employee and Accounts)
+                                if ((_selectedUserType == UserType.Employee || _selectedUserType == UserType.Accounts) && storeState is StoreLoaded && stores.length >= 1)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                    child: DropdownButtonFormField<String>(
+                                      key: ValueKey(_selectedStoreId),
+                                      value: _selectedStoreId,
+                                      decoration: InputDecoration(
+                                        labelText: "Select Store",
+                                        labelStyle: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                          fontSize: 16.0,
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.grey[100],
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                        ),
+                                      ),
+                                      items: stores.map((store) {
+                                        return DropdownMenuItem(
+                                          value: store.storeId,
+                                          child: Text(
+                                            store.name,
+                                            style: const TextStyle(fontSize: 16.0, color: Colors.black),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _selectedStoreId = value;
+                                          print('Store Dropdown onChanged: _selectedStoreId = $_selectedStoreId');
+                                        });
+                                      },
+                                      validator: (value) {
+                                        if (value == null) {
+                                          return "Store is required for ${_selectedUserType!.name}";
+                                        }
+                                        return null;
+                                      },
+                                      style: const TextStyle(fontSize: 16.0, color: Colors.black),
+                                    ),
+                                  ),
                                 // Fields for Customer
                                 if (_selectedUserType == UserType.Customer) ...[
                                   // Mobile Number Field
@@ -581,58 +694,6 @@ class _AddUserViewState extends State<_AddUserView> {
                                       style: const TextStyle(fontSize: 16.0, color: Colors.black),
                                     ),
                                   ),
-                                  // Store Dropdown
-                                  if (storeState is StoreLoaded && stores.length > 1)
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 12.0),
-                                      child: DropdownButtonFormField<String>(
-                                        key: ValueKey(_selectedStoreId),
-                                        value: _selectedStoreId,
-                                        decoration: InputDecoration(
-                                          labelText: "Select Store",
-                                          labelStyle: TextStyle(
-                                            color: Theme.of(context).primaryColor,
-                                            fontSize: 16.0,
-                                          ),
-                                          filled: true,
-                                          fillColor: Colors.grey[100],
-                                          border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(8.0),
-                                            borderSide: BorderSide(color: Colors.grey[400]!),
-                                          ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(8.0),
-                                            borderSide: BorderSide(color: Colors.grey[400]!),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(8.0),
-                                            borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                                          ),
-                                        ),
-                                        items: stores.map((store) {
-                                          return DropdownMenuItem(
-                                            value: store.storeId,
-                                            child: Text(
-                                              store.name,
-                                              style: const TextStyle(fontSize: 16.0, color: Colors.black),
-                                            ),
-                                          );
-                                        }).toList(),
-                                        onChanged: (value) {
-                                          setState(() {
-                                            _selectedStoreId = value;
-                                            print('Store Dropdown onChanged: _selectedStoreId = $_selectedStoreId');
-                                          });
-                                        },
-                                        validator: (value) {
-                                          if (value == null) {
-                                            return "Store is required for Employee";
-                                          }
-                                          return null;
-                                        },
-                                        style: const TextStyle(fontSize: 16.0, color: Colors.black),
-                                      ),
-                                    ),
                                   // Password Field
                                   if (!isEditing)
                                     Padding(
@@ -698,7 +759,11 @@ class _AddUserViewState extends State<_AddUserView> {
                                           userId: widget.user?.userId,
                                           companyId: widget.user?.companyId,
                                           name: nameController.text.trim(),
-                                          email: emailController.text.trim(),
+                                          email: _selectedUserType == UserType.Employee
+                                              ? emailController.text.trim().isEmpty
+                                              ? null
+                                              : emailController.text.trim()
+                                              : null,
                                           userName: _selectedUserType == UserType.Employee
                                               ? userNameController.text.trim().isEmpty
                                               ? null
@@ -711,7 +776,9 @@ class _AddUserViewState extends State<_AddUserView> {
                                               ? null
                                               : double.tryParse(dailyWageController.text.trim())
                                               : null,
-                                          storeId: _selectedUserType == UserType.Employee ? (_selectedStoreId ?? defaultStoreId) : null,
+                                          storeId: (_selectedUserType == UserType.Employee || _selectedUserType == UserType.Accounts)
+                                              ? (_selectedStoreId ?? defaultStoreId)
+                                              : null,
                                           accountLedgerId: widget.user?.accountLedgerId,
                                           mobileNumber: _selectedUserType == UserType.Customer
                                               ? mobileNumberController.text.trim().isEmpty
@@ -728,11 +795,13 @@ class _AddUserViewState extends State<_AddUserView> {
                                               ? null
                                               : addressController.text.trim()
                                               : null,
+                                          accountType: _selectedUserType == UserType.Accounts ? _selectedAccountType : null,
                                         );
 
                                         print('Submitting userInfo with userType = ${userInfo.userType}, '
                                             'storeId = ${userInfo.storeId}, mobileNumber = ${userInfo.mobileNumber}, '
-                                            'businessName = ${userInfo.businessName}, address = ${userInfo.address}');
+                                            'businessName = ${userInfo.businessName}, address = ${userInfo.address}, '
+                                            'accountType = ${userInfo.accountType}');
 
                                         if (isEditing) {
                                           context.read<AddUserCubit>().updateUser(userInfo);

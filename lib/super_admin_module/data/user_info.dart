@@ -16,9 +16,10 @@ class UserInfo extends Equatable {
   final double? dailyWage;
   final String? storeId;
   final String? accountLedgerId;
-  final String? mobileNumber; // New field
-  final String? businessName; // New field
-  final String? address; // New field
+  final String? mobileNumber;
+  final String? businessName;
+  final String? address;
+  final AccountType? accountType; // New field for account type
 
   const UserInfo({
     this.userId,
@@ -36,6 +37,7 @@ class UserInfo extends Equatable {
     this.mobileNumber,
     this.businessName,
     this.address,
+    this.accountType,
   });
 
   factory UserInfo.fromJson(Map<String, dynamic> json) {
@@ -60,6 +62,7 @@ class UserInfo extends Equatable {
       mobileNumber: json['mobileNumber'] as String?,
       businessName: json['businessName'] as String?,
       address: json['address'] as String?,
+      accountType: json['accountType'] != null ? AccountTypeExtension.fromString(json['accountType']) : null,
     );
   }
 
@@ -80,6 +83,7 @@ class UserInfo extends Equatable {
       'mobileNumber': mobileNumber,
       'businessName': businessName,
       'address': address,
+      'accountType': accountType?.name,
     };
   }
 
@@ -99,6 +103,7 @@ class UserInfo extends Equatable {
     String? mobileNumber,
     String? businessName,
     String? address,
+    AccountType? accountType,
   }) {
     return UserInfo(
       userId: userId ?? this.userId,
@@ -116,6 +121,7 @@ class UserInfo extends Equatable {
       mobileNumber: mobileNumber ?? this.mobileNumber,
       businessName: businessName ?? this.businessName,
       address: address ?? this.address,
+      accountType: accountType ?? this.accountType,
     );
   }
 
@@ -136,6 +142,7 @@ class UserInfo extends Equatable {
       mobileNumber: mobileNumber,
       businessName: businessName,
       address: address,
+      accountType: accountType,
     );
   }
 
@@ -156,6 +163,7 @@ class UserInfo extends Equatable {
       mobileNumber: dto.mobileNumber,
       businessName: dto.businessName,
       address: dto.address,
+      accountType: dto.accountType,
     );
   }
 
@@ -176,5 +184,6 @@ class UserInfo extends Equatable {
     mobileNumber,
     businessName,
     address,
+    accountType,
   ];
 }

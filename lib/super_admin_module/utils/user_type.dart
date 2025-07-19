@@ -1,4 +1,4 @@
-enum UserType { Employee, Supplier, Customer, Boss, ThirdPartyVendor, Contractor, Store }
+enum UserType { Employee, Supplier, Customer, Boss, ThirdPartyVendor, Contractor, Store, Accounts }
 
 extension UserTypeExtension on UserType {
   String get name {
@@ -17,6 +17,8 @@ extension UserTypeExtension on UserType {
         return 'Contractor';
       case UserType.Store:
         return 'Store';
+      case UserType.Accounts:
+        return 'Accounts';
     }
   }
 
@@ -56,8 +58,52 @@ extension UserTypeExtension on UserType {
       case 'Store':
       case 'STORE':
         return UserType.Store;
+      case 'accounts':
+      case 'Accounts':
+      case 'ACCOUNTS':
+        return UserType.Accounts;
       default:
         print('UserTypeExtension: Unknown userType "$name"');
+        return null;
+    }
+  }
+}
+
+enum AccountType { Expense, HR, Finance }
+
+extension AccountTypeExtension on AccountType {
+  String get name {
+    switch (this) {
+      case AccountType.Expense:
+        return 'Expense';
+      case AccountType.HR:
+        return 'HR';
+      case AccountType.Finance:
+        return 'Finance';
+    }
+  }
+
+  static AccountType? fromString(String? name) {
+    if (name == null || name.trim().isEmpty) {
+      print('AccountTypeExtension: Null or empty accountType string');
+      return null;
+    }
+    final normalized = name.trim().toLowerCase();
+    switch (normalized) {
+      case 'expense':
+      case 'Expense':
+      case 'EXPENSE':
+        return AccountType.Expense;
+      case 'hr':
+      case 'HR':
+      case 'Hr':
+        return AccountType.HR;
+      case 'finance':
+      case 'Finance':
+      case 'FINANCE':
+        return AccountType.Finance;
+      default:
+        print('AccountTypeExtension: Unknown accountType "$name"');
         return null;
     }
   }

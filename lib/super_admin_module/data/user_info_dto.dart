@@ -3,11 +3,11 @@ import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 
 class UserInfoDto extends Equatable {
-  final String? userId; // Made optional
+  final String? userId;
   final String? companyId;
-  final String? name; // Made optional
-  final String? email; // Made optional
-  final String? userName; // Made optional
+  final String? name;
+  final String? email;
+  final String? userName;
   final Role role;
   final UserType? userType;
   final double? latitude;
@@ -18,6 +18,7 @@ class UserInfoDto extends Equatable {
   final String? mobileNumber;
   final String? businessName;
   final String? address;
+  final AccountType? accountType; // New field for account type
 
   const UserInfoDto({
     this.userId,
@@ -35,6 +36,7 @@ class UserInfoDto extends Equatable {
     this.mobileNumber,
     this.businessName,
     this.address,
+    this.accountType,
   });
 
   factory UserInfoDto.fromMap(Map<String, dynamic> map) {
@@ -44,12 +46,12 @@ class UserInfoDto extends Equatable {
       print('UserInfoDto.fromMap: Defaulted userType to Customer for raw value "$userTypeRaw"');
     }
     return UserInfoDto(
-      userId: map['userId'] as String? ?? '', // Default to empty string
+      userId: map['userId'] as String? ?? '',
       companyId: map['companyId'] as String?,
-      name: map['name'] as String? ?? '', // Default to empty string
-      email: map['email'] as String? ?? '', // Default to empty string
-      userName: map['userName'] as String? ?? '', // Default to empty string
-      role: RoleExtension.fromString(map['role'] as String? ?? 'user'), // Default to 'user'
+      name: map['name'] as String? ?? '',
+      email: map['email'] as String? ?? '',
+      userName: map['userName'] as String? ?? '',
+      role: RoleExtension.fromString(map['role'] as String? ?? 'user'),
       userType: userType,
       latitude: (map['latitude'] as num?)?.toDouble(),
       longitude: (map['longitude'] as num?)?.toDouble(),
@@ -59,6 +61,7 @@ class UserInfoDto extends Equatable {
       mobileNumber: map['mobileNumber'] as String?,
       businessName: map['businessName'] as String?,
       address: map['address'] as String?,
+      accountType: map['accountType'] != null ? AccountTypeExtension.fromString(map['accountType']) : null,
     );
   }
 
@@ -79,6 +82,7 @@ class UserInfoDto extends Equatable {
       if (mobileNumber != null) 'mobileNumber': mobileNumber,
       if (businessName != null) 'businessName': businessName,
       if (address != null) 'address': address,
+      if (accountType != null) 'accountType': accountType!.name,
     };
   }
 
@@ -99,6 +103,7 @@ class UserInfoDto extends Equatable {
     if (mobileNumber != null) map['mobileNumber'] = mobileNumber;
     if (businessName != null) map['businessName'] = businessName;
     if (address != null) map['address'] = address;
+    if (accountType != null) map['accountType'] = accountType!.name;
     return map;
   }
 
@@ -118,6 +123,7 @@ class UserInfoDto extends Equatable {
     String? mobileNumber,
     String? businessName,
     String? address,
+    AccountType? accountType,
   }) {
     return UserInfoDto(
       userId: userId ?? this.userId,
@@ -135,6 +141,7 @@ class UserInfoDto extends Equatable {
       mobileNumber: mobileNumber ?? this.mobileNumber,
       businessName: businessName ?? this.businessName,
       address: address ?? this.address,
+      accountType: accountType ?? this.accountType,
     );
   }
 
@@ -155,5 +162,6 @@ class UserInfoDto extends Equatable {
     mobileNumber,
     businessName,
     address,
+    accountType,
   ];
 }

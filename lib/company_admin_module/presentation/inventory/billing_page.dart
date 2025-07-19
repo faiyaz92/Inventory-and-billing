@@ -890,7 +890,8 @@ class _BillingPageState extends State<BillingPage> {
     try {
       final orderService = sl<IOrderService>();
       final ledgerCubit = sl<UserLedgerCubit>();
-      final userId = (await sl<AccountRepository>().getUserInfo())?.userId;
+      final userInfo = await sl<AccountRepository>().getUserInfo();
+      final userId = userInfo?.userId;
       if (userId == null) {
         throw Exception('User ID not found');
       }
@@ -898,10 +899,10 @@ class _BillingPageState extends State<BillingPage> {
       final stockState = _stockCubit.state;
       final billNumber = _existingBillNumber ??
           'BILL-${DateTime.now().millisecondsSinceEpoch}';
-      final ledgerId = _selectedCustomer!.accountLedgerId;
+      final customerLedgerId = _selectedCustomer!.accountLedgerId;
 
-      // Validate ledger ID
-      if (ledgerId == null) {
+      // Validate customer ledger ID
+      if (customerLedgerId == null) {
         print('No ledger ID found for customer: ${_selectedCustomer!.name}');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -911,7 +912,32 @@ class _BillingPageState extends State<BillingPage> {
         return;
       }
 
-      print('Processing bill: billNumber=$billNumber, cartItems=${_cartItems.length}, totalAmount=$updatedTotalAmount, discount=${_discount ?? 0.0}');
+      // Fetch store's ledger ID
+      final stores = await sl<StockRepository>().getStores(userInfo?.companyId ?? '');
+      final store = stores.firstWhere(
+            (store) => store.storeId == _selectedStoreId,
+        orElse: () => StoreDto(
+          storeId: _selectedStoreId!,
+          name: 'Unknown',
+          createdBy: '',
+          createdAt: DateTime.now(),
+          accountLedgerId: null,
+        ),
+      );
+      final storeLedgerId = store.accountLedgerId;
+
+      // Validate store ledger ID
+      if (storeLedgerId == null) {
+        print('No ledger ID found for store: ${store.name}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Store ledger ID not found. Cannot process bill.')),
+        );
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      print('Processing bill: billNumber=$billNumber, cartItems=${_cartItems.length}, totalAmount=$updatedTotalAmount, discount=${_discount ?? 0.0}, store=${store.name}');
 
       if (_existingBillNumber == null) {
         // New order: Validate and update stock
@@ -972,9 +998,9 @@ class _BillingPageState extends State<BillingPage> {
           );
         }
 
-        // Ledger entries for new order
+        // Customer ledger entries (unchanged)
         await ledgerCubit.addTransaction(
-          ledgerId: ledgerId,
+          ledgerId: customerLedgerId,
           amount: updatedTotalAmount,
           type: 'Debit',
           billNumber: billNumber,
@@ -986,7 +1012,7 @@ class _BillingPageState extends State<BillingPage> {
 
         if (_selectedBillType == 'Cash') {
           await ledgerCubit.addTransaction(
-            ledgerId: ledgerId,
+            ledgerId: customerLedgerId,
             amount: updatedTotalAmount,
             type: 'Credit',
             billNumber: billNumber,
@@ -997,13 +1023,39 @@ class _BillingPageState extends State<BillingPage> {
           );
         }
 
+        // Store ledger entries for new order
+        // Credit for sale (stock liability transferred to customer)
+        await ledgerCubit.addTransaction(
+          ledgerId: storeLedgerId,
+          amount: updatedTotalAmount,
+          type: 'Credit',
+          billNumber: billNumber,
+          purpose: 'Sale',
+          typeOfPurpose: _selectedBillType,
+          remarks: 'Sale of stock for bill $billNumber to customer ${_selectedCustomer!.name ?? 'Unknown'} with discount ₹${(_discount ?? 0.0).toStringAsFixed(2)}',
+          userType: UserType.Store,
+        );
+
+        if (_selectedBillType == 'Cash') {
+          // Debit for cash received
+          await ledgerCubit.addTransaction(
+            ledgerId: storeLedgerId,
+            amount: updatedTotalAmount,
+            type: 'Debit',
+            billNumber: billNumber,
+            purpose: 'Cash Received',
+            typeOfPurpose: 'Cash',
+            remarks: 'Cash received for bill $billNumber from customer ${_selectedCustomer!.name ?? 'Unknown'}',
+            userType: UserType.Store,
+          );
+        }
+
         order = order.copyWith(billNumber: billNumber);
         await orderService.placeOrder(order);
       } else {
         // Existing order: Handle returns and update
         if (widget.orderId != null) {
-          final originalOrder =
-          (await orderService.getOrderById(widget.orderId!))!;
+          final originalOrder = (await orderService.getOrderById(widget.orderId!))!;
           // Calculate return amount as difference between original and updated total
           final returnAmount = originalOrder.totalAmount - updatedTotalAmount;
 
@@ -1043,8 +1095,8 @@ class _BillingPageState extends State<BillingPage> {
                 print('Stock not found for ${item.productName}, productId=${item.productId}, storeId=$_selectedStoreId');
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                      content: Text(
-                          'Stock data not found for ${item.productName}')),
+                      content:
+                      Text('Stock data not found for ${item.productName}')),
                 );
                 setState(() => _isLoading = false);
                 return;
@@ -1055,8 +1107,7 @@ class _BillingPageState extends State<BillingPage> {
                   quantity: stock.quantity + returnQuantity,
                   lastUpdated: DateTime.now(),
                 ),
-                remarks:
-                'Return of $returnQuantity units of ${item.productName}',
+                remarks: 'Return of $returnQuantity units of ${item.productName}',
                 isReturn: true,
               );
               print('Stock updated for ${item.productName}, newStock=${stock.quantity + returnQuantity}');
@@ -1066,14 +1117,14 @@ class _BillingPageState extends State<BillingPage> {
           }
           print('Completed return processing, processed ${processedProductIds.length} items');
 
-          // Ledger entry for return (if any items were returned)
+          // Customer ledger entry for return (unchanged)
           final totalOriginalQuantity = originalOrder.items.fold<int>(
               0, (sum, item) => sum + item.quantity);
           final totalCurrentQuantity =
           _cartItems.fold<int>(0, (sum, item) => sum + item.quantity);
           if (totalOriginalQuantity > totalCurrentQuantity && returnAmount > 0) {
             await ledgerCubit.addTransaction(
-              ledgerId: ledgerId,
+              ledgerId: customerLedgerId,
               amount: returnAmount,
               type: 'Credit',
               billNumber: billNumber,
@@ -1083,10 +1134,9 @@ class _BillingPageState extends State<BillingPage> {
               'Return for order ${widget.orderId} (credited ₹${returnAmount.toStringAsFixed(2)} after discount ₹${(_discount ?? 0.0).toStringAsFixed(2)})',
               userType: UserType.Customer,
             );
-            if (_selectedBillType == 'Cash' &&
-                _selectedReturnMethod == 'Cash') {
+            if (_selectedBillType == 'Cash' && _selectedReturnMethod == 'Cash') {
               await ledgerCubit.addTransaction(
-                ledgerId: ledgerId,
+                ledgerId: customerLedgerId,
                 amount: returnAmount,
                 type: 'Debit',
                 billNumber: billNumber,
@@ -1099,10 +1149,10 @@ class _BillingPageState extends State<BillingPage> {
             }
           }
 
-          // Ledger entries for updated order (if cart is not empty)
+          // Customer ledger entries for updated order (unchanged)
           if (_cartItems.isNotEmpty) {
             await ledgerCubit.addTransaction(
-              ledgerId: ledgerId,
+              ledgerId: customerLedgerId,
               amount: updatedTotalAmount,
               type: 'Debit',
               billNumber: billNumber,
@@ -1113,7 +1163,7 @@ class _BillingPageState extends State<BillingPage> {
             );
             if (_selectedBillType == 'Cash') {
               await ledgerCubit.addTransaction(
-                ledgerId: ledgerId,
+                ledgerId: customerLedgerId,
                 amount: updatedTotalAmount,
                 type: 'Credit',
                 billNumber: billNumber,
@@ -1121,6 +1171,64 @@ class _BillingPageState extends State<BillingPage> {
                 typeOfPurpose: 'Cash',
                 remarks: 'Payment received for updated bill $billNumber with discount ₹${(_discount ?? 0.0).toStringAsFixed(2)}',
                 userType: UserType.Customer,
+              );
+            }
+          }
+
+          // Store ledger entries for updated order
+          if (_cartItems.isNotEmpty) {
+            // Credit for sale (stock liability transferred to customer)
+            await ledgerCubit.addTransaction(
+              ledgerId: storeLedgerId,
+              amount: updatedTotalAmount,
+              type: 'Credit',
+              billNumber: billNumber,
+              purpose: 'Sale',
+              typeOfPurpose: _selectedBillType,
+              remarks: 'Updated sale for bill $billNumber to customer ${_selectedCustomer!.name ?? 'Unknown'} with discount ₹${(_discount ?? 0.0).toStringAsFixed(2)}',
+              userType: UserType.Store,
+            );
+
+            if (_selectedBillType == 'Cash') {
+              // Debit for cash received
+              await ledgerCubit.addTransaction(
+                ledgerId: storeLedgerId,
+                amount: updatedTotalAmount,
+                type: 'Debit',
+                billNumber: billNumber,
+                purpose: 'Cash Received',
+                typeOfPurpose: 'Cash',
+                remarks: 'Cash received for updated bill $billNumber from customer ${_selectedCustomer!.name ?? 'Unknown'}',
+                userType: UserType.Store,
+              );
+            }
+          }
+
+          // Store ledger entries for return (if any items were returned)
+          if (totalOriginalQuantity > totalCurrentQuantity && returnAmount > 0) {
+            // Debit for returned stock (store takes back stock liability)
+            await ledgerCubit.addTransaction(
+              ledgerId: storeLedgerId,
+              amount: returnAmount,
+              type: 'Debit',
+              billNumber: billNumber,
+              purpose: 'Return',
+              typeOfPurpose: _selectedBillType,
+              remarks: 'Return of stock for bill $billNumber (debited ₹${returnAmount.toStringAsFixed(2)})',
+              userType: UserType.Store,
+            );
+
+            if (_selectedBillType == 'Cash' && _selectedReturnMethod == 'Cash') {
+              // Credit for cash paid back
+              await ledgerCubit.addTransaction(
+                ledgerId: storeLedgerId,
+                amount: returnAmount,
+                type: 'Credit',
+                billNumber: billNumber,
+                purpose: 'Return Payment',
+                typeOfPurpose: 'Cash',
+                remarks: 'Cash paid back for return for bill $billNumber (₹${returnAmount.toStringAsFixed(2)})',
+                userType: UserType.Store,
               );
             }
           }
@@ -1150,8 +1258,7 @@ class _BillingPageState extends State<BillingPage> {
     } finally {
       setState(() => _isLoading = false);
     }
-  }
-  Widget _buildGenerateBillButton() {
+  }  Widget _buildGenerateBillButton() {
     return ElevatedButton(
       onPressed: _generateBill,
       style: ElevatedButton.styleFrom(

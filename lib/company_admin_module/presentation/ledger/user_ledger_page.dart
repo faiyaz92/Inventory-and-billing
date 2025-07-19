@@ -1,16 +1,20 @@
 import 'package:auto_route/annotations.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_ledger_model.dart';
-import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/account_ledger_state.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
+import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/utils/text_styles.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
-import 'package:auto_route/auto_route.dart';
 
 @RoutePage()
 class UserLedgerPage extends StatefulWidget {
@@ -29,18 +33,21 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
   final TextEditingController remarksController = TextEditingController();
   bool _isPopupOpen = false;
   String? _ledgerId;
-  bool _ledgerCreated = false; // Track if a new ledger was created
+  bool _ledgerCreated = false;
 
   @override
   void initState() {
     super.initState();
     _ledgerCubit = sl<UserLedgerCubit>();
     _ledgerId = widget.user.accountLedgerId;
-    _ledgerCreated = widget.user.accountLedgerId == null || widget.user.accountLedgerId!.isEmpty;
+    _ledgerCreated = widget.user.accountLedgerId == null ||
+        widget.user.accountLedgerId!.isEmpty;
     if (_ledgerCreated) {
-      _ledgerCubit.ensureLedger(widget.user.accountLedgerId, widget.user.userType, widget.user);
+      _ledgerCubit.ensureLedger(
+          widget.user.accountLedgerId, widget.user.userType, widget.user);
     } else {
-      _ledgerCubit.fetchLedger(widget.user.accountLedgerId, widget.user.userType);
+      _ledgerCubit.fetchLedger(
+          widget.user.accountLedgerId, widget.user.userType);
     }
   }
 
@@ -61,7 +68,6 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
         appBar: CustomAppBar(
           title: "User Ledger",
           onBackPressed: () {
-            // Return result when back button is pressed
             sl<Coordinator>().navigateBack(isUpdated: _ledgerCreated);
           },
         ),
@@ -69,9 +75,9 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
           children: [
             BlocListener<UserLedgerCubit, AccountLedgerState>(
               listenWhen: (previous, current) =>
-              (current is TransactionPopupOpened &&
-                  current.isInitialOpen &&
-                  !_isPopupOpen) ||
+                  (current is TransactionPopupOpened &&
+                      current.isInitialOpen &&
+                      !_isPopupOpen) ||
                   current is TransactionSuccess ||
                   current is TransactionAddFailed ||
                   current is AccountLedgerUpdated ||
@@ -96,7 +102,6 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
                 if (state is AccountLedgerUpdated) {
                   setState(() {
                     _ledgerId = state.ledger.ledgerId ?? _ledgerId;
-                    // Confirm ledger creation if it was initially null
                     _ledgerCreated = _ledgerCreated && _ledgerId != null;
                   });
                 }
@@ -104,7 +109,6 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(state.message)),
                   );
-                  // If ledger creation failed, reset _ledgerCreated
                   if (_ledgerCreated) {
                     _ledgerCreated = false;
                   }
@@ -115,7 +119,7 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
             Expanded(
               child: BlocBuilder<UserLedgerCubit, AccountLedgerState>(
                 buildWhen: (previous, current) =>
-                current is AccountLedgerFetching ||
+                    current is AccountLedgerFetching ||
                     current is AccountLedgerUpdated ||
                     current is AccountLedgerError,
                 builder: (context, state) {
@@ -193,7 +197,8 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 "User Details",
-                style: defaultTextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style:
+                    defaultTextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
             const Padding(
@@ -208,7 +213,8 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 "Name",
-                style: defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                style:
+                    defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
             ),
             Padding(
@@ -226,7 +232,8 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 "Email",
-                style: defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                style:
+                    defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
             ),
             Padding(
@@ -244,7 +251,8 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 "User Type",
-                style: defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                style:
+                    defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
             ),
             Padding(
@@ -261,19 +269,42 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                "Daily Wage",
-                style: defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                "Role",
+                style:
+                    defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                widget.user.dailyWage != null ? "₹${widget.user.dailyWage!.toStringAsFixed(2)}" : "N/A",
+                widget.user.role?.name ?? "user",
                 style: defaultTextStyle(fontSize: 14),
               ),
             ),
           ],
         ),
+        if (widget.user.userType == UserType.Employee)
+          TableRow(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Daily Wage",
+                  style: defaultTextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  widget.user.dailyWage != null
+                      ? "₹${widget.user.dailyWage!.toStringAsFixed(2)}"
+                      : "N/A",
+                  style: defaultTextStyle(fontSize: 14),
+                ),
+              ),
+            ],
+          ),
       ],
     );
   }
@@ -296,7 +327,9 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
               child: Text(
                 isDuePositive ? "Current Due" : "Current Payable",
                 style: defaultTextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red),
               ),
             ),
             Padding(
@@ -330,32 +363,52 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
           lastDate: DateTime(2100),
         );
         if (picked != null) {
-          // TODO: Implement updatePromiseDate
+// TODO: Implement updatePromiseDate
         }
       },
     );
   }
 
   Widget _buildTransactionButtons(BuildContext context) {
+    final role = widget.user.role;
+    final isEmployee = widget.user.userType == UserType.Employee;
+    final isAccountant =
+        role == Role.STORE_ACCOUNTANT || role == Role.COMPANY_ACCOUNTANT;
+    final isSalesman = role == Role.SALES_MAN;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        ElevatedButton(
-          onPressed: () => context.read<UserLedgerCubit>().openTransactionPopup(false),
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        if (!isSalesman &&
+            (isAccountant ||
+                isEmployee)) // Credit button for Accountants and Employees
+          ElevatedButton(
+            onPressed: () => context
+                .read<UserLedgerCubit>()
+                .openTransactionPopup(false, role),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text(isEmployee ? "Receive Cash" : "Credit"),
           ),
-          child: const Text("Credit"),
-        ),
-        ElevatedButton(
-          onPressed: () => context.read<UserLedgerCubit>().openTransactionPopup(true),
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        if (isAccountant || isEmployee || isSalesman) // Debit button for all
+          ElevatedButton(
+            onPressed: () => context
+                .read<UserLedgerCubit>()
+                .openTransactionPopup(true, role),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text(isEmployee
+                ? "Pay Cash"
+                : isSalesman
+                    ? "Pay"
+                    : "Pay Cash/Amount"),
           ),
-          child: const Text("Debit"),
-        ),
       ],
     );
   }
@@ -363,7 +416,7 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
   SliverList _buildTransactionList(AccountLedger ledger) {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
-            (context, index) {
+        (context, index) {
           final txn = ledger.transactions?[index];
           if (txn == null) return const SizedBox.shrink();
           return Card(
@@ -403,7 +456,9 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: txn.type == "Debit" ? Colors.red : Colors.green,
+                              color: txn.type == "Debit"
+                                  ? Colors.red
+                                  : Colors.green,
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -438,14 +493,16 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         txn.createdAt.toString().split(' ')[0],
-                        style: defaultTextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                        style: defaultTextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w500),
                       ),
                     ),
                   ],
@@ -459,161 +516,328 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
     );
   }
 
-  void _showTransactionPopup(BuildContext context, TransactionPopupOpened state) {
+  Future<void> _showTransactionPopup(
+      BuildContext context, TransactionPopupOpened state) async {
     if (_ledgerId == null && widget.user.accountLedgerId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Ledger ID not available. Please wait or try again.")),
+        const SnackBar(
+            content:
+                Text("Ledger ID not available. Please wait or try again.")),
       );
       _isPopupOpen = false;
       return;
     }
 
+// Fetch accounts for source and destination
+    final userInfo = await sl<AccountRepository>().getUserInfo();
+    final companyId = userInfo?.companyId ?? '';
+    final users = await sl<UserServices>().getUsersFromTenantCompany();
+    final stores = await sl<StockRepository>().getStores(companyId);
+    final accounts = [
+      ...users
+          .where(
+              (u) => u.accountLedgerId != null && u.accountLedgerId!.isNotEmpty)
+          .map((u) => {
+                'ledgerId': u.accountLedgerId,
+                'name': u.name ?? u.userName ?? 'Unknown User',
+                'type': u.userType?.name ?? 'User',
+                'userInfo': u
+              }),
+      ...stores
+          .where(
+              (s) => s.accountLedgerId != null && s.accountLedgerId!.isNotEmpty)
+          .map((s) => {
+                'ledgerId': s.accountLedgerId,
+                'name': s.name,
+                'type': 'Store',
+                'userInfo': UserInfo(
+                  userId: s.storeId,
+                  name: s.name,
+                  userName: s.name,
+                  companyId: companyId,
+                  userType: UserType.Store,
+                  accountLedgerId: s.accountLedgerId,
+                )
+              }),
+    ];
+    String? selectedSourceLedgerId = userInfo?.accountLedgerId;
+    UserInfo? selectedSourceUserInfo = userInfo;
+    String? selectedDestinationLedgerId = widget.user.accountLedgerId;
+    UserInfo? selectedDestinationUserInfo = widget.user;
+
     showDialog(
       context: context,
       builder: (dialogContext) {
-        return BlocProvider.value(
-          value: _ledgerCubit,
-          child: AlertDialog(
-            title: Text(state.isDebit ? "Add Debit" : "Add Credit"),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: amountController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(labelText: "Amount"),
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return BlocProvider.value(
+              value: _ledgerCubit,
+              child: AlertDialog(
+                title: Text(state.isDebit
+                    ? (widget.user.role == Role.SALES_MAN
+                        ? "Pay"
+                        : "Pay Cash/Amount")
+                    : "Receive Cash"),
+                content: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      DropdownButtonFormField<String>(
+                        decoration: const InputDecoration(
+                            labelText: "Destination Account"),
+                        value: selectedDestinationLedgerId,
+                        items: accounts
+                            .map((account) => DropdownMenuItem(
+                                  value: account['ledgerId'] as String,
+                                  child: Text(
+                                      '${account['name']} (${account['type']})'),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          setDialogState(() {
+                            selectedDestinationLedgerId = value;
+                            selectedDestinationUserInfo = accounts.firstWhere(
+                                    (account) => account['ledgerId'] == value)[
+                                'userInfo'] as UserInfo?;
+                          });
+                        },
+                        validator: (value) => value == null
+                            ? 'Please select a destination account'
+                            : null,
+                      ),
+                      DropdownButtonFormField<String>(
+                        decoration:
+                            const InputDecoration(labelText: "Source Account"),
+                        value: selectedSourceLedgerId,
+                        items: accounts
+                            .map((account) => DropdownMenuItem(
+                                  value: account['ledgerId'] as String,
+                                  child: Text(
+                                      '${account['name']} (${account['type']})'),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          setDialogState(() {
+                            selectedSourceLedgerId = value;
+                            selectedSourceUserInfo = accounts.firstWhere(
+                                    (account) => account['ledgerId'] == value)[
+                                'userInfo'] as UserInfo?;
+                          });
+                        },
+                        validator: (value) => value == null
+                            ? 'Please select a source account'
+                            : null,
+                      ),
+                      TextField(
+                        controller: amountController,
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
+                        decoration: const InputDecoration(labelText: "Amount"),
+                      ),
+                      TextField(
+                        controller: billNumberController,
+                        decoration: const InputDecoration(
+                            labelText: "Bill Number (Optional)"),
+                      ),
+                      BlocBuilder<UserLedgerCubit, AccountLedgerState>(
+                        buildWhen: (previous, current) =>
+                            current is TransactionPopupOpened &&
+                            previous is TransactionPopupOpened &&
+                            current.selectedPurpose != previous.selectedPurpose,
+                        builder: (context, popupState) {
+                          if (popupState is TransactionPopupOpened) {
+                            final isAccountant =
+                                widget.user.role == Role.STORE_ACCOUNTANT ||
+                                    widget.user.role == Role.COMPANY_ACCOUNTANT;
+                            final items = state.isDebit
+                                ? (widget.user.role == Role.SALES_MAN
+                                    ? popupState.purposeTypeMap.keys
+                                        .where((purpose) => [
+                                              'Transfer Cash',
+                                              'Other'
+                                            ].contains(purpose))
+                                        .map((purpose) => DropdownMenuItem(
+                                              value: purpose,
+                                              child: Text(purpose),
+                                            ))
+                                        .toList()
+                                    : popupState.purposeTypeMap.keys
+                                        .where((purpose) =>
+                                            purpose !=
+                                            'Reimbursement') // Exclude Reimbursement for Debit
+                                        .map((purpose) => DropdownMenuItem(
+                                              value: purpose,
+                                              child: Text(purpose),
+                                            ))
+                                        .toList())
+                                : (isAccountant
+                                    ? popupState.purposeTypeMap.keys
+                                        .where((purpose) =>
+                                            purpose ==
+                                            'Reimbursement') // Only Reimbursement for accountants' Credit
+                                        .map((purpose) => DropdownMenuItem(
+                                              value: purpose,
+                                              child: Text(purpose),
+                                            ))
+                                        .toList()
+                                    : popupState.purposeTypeMap.keys
+                                        .map((purpose) => DropdownMenuItem(
+                                              value: purpose,
+                                              child: Text(purpose),
+                                            ))
+                                        .toList());
+                            return DropdownButtonFormField<String>(
+                              value: popupState.selectedPurpose,
+                              decoration:
+                                  const InputDecoration(labelText: "Purpose"),
+                              items: items,
+                              onChanged: items.isNotEmpty
+                                  ? (value) => context
+                                      .read<UserLedgerCubit>()
+                                      .updatePurposeSelection(value)
+                                  : null,
+                              hint: items.isEmpty
+                                  ? const Text("No purposes available")
+                                  : null,
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                      BlocBuilder<UserLedgerCubit, AccountLedgerState>(
+                        buildWhen: (previous, current) =>
+                            current is TransactionPopupOpened &&
+                            previous is TransactionPopupOpened &&
+                            (current.selectedType != previous.selectedType ||
+                                current.selectedPurpose !=
+                                    previous.selectedPurpose),
+                        builder: (context, popupState) {
+                          if (popupState is TransactionPopupOpened) {
+                            final items = popupState.selectedPurpose != null &&
+                                    popupState.purposeTypeMap
+                                        .containsKey(popupState.selectedPurpose)
+                                ? popupState
+                                    .purposeTypeMap[popupState.selectedPurpose]!
+                                    .map((type) => DropdownMenuItem(
+                                          value: type,
+                                          child: Text(type),
+                                        ))
+                                    .toList()
+                                : <DropdownMenuItem<String>>[];
+                            return DropdownButtonFormField<String>(
+                              value: popupState.selectedType,
+                              decoration:
+                                  const InputDecoration(labelText: "Type"),
+                              items: items,
+                              onChanged: items.isNotEmpty
+                                  ? (value) => context
+                                      .read<UserLedgerCubit>()
+                                      .updateTypeSelection(value)
+                                  : null,
+                              hint: items.isEmpty
+                                  ? const Text("No types available")
+                                  : null,
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                      TextField(
+                        controller: remarksController,
+                        maxLength: 500,
+                        decoration: InputDecoration(
+                          labelText:
+                              state.isDebit ? "Remarks (Optional)" : "Remarks",
+                        ),
+                      ),
+                      BlocBuilder<UserLedgerCubit, AccountLedgerState>(
+                        buildWhen: (previous, current) =>
+                            current is TransactionPopupOpened &&
+                            previous is TransactionPopupOpened &&
+                            current.errorMessage != previous.errorMessage,
+                        builder: (context, popupState) {
+                          if (popupState is TransactionPopupOpened &&
+                              popupState.errorMessage != null) {
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Text(
+                                popupState.errorMessage!,
+                                style: const TextStyle(
+                                    color: Colors.red, fontSize: 12),
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ],
                   ),
-                  TextField(
-                    controller: billNumberController,
-                    decoration: const InputDecoration(labelText: "Bill Number (Optional)"),
-                  ),
-                  if (state.isDebit) ...[
-                    BlocBuilder<UserLedgerCubit, AccountLedgerState>(
-                      buildWhen: (previous, current) =>
-                      current is TransactionPopupOpened &&
-                          previous is TransactionPopupOpened &&
-                          current.selectedPurpose != previous.selectedPurpose,
-                      builder: (context, popupState) {
-                        if (popupState is TransactionPopupOpened) {
-                          final items = popupState.purposeTypeMap.keys
-                              .map((purpose) => DropdownMenuItem(
-                            value: purpose,
-                            child: Text(purpose),
-                          ))
-                              .toList();
-                          return DropdownButtonFormField<String>(
-                            value: popupState.selectedPurpose,
-                            decoration: const InputDecoration(labelText: "Purpose"),
-                            items: items,
-                            onChanged: items.isNotEmpty
-                                ? (value) => context.read<UserLedgerCubit>().updatePurposeSelection(value)
-                                : null,
-                            hint: items.isEmpty ? const Text("No purposes available") : null,
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                    BlocBuilder<UserLedgerCubit, AccountLedgerState>(
-                      buildWhen: (previous, current) =>
-                      current is TransactionPopupOpened &&
-                          previous is TransactionPopupOpened &&
-                          (current.selectedType != previous.selectedType ||
-                              current.selectedPurpose != previous.selectedPurpose),
-                      builder: (context, popupState) {
-                        if (popupState is TransactionPopupOpened) {
-                          final items = popupState.selectedPurpose != null &&
-                              popupState.purposeTypeMap.containsKey(popupState.selectedPurpose)
-                              ? popupState.purposeTypeMap[popupState.selectedPurpose]!
-                              .map((type) => DropdownMenuItem(
-                            value: type,
-                            child: Text(type),
-                          ))
-                              .toList()
-                              : <DropdownMenuItem<String>>[];
-                          return DropdownButtonFormField<String>(
-                            value: popupState.selectedType,
-                            decoration: const InputDecoration(labelText: "Type"),
-                            items: items,
-                            onChanged: items.isNotEmpty
-                                ? (value) => context.read<UserLedgerCubit>().updateTypeSelection(value)
-                                : null,
-                            hint: items.isEmpty ? const Text("No types available") : null,
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                  ],
-                  TextField(
-                    controller: remarksController,
-                    maxLength: 500,
-                    decoration: InputDecoration(
-                      labelText: state.isDebit ? "Remarks (Optional)" : "Remarks",
-                    ),
-                  ),
-                  BlocBuilder<UserLedgerCubit, AccountLedgerState>(
-                    buildWhen: (previous, current) =>
-                    current is TransactionPopupOpened &&
-                        previous is TransactionPopupOpened &&
-                        current.errorMessage != previous.errorMessage,
-                    builder: (context, popupState) {
-                      if (popupState is TransactionPopupOpened && popupState.errorMessage != null) {
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Text(
-                            popupState.errorMessage!,
-                            style: const TextStyle(color: Colors.red, fontSize: 12),
-                          ),
-                        );
-                      }
-                      return const SizedBox.shrink();
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      _isPopupOpen = false;
+                      Navigator.pop(dialogContext);
+                      amountController.clear();
+                      billNumberController.clear();
+                      remarksController.clear();
                     },
+                    child: const Text("Cancel"),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      final currentState =
+                          context.read<UserLedgerCubit>().state;
+                      String? selectedType;
+                      String? selectedPurpose;
+                      if (currentState is TransactionPopupOpened) {
+                        selectedType = currentState.selectedType;
+                        selectedPurpose = currentState.selectedPurpose;
+                      }
+                      if (selectedSourceLedgerId == null ||
+                          selectedSourceUserInfo == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text("Please select a source account")),
+                        );
+                        return;
+                      }
+                      if (selectedDestinationLedgerId == null ||
+                          selectedDestinationUserInfo == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content:
+                                  Text("Please select a destination account")),
+                        );
+                        return;
+                      }
+                      context.read<UserLedgerCubit>().addTransactionWithSource(
+                            ledgerId: selectedDestinationLedgerId!,
+                            sourceLedgerId: selectedSourceLedgerId!,
+                            destinationUserInfo: selectedDestinationUserInfo!,
+                            sourceUserInfo: selectedSourceUserInfo!,
+                            amount:
+                                double.tryParse(amountController.text) ?? 0.0,
+                            type: state.isDebit ? "Debit" : "Credit",
+                            billNumber: billNumberController.text,
+                            purpose: selectedPurpose,
+                            typeOfPurpose: selectedType,
+                            remarks: remarksController.text,
+                            userType: selectedDestinationUserInfo!.userType,
+                            userRole: widget.user.role,
+                          );
+                      _isPopupOpen = false;
+                      Navigator.pop(dialogContext);
+                      amountController.clear();
+                      billNumberController.clear();
+                      remarksController.clear();
+                    },
+                    child: const Text("Add"),
                   ),
                 ],
               ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  _isPopupOpen = false;
-                  Navigator.pop(dialogContext);
-                  amountController.clear();
-                  billNumberController.clear();
-                  remarksController.clear();
-                },
-                child: const Text("Cancel"),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  final currentState = context.read<UserLedgerCubit>().state;
-                  String? selectedType;
-                  String? selectedPurpose;
-                  if (currentState is TransactionPopupOpened) {
-                    selectedType = currentState.selectedType;
-                    selectedPurpose = currentState.selectedPurpose;
-                  }
-                  context.read<UserLedgerCubit>().addTransaction(
-                    ledgerId: _ledgerId ?? widget.user.accountLedgerId!,
-                    amount: double.tryParse(amountController.text) ?? 0.0,
-                    type: state.isDebit ? "Debit" : "Credit",
-                    billNumber: billNumberController.text,
-                    purpose: state.isDebit ? selectedPurpose : null,
-                    typeOfPurpose: state.isDebit ? selectedType : null,
-                    remarks: remarksController.text,
-                    userType: widget.user.userType,
-                  );
-                  _isPopupOpen = false;
-                  Navigator.pop(dialogContext);
-                  amountController.clear();
-                  billNumberController.clear();
-                  remarksController.clear();
-                },
-                child: const Text("Add"),
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
