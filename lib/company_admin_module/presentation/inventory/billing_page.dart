@@ -41,7 +41,6 @@ class _BillingPageState extends State<BillingPage> {
   String? _selectedStoreId;
   String _selectedStatus = 'pending';
   UserInfo? _selectedCustomer;
-  String? _newCustomerLedgerId;
   final List<String> _statuses = [
     'pending',
     'processing',
@@ -733,411 +732,6 @@ class _BillingPageState extends State<BillingPage> {
         ) ??
         false;
   }
-
-  // Future<void> _generateBill() async {
-  //   if (_cartItems.isEmpty && _existingBillNumber == null) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('Cart is empty')),
-  //     );
-  //     return;
-  //   }
-  //   if (_selectedStoreId == null) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('Please select a store')),
-  //     );
-  //     return;
-  //   }
-  //   if (_selectedCustomer == null) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('Please select a customer')),
-  //     );
-  //     return;
-  //   }
-  //   if (_selectedBillType == null) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('Please select a bill type')),
-  //     );
-  //     return;
-  //   }
-  //
-  //   // Initialize discount for fresh orders
-  //   if (_discount == null && widget.orderId == null) {
-  //     setState(() {
-  //       _discount = 0.0;
-  //     });
-  //   }
-  //
-  //   // Set discount to 0 if cart is empty (full return)
-  //   if (_cartItems.isEmpty) {
-  //     setState(() {
-  //       _discount = 0.0;
-  //     });
-  //   }
-  //
-  //   final double subtotal =
-  //   _cartItems.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
-  //   final double totalTax =
-  //   _cartItems.fold(0.0, (sum, item) => sum + item.taxAmount);
-  //   final double totalAmount = subtotal + totalTax - (_discount ?? 0.0);
-  //
-  //   // Create a temporary Order object for review dialog
-  //   Order tempOrder;
-  //   if (_existingBillNumber != null && widget.orderId != null) {
-  //     final state = _adminOrderCubit.state;
-  //     if (state is AdminOrderFetchSuccess) {
-  //       tempOrder = state.order.copyWith(
-  //         items: _cartItems,
-  //         totalAmount: totalAmount,
-  //         status: _selectedStatus,
-  //         orderDate: DateTime.now(),
-  //         storeId: _selectedStoreId,
-  //         billNumber: _existingBillNumber,
-  //         discount: _discount ?? state.order.discount ?? 0.0,
-  //       );
-  //     } else {
-  //       tempOrder = Order(
-  //         id: widget.orderId!,
-  //         userId: _selectedCustomer!.userId!,
-  //         userName: _selectedCustomer!.name ??
-  //             _selectedCustomer!.userName ??
-  //             'Unknown',
-  //         items: _cartItems,
-  //         totalAmount: totalAmount,
-  //         status: _selectedStatus,
-  //         orderDate: DateTime.now(),
-  //         orderTakenBy: (await sl<AccountRepository>().getUserInfo())?.userId,
-  //         storeId: _selectedStoreId,
-  //         lastUpdatedBy: (await sl<AccountRepository>().getUserInfo())?.userId,
-  //         billNumber: _existingBillNumber,
-  //         discount: _discount ?? 0.0,
-  //       );
-  //     }
-  //   } else {
-  //     tempOrder = Order(
-  //       id: widget.orderId ?? DateTime.now().millisecondsSinceEpoch.toString(),
-  //       userId: _selectedCustomer!.userId!,
-  //       userName:
-  //       _selectedCustomer!.name ?? _selectedCustomer!.userName ?? 'Unknown',
-  //       items: _cartItems,
-  //       totalAmount: totalAmount,
-  //       status: _selectedStatus,
-  //       orderDate: DateTime.now(),
-  //       orderTakenBy: (await sl<AccountRepository>().getUserInfo())?.userId,
-  //       storeId: _selectedStoreId,
-  //       lastUpdatedBy: (await sl<AccountRepository>().getUserInfo())?.userId,
-  //       billNumber: 'BILL-${DateTime.now().millisecondsSinceEpoch}',
-  //       discount: _discount ?? 0.0,
-  //     );
-  //   }
-  //
-  //   // Show review dialog before generating bill
-  //   final bool confirmed = await _showReviewDialog(tempOrder);
-  //   if (!confirmed) {
-  //     return;
-  //   }
-  //
-  //   // Recreate Order object with updated discount after dialog confirmation
-  //   Order order;
-  //   final updatedTotalAmount = subtotal + totalTax - (_discount ?? 0.0);
-  //   if (_existingBillNumber != null && widget.orderId != null) {
-  //     final state = _adminOrderCubit.state;
-  //     if (state is AdminOrderFetchSuccess) {
-  //       order = state.order.copyWith(
-  //         items: _cartItems,
-  //         totalAmount: updatedTotalAmount,
-  //         status: _selectedStatus,
-  //         orderDate: DateTime.now(),
-  //         storeId: _selectedStoreId,
-  //         billNumber: _existingBillNumber,
-  //         discount: _discount ?? state.order.discount ?? 0.0,
-  //       );
-  //     } else {
-  //       order = Order(
-  //         id: widget.orderId!,
-  //         userId: _selectedCustomer!.userId!,
-  //         userName: _selectedCustomer!.name ??
-  //             _selectedCustomer!.userName ??
-  //             'Unknown',
-  //         items: _cartItems,
-  //         totalAmount: updatedTotalAmount,
-  //         status: _selectedStatus,
-  //         orderDate: DateTime.now(),
-  //         orderTakenBy: (await sl<AccountRepository>().getUserInfo())?.userId,
-  //         storeId: _selectedStoreId,
-  //         lastUpdatedBy: (await sl<AccountRepository>().getUserInfo())?.userId,
-  //         billNumber: _existingBillNumber,
-  //         discount: _discount ?? 0.0,
-  //       );
-  //     }
-  //   } else {
-  //     order = Order(
-  //       id: DateTime.now().millisecondsSinceEpoch.toString(),
-  //       userId: _selectedCustomer!.userId!,
-  //       userName:
-  //       _selectedCustomer!.name ?? _selectedCustomer!.userName ?? 'Unknown',
-  //       items: _cartItems,
-  //       totalAmount: updatedTotalAmount,
-  //       status: _selectedStatus,
-  //       orderDate: DateTime.now(),
-  //       orderTakenBy: (await sl<AccountRepository>().getUserInfo())?.userId,
-  //       storeId: _selectedStoreId,
-  //       lastUpdatedBy: (await sl<AccountRepository>().getUserInfo())?.userId,
-  //       billNumber: 'BILL-${DateTime.now().millisecondsSinceEpoch}',
-  //       discount: _discount ?? 0.0,
-  //     );
-  //   }
-  //
-  //   setState(() => _isLoading = true);
-  //   try {
-  //     final orderService = sl<IOrderService>();
-  //     final ledgerCubit = sl<UserLedgerCubit>();
-  //     final userId = (await sl<AccountRepository>().getUserInfo())?.userId;
-  //     if (userId == null) {
-  //       throw Exception('User ID not found');
-  //     }
-  //
-  //     final stockState = _stockCubit.state;
-  //     final billNumber = _existingBillNumber ??
-  //         'BILL-${DateTime.now().millisecondsSinceEpoch}';
-  //     final ledgerId = _selectedCustomer!.accountLedgerId;
-  //
-  //     // Validate ledger ID
-  //     if (ledgerId == null) {
-  //       print('No ledger ID found for customer: ${_selectedCustomer!.name}');
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(
-  //             content: Text('Customer ledger ID not found. Cannot process bill.')),
-  //       );
-  //       setState(() => _isLoading = false);
-  //       return;
-  //     }
-  //
-  //     print('Processing bill: billNumber=$billNumber, cartItems=${_cartItems.length}, totalAmount=$updatedTotalAmount, discount=${_discount ?? 0.0}');
-  //
-  //     if (_existingBillNumber == null) {
-  //       // New order: Validate and update stock
-  //       if (stockState is! StockLoaded) {
-  //         print('Stock state is not StockLoaded: ${stockState.runtimeType}');
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           const SnackBar(content: Text('Stock data not loaded')),
-  //         );
-  //         setState(() => _isLoading = false);
-  //         return;
-  //       }
-  //
-  //       for (var item in _cartItems) {
-  //         final stock = stockState.stockItems.firstWhere(
-  //               (stock) =>
-  //           stock.productId == item.productId &&
-  //               stock.storeId == _selectedStoreId,
-  //           orElse: () => StockModel(
-  //             id: '${item.productId}_$_selectedStoreId',
-  //             productId: item.productId,
-  //             storeId: _selectedStoreId!,
-  //             quantity: 0,
-  //             lastUpdated: DateTime.now(),
-  //           ),
-  //         );
-  //         print('Validating stock for ${item.productName}: available=${stock.quantity}, required=${item.quantity}, stockId=${stock.id}');
-  //         if (stock.quantity < item.quantity) {
-  //           ScaffoldMessenger.of(context).showSnackBar(
-  //             SnackBar(
-  //                 content: Text('Insufficient stock for ${item.productName}')),
-  //           );
-  //           setState(() => _isLoading = false);
-  //           return;
-  //         }
-  //       }
-  //
-  //       // Update stock for new order
-  //       for (var item in _cartItems) {
-  //         final stock = stockState.stockItems.firstWhere(
-  //               (stock) =>
-  //           stock.productId == item.productId &&
-  //               stock.storeId == _selectedStoreId,
-  //           orElse: () => StockModel(
-  //             id: '${item.productId}_$_selectedStoreId',
-  //             productId: item.productId,
-  //             storeId: _selectedStoreId!,
-  //             quantity: 0,
-  //             lastUpdated: DateTime.now(),
-  //           ),
-  //         );
-  //         print('Generating bill for ${item.productName}, quantity=${item.quantity}, stockId=${stock.id}, currentStock=${stock.quantity}');
-  //         await _stockCubit.generateBill(
-  //           stock,
-  //           item.quantity,
-  //           _selectedCustomer!.userId!,
-  //           remarks:
-  //           'Bill generated for $_selectedBillType sale (Order: ${order.id})',
-  //         );
-  //       }
-  //
-  //       // Ledger entries for new order
-  //       await ledgerCubit.addTransaction(
-  //         ledgerId: ledgerId,
-  //         amount: updatedTotalAmount,
-  //         type: 'Debit',
-  //         billNumber: billNumber,
-  //         purpose: 'Purchase',
-  //         typeOfPurpose: _selectedBillType,
-  //         remarks: 'Bill generated for order ${order.id} with discount ₹${(_discount ?? 0.0).toStringAsFixed(2)}',
-  //         userType: UserType.Customer,
-  //       );
-  //
-  //       if (_selectedBillType == 'Cash') {
-  //         await ledgerCubit.addTransaction(
-  //           ledgerId: ledgerId,
-  //           amount: updatedTotalAmount,
-  //           type: 'Credit',
-  //           billNumber: billNumber,
-  //           purpose: 'Payment',
-  //           typeOfPurpose: 'Cash',
-  //           remarks: 'Payment received for bill $billNumber with discount ₹${(_discount ?? 0.0).toStringAsFixed(2)}',
-  //           userType: UserType.Customer,
-  //         );
-  //       }
-  //
-  //       order = order.copyWith(billNumber: billNumber);
-  //       await orderService.placeOrder(order);
-  //     } else {
-  //       // Existing order: Handle returns and update
-  //       if (widget.orderId != null) {
-  //         final originalOrder =
-  //         (await orderService.getOrderById(widget.orderId!))!;
-  //         // Calculate return amount as difference between original and updated total
-  //         final returnAmount = originalOrder.totalAmount - updatedTotalAmount;
-  //
-  //         // Update stock for returned items
-  //         for (var item in originalOrder.items) {
-  //           final currentItem = _cartItems.firstWhere(
-  //                 (i) => i.productId == item.productId,
-  //             orElse: () => item.copyWith(quantity: 0),
-  //           );
-  //           final returnQuantity = item.quantity - currentItem.quantity;
-  //           if (returnQuantity > 0) {
-  //             final stock = stockState is StockLoaded
-  //                 ? stockState.stockItems.firstWhere(
-  //                   (stock) =>
-  //               stock.productId == item.productId &&
-  //                   stock.storeId == _selectedStoreId,
-  //               orElse: () => StockModel(
-  //                 id: '${item.productId}_$_selectedStoreId',
-  //                 productId: item.productId,
-  //                 storeId: _selectedStoreId!,
-  //                 quantity: 0,
-  //                 lastUpdated: DateTime.now(),
-  //               ),
-  //             )
-  //                 : null;
-  //             if (stock == null) {
-  //               print('Stock not found for ${item.productName}, productId=${item.productId}, storeId=$_selectedStoreId');
-  //               ScaffoldMessenger.of(context).showSnackBar(
-  //                 SnackBar(
-  //                     content: Text(
-  //                         'Stock data not found for ${item.productName}')),
-  //               );
-  //               setState(() => _isLoading = false);
-  //               return;
-  //             }
-  //             print('Returning stock for ${item.productName}, returnQuantity=$returnQuantity, stockId=${stock.id}, currentStock=${stock.quantity}, newStock=${stock.quantity + returnQuantity}');
-  //             await _stockCubit.updateStock(
-  //               stock.copyWith(
-  //                 quantity: stock.quantity + returnQuantity,
-  //                 lastUpdated: DateTime.now(),
-  //               ),
-  //               remarks:
-  //               'Return of $returnQuantity units of ${item.productName}',
-  //               isReturn: true,
-  //             );
-  //           }
-  //         }
-  //
-  //         // Ledger entry for return (if any items were returned)
-  //         final totalOriginalQuantity = originalOrder.items.fold<int>(
-  //             0, (sum, item) => sum + item.quantity);
-  //         final totalCurrentQuantity =
-  //         _cartItems.fold<int>(0, (sum, item) => sum + item.quantity);
-  //         if (totalOriginalQuantity > totalCurrentQuantity && returnAmount > 0) {
-  //           await ledgerCubit.addTransaction(
-  //             ledgerId: ledgerId,
-  //             amount: returnAmount,
-  //             type: 'Credit',
-  //             billNumber: billNumber,
-  //             purpose: 'Return',
-  //             typeOfPurpose: _selectedBillType,
-  //             remarks:
-  //             'Return for order ${widget.orderId} (credited ₹${returnAmount.toStringAsFixed(2)} after discount ₹${(_discount ?? 0.0).toStringAsFixed(2)})',
-  //             userType: UserType.Customer,
-  //           );
-  //           if (_selectedBillType == 'Cash' &&
-  //               _selectedReturnMethod == 'Cash') {
-  //             await ledgerCubit.addTransaction(
-  //               ledgerId: ledgerId,
-  //               amount: returnAmount,
-  //               type: 'Debit',
-  //               billNumber: billNumber,
-  //               purpose: 'Return Payment',
-  //               typeOfPurpose: 'Cash',
-  //               remarks:
-  //               'Cash paid back for return for order ${widget.orderId} (₹${returnAmount.toStringAsFixed(2)})',
-  //               userType: UserType.Customer,
-  //             );
-  //           }
-  //         }
-  //
-  //         // Ledger entries for updated order (if cart is not empty)
-  //         if (_cartItems.isNotEmpty) {
-  //           await ledgerCubit.addTransaction(
-  //             ledgerId: ledgerId,
-  //             amount: updatedTotalAmount,
-  //             type: 'Debit',
-  //             billNumber: billNumber,
-  //             purpose: 'Purchase',
-  //             typeOfPurpose: _selectedBillType,
-  //             remarks: 'Bill updated for order ${order.id} with discount ₹${(_discount ?? 0.0).toStringAsFixed(2)}',
-  //             userType: UserType.Customer,
-  //           );
-  //           if (_selectedBillType == 'Cash') {
-  //             await ledgerCubit.addTransaction(
-  //               ledgerId: ledgerId,
-  //               amount: updatedTotalAmount,
-  //               type: 'Credit',
-  //               billNumber: billNumber,
-  //               purpose: 'Payment',
-  //               typeOfPurpose: 'Cash',
-  //               remarks: 'Payment received for updated bill $billNumber with discount ₹${(_discount ?? 0.0).toStringAsFixed(2)}',
-  //               userType: UserType.Customer,
-  //             );
-  //           }
-  //         }
-  //
-  //         await orderService.updateOrderStatus(widget.orderId!, _selectedStatus);
-  //         await orderService.updateOrder(order);
-  //       }
-  //     }
-  //
-  //     final pdf = await _generatePdf(order);
-  //
-  //     await sl<Coordinator>()
-  //         .navigateToBillPdfPage(pdf: pdf, billNumber: billNumber);
-  //
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text(_existingBillNumber == null
-  //             ? 'Bill generated successfully'
-  //             : 'Bill updated successfully'),
-  //       ),
-  //     );
-  //   } catch (e) {
-  //     print('Error in generateBill: $e');
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text('Failed to process bill: $e')),
-  //     );
-  //   } finally {
-  //     setState(() => _isLoading = false);
-  //   }
-  // }
 
   Future<void> _generateBill() async {
     if (_cartItems.isEmpty && _existingBillNumber == null) {
@@ -1996,7 +1590,7 @@ class _BillingPageState extends State<BillingPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
+                      const Text(
                         'Select Products',
                         style: TextStyle(
                           fontSize: 18,
@@ -2029,12 +1623,12 @@ class _BillingPageState extends State<BillingPage> {
                       fillColor: AppColors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
+                        borderSide: const BorderSide(
                             color: AppColors.textSecondary, width: 0.3),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
+                        borderSide: const BorderSide(
                             color: AppColors.textSecondary, width: 0.3),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
@@ -2135,7 +1729,7 @@ class _BillingPageState extends State<BillingPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
+                  const Text(
                     'Select Store',
                     style: TextStyle(
                         fontSize: 18,
@@ -2299,7 +1893,7 @@ class _BillingPageState extends State<BillingPage> {
             },
             children: [
               pw.TableRow(
-                decoration: pw.BoxDecoration(color: PdfColors.grey100),
+                decoration: const pw.BoxDecoration(color: PdfColors.grey100),
                 children: [
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
@@ -2532,8 +2126,7 @@ class _BillingPageState extends State<BillingPage> {
                                     );
                                     setState(() {
                                       _selectedCustomer = customer;
-                                      _newCustomerLedgerId =
-                                          customer.accountLedgerId;
+
                                     });
                                   });
                                 }
@@ -2787,7 +2380,7 @@ class _BillingPageState extends State<BillingPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
+                        const Text(
                           'Select or Add Customer',
                           style: TextStyle(
                             fontSize: 18,
@@ -2921,8 +2514,7 @@ class _BillingPageState extends State<BillingPage> {
                             );
                             setState(() {
                               _selectedCustomer = newCustomer;
-                              _newCustomerLedgerId =
-                                  newCustomer.accountLedgerId;
+
                               _customerNameController.clear();
                             });
                             allCustomers = users
@@ -2974,7 +2566,6 @@ class _BillingPageState extends State<BillingPage> {
                           onTap: () {
                             setState(() {
                               _selectedCustomer = user;
-                              _newCustomerLedgerId = user.accountLedgerId;
                             });
                             Navigator.of(context).pop();
                           },
@@ -2992,7 +2583,7 @@ class _BillingPageState extends State<BillingPage> {
       setState(() {});
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error')),
+        const SnackBar(content: Text('Error')),
       );
     }
   }

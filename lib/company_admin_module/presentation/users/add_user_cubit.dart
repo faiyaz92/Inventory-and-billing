@@ -74,10 +74,11 @@ class AddUserCubit extends Cubit<AddUserState> {
         userType: userInfo.userType ?? UserType.Employee,
       );
 
-    final userId =   await _companyOperationsService.addUserToCompany(
+    final newUserInfo =   await _companyOperationsService.addUserToCompany(
           updatedUserInfo, password);
       if(userInfo.role == Role.SALES_MAN) {
-        await _stockService.addSalesmanAsStore(updatedUserInfo.copyWith(userId: userId));
+        print('ledger id >>>>> ${updatedUserInfo.accountLedgerId}');
+        await _stockService.addSalesmanAsStore(newUserInfo);
       }
        emit(AddUserSuccess());
     } catch (e) {

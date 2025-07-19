@@ -1,6 +1,6 @@
-import 'package:requirment_gathering_app/company_admin_module/data/ledger/transcation_dto.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_transcation_dto.dart';
 
-class TransactionModel {
+class AccountTransactionModel {
   final String? transactionId;
   final String type; // "Debit" or "Credit"
   final double amount;
@@ -11,7 +11,7 @@ class TransactionModel {
   final String? typeOfPurpose; // New: Cement, Electrician, etc.
   final String? remarks; // New: 500-char remarks
 
-  TransactionModel({
+  AccountTransactionModel({
     this.transactionId,
     required this.type,
     required this.amount,
@@ -23,8 +23,8 @@ class TransactionModel {
     this.remarks,
   });
 
-  factory TransactionModel.fromDto(TransactionDto dto) {
-    return TransactionModel(
+  factory AccountTransactionModel.fromDto(AccountTransactionDto dto) {
+    return AccountTransactionModel(
       transactionId: dto.transactionId,
       type: dto.type,
       amount: dto.amount,
@@ -37,8 +37,8 @@ class TransactionModel {
     );
   }
 
-  TransactionDto toDto() {
-    return TransactionDto(
+  AccountTransactionDto toDto() {
+    return AccountTransactionDto(
       transactionId: transactionId,
       type: type,
       amount: amount,
@@ -51,7 +51,7 @@ class TransactionModel {
     );
   }
 
-  TransactionModel copyWith({
+  AccountTransactionModel copyWith({
     String? transactionId,
     String? type,
     double? amount,
@@ -62,7 +62,7 @@ class TransactionModel {
     String? typeOfPurpose,
     String? remarks,
   }) {
-    return TransactionModel(
+    return AccountTransactionModel(
       transactionId: transactionId ?? this.transactionId,
       type: type ?? this.type,
       amount: amount ?? this.amount,

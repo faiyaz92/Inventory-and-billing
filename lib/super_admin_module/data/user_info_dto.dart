@@ -3,11 +3,11 @@ import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 
 class UserInfoDto extends Equatable {
-  final String userId;
+  final String? userId; // Made optional
   final String? companyId;
-  final String name;
-  final String email;
-  final String userName;
+  final String? name; // Made optional
+  final String? email; // Made optional
+  final String? userName; // Made optional
   final Role role;
   final UserType? userType;
   final double? latitude;
@@ -15,16 +15,16 @@ class UserInfoDto extends Equatable {
   final double? dailyWage;
   final String? storeId;
   final String? accountLedgerId;
-  final String? mobileNumber; // New field
-  final String? businessName; // New field
-  final String? address; // New field
+  final String? mobileNumber;
+  final String? businessName;
+  final String? address;
 
   const UserInfoDto({
-    required this.userId,
+    this.userId,
     this.companyId,
-    required this.name,
-    required this.email,
-    required this.userName,
+    this.name,
+    this.email,
+    this.userName,
     required this.role,
     this.userType,
     this.latitude,
@@ -44,12 +44,12 @@ class UserInfoDto extends Equatable {
       print('UserInfoDto.fromMap: Defaulted userType to Customer for raw value "$userTypeRaw"');
     }
     return UserInfoDto(
-      userId: map['userId'] as String,
+      userId: map['userId'] as String? ?? '', // Default to empty string
       companyId: map['companyId'] as String?,
-      name: map['name'] as String,
-      email: map['email'] as String,
-      userName: map['userName'] as String,
-      role: RoleExtension.fromString(map['role'] as String),
+      name: map['name'] as String? ?? '', // Default to empty string
+      email: map['email'] as String? ?? '', // Default to empty string
+      userName: map['userName'] as String? ?? '', // Default to empty string
+      role: RoleExtension.fromString(map['role'] as String? ?? 'user'), // Default to 'user'
       userType: userType,
       latitude: (map['latitude'] as num?)?.toDouble(),
       longitude: (map['longitude'] as num?)?.toDouble(),
@@ -64,31 +64,31 @@ class UserInfoDto extends Equatable {
 
   Map<String, dynamic> toMap() {
     return {
-      'userId': userId,
-      'companyId': companyId,
-      'name': name,
-      'email': email,
-      'userName': userName,
+      if (userId != null) 'userId': userId,
+      if (companyId != null) 'companyId': companyId,
+      if (name != null) 'name': name,
+      if (email != null) 'email': email,
+      if (userName != null) 'userName': userName,
       'role': role.name,
-      'userType': userType?.name,
-      'latitude': latitude,
-      'longitude': longitude,
-      'dailyWage': dailyWage,
-      'storeId': storeId,
-      'accountLedgerId': accountLedgerId,
-      'mobileNumber': mobileNumber,
-      'businessName': businessName,
-      'address': address,
+      if (userType != null) 'userType': userType!.name,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      if (dailyWage != null) 'dailyWage': dailyWage,
+      if (storeId != null) 'storeId': storeId,
+      if (accountLedgerId != null) 'accountLedgerId': accountLedgerId,
+      if (mobileNumber != null) 'mobileNumber': mobileNumber,
+      if (businessName != null) 'businessName': businessName,
+      if (address != null) 'address': address,
     };
   }
 
   Map<String, dynamic> toPartialMap() {
     final map = <String, dynamic>{};
-    map['userId'] = userId;
+    if (userId != null && userId!.isNotEmpty) map['userId'] = userId;
     if (companyId != null) map['companyId'] = companyId;
-    if (name.isNotEmpty) map['name'] = name;
-    if (email.isNotEmpty) map['email'] = email;
-    if (userName.isNotEmpty) map['userName'] = userName;
+    if (name != null && name!.isNotEmpty) map['name'] = name;
+    if (email != null && email!.isNotEmpty) map['email'] = email;
+    if (userName != null && userName!.isNotEmpty) map['userName'] = userName;
     map['role'] = role.name;
     if (userType != null) map['userType'] = userType!.name;
     if (latitude != null) map['latitude'] = latitude;

@@ -1,5 +1,5 @@
 import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_ledger_dto.dart';
-import 'package:requirment_gathering_app/company_admin_module/data/ledger/transaction_model.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_transaction_model.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 
 
@@ -11,7 +11,7 @@ class AccountLedger {
   final double? currentPayable;
   final double? promiseAmount;
   final DateTime? promiseDate;
-  final List<TransactionModel>? transactions;
+  final List<AccountTransactionModel>? transactions;
   final double? baseConstructionCost;
   final double? totalConstructionCost;
   final double? currentBaseDue;
@@ -49,7 +49,7 @@ class AccountLedger {
       currentPayable: dto.currentPayable,
       promiseAmount: dto.promiseAmount,
       promiseDate: dto.promiseDate != null ? DateTime.parse(dto.promiseDate!) : null,
-      transactions: dto.transactions?.map((txn) => TransactionModel.fromDto(txn)).toList() ?? [],
+      transactions: dto.transactions?.map((txn) => AccountTransactionModel.fromDto(txn)).toList() ?? [],
       baseConstructionCost: dto.baseConstructionCost ?? 0.0,
       totalConstructionCost: dto.totalConstructionCost ?? 0.0,
       currentBaseDue: dto.currentBaseDue ?? dto.totalOutstanding,
@@ -90,7 +90,7 @@ class AccountLedger {
     double? currentPayable,
     double? promiseAmount,
     DateTime? promiseDate,
-    List<TransactionModel>? transactions,
+    List<AccountTransactionModel>? transactions,
     double? baseConstructionCost,
     double? totalConstructionCost,
     double? currentBaseDue,

@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_ledger_model.dart';
-import 'package:requirment_gathering_app/company_admin_module/data/ledger/transaction_model.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_transaction_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/account_ledger_state.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/account_ledger_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
@@ -61,7 +61,7 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
     emit(AccountLedgerFetching());
     try {
       final ledger = await _accountLedgerService.getLedger(ledgerId);
-      final sortedTransactions = List<TransactionModel>.from(ledger.transactions ?? [])
+      final sortedTransactions = List<AccountTransactionModel>.from(ledger.transactions ?? [])
         ..sort((a, b) => b.createdAt!.compareTo(a.createdAt));
       emit(AccountLedgerUpdated(ledger.copyWith(transactions: sortedTransactions)));
     } catch (e) {
@@ -130,7 +130,7 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
         return;
       }
       final loggedIn = await _accountRepository.getUserInfo();
-      final transaction = TransactionModel(
+      final transaction = AccountTransactionModel(
         amount: amount,
         type: type,
         billNumber: billNumber?.isNotEmpty == true ? billNumber : null,
@@ -162,7 +162,7 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
     }
   }
 
-  Future<void> deleteTransaction(String ledgerId, TransactionModel transaction, UserType? userType) async {
+  Future<void> deleteTransaction(String ledgerId, AccountTransactionModel transaction, UserType? userType) async {
     emit(AccountLedgerPosting());
     try {
       final currentLedger = await _accountLedgerService.getLedger(ledgerId);

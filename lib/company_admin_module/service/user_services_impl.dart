@@ -20,7 +20,7 @@ class UserServiceImpl implements UserServices {
       this._accountLedgerService);
 
   @override
-  Future<String> addUserToCompany(UserInfo userInfo, String password) async {
+  Future<UserInfo?> addUserToCompany(UserInfo userInfo, String password) async {
     try {
       final loggedInUserInfo = await _accountRepository.getUserInfo();
 
@@ -44,9 +44,10 @@ class UserServiceImpl implements UserServices {
       print(
           'UserServiceImpl addUserToCompany: userType = ${updatedUserInfo.userType?.name ?? "null"}');
       final json = updatedUserInfo.toJson();
-      print('UserServiceImpl addUserToCompany: Sending to Firestore = $json');
-      return await _tenantCompanyRepository.addUserToCompany(
+
+     final userId = await _tenantCompanyRepository.addUserToCompany(
           updatedUserInfo.toDto(), password);
+       return updatedUserInfo.copyWith(userId: userId);
     } catch (e) {
       print('UserServiceImpl addUserToCompany error: $e');
       throw Exception('Failed to add user: ${e.toString()}');

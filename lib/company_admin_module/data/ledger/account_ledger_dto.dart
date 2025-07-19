@@ -1,4 +1,4 @@
-import 'package:requirment_gathering_app/company_admin_module/data/ledger/transcation_dto.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_transcation_dto.dart';
 
 class AccountLedgerDto {
   final String? ledgerId;
@@ -8,7 +8,7 @@ class AccountLedgerDto {
   final double? currentPayable;
   final double? promiseAmount;
   final String? promiseDate;
-  final List<TransactionDto>? transactions;
+  final List<AccountTransactionDto>? transactions;
   final double? baseConstructionCost;
   final double? totalConstructionCost;
   final double? currentBaseDue;
@@ -38,7 +38,7 @@ class AccountLedgerDto {
   });
 
   factory AccountLedgerDto.fromMap(
-      Map<String, dynamic> map, String id, List<TransactionDto> transactions) {
+      Map<String, dynamic> map, String id, List<AccountTransactionDto> transactions) {
     return AccountLedgerDto(
       ledgerId: id,
       entityType: map['entityType'], // Store as String
