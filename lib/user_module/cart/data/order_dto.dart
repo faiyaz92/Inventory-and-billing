@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
+import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
+
 class OrderDto {
   final String id;
   final String userId;
@@ -18,13 +21,14 @@ class OrderDto {
   final String? lastUpdatedBy;
   final String? storeId;
   final String? billNumber;
-  final String? invoiceLastUpdatedBy; // Added for invoice tracking, nullable
-  final DateTime? invoiceGeneratedDate; // Added for invoice tracking, nullable
-  final String? invoiceType; // Added: Cash or Credit, nullable
-  final String? paymentStatus; // Added: Paid, Partial Paid, Not Paid, nullable
-  final double? amountReceived; // Added: Total amount received for the invoice
-  final List<Map<String, dynamic>>? paymentDetails; // Added: List of payment details
-  final int? slipNumber; // Added: Current slip number for the latest payment
+  final String? invoiceLastUpdatedBy;
+  final DateTime? invoiceGeneratedDate;
+  final String? invoiceType;
+  final String? paymentStatus;
+  final double? amountReceived;
+  final List<Map<String, dynamic>>? paymentDetails;
+  final int? slipNumber;
+  final String? customerLedgerId;
 
   OrderDto({
     required this.id,
@@ -50,6 +54,7 @@ class OrderDto {
     this.amountReceived,
     this.paymentDetails,
     this.slipNumber,
+    this.customerLedgerId,
   });
 
   factory OrderDto.fromFirestore(Map<String, dynamic> data) {
@@ -87,6 +92,7 @@ class OrderDto {
           ?.map((item) => Map<String, dynamic>.from(item))
           .toList(),
       slipNumber: data['slipNumber'] as int?,
+      customerLedgerId: data['customerLedgerId'], // Fixed: Retrieve from data
     );
   }
 
@@ -121,6 +127,7 @@ class OrderDto {
       'amountReceived': amountReceived,
       'paymentDetails': paymentDetails,
       'slipNumber': slipNumber,
+      'customerLedgerId': customerLedgerId,
     };
   }
 
@@ -149,6 +156,7 @@ class OrderDto {
       amountReceived: order.amountReceived,
       paymentDetails: order.paymentDetails,
       slipNumber: order.slipNumber,
+      customerLedgerId: order.customerLedgerId,
     );
   }
 }
@@ -214,3 +222,4 @@ class CartItemDto {
     );
   }
 }
+

@@ -17,13 +17,14 @@ class Order {
   final String? lastUpdatedBy;
   final String? storeId;
   final String? billNumber;
-  final String? invoiceLastUpdatedBy; // Added for invoice tracking, nullable
-  final DateTime? invoiceGeneratedDate; // Added for invoice tracking, nullable
-  final String? invoiceType; // Added: Cash or Credit, nullable
-  final String? paymentStatus; // Added: Paid, Partial Paid, Not Paid, nullable
-  final double? amountReceived; // Added: Total amount received for the invoice
-  final List<Map<String, dynamic>>? paymentDetails; // Added: List of payment details
-  final int? slipNumber; // Added: Current slip number for the latest payment
+  final String? invoiceLastUpdatedBy;
+  final DateTime? invoiceGeneratedDate;
+  final String? invoiceType;
+  final String? paymentStatus;
+  final double? amountReceived;
+  final List<Map<String, dynamic>>? paymentDetails;
+  final int? slipNumber;
+  final String? customerLedgerId; // Added
 
   Order({
     required this.id,
@@ -49,6 +50,7 @@ class Order {
     this.amountReceived,
     this.paymentDetails,
     this.slipNumber,
+    this.customerLedgerId, // Added
   });
 
   factory Order.fromDto(OrderDto dto) {
@@ -76,6 +78,7 @@ class Order {
       amountReceived: dto.amountReceived,
       paymentDetails: dto.paymentDetails,
       slipNumber: dto.slipNumber,
+      customerLedgerId: dto.customerLedgerId, // Added
     );
   }
 
@@ -103,6 +106,7 @@ class Order {
     double? amountReceived,
     List<Map<String, dynamic>>? paymentDetails,
     int? slipNumber,
+    String? customerLedgerId, // Added
   }) {
     return Order(
       id: id ?? this.id,
@@ -128,10 +132,10 @@ class Order {
       amountReceived: amountReceived ?? this.amountReceived,
       paymentDetails: paymentDetails ?? this.paymentDetails,
       slipNumber: slipNumber ?? this.slipNumber,
+      customerLedgerId: customerLedgerId ?? this.customerLedgerId, // Added
     );
   }
 }
-
 class CartItem {
   final String productId;
   final String productName;
