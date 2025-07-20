@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:pdf/widgets.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/accounts/accounts_dashboard.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/accounts/admin_invoice_panel_page.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/analytics/analytics_dashboard.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/bill_pdf.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/billing_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_page.dart';
@@ -147,5 +148,6 @@ class AppRouter extends RootStackRouter {
             AutoRoute(page: BillPdfRoute.page, path: '/bill-pdf'),
             AutoRoute(page: AccountsDashboardRoute.page, path: '/accounts-dashboard'), // New route
             AutoRoute(page: AdminInvoicePanelRoute.page, path: '/invoice-list'),
+            AutoRoute(page: AnalyticsRoute.page, path: '/analytics'),
       ];
 }

@@ -10,7 +10,10 @@ class CartDashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
+    final double screenWidth = MediaQuery
+        .of(context)
+        .size
+        .width;
     final bool isWeb = screenWidth > 600;
 
     return Scaffold(
@@ -30,8 +33,14 @@ class CartDashboardPage extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Theme.of(context).primaryColor.withOpacity(0.1),
-              Theme.of(context).primaryColor.withOpacity(0.3),
+              Theme
+                  .of(context)
+                  .primaryColor
+                  .withOpacity(0.1),
+              Theme
+                  .of(context)
+                  .primaryColor
+                  .withOpacity(0.3),
             ],
           ),
         ),
@@ -56,7 +65,9 @@ class CartDashboardPage extends StatelessWidget {
                         style: TextStyle(
                           fontSize: isWeb ? 28 : 24,
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
+                          color: Theme
+                              .of(context)
+                              .primaryColor,
                         ),
                       ),
                     ),
@@ -82,25 +93,17 @@ class CartDashboardPage extends StatelessWidget {
 
   List<Widget> _buildGridItems(BuildContext context, bool isWeb) {
     return [
+      // _buildDashboardCard(
+      //   context,
+      //   'Cart',
+      //   Icons.list,
+      //   Colors.blue,
+      //       () => sl<Coordinator>().navigateToCartHomePage(),
+      //   isWeb,
+      // ),
       _buildDashboardCard(
         context,
-        'Cart',
-        Icons.list,
-        Colors.blue,
-            () => sl<Coordinator>().navigateToCartHomePage(),
-        isWeb,
-      ),
-      _buildDashboardCard(
-        context,
-        'Cart Admin',
-        Icons.receipt,
-        Colors.orange,
-            () => sl<Coordinator>().navigateToAdminPanelPage(),
-        isWeb,
-      ),
-      _buildDashboardCard(
-        context,
-        'Salesman Orders',
+        'Take purchase order',
         Icons.book,
         Colors.blueAccent,
             () => sl<Coordinator>().navigateToSalesManOrderPage(),
@@ -108,58 +111,18 @@ class CartDashboardPage extends StatelessWidget {
       ),
       _buildDashboardCard(
         context,
-        'Top Salesman List',
-        Icons.people,
-        Colors.green,
-            () => sl<Coordinator>().navigateToSalesmanOrderListPage(),
-        isWeb,
-      ),
-      _buildDashboardCard(
-        context,
-        'Top Delivery Men List',
-        Icons.delivery_dining,
-        Colors.purple,
-            () => sl<Coordinator>().navigateToDeliveryManOrderListPage(),
-        isWeb,
-      ),
-      _buildDashboardCard(
-        context,
-        'Top Store List',
-        Icons.store,
-        Colors.red,
-            () => sl<Coordinator>().navigateToStoreOrderListPage(),
-        isWeb,
-      ),
-      _buildDashboardCard(
-        context,
-        'Top Customers List',
-        Icons.people,
-        Colors.teal,
-            () => sl<Coordinator>().navigateToCustomerOrderListPage(),
-        isWeb,
-      ),
-      _buildDashboardCard(
-        context,
-        'Company Performance',
-        Icons.trending_up,
-        Colors.blueAccent,
-            () => sl<Coordinator>().navigateToCompanyPerformancePage(),
-        isWeb,
-      ),
-      _buildDashboardCard(
-        context,
-        'Product Performance',
-        Icons.trending_up,
-        Colors.blueAccent,
-            () => sl<Coordinator>().navigateToProductPerformanceListPage(),
-        isWeb,
-      ),
-      _buildDashboardCard(
-        context,
-        'Billing',
+        'Create Invoice',
         Icons.receipt,
         Colors.orange,
             () => sl<Coordinator>().navigateToBillingPage(),
+        isWeb,
+      ),
+      _buildDashboardCard(
+        context,
+        'Orders List',
+        Icons.dashboard,
+        Colors.orange,
+            () => sl<Coordinator>().navigateToAdminPanelPage(),
         isWeb,
       ),
       _buildDashboardCard(
@@ -173,14 +136,12 @@ class CartDashboardPage extends StatelessWidget {
     ];
   }
 
-  Widget _buildDashboardCard(
-      BuildContext context,
+  Widget _buildDashboardCard(BuildContext context,
       String title,
       IconData icon,
       Color color,
       VoidCallback onTap,
-      bool isWeb,
-      ) {
+      bool isWeb,) {
     return GestureDetector(
       onTap: onTap,
       child: Card(

@@ -1,6 +1,7 @@
 import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_page.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/home_cubit.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
@@ -312,6 +313,32 @@ class HomePage extends StatelessWidget {
             color: Colors.green,
             onTap: () {
               sl<Coordinator>().navigateToAccountsDashboard();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.money,
+            label: 'Add expenses',
+            color: Colors.orangeAccent,
+            onTap: () {
+              sl<Coordinator>().navigateToUserLedgerPage(transactionType: TransactionType.Expense);
+            },
+            isWeb: isWeb,
+          ),_buildGridItem(
+            icon: Icons.money,
+            label: 'Add Reimbursement',
+            color: Colors.orangeAccent,
+            onTap: () {
+              sl<Coordinator>().navigateToUserLedgerPage(transactionType: TransactionType.Reimbursement);
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.analytics_outlined,
+            label: 'Analytics',
+            color: Colors.blue,
+            onTap: () {
+              sl<Coordinator>().navigateToAnalyticsPage();
             },
             isWeb: isWeb,
           ),

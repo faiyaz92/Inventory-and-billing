@@ -10,7 +10,6 @@ import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart'
 import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 import 'package:requirment_gathering_app/user_module/services/customer_company_service.dart';
-import 'package:requirment_gathering_app/company_admin_module/data/inventory/stock_model_dto.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
 
 class UserLedgerCubit extends Cubit<AccountLedgerState> {
@@ -70,7 +69,7 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
         );
         final newLedgerId = await _accountLedgerService.createLedger(newLedger);
         final updatedStore = store.copyWith(accountLedgerId: newLedgerId);
-        await _stockService.updateStore( updatedStore);
+        await _stockService.updateStore(updatedStore);
         await fetchLedger(newLedgerId, UserType.Store);
       } catch (e) {
         emit(AccountLedgerError("Failed to create or update ledger for store: $e"));
@@ -99,7 +98,8 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
     }
   }
 
-  Future<void> openTransactionPopup(bool isDebit, Role? userRole) async {
+  Future<void> openTransactionPopup(
+      bool isDebit, Role? userRole, bool isExpense, bool isReimbursement) async {
     try {
       final result = await _companyService.getSettings();
       final purposeTypeMap = result.fold<Map<String, List<String>>>(
@@ -107,18 +107,18 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
           'Salary': ['Cash'],
           'Expenses': ['Cash'],
           'Other': ['Cash'],
-          'Reimbursement': ['Cash'], // Added for Credit transactions
+          'Reimbursement': ['Cash'],
           'Material': [],
           'Labor': [],
         },
             (settings) {
           final map = Map<String, List<String>>.from(settings.purposeTypeMap);
-// Ensure default purposes
           map.putIfAbsent('Salary', () => ['Cash']);
           map.putIfAbsent('Expenses', () => ['Cash']);
           map.putIfAbsent('Other', () => ['Cash']);
-          map.putIfAbsent(
-              'Reimbursement', () => ['Cash']); // Ensure Reimbursement
+          map.putIfAbsent('Reimbursement', () => ['Cash']);
+          map.putIfAbsent('Material', () => []);
+          map.putIfAbsent('Labor', () => []);
           if (map.isEmpty) {
             return {
               'Salary': ['Cash'],
@@ -136,31 +136,23 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
           return validatedMap;
         },
       );
-      String? defaultPurpose;
-      String? defaultType;
-      if (userRole == Role.SALES_MAN && !isDebit) {
-        defaultPurpose = null;
-        defaultType = null;
-      } else if (userRole == Role.SALES_MAN) {
-        defaultPurpose = purposeTypeMap.containsKey('Transfer Cash')
-            ? 'Transfer Cash'
-            : 'Other';
-        defaultType = purposeTypeMap[defaultPurpose]?.isNotEmpty == true
-            ? purposeTypeMap[defaultPurpose]!.first
-            : null;
-      } else if (!isDebit &&
-          (userRole == Role.STORE_ACCOUNTANT ||
-              userRole == Role.COMPANY_ACCOUNTANT)) {
-        defaultPurpose = 'Reimbursement';
-        defaultType = 'Cash';
-      } else {
-        defaultPurpose =
-        purposeTypeMap.isNotEmpty ? purposeTypeMap.keys.first : null;
-        defaultType =
-        defaultPurpose != null && purposeTypeMap[defaultPurpose]!.isNotEmpty
-            ? purposeTypeMap[defaultPurpose]!.first
-            : null;
-      }
+      String? defaultPurpose = isReimbursement
+          ? 'Reimbursement'
+          : isExpense
+          ? 'Expenses'
+          : userRole == Role.SALES_MAN && !isDebit
+          ? null
+          : (userRole == Role.COMPANY_ACCOUNTANT ||
+          userRole == Role.COMPANY_ADMIN) &&
+          !isDebit
+          ? 'Reimbursement'
+          : purposeTypeMap.isNotEmpty
+          ? purposeTypeMap.keys.first
+          : null;
+      String? defaultType = defaultPurpose != null &&
+          purposeTypeMap[defaultPurpose]?.isNotEmpty == true
+          ? purposeTypeMap[defaultPurpose]!.first
+          : null;
       emit(TransactionPopupOpened(
         isDebit: isDebit,
         companyType: null,
@@ -181,20 +173,18 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
           'Material': [],
           'Labor': [],
         },
-        selectedPurpose: userRole == Role.SALES_MAN && !isDebit
+        selectedPurpose: isReimbursement
+            ? 'Reimbursement'
+            : isExpense
+            ? 'Expenses'
+            : userRole == Role.SALES_MAN && !isDebit
             ? null
-            : (userRole == Role.STORE_ACCOUNTANT ||
-            userRole == Role.COMPANY_ACCOUNTANT) &&
+            : (userRole == Role.COMPANY_ACCOUNTANT ||
+            userRole == Role.COMPANY_ADMIN) &&
             !isDebit
             ? 'Reimbursement'
             : 'Salary',
-        selectedType: userRole == Role.SALES_MAN && !isDebit
-            ? null
-            : (userRole == Role.STORE_ACCOUNTANT ||
-            userRole == Role.COMPANY_ACCOUNTANT) &&
-            !isDebit
-            ? 'Cash'
-            : 'Cash',
+        selectedType: isReimbursement || isExpense ? 'Cash' : null,
         errorMessage: "Failed to load purposes: $e",
         isInitialOpen: true,
       ));
@@ -253,6 +243,227 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
     }
   }
 
+  // Future<void> addTransactionWithSource({
+  //   required String ledgerId,
+  //   required String sourceLedgerId,
+  //   UserInfo? destinationUserInfo,
+  //   UserInfo? sourceUserInfo,
+  //   required double amount,
+  //   required String type,
+  //   String? billNumber,
+  //   String? purpose,
+  //   String? typeOfPurpose,
+  //   String? remarks,
+  //   required UserType? userType,
+  //   required Role? userRole,
+  //   bool isExpense = false,
+  //   bool isReimbursement = false,
+  // }) async {
+  //   emit(AccountLedgerPosting());
+  //   try {
+  //     if (amount <= 0) {
+  //       emit(const TransactionAddFailed("Amount must be positive"));
+  //       return;
+  //     }
+  //     if (remarks != null && remarks.length > 500) {
+  //       emit(
+  //           const TransactionAddFailed("Remarks cannot exceed 500 characters"));
+  //       return;
+  //     }
+  //     final loggedIn = await _accountRepository.getUserInfo();
+  //     if (loggedIn?.accountLedgerId == null) {
+  //       emit(const TransactionAddFailed("Logged-in user ledger ID not found"));
+  //       return;
+  //     }
+  //
+  //     if (ledgerId == sourceLedgerId) {
+  //       emit(const TransactionAddFailed(
+  //           "Source and destination ledgers cannot be the same"));
+  //       return;
+  //     }
+  //
+  //     // Fallback for names
+  //     final destinationName =
+  //         destinationUserInfo?.name ?? destinationUserInfo?.userName ?? 'User';
+  //     final sourceName = sourceUserInfo?.name ??
+  //         sourceUserInfo?.userName ??
+  //         loggedIn?.userName ??
+  //         'User';
+  //
+  //     // Adjust typeOfPurpose
+  //     final effectiveTypeOfPurpose =
+  //     purpose != null && ['Salary', 'Expenses', 'Other', 'Reimbursement'].contains(purpose)
+  //         ? 'Cash'
+  //         : typeOfPurpose ?? 'Internal';
+  //
+  //     if (isReimbursement) {
+  //       // Reimbursement: Three entries (Debit User, Debit Finance, Credit Expense)
+  //       final expenseAccount = (await _userService.getUsersFromTenantCompany())
+  //           .firstWhere(
+  //               (user) => user.accountType == AccountType.Expense,
+  //           orElse: () => UserInfo());
+  //       if (expenseAccount.accountLedgerId == null) {
+  //         emit(const TransactionAddFailed("Expense account not found"));
+  //         return;
+  //       }
+  //
+  //       // 1. Debit User (destination)
+  //       final userTransaction = AccountTransactionModel(
+  //         amount: amount,
+  //         type: 'Debit',
+  //         billNumber: billNumber?.isNotEmpty == true ? billNumber : null,
+  //         createdAt: DateTime.now(),
+  //         receivedBy: loggedIn?.userId ?? '',
+  //         purpose: 'Reimbursement',
+  //         typeOfPurpose: effectiveTypeOfPurpose,
+  //         remarks: remarks?.isNotEmpty == true
+  //             ? remarks
+  //             : 'Reimbursement to $destinationName',
+  //       );
+  //       final userLedger = await _accountLedgerService.getLedger(ledgerId);
+  //       double userUpdatedDue = userLedger.currentDue ?? 0.0;
+  //       double userUpdatedOutstanding = userLedger.totalOutstanding;
+  //       userUpdatedDue += amount;
+  //       userUpdatedOutstanding += amount;
+  //       final updatedUserLedger = userLedger.copyWith(
+  //         totalOutstanding: userUpdatedOutstanding,
+  //         currentDue: userUpdatedDue,
+  //         currentPayable: null,
+  //         transactions: [...?userLedger.transactions, userTransaction],
+  //       );
+  //       await _accountLedgerService.updateLedger(ledgerId, updatedUserLedger);
+  //       await _accountLedgerService.addTransaction(ledgerId, userTransaction);
+  //
+  //       // 2. Debit Finance (source)
+  //       final financeTransaction = AccountTransactionModel(
+  //         amount: amount,
+  //         type: 'Debit',
+  //         billNumber: billNumber?.isNotEmpty == true ? billNumber : null,
+  //         createdAt: DateTime.now(),
+  //         receivedBy: loggedIn?.userId ?? '',
+  //         purpose: 'Reimbursement',
+  //         typeOfPurpose: effectiveTypeOfPurpose,
+  //         remarks: remarks?.isNotEmpty == true
+  //             ? remarks
+  //             : 'Reimbursement payment to $destinationName',
+  //       );
+  //       final financeLedger = await _accountLedgerService.getLedger(sourceLedgerId);
+  //       double financeUpdatedDue = financeLedger.currentDue ?? 0.0;
+  //       double financeUpdatedOutstanding = financeLedger.totalOutstanding;
+  //       financeUpdatedDue += amount;
+  //       financeUpdatedOutstanding += amount;
+  //       final updatedFinanceLedger = financeLedger.copyWith(
+  //         totalOutstanding: financeUpdatedOutstanding,
+  //         currentDue: financeUpdatedDue,
+  //         currentPayable: null,
+  //         transactions: [...?financeLedger.transactions, financeTransaction],
+  //       );
+  //       await _accountLedgerService.updateLedger(sourceLedgerId, updatedFinanceLedger);
+  //       await _accountLedgerService.addTransaction(sourceLedgerId, financeTransaction);
+  //
+  //       // 3. Credit Expense
+  //       final expenseTransaction = AccountTransactionModel(
+  //         amount: amount,
+  //         type: 'Credit',
+  //         billNumber: billNumber?.isNotEmpty == true ? billNumber : null,
+  //         createdAt: DateTime.now(),
+  //         receivedBy: loggedIn?.userId ?? '',
+  //         purpose: 'Reimbursement',
+  //         typeOfPurpose: effectiveTypeOfPurpose,
+  //         remarks: remarks?.isNotEmpty == true
+  //             ? remarks
+  //             : 'Cleared expense for $destinationName',
+  //       );
+  //       final expenseLedger =
+  //       await _accountLedgerService.getLedger(expenseAccount.accountLedgerId!);
+  //       double expenseUpdatedDue = expenseLedger.currentDue ?? 0.0;
+  //       double expenseUpdatedOutstanding = expenseLedger.totalOutstanding;
+  //       expenseUpdatedDue -= amount;
+  //       expenseUpdatedOutstanding -= amount;
+  //       final updatedExpenseLedger = expenseLedger.copyWith(
+  //         totalOutstanding: expenseUpdatedOutstanding,
+  //         currentDue: expenseUpdatedDue,
+  //         currentPayable: null,
+  //         transactions: [...?expenseLedger.transactions, expenseTransaction],
+  //       );
+  //       await _accountLedgerService.updateLedger(
+  //           expenseAccount.accountLedgerId!, updatedExpenseLedger);
+  //       await _accountLedgerService.addTransaction(
+  //           expenseAccount.accountLedgerId!, expenseTransaction);
+  //
+  //       emit(const TransactionSuccess("Reimbursement added successfully"));
+  //       await fetchLedger(ledgerId, userType);
+  //     } else {
+  //       // Expense or Regular Transaction
+  //       final transaction = AccountTransactionModel(
+  //         amount: amount,
+  //         type: type,
+  //         billNumber: billNumber?.isNotEmpty == true ? billNumber : null,
+  //         createdAt: DateTime.now(),
+  //         receivedBy: loggedIn?.userId ?? '',
+  //         purpose: purpose,
+  //         typeOfPurpose: effectiveTypeOfPurpose,
+  //         remarks: remarks?.isNotEmpty == true
+  //             ? remarks
+  //             : isExpense
+  //             ? 'Expense by $sourceName'
+  //             : 'Transaction for $destinationName ($ledgerId)',
+  //       );
+  //       final currentLedger = await _accountLedgerService.getLedger(ledgerId);
+  //       double updatedDue = currentLedger.currentDue ?? 0.0;
+  //       double updatedOutstanding = currentLedger.totalOutstanding;
+  //       updatedDue += (type == "Debit" ? amount : -amount);
+  //       updatedOutstanding += (type == "Debit" ? amount : -amount);
+  //       final updatedLedger = currentLedger.copyWith(
+  //         totalOutstanding: updatedOutstanding,
+  //         currentDue: updatedDue,
+  //         currentPayable: null,
+  //         transactions: [...?currentLedger.transactions, transaction],
+  //       );
+  //       await _accountLedgerService.updateLedger(ledgerId, updatedLedger);
+  //       await _accountLedgerService.addTransaction(ledgerId, transaction);
+  //
+  //       if (!isExpense) {
+  //         // Source ledger transaction for non-expense
+  //         final sourceTransaction = AccountTransactionModel(
+  //           amount: amount,
+  //           type: type == "Debit" ? "Credit" : "Debit",
+  //           billNumber: billNumber?.isNotEmpty == true ? billNumber : null,
+  //           createdAt: DateTime.now(),
+  //           receivedBy: loggedIn?.userId ?? '',
+  //           purpose: purpose ?? 'Transaction',
+  //           typeOfPurpose: effectiveTypeOfPurpose,
+  //           remarks: remarks?.isNotEmpty == true
+  //               ? 'Corresponding ${type.toLowerCase()} for $destinationName ($ledgerId): $remarks'
+  //               : 'Corresponding ${type.toLowerCase()} for $destinationName ($ledgerId) from $sourceName',
+  //         );
+  //         final sourceLedger = await _accountLedgerService.getLedger(sourceLedgerId);
+  //         double sourceUpdatedDue = double.parse(
+  //             (sourceLedger.currentDue ?? 0.0).toStringAsFixed(2));
+  //         double sourceUpdatedOutstanding = sourceLedger.totalOutstanding;
+  //         sourceUpdatedDue +=
+  //         (sourceTransaction.type == "Debit" ? amount : -amount);
+  //         sourceUpdatedOutstanding +=
+  //         (sourceTransaction.type == "Debit" ? amount : -amount);
+  //         final updatedSourceLedger = sourceLedger.copyWith(
+  //           totalOutstanding: sourceUpdatedOutstanding,
+  //           currentDue: sourceUpdatedDue,
+  //           currentPayable: null,
+  //           transactions: [...?sourceLedger.transactions, sourceTransaction],
+  //         );
+  //         await _accountLedgerService.updateLedger(
+  //             sourceLedgerId, updatedSourceLedger);
+  //         await _accountLedgerService.addTransaction(
+  //             sourceLedgerId, sourceTransaction);
+  //       }
+  //
+  //       emit(const TransactionSuccess("Transaction added successfully"));
+  //       await fetchLedger(ledgerId, userType);
+  //     }
+  //   } catch (e) {
+  //     emit(TransactionAddFailed("Failed to add transaction: $e"));
+  //   }
+  // }
   Future<void> addTransactionWithSource({
     required String ledgerId,
     required String sourceLedgerId,
@@ -266,6 +477,9 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
     String? remarks,
     required UserType? userType,
     required Role? userRole,
+    bool isExpense = false,
+    bool isReimbursement = false,
+    bool updateBalance = true,
   }) async {
     emit(AccountLedgerPosting());
     try {
@@ -274,8 +488,7 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
         return;
       }
       if (remarks != null && remarks.length > 500) {
-        emit(
-            const TransactionAddFailed("Remarks cannot exceed 500 characters"));
+        emit(const TransactionAddFailed("Remarks cannot exceed 500 characters"));
         return;
       }
       final loggedIn = await _accountRepository.getUserInfo();
@@ -283,106 +496,252 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
         emit(const TransactionAddFailed("Logged-in user ledger ID not found"));
         return;
       }
-
-// Allow single entry for accountants' Expenses/Reimbursement when destination is their own ledger
-      final isAccountant = userRole == Role.STORE_ACCOUNTANT ||
-          userRole == Role.COMPANY_ACCOUNTANT;
-      final isSelfTransaction = ledgerId == loggedIn!.accountLedgerId &&
-          isAccountant &&
-          (purpose == 'Expenses' || purpose == 'Reimbursement');
-
-      if (!isSelfTransaction && ledgerId == sourceLedgerId) {
-        emit(const TransactionAddFailed(
-            "Source and destination ledgers cannot be the same"));
+      if (ledgerId == sourceLedgerId) {
+        emit(const TransactionAddFailed("Source and destination ledgers cannot be the same"));
         return;
       }
 
-// Fallback for names
-      final destinationName =
-          destinationUserInfo?.name ?? destinationUserInfo?.userName ?? 'User';
-      final sourceName = sourceUserInfo?.name ??
-          sourceUserInfo?.userName ??
-          loggedIn?.userName ??
-          'User';
-
-// Adjust typeOfPurpose for accountants
-      final effectiveTypeOfPurpose = (isAccountant &&
-          purpose != null &&
-          ['Salary', 'Expenses', 'Other', 'Reimbursement']
-              .contains(purpose))
+      final destinationName = destinationUserInfo?.name ?? destinationUserInfo?.userName ?? 'User';
+      final sourceName = sourceUserInfo?.name ?? sourceUserInfo?.userName ?? loggedIn?.userName ?? 'User';
+      final effectiveTypeOfPurpose = purpose != null && ['Salary', 'Expenses', 'Other', 'Reimbursement'].contains(purpose)
           ? 'Cash'
           : typeOfPurpose ?? 'Internal';
 
-// Destination ledger transaction
-      final transaction = AccountTransactionModel(
-        amount: amount,
-        type: type,
-        billNumber: billNumber?.isNotEmpty == true ? billNumber : null,
-        createdAt: DateTime.now(),
-        receivedBy: loggedIn?.userId ?? '',
-        purpose: purpose,
-        typeOfPurpose: effectiveTypeOfPurpose,
-        remarks: remarks?.isNotEmpty == true
-            ? remarks
-            : 'Transaction for $destinationName ($ledgerId)',
-      );
-      final currentLedger = await _accountLedgerService.getLedger(ledgerId);
-      double updatedDue = currentLedger.currentDue ?? 0.0;
-      double updatedOutstanding = currentLedger.totalOutstanding;
-      updatedDue += (type == "Debit" ? amount : -amount);
-      updatedOutstanding += (type == "Debit" ? amount : -amount);
-      final updatedLedger = currentLedger.copyWith(
-        totalOutstanding: updatedOutstanding,
-        currentDue: updatedDue,
-        currentPayable: null,
-        transactions: [...?currentLedger.transactions, transaction],
-      );
-      await _accountLedgerService.updateLedger(ledgerId, updatedLedger);
-      await _accountLedgerService.addTransaction(ledgerId, transaction);
+      if (isReimbursement) {
+        final expenseAccount = (await _userService.getUsersFromTenantCompany()).firstWhere(
+              (user) => user.accountType == AccountType.Expense,
+          orElse: () => UserInfo(),
+        );
+        if (expenseAccount.accountLedgerId == null) {
+          emit(const TransactionAddFailed("Expense account not found"));
+          return;
+        }
 
-// Source ledger transaction (skip for accountants' Expenses/Other or self-transactions)
-      if (!isSelfTransaction &&
-          (purpose != 'Expenses' && purpose != 'Other' || !isAccountant)) {
-        final sourceTransaction = AccountTransactionModel(
+        // 1. Debit User (destination)
+        final userTransaction = AccountTransactionModel(
           amount: amount,
-          type: type == "Debit" ? "Credit" : "Debit",
+          type: 'Debit',
           billNumber: billNumber?.isNotEmpty == true ? billNumber : null,
           createdAt: DateTime.now(),
           receivedBy: loggedIn?.userId ?? '',
-          purpose: purpose ?? 'Transaction',
+          purpose: 'Reimbursement',
           typeOfPurpose: effectiveTypeOfPurpose,
-          remarks: remarks?.isNotEmpty == true
-              ? 'Corresponding ${type.toLowerCase()} for $destinationName ($ledgerId): $remarks'
-              : 'Corresponding ${type.toLowerCase()} for $destinationName ($ledgerId) from $sourceName',
+          remarks: remarks?.isNotEmpty == true ? remarks : 'Reimbursement to $destinationName',
         );
-        final sourceLedger =
-        await _accountLedgerService.getLedger(sourceLedgerId);
-        double sourceUpdatedDue = double.parse(
-            (sourceLedger.currentDue ?? 0.0).toStringAsFixed(2));
+        final userLedger = await _accountLedgerService.getLedger(ledgerId);
+        double userUpdatedDue = userLedger.currentDue ?? 0.0;
+        double userUpdatedOutstanding = userLedger.totalOutstanding;
+        if (updateBalance) {
+          userUpdatedDue += amount;
+          userUpdatedOutstanding += amount;
+        }
+        final updatedUserLedger = userLedger.copyWith(
+          totalOutstanding: userUpdatedOutstanding,
+          currentDue: userUpdatedDue,
+          currentPayable: null,
+          transactions: [...?userLedger.transactions, userTransaction],
+        );
+        await _accountLedgerService.updateLedger(ledgerId, updatedUserLedger);
+        await _accountLedgerService.addTransaction(ledgerId, userTransaction);
+
+        // 2. Debit Finance (source)
+        final financeTransaction = AccountTransactionModel(
+          amount: amount,
+          type: 'Debit',
+          billNumber: billNumber?.isNotEmpty == true ? billNumber : null,
+          createdAt: DateTime.now(),
+          receivedBy: loggedIn?.userId ?? '',
+          purpose: 'Reimbursement',
+          typeOfPurpose: effectiveTypeOfPurpose,
+          remarks: remarks?.isNotEmpty == true ? remarks : 'Reimbursement payment to $destinationName',
+        );
+        final financeLedger = await _accountLedgerService.getLedger(sourceLedgerId);
+        double financeUpdatedDue = financeLedger.currentDue ?? 0.0;
+        double financeUpdatedOutstanding = financeLedger.totalOutstanding;
+        financeUpdatedDue += amount;
+        financeUpdatedOutstanding += amount;
+        final updatedFinanceLedger = financeLedger.copyWith(
+          totalOutstanding: financeUpdatedOutstanding,
+          currentDue: financeUpdatedDue,
+          currentPayable: null,
+          transactions: [...?financeLedger.transactions, financeTransaction],
+        );
+        await _accountLedgerService.updateLedger(sourceLedgerId, updatedFinanceLedger);
+        await _accountLedgerService.addTransaction(sourceLedgerId, financeTransaction);
+
+        // 3. Credit Expense
+        final expenseTransaction = AccountTransactionModel(
+          amount: amount,
+          type: 'Credit',
+          billNumber: billNumber?.isNotEmpty == true ? billNumber : null,
+          createdAt: DateTime.now(),
+          receivedBy: loggedIn?.userId ?? '',
+          purpose: 'Reimbursement',
+          typeOfPurpose: effectiveTypeOfPurpose,
+          remarks: remarks?.isNotEmpty == true ? remarks : 'Cleared expense for $destinationName',
+        );
+        final expenseLedger = await _accountLedgerService.getLedger(expenseAccount.accountLedgerId!);
+        double expenseUpdatedDue = expenseLedger.currentDue ?? 0.0;
+        double expenseUpdatedOutstanding = expenseLedger.totalOutstanding;
+        expenseUpdatedDue -= amount;
+        expenseUpdatedOutstanding -= amount;
+        final updatedExpenseLedger = expenseLedger.copyWith(
+          totalOutstanding: expenseUpdatedOutstanding,
+          currentDue: expenseUpdatedDue,
+          currentPayable: null,
+          transactions: [...?expenseLedger.transactions, expenseTransaction],
+        );
+        await _accountLedgerService.updateLedger(expenseAccount.accountLedgerId!, updatedExpenseLedger);
+        await _accountLedgerService.addTransaction(expenseAccount.accountLedgerId!, expenseTransaction);
+
+        emit(const TransactionSuccess("Reimbursement added successfully"));
+        await fetchLedger(ledgerId, userType);
+      } else if (purpose == 'Salary' && type == 'Debit') {
+        // Salary: Credit to destination (receive money), Debit to destination (salary expense), Credit to source
+        // 1. Credit Destination (money received)
+        final creditTransaction = AccountTransactionModel(
+          amount: amount,
+          type: 'Credit',
+          billNumber: billNumber?.isNotEmpty == true ? billNumber : null,
+          createdAt: DateTime.now(),
+          receivedBy: loggedIn?.userId ?? '',
+          purpose: purpose,
+          typeOfPurpose: effectiveTypeOfPurpose,
+          remarks: remarks?.isNotEmpty == true ?  ' $remarks (Salary Received)' : 'Salary payment received by $destinationName',
+        );
+        final destinationLedger = await _accountLedgerService.getLedger(ledgerId);
+        double destinationUpdatedDue = destinationLedger.currentDue ?? 0.0;
+        double destinationUpdatedOutstanding = destinationLedger.totalOutstanding;
+        if (updateBalance) {
+          destinationUpdatedDue -= amount; // Credit reduces due
+          destinationUpdatedOutstanding -= amount;
+        }
+        final updatedDestinationLedgerCredit = destinationLedger.copyWith(
+          totalOutstanding: destinationUpdatedOutstanding,
+          currentDue: destinationUpdatedDue,
+          currentPayable: null,
+          transactions: [...?destinationLedger.transactions, creditTransaction],
+        );
+        await _accountLedgerService.updateLedger(ledgerId, updatedDestinationLedgerCredit);
+        await _accountLedgerService.addTransaction(ledgerId, creditTransaction);
+
+        // 2. Debit Destination (salary expense)
+        final debitTransaction = AccountTransactionModel(
+          amount: amount,
+          type: 'Debit',
+          billNumber: billNumber?.isNotEmpty == true ? billNumber : null,
+          createdAt: DateTime.now(),
+          receivedBy: loggedIn?.userId ?? '',
+          purpose: purpose,
+          typeOfPurpose: effectiveTypeOfPurpose,
+          remarks: remarks?.isNotEmpty == true ? '  $remarks + (Salary Expense)' : 'Salary expense for $destinationName',
+        );
+        destinationUpdatedDue = destinationUpdatedDue + amount; // Debit increases due
+        destinationUpdatedOutstanding = destinationUpdatedOutstanding + amount;
+        final updatedDestinationLedgerDebit = updatedDestinationLedgerCredit.copyWith(
+          totalOutstanding: destinationUpdatedOutstanding,
+          currentDue: destinationUpdatedDue,
+          currentPayable: null,
+          transactions: [...?updatedDestinationLedgerCredit.transactions, debitTransaction],
+        );
+        await _accountLedgerService.updateLedger(ledgerId, updatedDestinationLedgerDebit);
+        await _accountLedgerService.addTransaction(ledgerId, debitTransaction);
+
+        // 3. Credit Source (money paid out)
+        final sourceTransaction = AccountTransactionModel(
+          amount: amount,
+          type: 'Credit',
+          billNumber: billNumber?.isNotEmpty == true ? billNumber : null,
+          createdAt: DateTime.now(),
+          receivedBy: loggedIn?.userId ?? '',
+          purpose: purpose,
+          typeOfPurpose: effectiveTypeOfPurpose,
+          remarks: remarks?.isNotEmpty == true ? ' $remarks  (Salary Payment)' : 'Salary payment to $destinationName',
+        );
+        final sourceLedger = await _accountLedgerService.getLedger(sourceLedgerId);
+        double sourceUpdatedDue = sourceLedger.currentDue ?? 0.0;
         double sourceUpdatedOutstanding = sourceLedger.totalOutstanding;
-        sourceUpdatedDue +=
-        (sourceTransaction.type == "Debit" ? amount : -amount);
-        sourceUpdatedOutstanding +=
-        (sourceTransaction.type == "Debit" ? amount : -amount);
+        sourceUpdatedDue -= amount; // Credit reduces due
+        sourceUpdatedOutstanding -= amount;
         final updatedSourceLedger = sourceLedger.copyWith(
           totalOutstanding: sourceUpdatedOutstanding,
           currentDue: sourceUpdatedDue,
           currentPayable: null,
           transactions: [...?sourceLedger.transactions, sourceTransaction],
         );
-        await _accountLedgerService.updateLedger(
-            sourceLedgerId, updatedSourceLedger);
-        await _accountLedgerService.addTransaction(
-            sourceLedgerId, sourceTransaction);
-      }
+        await _accountLedgerService.updateLedger(sourceLedgerId, updatedSourceLedger);
+        await _accountLedgerService.addTransaction(sourceLedgerId, sourceTransaction);
 
-      emit(const TransactionSuccess("Transaction added successfully"));
-      await fetchLedger(ledgerId, userType);
+        emit(const TransactionSuccess("Salary transaction added successfully"));
+        await fetchLedger(ledgerId, userType);
+      } else {
+        // Expense or Regular Transaction
+        final transaction = AccountTransactionModel(
+          amount: amount,
+          type: type,
+          billNumber: billNumber?.isNotEmpty == true ? billNumber : null,
+          createdAt: DateTime.now(),
+          receivedBy: loggedIn?.userId ?? '',
+          purpose: purpose,
+          typeOfPurpose: effectiveTypeOfPurpose,
+          remarks: remarks?.isNotEmpty == true
+              ? remarks
+              : isExpense
+              ? 'Expense by $sourceName'
+              : 'Transaction for $destinationName ($ledgerId)',
+        );
+        final currentLedger = await _accountLedgerService.getLedger(ledgerId);
+        double updatedDue = currentLedger.currentDue ?? 0.0;
+        double updatedOutstanding = currentLedger.totalOutstanding;
+        if (updateBalance) {
+          updatedDue += (type == "Debit" ? amount : -amount);
+          updatedOutstanding += (type == "Debit" ? amount : -amount);
+        }
+        final updatedLedger = currentLedger.copyWith(
+          totalOutstanding: updatedOutstanding,
+          currentDue: updatedDue,
+          currentPayable: null,
+          transactions: [...?currentLedger.transactions, transaction],
+        );
+        await _accountLedgerService.updateLedger(ledgerId, updatedLedger);
+        await _accountLedgerService.addTransaction(ledgerId, transaction);
+
+        if (!isExpense) {
+          // Source ledger transaction for non-expense
+          final sourceTransaction = AccountTransactionModel(
+            amount: amount,
+            type: type == "Debit" ? "Credit" : "Debit",
+            billNumber: billNumber?.isNotEmpty == true ? billNumber : null,
+            createdAt: DateTime.now(),
+            receivedBy: loggedIn?.userId ?? '',
+            purpose: purpose ?? 'Transaction',
+            typeOfPurpose: effectiveTypeOfPurpose,
+            remarks: remarks?.isNotEmpty == true
+                ? 'Corresponding ${type.toLowerCase()} for $destinationName ($ledgerId): $remarks'
+                : 'Corresponding ${type.toLowerCase()} for $destinationName ($ledgerId) from $sourceName',
+          );
+          final sourceLedger = await _accountLedgerService.getLedger(sourceLedgerId);
+          double sourceUpdatedDue = double.parse((sourceLedger.currentDue ?? 0.0).toStringAsFixed(2));
+          double sourceUpdatedOutstanding = sourceLedger.totalOutstanding;
+          sourceUpdatedDue += (sourceTransaction.type == "Debit" ? amount : -amount);
+          sourceUpdatedOutstanding += (sourceTransaction.type == "Debit" ? amount : -amount);
+          final updatedSourceLedger = sourceLedger.copyWith(
+            totalOutstanding: sourceUpdatedOutstanding,
+            currentDue: sourceUpdatedDue,
+            currentPayable: null,
+            transactions: [...?sourceLedger.transactions, sourceTransaction],
+          );
+          await _accountLedgerService.updateLedger(sourceLedgerId, updatedSourceLedger);
+          await _accountLedgerService.addTransaction(sourceLedgerId, sourceTransaction);
+        }
+
+        emit(const TransactionSuccess("Transaction added successfully"));
+        await fetchLedger(ledgerId, userType);
+      }
     } catch (e) {
       emit(TransactionAddFailed("Failed to add transaction: $e"));
     }
   }
-
   Future<void> deleteTransaction(String ledgerId,
       AccountTransactionModel transaction, UserType? userType) async {
     emit(AccountLedgerPosting());

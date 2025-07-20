@@ -495,6 +495,22 @@ class AiCompanyListRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [AnalyticsPage]
+class AnalyticsRoute extends PageRouteInfo<void> {
+  const AnalyticsRoute({List<PageRouteInfo>? children})
+    : super(AnalyticsRoute.name, initialChildren: children);
+
+  static const String name = 'AnalyticsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AnalyticsPage();
+    },
+  );
+}
+
+/// generated route for
 /// [AttendanceRegisterPage]
 class AttendanceRegisterRoute extends PageRouteInfo<void> {
   const AttendanceRegisterRoute({List<PageRouteInfo>? children})
@@ -1571,10 +1587,16 @@ class UserLedgerRoute extends PageRouteInfo<UserLedgerRouteArgs> {
     Key? key,
     UserInfo? user,
     StoreDto? store,
+    TransactionType type = TransactionType.General,
     List<PageRouteInfo>? children,
   }) : super(
          UserLedgerRoute.name,
-         args: UserLedgerRouteArgs(key: key, user: user, store: store),
+         args: UserLedgerRouteArgs(
+           key: key,
+           user: user,
+           store: store,
+           type: type,
+         ),
          initialChildren: children,
        );
 
@@ -1586,13 +1608,23 @@ class UserLedgerRoute extends PageRouteInfo<UserLedgerRouteArgs> {
       final args = data.argsAs<UserLedgerRouteArgs>(
         orElse: () => const UserLedgerRouteArgs(),
       );
-      return UserLedgerPage(key: args.key, user: args.user, store: args.store);
+      return UserLedgerPage(
+        key: args.key,
+        user: args.user,
+        store: args.store,
+        type: args.type,
+      );
     },
   );
 }
 
 class UserLedgerRouteArgs {
-  const UserLedgerRouteArgs({this.key, this.user, this.store});
+  const UserLedgerRouteArgs({
+    this.key,
+    this.user,
+    this.store,
+    this.type = TransactionType.General,
+  });
 
   final Key? key;
 
@@ -1600,9 +1632,11 @@ class UserLedgerRouteArgs {
 
   final StoreDto? store;
 
+  final TransactionType type;
+
   @override
   String toString() {
-    return 'UserLedgerRouteArgs{key: $key, user: $user, store: $store}';
+    return 'UserLedgerRouteArgs{key: $key, user: $user, store: $store, type: $type}';
   }
 }
 
