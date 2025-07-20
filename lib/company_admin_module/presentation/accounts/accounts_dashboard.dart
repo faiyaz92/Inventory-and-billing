@@ -67,10 +67,10 @@ class AccountsDashboardPage extends StatelessWidget {
                       ..._buildGridItems(context, isWeb),
                       _buildDashboardCard(
                         context,
-                        'Stores accounts',
-                        Icons.account_balance,
+                        'Store Accounts', // Adjusted to singular for consistency
+                        Icons.store, // Changed to a more relevant icon
                         Colors.orangeAccent,
-                        () {
+                            () {
                           sl<Coordinator>().navigateToStoresListPage(fromAccountPage: true);
                         },
                         isWeb,
@@ -78,11 +78,11 @@ class AccountsDashboardPage extends StatelessWidget {
                       _buildDashboardCard(
                         context,
                         'Invoices',
-                        Icons.receipt,
+                        Icons.receipt_long, // More specific than Icons.receipt
                         Colors.cyan,
                             () => sl<Coordinator>().navigateToInvoiceListPage(),
                         isWeb,
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -105,28 +105,47 @@ class AccountsDashboardPage extends StatelessWidget {
       Colors.green,
     ];
 
-    return UserType.values.asMap().entries.map((entry) {
+    // Define icons for each UserType
+    final iconMap = {
+      UserType.Employee: Icons.person,
+      UserType.Supplier: Icons.local_shipping,
+      UserType.Customer: Icons.people,
+      UserType.Boss: Icons.supervisor_account,
+      UserType.ThirdPartyVendor: Icons.business,
+      UserType.Contractor: Icons.work,
+      UserType.Accounts: Icons.account_balance_wallet,
+      UserType.Store: Icons.store, // Not used due to exclusion, included for completeness
+    };
+
+    return UserType.values
+        .asMap()
+        .entries
+        .where((entry) => entry.value != UserType.Store) // Exclude Store
+        .map((entry) {
       final index = entry.key;
       final userType = entry.value;
+      // Use "Operations Account" for UserType.Accounts, else use userType.name with "Accounts"
+      final displayName =
+      userType == UserType.Accounts ? 'Operations Account' : userType.name;
       return _buildDashboardCard(
         context,
-        '${userType.name} Accounts',
-        Icons.group,
+        userType == UserType.Accounts ? displayName : '$displayName Accounts',
+        iconMap[userType] ?? Icons.group, // Fallback to Icons.group if not found
         colors[index % colors.length],
-        () => sl<Coordinator>().navigateToSimpleUserList(userType: userType),
+            () => sl<Coordinator>().navigateToSimpleUserList(userType: userType),
         isWeb,
       );
     }).toList();
   }
 
   Widget _buildDashboardCard(
-    BuildContext context,
-    String title,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-    bool isWeb,
-  ) {
+      BuildContext context,
+      String title,
+      IconData icon,
+      Color color,
+      VoidCallback onTap,
+      bool isWeb,
+      ) {
     return GestureDetector(
       onTap: onTap,
       child: Card(

@@ -520,7 +520,75 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
   }
 
   Widget _buildUserDetails() {
-    if (widget.user != null) {
+    if (widget.user == null && widget.store == null) {
+      // Handle Expense case where both user and store are null
+      return Table(
+        border: TableBorder.all(color: Colors.grey.shade300),
+        columnWidths: const {
+          0: FlexColumnWidth(2),
+          1: FlexColumnWidth(3),
+        },
+        children: [
+          TableRow(
+            decoration: BoxDecoration(color: Colors.grey.shade100),
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Expense Account",
+                  style: defaultTextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(""),
+              ),
+            ],
+          ),
+          TableRow(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Name",
+                  style: defaultTextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  _selectedDestinationUserInfo?.name ??
+                      _selectedDestinationUserInfo?.userName ??
+                      "Expense Account",
+                  style: defaultTextStyle(fontSize: 14),
+                ),
+              ),
+            ],
+          ),
+          TableRow(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Type",
+                  style: defaultTextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  _selectedDestinationUserInfo?.userType?.name ?? "Expense",
+                  style: defaultTextStyle(fontSize: 14),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    } else if (widget.user != null) {
       return Table(
         border: TableBorder.all(color: Colors.grey.shade300),
         columnWidths: const {
@@ -994,8 +1062,7 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
             widget.store?.accountLedgerId == null)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content:
-                Text("Ledger ID not available. Please wait or try again.")),
+            content: Text("Ledger ID not available. Please wait or try again.")),
       );
       _isPopupOpen = false;
       return;
@@ -1014,7 +1081,7 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
     }
 
     final Map<String, List<String>> purposeTypeMap =
-        Map.from(state.purposeTypeMap);
+    Map.from(state.purposeTypeMap);
     final sourceRole = _selectedSourceUserInfo?.role;
     final isAccountantOrAdmin = sourceRole == Role.COMPANY_ACCOUNTANT ||
         sourceRole == Role.COMPANY_ADMIN;
@@ -1023,12 +1090,12 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
     final requiredPurposes = widget.type == TransactionType.Reimbursement
         ? ['Reimbursement']
         : widget.type == TransactionType.Expense
-            ? ['Expenses']
-            : state.isDebit
-                ? (isAccountantOrAdmin
-                    ? ['Salary', 'Expenses', 'Other']
-                    : ['Transfer Cash', 'Other'])
-                : ['Cash of Sales', 'Other'];
+        ? ['Expenses']
+        : state.isDebit
+        ? (isAccountantOrAdmin
+        ? ['Salary', 'Expenses', 'Other']
+        : ['Transfer Cash', 'Other'])
+        : ['Cash of Sales', 'Other'];
 
     for (var purpose in requiredPurposes) {
       if (!purposeTypeMap.containsKey(purpose)) {
@@ -1047,525 +1114,290 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (dialogContext) {
         return BlocProvider.value(
-          value: _ledgerCubit,
-          child: AlertDialog(
+            value: _ledgerCubit,
+            child: AlertDialog(
             title: Text(widget.type == TransactionType.Expense
-                ? "Add Expense"
+            ? "Add Expense"
                 : widget.type == TransactionType.Reimbursement
-                    ? "Reimburse"
-                    : state.isDebit
-                        ? (isSalesman ? "Pay Cash" : "Pay Cash/Amount")
-                        : (isSalesman ? "Collect Cash" : "Credit")),
-            content: Form(
-              key: _formKey,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Source: ${_accounts.firstWhere((account) => account['ledgerId'] == _selectedSourceLedgerId, orElse: () => {
-                            'name': 'Unknown',
-                            'type': ''
-                          })['name']} (${_accounts.firstWhere((account) => account['ledgerId'] == _selectedSourceLedgerId, orElse: () => {'name': '', 'type': 'Unknown'})['type']})',
-                      style: defaultTextStyle(fontSize: 14),
-                    ),
-                    Text(
-                      'Destination: ${_accounts.firstWhere((account) => account['ledgerId'] == _selectedDestinationLedgerId, orElse: () => {
-                            'name': 'Unknown',
-                            'type': ''
-                          })['name']} (${_accounts.firstWhere((account) => account['ledgerId'] == _selectedDestinationLedgerId, orElse: () => {'name': '', 'type': 'Unknown'})['type']})',
-                      style: defaultTextStyle(fontSize: 14),
-                    ),
-                    const SizedBox(height: 10),
-                    TextFormField(
-                      controller: amountController,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(labelText: "Amount"),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "Amount is required";
-                        }
-                        final amount = double.tryParse(value);
-                        if (amount == null || amount <= 0) {
-                          return "Enter a valid positive amount";
-                        }
-                        return null;
-                      },
-                    ),
-                    TextFormField(
-                      controller: billNumberController,
-                      decoration: const InputDecoration(
-                          labelText: "Bill Number (Optional)"),
-                    ),
-                    BlocBuilder<UserLedgerCubit, AccountLedgerState>(
-                      buildWhen: (previous, current) =>
-                          current is TransactionPopupOpened &&
-                          previous is TransactionPopupOpened &&
-                          current.selectedPurpose != previous.selectedPurpose,
-                      builder: (context, popupState) {
-                        if (popupState is TransactionPopupOpened) {
-                          final items = purposeTypeMap.keys
-                              .where((purpose) =>
-                                  requiredPurposes.contains(purpose))
-                              .map((purpose) => DropdownMenuItem(
-                                    value: purpose,
-                                    child: Text(purpose),
-                                  ))
-                              .toList();
-                          return DropdownButtonFormField<String>(
-                            value: popupState.selectedPurpose != null &&
-                                    requiredPurposes
-                                        .contains(popupState.selectedPurpose)
-                                ? popupState.selectedPurpose
-                                : null,
-                            decoration:
-                                const InputDecoration(labelText: "Purpose"),
-                            items: items,
-                            onChanged: items.isNotEmpty
-                                ? (value) => context
-                                    .read<UserLedgerCubit>()
-                                    .updatePurposeSelection(value)
-                                : null,
-                            validator: (value) =>
-                                value == null ? "Purpose is required" : null,
-                            hint: items.isEmpty
-                                ? const Text("No purposes available")
-                                : null,
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                    BlocBuilder<UserLedgerCubit, AccountLedgerState>(
-                      buildWhen: (previous, current) =>
-                          current is TransactionPopupOpened &&
-                          previous is TransactionPopupOpened &&
-                          (current.selectedType != previous.selectedType ||
-                              current.selectedPurpose !=
-                                  previous.selectedPurpose),
-                      builder: (context, popupState) {
-                        if (popupState is TransactionPopupOpened) {
-                          final items = popupState.selectedPurpose != null &&
-                                  purposeTypeMap
-                                      .containsKey(popupState.selectedPurpose)
-                              ? purposeTypeMap[popupState.selectedPurpose]!
-                                  .map((type) => DropdownMenuItem(
-                                        value: type,
-                                        child: Text(type),
-                                      ))
-                                  .toList()
-                              : <DropdownMenuItem<String>>[];
-                          return DropdownButtonFormField<String>(
-                            value: popupState.selectedType,
-                            decoration:
-                                const InputDecoration(labelText: "Type"),
-                            items: items,
-                            onChanged: items.isNotEmpty
-                                ? (value) => context
-                                    .read<UserLedgerCubit>()
-                                    .updateTypeSelection(value)
-                                : null,
-                            validator: (value) =>
-                                items.isNotEmpty && value == null
-                                    ? "Type is required"
-                                    : null,
-                            hint: items.isEmpty
-                                ? const Text("No types available")
-                                : null,
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                    TextFormField(
-                      controller: remarksController,
-                      maxLength: 500,
-                      decoration: InputDecoration(
-                        labelText: state.isDebit
-                            ? "Remarks (Optional)"
-                            : "Remarks (Required for Credit)",
-                        counterText: "",
-                      ),
-                      validator: (value) => state.isDebit
-                          ? null
-                          : (value == null || value.isEmpty)
-                              ? "Remarks are required for Credit"
-                              : null,
-                    ),
-                    BlocBuilder<UserLedgerCubit, AccountLedgerState>(
-                      buildWhen: (previous, current) =>
-                          current is TransactionPopupOpened &&
-                          previous is TransactionPopupOpened &&
-                          current.errorMessage != previous.errorMessage,
-                      builder: (context, popupState) {
-                        if (popupState is TransactionPopupOpened &&
-                            popupState.errorMessage != null) {
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(
-                              popupState.errorMessage!,
-                              style: const TextStyle(
-                                  color: Colors.red, fontSize: 12),
-                            ),
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  _isPopupOpen = false;
-                  Navigator.pop(dialogContext);
-                  amountController.clear();
-                  billNumberController.clear();
-                  remarksController.clear();
-                },
-                child: const Text("Cancel"),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  if (!_formKey.currentState!.validate()) {
-                    return;
-                  }
-                  final currentState = context.read<UserLedgerCubit>().state;
-                  String? selectedType;
-                  String? selectedPurpose;
-                  if (currentState is TransactionPopupOpened) {
-                    selectedType = currentState.selectedType;
-                    selectedPurpose = currentState.selectedPurpose;
-                  }
-                  print(
-                      'Adding transaction: ledgerId=$_selectedDestinationLedgerId, sourceLedgerId=$_selectedSourceLedgerId, amount=${amountController.text}, purpose=$selectedPurpose, type=$selectedType');
-
-                  // Single call to addTransactionWithSource for all cases
-                  context.read<UserLedgerCubit>().addTransactionWithSource(
-                        ledgerId: _selectedDestinationLedgerId!,
-                        sourceLedgerId: _selectedSourceLedgerId!,
-                        destinationUserInfo: _selectedDestinationUserInfo!,
-                        sourceUserInfo: _selectedSourceUserInfo!,
-                        amount: double.parse(amountController.text),
-                        type: state.isDebit ? "Debit" : "Credit",
-                        billNumber: billNumberController.text.isEmpty
-                            ? null
-                            : billNumberController.text,
-                        purpose: selectedPurpose,
-                        typeOfPurpose: selectedType,
-                        remarks: remarksController.text.isEmpty
-                            ? null
-                            : remarksController.text,
-                        userType: _selectedDestinationUserInfo!.userType,
-                        userRole: widget.user?.role ?? Role.STORE_ACCOUNTANT,
-                        isExpense: widget.type == TransactionType.Expense,
-                        isReimbursement:
-                            widget.type == TransactionType.Reimbursement,
-                        updateBalance:
-                            selectedPurpose == 'Salary' ? false : true,
-                      );
-
-                  _isPopupOpen = false;
-                  Navigator.pop(dialogContext);
-                  amountController.clear();
-                  billNumberController.clear();
-                  remarksController.clear();
-                },
-                child: const Text("Add"),
-              ),
-            ],
-          ),
+            ? "Reimburse"
+                : state.isDebit
+            ? (isSalesman ? "Pay Cash" : "Pay Cash/Amount")
+            : (isSalesman ? "Collect Cash" : "Credit")),
+        content: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+        child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+        Text(
+        'Source: ${_accounts.firstWhere((account) => account['ledgerId'] == _selectedSourceLedgerId, orElse: () => {
+        'name': 'Unknown',
+        'type': ''
+        })['name']} (${_accounts.firstWhere((account) => account['ledgerId'] == _selectedSourceLedgerId, orElse: () => {'name': '', 'type': 'Unknown'})['type']})',
+        style: defaultTextStyle(fontSize: 14),
+        ),
+        Text(
+        'Destination: ${_accounts.firstWhere((account) => account['ledgerId'] == _selectedDestinationLedgerId, orElse: () => {
+        'name': 'Unknown',
+        'type': ''
+        })['name']} (${_accounts.firstWhere((account) => account['ledgerId'] == _selectedDestinationLedgerId, orElse: () => {'name': '', 'type': 'Unknown'})['type']})',
+        style: defaultTextStyle(fontSize: 14),
+        ),
+        const SizedBox(height: 10),
+        TextFormField(
+        controller: amountController,
+        keyboardType:
+        const TextInputType.numberWithOptions(decimal: true),
+        decoration: const InputDecoration(labelText: "Amount"),
+        validator: (value) {
+        if (value == null || value.isEmpty) {
+        return "Amount is required";
+        }
+        final amount = double.tryParse(value);
+        if (amount == null || amount <= 0) {
+        return "Enter a valid positive amount";
+        }
+        return null;
+        },
+        ),
+        TextFormField(
+        controller: billNumberController,
+        decoration:
+        const InputDecoration(labelText: "Bill Number (Optional)"),
+        ),
+        BlocBuilder<UserLedgerCubit, AccountLedgerState>(
+        buildWhen: (previous, current) =>
+        current is TransactionPopupOpened &&
+        previous is TransactionPopupOpened &&
+        current.selectedPurpose != previous.selectedPurpose,
+        builder: (context, popupState) {
+        if (popupState is TransactionPopupOpened) {
+        final items = purposeTypeMap.keys
+            .where((purpose) => requiredPurposes.contains(purpose))
+            .map((purpose) => DropdownMenuItem(
+        value: purpose,
+        child: Text(purpose),
+        ))
+            .toList();
+        return DropdownButtonFormField<String>(
+        value: popupState.selectedPurpose != null &&
+        requiredPurposes
+            .contains(popupState.selectedPurpose)
+        ? popupState.selectedPurpose
+            : null,
+        decoration: const InputDecoration(labelText: "Purpose"),
+        items: items,
+        onChanged: items.isNotEmpty
+        ? (value) => context
+            .read<UserLedgerCubit>()
+            .updatePurposeSelection(value)
+            : null,
+        validator: (value) =>
+        value == null ? "Purpose is required" : null,
+        hint: items.isEmpty
+        ? const Text("No purposes available")
+            : null,
         );
-      },
+        }
+        return const SizedBox.shrink();
+        },
+        ),
+        BlocBuilder<UserLedgerCubit, AccountLedgerState>(
+        buildWhen: (previous, current) =>
+        current is TransactionPopupOpened &&
+        previous is TransactionPopupOpened &&
+        (current.selectedType != previous.selectedType ||
+        current.selectedPurpose != previous.selectedPurpose),
+        builder: (context, popupState) {
+        if (popupState is TransactionPopupOpened) {
+        final items = popupState.selectedPurpose != null &&
+        purposeTypeMap
+            .containsKey(popupState.selectedPurpose)
+        ? purposeTypeMap[popupState.selectedPurpose]!
+            .map((type) => DropdownMenuItem(
+        value: type,
+        child: Text(type),
+        ))
+            .toList()
+            : <DropdownMenuItem<String>>[];
+        return DropdownButtonFormField<String>(
+        value: popupState.selectedPurpose != null &&
+        purposeTypeMap
+            .containsKey(popupState.selectedPurpose)
+        ? popupState.selectedType
+            : null,
+        decoration: const InputDecoration(labelText: "Type"),
+        items: items,
+        onChanged: items.isNotEmpty
+        ? (value) => context
+            .read<UserLedgerCubit>()
+            .updateTypeSelection(value)
+            : null,
+        validator: (value) => items.isNotEmpty && value == null
+        ? "Type is required"
+            : null,
+        hint: items.isEmpty
+        ? const Text("No types available")
+            : null,
+        );
+        }
+        return const SizedBox.shrink();
+        },
+        ),
+        TextFormField(
+        controller: remarksController,
+        maxLength: 500,
+        decoration: InputDecoration(
+        labelText: state.isDebit
+        ? "Remarks (Optional)"
+            : "Remarks (Required for Credit)",
+        counterText: "",
+        ),
+        validator: (value) => state.isDebit
+        ? null
+            : (value == null || value.isEmpty)
+        ? "Remarks are required for Credit"
+            : null,
+        ),
+        BlocBuilder<UserLedgerCubit, AccountLedgerState>(
+        buildWhen: (previous, current) =>
+        current is TransactionPopupOpened &&
+        previous is TransactionPopupOpened &&
+        current.errorMessage != previous.errorMessage,
+        builder: (context, popupState) {
+        if (popupState is TransactionPopupOpened &&
+        popupState.errorMessage != null) {
+        return Padding(
+        padding: const EdgeInsets.only(top: 8.0),
+        child: Text(
+        popupState.errorMessage!,
+        style: const TextStyle(
+        color: Colors.red, fontSize: 12),
+        ),
+        );
+        }
+        return const SizedBox.shrink();
+        },
+        ),
+        ],
+        ),
+        ),),
+        actions: [
+        TextButton(
+        onPressed: () {
+        _isPopupOpen = false;
+        Navigator.pop(dialogContext);
+        amountController.clear();
+        billNumberController.clear();
+        remarksController.clear();
+        },
+        child: const Text("Cancel"),
+        ),
+        ElevatedButton(
+        onPressed: () {
+        if (!_formKey.currentState!.validate()) {
+        return;
+        }
+        final currentState = context.read<UserLedgerCubit>().state;
+        String? selectedType;
+        String? selectedPurpose;
+        if (currentState is TransactionPopupOpened) {
+        selectedType = currentState.selectedType;
+        selectedPurpose = currentState.selectedPurpose;
+        }
+        print(
+        'Adding transaction: ledgerId=$_selectedDestinationLedgerId, sourceLedgerId=$_selectedSourceLedgerId, amount=${amountController.text}, purpose=$selectedPurpose, type=$selectedType');
+
+        // Destination ledger Credit for Expense
+        if (widget.type == TransactionType.Expense) {
+        context.read<UserLedgerCubit>().addTransactionWithSource(
+        ledgerId: _selectedDestinationLedgerId!,
+        sourceLedgerId: _selectedSourceLedgerId!,
+        destinationUserInfo: _selectedDestinationUserInfo!,
+        sourceUserInfo: _selectedSourceUserInfo!,
+        amount: double.parse(amountController.text),
+        type: "Credit",
+        billNumber: billNumberController.text.isEmpty
+        ? null
+            : billNumberController.text,
+        purpose: selectedPurpose,
+        typeOfPurpose: selectedType,
+        remarks: remarksController.text.isEmpty
+        ? null
+            : remarksController.text,
+        userType: _selectedDestinationUserInfo!.userType,
+        userRole: widget.user?.role ?? Role.STORE_ACCOUNTANT,
+        isExpense: true,
+        isReimbursement: false,
+        updateBalance: true,
+        );
+
+        // Source ledger Credit for Expense
+        context.read<UserLedgerCubit>().addTransactionWithSource(
+        ledgerId: _selectedSourceLedgerId!,
+        sourceLedgerId: _selectedDestinationLedgerId!, // Swap for source ledger
+        destinationUserInfo: _selectedSourceUserInfo!,
+        sourceUserInfo: _selectedDestinationUserInfo!,
+        amount: double.parse(amountController.text),
+        type: "Credit",
+        billNumber: billNumberController.text.isEmpty
+        ? null
+            : billNumberController.text,
+        purpose: selectedPurpose,
+        typeOfPurpose: selectedType,
+        remarks: remarksController.text.isEmpty
+        ? null
+            : 'Expense payment: ${remarksController.text}',
+        userType: _selectedSourceUserInfo!.userType,
+        userRole: widget.user?.role ?? Role.STORE_ACCOUNTANT,
+        isExpense: true,
+        isReimbursement: false,
+        updateBalance: true,
+        );
+        } else {
+        // Original logic for General, Reimbursement, Salary
+        context.read<UserLedgerCubit>().addTransactionWithSource(
+        ledgerId: _selectedDestinationLedgerId!,
+        sourceLedgerId: _selectedSourceLedgerId!,
+        destinationUserInfo: _selectedDestinationUserInfo!,
+        sourceUserInfo: _selectedSourceUserInfo!,
+        amount: double.parse(amountController.text),
+        type: state.isDebit ? "Debit" : "Credit",
+        billNumber: billNumberController.text.isEmpty
+        ? null
+            : billNumberController.text,
+        purpose: selectedPurpose,
+        typeOfPurpose: selectedType,
+        remarks: remarksController.text.isEmpty
+        ? null
+            : remarksController.text,
+        userType: _selectedDestinationUserInfo!.userType,
+        userRole: widget.user?.role ?? Role.STORE_ACCOUNTANT,
+        isExpense: widget.type == TransactionType.Expense,
+        isReimbursement:
+        widget.type == TransactionType.Reimbursement,
+        updateBalance:
+        selectedPurpose == 'Salary' ? false : true,
+        );
+        }
+
+        _isPopupOpen = false;
+        Navigator.pop(dialogContext);
+        amountController.clear();
+        billNumberController.clear();
+        remarksController.clear();
+        },
+        child: const Text("Add"),
+        ),
+        ],
+        ),
+        );
+        },
     );
   }
 }
-// Future<void> _showTransactionPopup(
-//     BuildContext context, TransactionPopupOpened state) async {
-//   if (_ledgerId == null &&
-//       (widget.user?.accountLedgerId == null &&
-//           widget.store?.accountLedgerId == null)) {
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       const SnackBar(
-//           content: Text("Ledger ID not available. Please wait or try again.")),
-//     );
-//     _isPopupOpen = false;
-//     return;
-//   }
-//
-//   if (_selectedSourceLedgerId == null ||
-//       _selectedDestinationLedgerId == null ||
-//       _selectedSourceUserInfo == null ||
-//       _selectedDestinationUserInfo == null) {
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       const SnackBar(
-//           content: Text("Please select source and destination accounts")),
-//     );
-//     _isPopupOpen = false;
-//     return;
-//   }
-//
-//   final Map<String, List<String>> purposeTypeMap =
-//   Map.from(state.purposeTypeMap);
-//   final sourceRole = _selectedSourceUserInfo?.role;
-//   final isAccountantOrAdmin = sourceRole == Role.COMPANY_ACCOUNTANT ||
-//       sourceRole == Role.COMPANY_ADMIN;
-//   final isSalesman = sourceRole == Role.SALES_MAN;
-//
-//   final requiredPurposes = widget.type == TransactionType.Reimbursement
-//       ? ['Reimbursement']
-//       : widget.type == TransactionType.Expense
-//       ? ['Expenses']
-//       : state.isDebit
-//       ? (isAccountantOrAdmin
-//       ? ['Salary', 'Expenses', 'Other']
-//       : ['Transfer Cash', 'Other'])
-//       : ['Cash of Sales', 'Other'];
-//
-//   for (var purpose in requiredPurposes) {
-//     if (!purposeTypeMap.containsKey(purpose)) {
-//       purposeTypeMap[purpose] = ['Cash'];
-//     }
-//   }
-//
-//   String? validSelectedPurpose = state.selectedPurpose;
-//   if (validSelectedPurpose != null &&
-//       !requiredPurposes.contains(validSelectedPurpose)) {
-//     validSelectedPurpose = requiredPurposes.first;
-//     context
-//         .read<UserLedgerCubit>()
-//         .updatePurposeSelection(validSelectedPurpose);
-//   }
-//
-//   showDialog(
-//     context: context,
-//     barrierDismissible: false,
-//     builder: (dialogContext) {
-//       return BlocProvider.value(
-//         value: _ledgerCubit,
-//         child: AlertDialog(
-//           title: Text(widget.type == TransactionType.Expense
-//               ? "Add Expense"
-//               : widget.type == TransactionType.Reimbursement
-//               ? "Reimburse"
-//               : state.isDebit
-//               ? (isSalesman ? "Pay Cash" : "Pay Cash/Amount")
-//               : (isSalesman ? "Collect Cash" : "Credit")),
-//           content: Form(
-//             key: _formKey,
-//             child: SingleChildScrollView(
-//               child: Column(
-//                 mainAxisSize: MainAxisSize.min,
-//                 children: [
-//                   Text(
-//                     'Source: ${_accounts.firstWhere((account) => account['ledgerId'] == _selectedSourceLedgerId, orElse: () => {
-//                       'name': 'Unknown',
-//                       'type': ''
-//                     })['name']} (${_accounts.firstWhere((account) => account['ledgerId'] == _selectedSourceLedgerId, orElse: () => {'name': '', 'type': 'Unknown'})['type']})',
-//                     style: defaultTextStyle(fontSize: 14),
-//                   ),
-//                   Text(
-//                     'Destination: ${_accounts.firstWhere((account) => account['ledgerId'] == _selectedDestinationLedgerId, orElse: () => {
-//                       'name': 'Unknown',
-//                       'type': ''
-//                     })['name']} (${_accounts.firstWhere((account) => account['ledgerId'] == _selectedDestinationLedgerId, orElse: () => {'name': '', 'type': 'Unknown'})['type']})',
-//                     style: defaultTextStyle(fontSize: 14),
-//                   ),
-//                   const SizedBox(height: 10),
-//                   TextFormField(
-//                     controller: amountController,
-//                     keyboardType:
-//                     const TextInputType.numberWithOptions(decimal: true),
-//                     decoration: const InputDecoration(labelText: "Amount"),
-//                     validator: (value) {
-//                       if (value == null || value.isEmpty) {
-//                         return "Amount is required";
-//                       }
-//                       final amount = double.tryParse(value);
-//                       if (amount == null || amount <= 0) {
-//                         return "Enter a valid positive amount";
-//                       }
-//                       return null;
-//                     },
-//                   ),
-//                   TextFormField(
-//                     controller: billNumberController,
-//                     decoration:
-//                     const InputDecoration(labelText: "Bill Number (Optional)"),
-//                   ),
-//                   BlocBuilder<UserLedgerCubit, AccountLedgerState>(
-//                     buildWhen: (previous, current) =>
-//                     current is TransactionPopupOpened &&
-//                         previous is TransactionPopupOpened &&
-//                         current.selectedPurpose != previous.selectedPurpose,
-//                     builder: (context, popupState) {
-//                       if (popupState is TransactionPopupOpened) {
-//                         final items = purposeTypeMap.keys
-//                             .where((purpose) => requiredPurposes.contains(purpose))
-//                             .map((purpose) => DropdownMenuItem(
-//                           value: purpose,
-//                           child: Text(purpose),
-//                         ))
-//                             .toList();
-//                         return DropdownButtonFormField<String>(
-//                           value: popupState.selectedPurpose != null &&
-//                               requiredPurposes.contains(popupState.selectedPurpose)
-//                               ? popupState.selectedPurpose
-//                               : null,
-//                           decoration: const InputDecoration(labelText: "Purpose"),
-//                           items: items,
-//                           onChanged: items.isNotEmpty
-//                               ? (value) => context
-//                               .read<UserLedgerCubit>()
-//                               .updatePurposeSelection(value)
-//                               : null,
-//                           validator: (value) =>
-//                           value == null ? "Purpose is required" : null,
-//                           hint: items.isEmpty
-//                               ? const Text("No purposes available")
-//                               : null,
-//                         );
-//                       }
-//                       return const SizedBox.shrink();
-//                     },
-//                   ),
-//                   BlocBuilder<UserLedgerCubit, AccountLedgerState>(
-//                     buildWhen: (previous, current) =>
-//                     current is TransactionPopupOpened &&
-//                         previous is TransactionPopupOpened &&
-//                         (current.selectedType != previous.selectedType ||
-//                             current.selectedPurpose != previous.selectedPurpose),
-//                     builder: (context, popupState) {
-//                       if (popupState is TransactionPopupOpened) {
-//                         final items = popupState.selectedPurpose != null &&
-//                             purposeTypeMap.containsKey(popupState.selectedPurpose)
-//                             ? purposeTypeMap[popupState.selectedPurpose]!
-//                             .map((type) => DropdownMenuItem(
-//                           value: type,
-//                           child: Text(type),
-//                         ))
-//                             .toList()
-//                             : <DropdownMenuItem<String>>[];
-//                         return DropdownButtonFormField<String>(
-//                           value: popupState.selectedType,
-//                           decoration: const InputDecoration(labelText: "Type"),
-//                           items: items,
-//                           onChanged: items.isNotEmpty
-//                               ? (value) => context
-//                               .read<UserLedgerCubit>()
-//                               .updateTypeSelection(value)
-//                               : null,
-//                           validator: (value) =>
-//                           items.isNotEmpty && value == null
-//                               ? "Type is required"
-//                               : null,
-//                           hint: items.isEmpty
-//                               ? const Text("No types available")
-//                               : null,
-//                         );
-//                       }
-//                       return const SizedBox.shrink();
-//                     },
-//                   ),
-//                   TextFormField(
-//                     controller: remarksController,
-//                     maxLength: 500,
-//                     decoration: InputDecoration(
-//                       labelText: state.isDebit
-//                           ? "Remarks (Optional)"
-//                           : "Remarks (Required for Credit)",
-//                       counterText: "",
-//                     ),
-//                     validator: (value) => state.isDebit
-//                         ? null
-//                         : (value == null || value.isEmpty)
-//                         ? "Remarks are required for Credit"
-//                         : null,
-//                   ),
-//                   BlocBuilder<UserLedgerCubit, AccountLedgerState>(
-//                     buildWhen: (previous, current) =>
-//                     current is TransactionPopupOpened &&
-//                         previous is TransactionPopupOpened &&
-//                         current.errorMessage != previous.errorMessage,
-//                     builder: (context, popupState) {
-//                       if (popupState is TransactionPopupOpened &&
-//                           popupState.errorMessage != null) {
-//                         return Padding(
-//                           padding: const EdgeInsets.only(top: 8.0),
-//                           child: Text(
-//                             popupState.errorMessage!,
-//                             style: const TextStyle(
-//                                 color: Colors.red, fontSize: 12),
-//                           ),
-//                         );
-//                       }
-//                       return const SizedBox.shrink();
-//                     },
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ),
-//           actions: [
-//             TextButton(
-//               onPressed: () {
-//                 _isPopupOpen = false;
-//                 Navigator.pop(dialogContext);
-//                 amountController.clear();
-//                 billNumberController.clear();
-//                 remarksController.clear();
-//               },
-//               child: const Text("Cancel"),
-//             ),
-//             ElevatedButton(
-//               onPressed: () {
-//                 if (!_formKey.currentState!.validate()) {
-//                   return;
-//                 }
-//                 final currentState = context.read<UserLedgerCubit>().state;
-//                 String? selectedType;
-//                 String? selectedPurpose;
-//                 if (currentState is TransactionPopupOpened) {
-//                   selectedType = currentState.selectedType;
-//                   selectedPurpose = currentState.selectedPurpose;
-//                 }
-//                 context.read<UserLedgerCubit>().addTransactionWithSource(
-//                   ledgerId: _selectedDestinationLedgerId!,
-//                   sourceLedgerId: _selectedSourceLedgerId!,
-//                   destinationUserInfo: _selectedDestinationUserInfo!,
-//                   sourceUserInfo: _selectedSourceUserInfo!,
-//                   amount: double.parse(amountController.text),
-//                   type: state.isDebit ? "Debit" : "Credit",
-//                   billNumber: billNumberController.text.isEmpty
-//                       ? null
-//                       : billNumberController.text,
-//                   purpose: selectedPurpose,
-//                   typeOfPurpose: selectedType,
-//                   remarks: remarksController.text.isEmpty
-//                       ? null
-//                       : remarksController.text,
-//                   userType: _selectedDestinationUserInfo!.userType,
-//                   userRole: widget.user?.role ?? Role.STORE_ACCOUNTANT,
-//                   isExpense: widget.type == TransactionType.Expense,
-//                   isReimbursement: widget.type == TransactionType.Reimbursement,
-//                 );
-//                 _isPopupOpen = false;
-//                 Navigator.pop(dialogContext);
-//                 amountController.clear();
-//                 billNumberController.clear();
-//                 remarksController.clear();
-//               },
-//               child: const Text("Add"),
-//             ),
-//           ],
-//         ),
-//       );
-//     },
-//   );
-// }
-// }
+
+

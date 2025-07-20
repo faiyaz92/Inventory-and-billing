@@ -200,26 +200,12 @@ class HomePage extends StatelessWidget {
   }) {
     final List<Widget> gridItems = [];
 
-    // Common grid item for all roles: User Ledger
-    gridItems.add(
-      _buildGridItem(
-        icon: Icons.account_balance_wallet_outlined,
-        label: 'User Ledger',
-        color: Colors.deepPurple,
-        onTap: () async {
-          final user = await sl<AccountRepository>().getUserInfo();
-          sl<Coordinator>().navigateToUserLedgerPage(
-            user: user?.copyWith(accountLedgerId: '1q3XGuMfV9LunYhnKDh8') ?? UserInfo(),
-          );
-        },
-        isWeb: isWeb,
-      ),
-    );
+
 
     // Role-based access
     switch (role) {
       case Role.SUPER_ADMIN:
-        gridItems.add(
+        gridItems.addAll([
           _buildGridItem(
             icon: Icons.admin_panel_settings_outlined,
             label: 'Super Admin',
@@ -229,8 +215,6 @@ class HomePage extends StatelessWidget {
             },
             isWeb: isWeb,
           ),
-        );
-        gridItems.add(
           _buildGridItem(
             icon: Icons.add_business_outlined,
             label: 'Add Company',
@@ -240,10 +224,10 @@ class HomePage extends StatelessWidget {
             },
             isWeb: isWeb,
           ),
-        );
+        ]);
         break;
-      case Role.COMPANY_ACCOUNTANT:
       case Role.COMPANY_ADMIN:
+      case Role.COMPANY_ACCOUNTANT:
         gridItems.addAll([
           _buildGridItem(
             icon: Icons.admin_panel_settings_outlined,
@@ -307,7 +291,8 @@ class HomePage extends StatelessWidget {
               sl<Coordinator>().navigateToInventoryDashBoard();
             },
             isWeb: isWeb,
-          ),_buildGridItem(
+          ),
+          _buildGridItem(
             icon: Icons.account_balance_wallet,
             label: 'Accounts',
             color: Colors.green,
@@ -318,13 +303,14 @@ class HomePage extends StatelessWidget {
           ),
           _buildGridItem(
             icon: Icons.money,
-            label: 'Add expenses',
+            label: 'Add Expenses',
             color: Colors.orangeAccent,
             onTap: () {
               sl<Coordinator>().navigateToUserLedgerPage(transactionType: TransactionType.Expense);
             },
             isWeb: isWeb,
-          ),_buildGridItem(
+          ),
+          _buildGridItem(
             icon: Icons.money,
             label: 'Add Reimbursement',
             color: Colors.orangeAccent,
@@ -344,7 +330,6 @@ class HomePage extends StatelessWidget {
           ),
         ]);
         break;
-
       case Role.STORE_ADMIN:
         gridItems.addAll([
           _buildGridItem(
@@ -439,12 +424,29 @@ class HomePage extends StatelessWidget {
           ),
         ]);
         break;
-
       case Role.SALES_MAN:
         gridItems.addAll([
           _buildGridItem(
+            icon: Icons.book,
+            label: 'Take Purchase Order',
+            color: Colors.blueAccent,
+            onTap: () {
+              sl<Coordinator>().navigateToSalesManOrderPage();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
             icon: Icons.receipt,
-            label: 'Cart Admin',
+            label: 'Create Invoice',
+            color: Colors.orange,
+            onTap: () {
+              sl<Coordinator>().navigateToBillingPage();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.dashboard,
+            label: 'Orders List',
             color: Colors.orange,
             onTap: () {
               sl<Coordinator>().navigateToAdminPanelPage();
@@ -452,42 +454,35 @@ class HomePage extends StatelessWidget {
             isWeb: isWeb,
           ),
           _buildGridItem(
-            icon: Icons.book,
-            label: 'Salesman Orders',
-            color: Colors.blueAccent,
+            icon: Icons.receipt_long,
+            label: 'Invoices',
+            color: Colors.cyan,
             onTap: () {
-              sl<Coordinator>().navigateToSalesManOrderPage();
+              sl<Coordinator>().navigateToInvoiceListPage();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.money,
+            label: 'Add Expenses',
+            color: Colors.orangeAccent,
+            onTap: () {
+              sl<Coordinator>().navigateToUserLedgerPage(transactionType: TransactionType.Expense);
             },
             isWeb: isWeb,
           ),
         ]);
         break;
-
       case Role.DELIVERY_MAN:
-      // Empty access for now, only User Ledger is added above
-        break;
-
       case Role.STORE_ACCOUNTANT:
-      // Empty access for now, only User Ledger is added above
-        break;
-
       case Role.STORE_MANAGER:
-      // Empty access for now, only User Ledger is added above
-        break;
-
-      case Role.COMPANY_ACCOUNTANT:
-      // Empty access for now, only User Ledger is added above
-        break;
-
       case Role.USER:
-      // Empty access for now, only User Ledger is added above
+      // Only User Ledger is added (from common grid items)
         break;
     }
 
     return gridItems;
   }
-
-
   Widget _buildGridItem({
     required IconData icon,
     required String label,
