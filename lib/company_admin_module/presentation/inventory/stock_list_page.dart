@@ -956,7 +956,7 @@ class _StockListPageState extends State<StockListPage> {
 
     final stores = await sl<StockRepository>().getStores(companyId);
     final fromStore = stores.firstWhere(
-      (store) => store.storeId == fromStoreId,
+          (store) => store.storeId == fromStoreId,
       orElse: () => StoreDto(
           storeId: fromStoreId,
           name: 'Unknown',
@@ -964,7 +964,7 @@ class _StockListPageState extends State<StockListPage> {
           createdAt: DateTime.now()),
     );
     final toStore = stores.firstWhere(
-      (store) => store.storeId == toStoreId,
+          (store) => store.storeId == toStoreId,
       orElse: () => StoreDto(
           storeId: toStoreId,
           name: 'Unknown',
@@ -981,13 +981,12 @@ class _StockListPageState extends State<StockListPage> {
 
     final double subtotal = transferEntries.fold(
       0.0,
-      (sum, entry) =>
-          sum +
-          ((entry['stock'] as StockModel).price ?? 0.0) * entry['quantity'],
+          (sum, entry) =>
+      sum + ((entry['stock'] as StockModel).price ?? 0.0) * entry['quantity'],
     );
     final double totalTax = transferEntries.fold(
       0.0,
-      (sum, entry) {
+          (sum, entry) {
         final stock = entry['stock'] as StockModel;
         final price = stock.price ?? 0.0;
         final taxRate = stock.tax ?? 0.0;
@@ -1003,7 +1002,7 @@ class _StockListPageState extends State<StockListPage> {
           padding: const pw.EdgeInsets.only(bottom: 12),
           decoration: pw.BoxDecoration(
             border:
-                pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
+            pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
           ),
           child: pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -1062,13 +1061,11 @@ class _StockListPageState extends State<StockListPage> {
           pw.SizedBox(height: 8),
           pw.Text(
             'From Store: ${fromStore.name}',
-            style:
-                pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
+            style: pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
           ),
           pw.Text(
             'To Store: ${toStore.name}',
-            style:
-                pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
+            style: pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
           ),
           pw.SizedBox(height: 24),
           pw.Text(
@@ -1187,17 +1184,17 @@ class _StockListPageState extends State<StockListPage> {
                   crossAxisAlignment: pw.CrossAxisAlignment.end,
                   children: [
                     pw.Text(
-                      'Subtotal: ₹${subtotal.toStringAsFixed(2)}',
+                      'Subtotal: ${subtotal.toStringAsFixed(2)}',
                       style: pw.TextStyle(font: regularFont, fontSize: 14),
                     ),
                     pw.SizedBox(height: 8),
                     pw.Text(
-                      'Total Tax: ₹${totalTax.toStringAsFixed(2)}',
+                      'Total Tax: ${totalTax.toStringAsFixed(2)}',
                       style: pw.TextStyle(font: regularFont, fontSize: 14),
                     ),
                     pw.SizedBox(height: 8),
                     pw.Text(
-                      'Total Amount: ₹${(subtotal + totalTax).toStringAsFixed(2)}',
+                      'Total Amount: ${(subtotal + totalTax).toStringAsFixed(2)}',
                       style: pw.TextStyle(
                           font: boldFont, fontSize: 16, color: primaryColor),
                     ),

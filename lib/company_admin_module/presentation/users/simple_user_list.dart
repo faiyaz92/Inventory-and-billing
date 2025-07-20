@@ -51,243 +51,409 @@ class SimpleUsersPage extends StatelessWidget {
             appBar: CustomAppBar(
               title: userType != null ? '${userType!.name} Accounts' : 'User List',
             ),
-            body: Column(
-              children: [
-                if (userType == null)
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Search by name or email',
-                            prefixIcon: const Icon(Icons.search),
-                            border: OutlineInputBorder(
+            body: Container(
+              height: MediaQuery.of(context).size.height,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Theme.of(context).primaryColor.withOpacity(0.1),
+                    Theme.of(context).primaryColor.withOpacity(0.3),
+                  ],
+                ),
+              ),
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      if (userType == null)
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Card(
+                            elevation: 4,
+                            shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                          ),
-                          onChanged: (value) {
-                            context.read<SimpleUserCubit>().filterUsers(
-                              searchQuery: value,
-                              userType: context.read<SimpleUserCubit>().selectedUserType,
-                              role: context.read<SimpleUserCubit>().selectedRole,
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: DropdownButtonFormField<UserType>(
-                                decoration: InputDecoration(
-                                  labelText: 'User Type',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                value: context.read<SimpleUserCubit>().selectedUserType,
-                                items: UserType.values.map((type) {
-                                  return DropdownMenuItem(
-                                    value: type,
-                                    child: Text(type.name),
-                                  );
-                                }).toList(),
-                                onChanged: (value) {
-                                  if (value != null) {
-                                    context.read<SimpleUserCubit>().filterUsers(
-                                      searchQuery: context.read<SimpleUserCubit>().searchQuery,
-                                      userType: value,
-                                      role: value == UserType.Employee
-                                          ? context.read<SimpleUserCubit>().selectedRole
-                                          : null,
-                                    );
-                                  }
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            if (context.watch<SimpleUserCubit>().selectedUserType == UserType.Employee)
-                              Expanded(
-                                child: DropdownButtonFormField<Role>(
-                                  decoration: InputDecoration(
-                                    labelText: 'Role',
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Column(
+                                children: [
+                                  TextField(
+                                    decoration: InputDecoration(
+                                      hintText: 'Search by name or email',
+                                      hintStyle: const TextStyle(
+                                          color: AppColors.textSecondary),
+                                      prefixIcon: const Icon(Icons.search,
+                                          color: AppColors.textSecondary),
+                                      filled: true,
+                                      fillColor: AppColors.white,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: const BorderSide(
+                                            color: AppColors.textSecondary,
+                                            width: 0.3),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: const BorderSide(
+                                            color: AppColors.textSecondary,
+                                            width: 0.3),
+                                      ),
+                                      contentPadding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 12),
                                     ),
-                                  ),
-                                  value: context.read<SimpleUserCubit>().selectedRole,
-                                  items: Role.values.map((role) {
-                                    return DropdownMenuItem(
-                                      value: role,
-                                      child: Text(role.name),
-                                    );
-                                  }).toList(),
-                                  onChanged: (value) {
-                                    if (value != null) {
+                                    onChanged: (value) {
                                       context.read<SimpleUserCubit>().filterUsers(
-                                        searchQuery: context.read<SimpleUserCubit>().searchQuery,
-                                        userType: context.read<SimpleUserCubit>().selectedUserType,
-                                        role: value,
+                                         searchQuery: value,
+                                        userType: context
+                                            .read<SimpleUserCubit>()
+                                            .selectedUserType,
+                                        role: context
+                                            .read<SimpleUserCubit>()
+                                            .selectedRole,
                                       );
-                                    }
-                                  },
-                                ),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                Expanded(
-                  child: state is UserListLoading || state is UserDeleting
-                      ? const Center(child: CircularProgressIndicator())
-                      : CustomScrollView(
-                    slivers: [
-                      if (state is UserListLoaded && state.users.isEmpty)
-                        SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: Center(
-                            child: Card(
-                              elevation: 2,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Text(
-                                  userType != null ? 'No ${userType!.name.toLowerCase()} accounts found' : 'No users found',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    color: AppColors.textSecondary,
-                                    fontWeight: FontWeight.w500,
+                                    },
                                   ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
-                      else if (state is UserListLoaded)
-                        SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                                (context, index) {
-                              final user = state.users[index];
-                              return Card(
-                                elevation: 3,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                  const SizedBox(height: 12),
+                                  Row(
                                     children: [
                                       Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              user.name ?? "No Name",
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                                color: AppColors.textPrimary,
-                                              ),
+                                        child: DropdownButtonFormField<UserType>(
+                                          decoration: InputDecoration(
+                                            labelText: 'User Type',
+                                            labelStyle: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black87),
+                                            filled: true,
+                                            fillColor: AppColors.white,
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                              BorderRadius.circular(12),
+                                              borderSide: const BorderSide(
+                                                  color: AppColors.textSecondary,
+                                                  width: 0.3),
                                             ),
-                                            const SizedBox(height: 8),
-                                            Text(
-                                              user.email ?? "No Email",
-                                              style: const TextStyle(
-                                                fontSize: 14,
-                                                color: AppColors.textSecondary,
-                                              ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius:
+                                              BorderRadius.circular(12),
+                                              borderSide: const BorderSide(
+                                                  color: AppColors.textSecondary,
+                                                  width: 0.3),
                                             ),
-                                          ],
-                                        ),
-                                      ),
-                                      if (userType != null)
-                                        IconButton(
-                                          icon: const Icon(
-                                            Icons.account_balance_wallet,
-                                            color: AppColors.textPrimary,
+                                            contentPadding:
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 12,
+                                                vertical: 12),
                                           ),
-                                          tooltip: 'View Ledger',
-                                          onPressed: () {
-                                            sl<Coordinator>().navigateToUserLedgerPage(user: user).then((result) {
-                                              if (result is bool && result == true) {
-                                                context.read<SimpleUserCubit>().fetchUsers();
-                                                context.read<SimpleUserCubit>().filterUsers(
-                                                  searchQuery: context.read<SimpleUserCubit>().searchQuery,
-                                                  userType: context.read<SimpleUserCubit>().selectedUserType,
-                                                  role: context.read<SimpleUserCubit>().selectedRole,
-                                                );
-                                              }
-                                            });
+                                          value: context
+                                              .read<SimpleUserCubit>()
+                                              .selectedUserType,
+                                          items: UserType.values.map((type) {
+                                            return DropdownMenuItem(
+                                              value: type,
+                                              child: Text(type.name),
+                                            );
+                                          }).toList(),
+                                          onChanged: (value) {
+                                            if (value != null) {
+                                              context
+                                                  .read<SimpleUserCubit>()
+                                                  .filterUsers(
+                                                searchQuery: context
+                                                    .read<SimpleUserCubit>()
+                                                    .searchQuery,
+                                                userType: value,
+                                                role: value == UserType.Employee
+                                                    ? context
+                                                    .read<
+                                                    SimpleUserCubit>()
+                                                    .selectedRole
+                                                    : null,
+                                              );
+                                            }
                                           },
                                         ),
-                                      PopupMenuButton<String>(
-                                        icon: const Icon(
-                                          Icons.more_vert,
-                                          color: AppColors.textSecondary,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      if (context
+                                          .watch<SimpleUserCubit>()
+                                          .selectedUserType ==
+                                          UserType.Employee)
+                                        Expanded(
+                                          child: DropdownButtonFormField<Role>(
+                                            decoration: InputDecoration(
+                                              labelText: 'Role',
+                                              labelStyle: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black87),
+                                              filled: true,
+                                              fillColor: AppColors.white,
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                BorderRadius.circular(12),
+                                                borderSide: const BorderSide(
+                                                    color:
+                                                    AppColors.textSecondary,
+                                                    width: 0.3),
+                                              ),
+                                              enabledBorder: OutlineInputBorder(
+                                                borderRadius:
+                                                BorderRadius.circular(12),
+                                                borderSide: const BorderSide(
+                                                    color:
+                                                    AppColors.textSecondary,
+                                                    width: 0.3),
+                                              ),
+                                              contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 12,
+                                                  vertical: 12),
+                                            ),
+                                            value: context
+                                                .read<SimpleUserCubit>()
+                                                .selectedRole,
+                                            items: Role.values.map((role) {
+                                              return DropdownMenuItem(
+                                                value: role,
+                                                child: Text(role.name),
+                                              );
+                                            }).toList(),
+                                            onChanged: (value) {
+                                              if (value != null) {
+                                                context
+                                                    .read<SimpleUserCubit>()
+                                                    .filterUsers(
+                                                  searchQuery: context
+                                                      .read<
+                                                      SimpleUserCubit>()
+                                                      .searchQuery,
+                                                  userType: context
+                                                      .read<
+                                                      SimpleUserCubit>()
+                                                      .selectedUserType,
+                                                  role: value,
+                                                );
+                                              }
+                                            },
+                                          ),
                                         ),
-                                        onSelected: (value) {
-                                          if (value == 'edit') {
-                                            sl<Coordinator>().navigateToAddUserPage(user: user);
-                                          } else if (value == 'delete') {
-                                            _showDeleteConfirmation(context, user.userId ?? '');
-                                          } else if (value == 'details') {
-                                            sl<Coordinator>().navigateToEmployeeDetailsPage(
-                                              userId: user.userId,
-                                            );
-                                          }
-                                        },
-                                        itemBuilder: (context) => [
-                                          const PopupMenuItem(
-                                            value: 'edit',
-                                            child: Text(
-                                              'Edit',
-                                              style: TextStyle(
-                                                color: AppColors.textPrimary,
-                                              ),
-                                            ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      state is UserListLoading || state is UserDeleting
+                          ? const Center(child: CircularProgressIndicator())
+                          : state is UserListLoaded
+                          ? state.users.isEmpty
+                          ? Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Card(
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Text(
+                              userType != null
+                                  ? 'No ${userType!.name.toLowerCase()} accounts found'
+                                  : 'No users found',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: AppColors.textSecondary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                          : ListView.builder(
+                        shrinkWrap: true,
+                        physics:
+                        const NeverScrollableScrollPhysics(),
+                        itemCount: state.users.length,
+                        itemBuilder: (context, index) {
+                          final user = state.users[index];
+                          return Card(
+                            elevation: 4,
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                              BorderRadius.circular(12),
+                            ),
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Row(
+                                crossAxisAlignment:
+                                CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          user.name ?? "No Name",
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight:
+                                            FontWeight.w600,
+                                            color:
+                                            AppColors.textPrimary,
                                           ),
-                                          const PopupMenuItem(
-                                            value: 'delete',
-                                            child: Text(
-                                              'Delete',
-                                              style: TextStyle(
-                                                color: AppColors.red,
-                                              ),
-                                            ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          user.email ?? "No Email",
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: AppColors
+                                                .textSecondary,
                                           ),
-                                          const PopupMenuItem(
-                                            value: 'details',
-                                            child: Text(
-                                              'Details',
-                                              style: TextStyle(
-                                                color: AppColors.textPrimary,
-                                              ),
-                                            ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (userType != null)
+                                    TextButton.icon(
+                                      onPressed: () {
+                                        sl<Coordinator>()
+                                            .navigateToUserLedgerPage(
+                                            user: user)
+                                            .then(
+                                              (result) {
+                                            if (result is bool &&
+                                                result ==
+                                                    true) {
+                                              context
+                                                  .read<
+                                                  SimpleUserCubit>()
+                                                  .fetchUsers();
+                                              context
+                                                  .read<
+                                                  SimpleUserCubit>()
+                                                  .filterUsers(
+                                                searchQuery: context
+                                                    .read<
+                                                    SimpleUserCubit>()
+                                                    .searchQuery,
+                                                userType: context
+                                                    .read<
+                                                    SimpleUserCubit>()
+                                                    .selectedUserType,
+                                                role: context
+                                                    .read<
+                                                    SimpleUserCubit>()
+                                                    .selectedRole,
+                                              );
+                                            }
+                                          },
+                                        );
+                                      },
+                                      icon: const Icon(
+                                        Icons
+                                            .account_balance_wallet,
+                                        color: AppColors.primary,
+                                        size: 20,
+                                      ),
+                                      label: const Text(
+                                        'View Ledger',
+                                        style: TextStyle(
+                                          color: AppColors.primary,
+                                          fontSize: 14,
+                                          fontWeight:
+                                          FontWeight.w600,
+                                        ),
+                                      ),
+                                      style: TextButton.styleFrom(
+                                        padding:
+                                        const EdgeInsets
+                                            .symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                      ),
+                                    ),
+                                  PopupMenuButton<String>(
+                                    icon: const Icon(
+                                      Icons.more_vert,
+                                      color:
+                                      AppColors.textSecondary,
+                                    ),
+                                    onSelected: (value) {
+                                      if (value == 'edit') {
+                                        sl<Coordinator>()
+                                            .navigateToAddUserPage(
+                                            user: user);
+                                      } else if (value ==
+                                          'delete') {
+                                        _showDeleteConfirmation(
+                                            context,
+                                            user.userId ?? '');
+                                      } else if (value ==
+                                          'details') {
+                                        sl<Coordinator>()
+                                            .navigateToEmployeeDetailsPage(
+                                          userId: user.userId,
+                                        );
+                                      }
+                                    },
+                                    itemBuilder: (context) => [
+                                      PopupMenuItem(
+                                        value: 'edit',
+                                        child: Text(
+                                          'Edit',
+                                          style: const TextStyle(
+                                            color: AppColors
+                                                .textPrimary,
+                                            fontWeight:
+                                            FontWeight.w600,
                                           ),
-                                        ],
+                                        ),
+                                      ),
+                                      PopupMenuItem(
+                                        value: 'delete',
+                                        child: Text(
+                                          'Delete',
+                                          style: const TextStyle(
+                                            color: AppColors.red,
+                                            fontWeight:
+                                            FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                      PopupMenuItem(
+                                        value: 'details',
+                                        child: Text(
+                                          'Details',
+                                          style: const TextStyle(
+                                            color: AppColors
+                                                .textPrimary,
+                                            fontWeight:
+                                            FontWeight.w600,
+                                          ),
+                                        ),
                                       ),
                                     ],
                                   ),
-                                ),
-                              );
-                            },
-                            childCount: state.users.length,
-                          ),
-                        )
-                      else
-                        const SliverToBoxAdapter(child: SizedBox.shrink()),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      )
+                          : const SizedBox.shrink(),
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
           );
         },
@@ -301,7 +467,7 @@ class SimpleUsersPage extends StatelessWidget {
       builder: (context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
           ),
           title: const Text(
             'Confirm Deletion',
@@ -329,15 +495,22 @@ class SimpleUsersPage extends StatelessWidget {
                 ),
               ),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () {
                 context.read<SimpleUserCubit>().deleteUser(userId);
                 Navigator.of(context).pop();
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.red,
+                foregroundColor: AppColors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              ),
               child: const Text(
                 'Delete',
                 style: TextStyle(
-                  color: AppColors.red,
                   fontWeight: FontWeight.w600,
                 ),
               ),

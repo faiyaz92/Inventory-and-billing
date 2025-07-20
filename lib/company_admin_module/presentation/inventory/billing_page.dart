@@ -786,6 +786,16 @@ class _BillingPageState extends State<BillingPage> {
       throw Exception('User ID not found');
     }
 
+    // Get customer ledger ID
+    final customerLedgerId = _selectedCustomer!.accountLedgerId;
+    if (customerLedgerId == null) {
+      print('No ledger ID found for customer: ${_selectedCustomer!.name}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Customer ledger ID not found')),
+      );
+      return;
+    }
+
     // Create a temporary Order object for review dialog
     Order tempOrder;
     if (_existingBillNumber != null && widget.orderId != null) {
@@ -799,13 +809,14 @@ class _BillingPageState extends State<BillingPage> {
           storeId: _selectedStoreId,
           billNumber: _existingBillNumber,
           discount: _discount ?? state.order.discount ?? 0.0,
-          invoiceLastUpdatedBy: userId, // Added
-          invoiceGeneratedDate: state.order.invoiceGeneratedDate ?? DateTime.now(), // Added
-          invoiceType: _selectedBillType, // Added
-          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid', // Added
-          amountReceived: _selectedBillType == 'Cash' ? totalAmount : 0.0, // Added
-          paymentDetails: state.order.paymentDetails ?? [], // Added
-          slipNumber: state.order.slipNumber, // Added
+          invoiceLastUpdatedBy: userId,
+          invoiceGeneratedDate: state.order.invoiceGeneratedDate ?? DateTime.now(),
+          invoiceType: _selectedBillType,
+          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid',
+          amountReceived: _selectedBillType == 'Cash' ? totalAmount : 0.0,
+          paymentDetails: state.order.paymentDetails ?? [],
+          slipNumber: state.order.slipNumber,
+          customerLedgerId: customerLedgerId, // Added
         );
       } else {
         tempOrder = Order(
@@ -823,13 +834,14 @@ class _BillingPageState extends State<BillingPage> {
           lastUpdatedBy: userId,
           billNumber: _existingBillNumber,
           discount: _discount ?? 0.0,
-          invoiceLastUpdatedBy: userId, // Added
-          invoiceGeneratedDate: DateTime.now(), // Added
-          invoiceType: _selectedBillType, // Added
-          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid', // Added
-          amountReceived: _selectedBillType == 'Cash' ? totalAmount : 0.0, // Added
-          paymentDetails: [], // Added
-          slipNumber: null, // Added
+          invoiceLastUpdatedBy: userId,
+          invoiceGeneratedDate: DateTime.now(),
+          invoiceType: _selectedBillType,
+          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid',
+          amountReceived: _selectedBillType == 'Cash' ? totalAmount : 0.0,
+          paymentDetails: [],
+          slipNumber: null,
+          customerLedgerId: customerLedgerId, // Added
         );
       }
     } else {
@@ -847,13 +859,14 @@ class _BillingPageState extends State<BillingPage> {
         lastUpdatedBy: userId,
         billNumber: 'BILL-${DateTime.now().millisecondsSinceEpoch}',
         discount: _discount ?? 0.0,
-        invoiceLastUpdatedBy: userId, // Added
-        invoiceGeneratedDate: DateTime.now(), // Added
-        invoiceType: _selectedBillType, // Added
-        paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid', // Added
-        amountReceived: _selectedBillType == 'Cash' ? totalAmount : 0.0, // Added
-        paymentDetails: [], // Added
-        slipNumber: null, // Added
+        invoiceLastUpdatedBy: userId,
+        invoiceGeneratedDate: DateTime.now(),
+        invoiceType: _selectedBillType,
+        paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid',
+        amountReceived: _selectedBillType == 'Cash' ? totalAmount : 0.0,
+        paymentDetails: [],
+        slipNumber: null,
+        customerLedgerId: customerLedgerId, // Added
       );
     }
 
@@ -877,13 +890,14 @@ class _BillingPageState extends State<BillingPage> {
           storeId: _selectedStoreId,
           billNumber: _existingBillNumber,
           discount: _discount ?? state.order.discount ?? 0.0,
-          invoiceLastUpdatedBy: userId, // Added
-          invoiceGeneratedDate: state.order.invoiceGeneratedDate ?? DateTime.now(), // Added
-          invoiceType: _selectedBillType, // Added
-          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid', // Added
-          amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : 0.0, // Added
-          paymentDetails: state.order.paymentDetails ?? [], // Added
-          slipNumber: state.order.slipNumber, // Added
+          invoiceLastUpdatedBy: userId,
+          invoiceGeneratedDate: state.order.invoiceGeneratedDate ?? DateTime.now(),
+          invoiceType: _selectedBillType,
+          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid',
+          amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : 0.0,
+          paymentDetails: state.order.paymentDetails ?? [],
+          slipNumber: state.order.slipNumber,
+          customerLedgerId: customerLedgerId, // Added
         );
       } else {
         order = Order(
@@ -901,13 +915,14 @@ class _BillingPageState extends State<BillingPage> {
           lastUpdatedBy: userId,
           billNumber: _existingBillNumber,
           discount: _discount ?? 0.0,
-          invoiceLastUpdatedBy: userId, // Added
-          invoiceGeneratedDate: DateTime.now(), // Added
-          invoiceType: _selectedBillType, // Added
-          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid', // Added
-          amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : 0.0, // Added
-          paymentDetails: [], // Added
-          slipNumber: null, // Added
+          invoiceLastUpdatedBy: userId,
+          invoiceGeneratedDate: DateTime.now(),
+          invoiceType: _selectedBillType,
+          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid',
+          amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : 0.0,
+          paymentDetails: [],
+          slipNumber: null,
+          customerLedgerId: customerLedgerId, // Added
         );
       }
     } else {
@@ -925,13 +940,14 @@ class _BillingPageState extends State<BillingPage> {
         lastUpdatedBy: userId,
         billNumber: 'BILL-${DateTime.now().millisecondsSinceEpoch}',
         discount: _discount ?? 0.0,
-        invoiceLastUpdatedBy: userId, // Added
-        invoiceGeneratedDate: DateTime.now(), // Added
-        invoiceType: _selectedBillType, // Added
-        paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid', // Added
-        amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : 0.0, // Added
-        paymentDetails: [], // Added
-        slipNumber: null, // Added
+        invoiceLastUpdatedBy: userId,
+        invoiceGeneratedDate: DateTime.now(),
+        invoiceType: _selectedBillType,
+        paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid',
+        amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : 0.0,
+        paymentDetails: [],
+        slipNumber: null,
+        customerLedgerId: customerLedgerId, // Added
       );
     }
 
@@ -980,6 +996,14 @@ class _BillingPageState extends State<BillingPage> {
       }
 
       print('Processing bill: billNumber=$billNumber, cartItems=${_cartItems.length}, totalAmount=$updatedTotalAmount, discount=${_discount ?? 0.0}, store=${store.name}');
+
+      // Check if invoice already exists
+      Order? existingInvoice;
+      try {
+        existingInvoice = await orderService.getInvoiceById(order.id);
+      } catch (e) {
+        existingInvoice = null; // Invoice doesn't exist
+      }
 
       if (_existingBillNumber == null) {
         // New order: Validate and update stock
@@ -1094,6 +1118,10 @@ class _BillingPageState extends State<BillingPage> {
 
         order = order.copyWith(billNumber: billNumber);
         await orderService.placeOrder(order);
+        // Add to invoice collection if it doesn't exist
+        if (existingInvoice == null) {
+          await orderService.placeInvoice(order);
+        }
       } else {
         // Existing order: Handle returns and update
         if (widget.orderId != null) {
@@ -1277,6 +1305,8 @@ class _BillingPageState extends State<BillingPage> {
 
           await orderService.updateOrderStatus(widget.orderId!, _selectedStatus);
           await orderService.updateOrder(order);
+          // Update invoice collection
+          await orderService.updateInvoice(order);
         }
       }
 
@@ -1301,7 +1331,6 @@ class _BillingPageState extends State<BillingPage> {
       setState(() => _isLoading = false);
     }
   }
-
   Future<pw.Document> _generatePdf(Order order) async {
     final pdf = pw.Document();
     final accountRepository = sl<AccountRepository>();
