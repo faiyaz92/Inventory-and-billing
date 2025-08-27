@@ -7,7 +7,7 @@ import 'dart:async' as _i5;
 
 import 'package:flutter_bloc/flutter_bloc.dart' as _i7;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:pdf/widgets.dart' as _i18;
+import 'package:pdf/widgets.dart' as _i19;
 import 'package:requirment_gathering_app/company_admin_module/data/product/category.dart'
     as _i13;
 import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart'
@@ -17,9 +17,9 @@ import 'package:requirment_gathering_app/company_admin_module/data/product/sub_c
 import 'package:requirment_gathering_app/company_admin_module/data/task/task_model.dart'
     as _i11;
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_page.dart'
-    as _i17;
+    as _i18;
 import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart'
-    as _i16;
+    as _i17;
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart'
     as _i8;
 import 'package:requirment_gathering_app/core_module/presentation/login/splash_cubit.dart'
@@ -27,7 +27,7 @@ import 'package:requirment_gathering_app/core_module/presentation/login/splash_c
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart'
     as _i4;
 import 'package:requirment_gathering_app/core_module/services/auth_service.dart'
-    as _i19;
+    as _i20;
 import 'package:requirment_gathering_app/super_admin_module/data/tenant_company.dart'
     as _i10;
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart'
@@ -35,7 +35,9 @@ import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart'
 import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.dart'
     as _i2;
 import 'package:requirment_gathering_app/super_admin_module/services/tenant_company_service.dart'
-    as _i20;
+    as _i21;
+import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart'
+    as _i16;
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart'
     as _i15;
 import 'package:requirment_gathering_app/user_module/data/partner.dart' as _i9;
@@ -807,12 +809,18 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
       ) as _i5.Future<dynamic>);
 
   @override
-  _i5.Future<dynamic> navigateToSimpleUserList({_i15.UserType? userType}) =>
+  _i5.Future<dynamic> navigateToSimpleUserList({
+    _i15.UserType? userType,
+    _i16.Role? role,
+  }) =>
       (super.noSuchMethod(
         Invocation.method(
           #navigateToSimpleUserList,
           [],
-          {#userType: userType},
+          {
+            #userType: userType,
+            #role: role,
+          },
         ),
         returnValue: _i5.Future<dynamic>.value(),
       ) as _i5.Future<dynamic>);
@@ -895,8 +903,8 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
   @override
   _i5.Future<dynamic> navigateToUserLedgerPage({
     _i6.UserInfo? user,
-    _i16.StoreDto? store,
-    _i17.TransactionType? transactionType,
+    _i17.StoreDto? store,
+    _i18.TransactionType? transactionType,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -924,7 +932,7 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
 
   @override
   _i5.Future<dynamic> navigateToBillPdfPage({
-    required _i18.Document? pdf,
+    required _i19.Document? pdf,
     required String? billNumber,
   }) =>
       (super.noSuchMethod(
@@ -975,12 +983,22 @@ class MockCoordinator extends _i1.Mock implements _i8.Coordinator {
         ),
         returnValue: _i5.Future<dynamic>.value(),
       ) as _i5.Future<dynamic>);
+
+  @override
+  _i5.Future<dynamic> navigateToPurchaseInvoicePanelPage() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #navigateToPurchaseInvoicePanelPage,
+          [],
+        ),
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 }
 
 /// A class which mocks [AuthService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAuthService extends _i1.Mock implements _i19.AuthService {
+class MockAuthService extends _i1.Mock implements _i20.AuthService {
   MockAuthService() {
     _i1.throwOnMissingStub(this);
   }
@@ -1036,7 +1054,7 @@ class MockAuthService extends _i1.Mock implements _i19.AuthService {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockTenantCompanyService extends _i1.Mock
-    implements _i20.TenantCompanyService {
+    implements _i21.TenantCompanyService {
   MockTenantCompanyService() {
     _i1.throwOnMissingStub(this);
   }

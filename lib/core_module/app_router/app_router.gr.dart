@@ -1234,6 +1234,22 @@ class ProfileRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [PurchaseInvoicePanelPage]
+class PurchaseInvoicePanelRoute extends PageRouteInfo<void> {
+  const PurchaseInvoicePanelRoute({List<PageRouteInfo>? children})
+    : super(PurchaseInvoicePanelRoute.name, initialChildren: children);
+
+  static const String name = 'PurchaseInvoicePanelRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const PurchaseInvoicePanelPage();
+    },
+  );
+}
+
+/// generated route for
 /// [QuickTransactionPage]
 class QuickTransactionRoute extends PageRouteInfo<QuickTransactionRouteArgs> {
   QuickTransactionRoute({

@@ -29,6 +29,7 @@ import 'package:requirment_gathering_app/company_admin_module/repositories/trans
 import 'package:requirment_gathering_app/company_admin_module/service/account_ledger_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/category_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/category_service_impl.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/i_purchase_order.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/product_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/product_service_impl.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/purchase_order_service_impl.dart';
@@ -270,6 +271,11 @@ void _initServices() {
         purchaseOrderRepository: sl<IPurchaseOrderRepository>(),
         accountRepository: sl<AccountRepository>(),
       ));
+  // In _initServices()
+  sl.registerLazySingleton<IPurchaseOrderService>(() => PurchaseOrderService(
+    purchaseOrderRepository: sl<IPurchaseOrderRepository>(),
+    accountRepository: sl<AccountRepository>(),
+  ));
 }
 
 /// **4. Initialize Cubits (State Management)**
@@ -373,8 +379,10 @@ void _initCubits() {
 
   // Register AdminPurchaseCubit
   sl.registerFactory(() => AdminPurchaseCubit(
-        purchaseOrderService: sl<PurchaseOrderService>(),
-      ));
+    purchaseOrderService: sl<IPurchaseOrderService>(),
+    userServices: sl<UserServices>(),
+    storeService: sl<StoreService>(),
+  ));
 }
 
 /// **5. Initialize App Navigation & Coordinator**

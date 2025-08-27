@@ -319,7 +319,7 @@ class _AddStockPageState extends State<AddStockPage> {
                             child: ListTile(
                               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                               title: Text(
-                                supplier.userName ?? 'Unknown',
+                                supplier.name ?? 'Unknown',
                                 style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                               onTap: () {
@@ -609,112 +609,394 @@ class _AddStockPageState extends State<AddStockPage> {
     final calculatedTotal = subtotal + totalTax;
     _finalAmountController.text = calculatedTotal.toStringAsFixed(2);
     _billNumberController.text = 'BILL-${DateTime.now().millisecondsSinceEpoch}';
-    _amountReceivedController.text = '0.0';
+    _amountReceivedController.text = _selectedPurchaseType == 'Cash' ? calculatedTotal.toStringAsFixed(2) : '0.0';
+
+    final _dialogFormKey = GlobalKey<FormState>();
 
     return await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text('Review Purchase'),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Supplier: ${_selectedSupplier?.userName ?? "None"}'),
-              Text('Store: ${_selectedStoreId ?? "None"}'),
-              Text('Purchase Type: ${_selectedPurchaseType ?? "None"}'),
-              const SizedBox(height: 16),
-              ..._stockEntries.map((entry) {
-                final product = entry['product'] as Product;
-                final quantity = entry['quantity'] as int;
-                final itemSubtotal = product.price * quantity;
-                final itemTax = itemSubtotal * (product.tax / 100);
-                return Column(
+      builder: (dialogContext) => Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width > 800 ? 600 : MediaQuery.of(context).size.width * 0.9,
+            minWidth: 300,
+          ),
+          child: AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            backgroundColor: AppColors.white,
+            contentPadding: const EdgeInsets.all(0),
+            title: Container(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Review Purchase',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: AppColors.primary),
+                    onPressed: () => Navigator.pop(dialogContext, false),
+                  ),
+                ],
+              ),
+            ),
+            content: SingleChildScrollView(
+              child: Form(
+                key: _dialogFormKey,
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(product.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    Text('Qty: $quantity, Price: ₹${product.price.toStringAsFixed(2)}'),
-                    Text('Tax: ₹${itemTax.toStringAsFixed(2)}'),
-                    Text('Subtotal: ₹${itemSubtotal.toStringAsFixed(2)}'),
-                    const SizedBox(height: 8),
+                    // Summary Section
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildSummaryRow('Supplier', _selectedSupplier?.name ?? 'None'),
+                          const SizedBox(height: 8),
+                          _buildSummaryRow('Store', _selectedStoreId ?? 'None'),
+                          const SizedBox(height: 8),
+                          _buildSummaryRow('Purchase Type', _selectedPurchaseType ?? 'None'),
+                        ],
+                      ),
+                    ),
+                    // Stock Entries Table
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: AppColors.textSecondary.withOpacity(0.3)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Table(
+                          columnWidths: const {
+                            0: FlexColumnWidth(3),
+                            1: FlexColumnWidth(2),
+                            2: FlexColumnWidth(2),
+                            3: FlexColumnWidth(2),
+                          },
+                          border: TableBorder(
+                            verticalInside: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
+                            horizontalInside: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
+                          ),
+                          children: [
+                            // Table Header
+                            TableRow(
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.05),
+                              ),
+                              children: [
+                                _buildTableCell('Product', isHeader: true),
+                                _buildTableCell('Qty', isHeader: true, align: TextAlign.center),
+                                _buildTableCell('Subtotal', isHeader: true, align: TextAlign.right),
+                                _buildTableCell('Tax', isHeader: true, align: TextAlign.right),
+                              ],
+                            ),
+                            // Table Rows for Stock Entries
+                            ..._stockEntries.map((entry) {
+                              final product = entry['product'] as Product;
+                              final quantity = entry['quantity'] as int;
+                              final itemSubtotal = product.price * quantity;
+                              final itemTax = itemSubtotal * (product.tax / 100);
+                              return TableRow(
+                                children: [
+                                  _buildTableCell(product.name),
+                                  _buildTableCell(quantity.toString(), align: TextAlign.center),
+                                  _buildTableCell('₹${itemSubtotal.toStringAsFixed(2)}', align: TextAlign.right),
+                                  _buildTableCell('₹${itemTax.toStringAsFixed(2)}', align: TextAlign.right),
+                                ],
+                              );
+                            }).toList(),
+                            // Total Row
+                            TableRow(
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.1),
+                                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+                              ),
+                              children: [
+                                _buildTableCell('Total', isHeader: true),
+                                _buildTableCell('', align: TextAlign.center),
+                                _buildTableCell('₹${subtotal.toStringAsFixed(2)}', isHeader: true, align: TextAlign.right),
+                                _buildTableCell('₹${totalTax.toStringAsFixed(2)}', isHeader: true, align: TextAlign.right),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Form Fields
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextFormField(
+                            controller: _finalAmountController,
+                            decoration: _buildInputDecoration('Final Amount'),
+                            keyboardType: TextInputType.number,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) return 'Please enter final amount';
+                              final parsed = double.tryParse(value);
+                              if (parsed == null || parsed <= 0) return 'Please enter a valid amount';
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _billNumberController,
+                            decoration: _buildInputDecoration('Bill Number'),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) return 'Please enter bill number';
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          if (_selectedPurchaseType == 'Cash') ...[
+                            TextFormField(
+                              controller: _amountReceivedController,
+                              decoration: _buildInputDecoration('Initial Payment (Fixed)'),
+                              keyboardType: TextInputType.number,
+                              enabled: false,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) return 'Please enter a valid amount';
+                                final parsed = double.tryParse(value);
+                                if (parsed == null || parsed <= 0) return 'Please enter a valid amount';
+                                return null;
+                              },
+                            ),
+                          ] else ...[
+                            TextFormField(
+                              controller: _amountReceivedController,
+                              decoration: _buildInputDecoration('Initial Payment (Optional)'),
+                              keyboardType: TextInputType.number,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) return null;
+                                final parsed = double.tryParse(value);
+                                if (parsed == null || parsed < 0) return 'Please enter a valid amount';
+                                if (parsed > double.parse(_finalAmountController.text)) {
+                                  return 'Initial payment cannot exceed final amount';
+                                }
+                                return null;
+                              },
+                            ),
+                          ],
+                          const SizedBox(height: 16),
+                          Builder(
+                            builder: (context) {
+                              final amountReceived = double.tryParse(_amountReceivedController.text) ?? 0.0;
+                              final payableAmount = double.parse(_finalAmountController.text) - amountReceived;
+                              return Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withOpacity(0.05),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      'Payable Amount',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                    Text(
+                                      '₹${payableAmount.toStringAsFixed(2)}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                   ],
-                );
-              }).toList(),
-              const SizedBox(height: 16),
-              Text('Calculated Total: ₹${calculatedTotal.toStringAsFixed(2)}'),
-              TextFormField(
-                controller: _finalAmountController,
-                decoration: InputDecoration(
-                  labelText: 'Final Amount',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Please enter final amount';
-                  final parsed = double.tryParse(value);
-                  if (parsed == null || parsed <= 0) return 'Please enter a valid amount';
-                  return null;
-                },
               ),
-              TextFormField(
-                controller: _billNumberController,
-                decoration: InputDecoration(
-                  labelText: 'Bill Number',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.red,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Please enter bill number';
-                  return null;
-                },
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
               ),
-              if (_selectedPurchaseType == 'Cash')
-                TextFormField(
-                  controller: _amountReceivedController,
-                  decoration: InputDecoration(
-                    labelText: 'Initial Payment (optional)',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) return null;
-                    final parsed = double.tryParse(value);
-                    if (parsed == null || parsed < 0) return 'Please enter a valid amount';
-                    return null;
-                  },
+              ElevatedButton(
+                onPressed: () {
+                  if (_dialogFormKey.currentState!.validate()) {
+                    Navigator.pop(dialogContext, true);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  elevation: 2,
                 ),
+                child: const Text(
+                  'Confirm',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+              ),
             ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                Navigator.pop(dialogContext, true);
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            child: const Text('Confirm'),
-          ),
-        ],
       ),
     ) ?? false;
   }
 
+// Helper method to build summary row
+  Widget _buildSummaryRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 14,
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ],
+    );
+  }
+
+// Helper method to build table cell
+  Widget _buildTableCell(String text, {bool isHeader = false, TextAlign align = TextAlign.left}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+      child: Text(
+        text,
+        textAlign: align,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: isHeader ? FontWeight.w700 : FontWeight.w500,
+          color: isHeader ? AppColors.textPrimary : AppColors.textSecondary,
+        ),
+      ),
+    );
+  }
+
+// Helper method to build input decoration
+  InputDecoration _buildInputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(
+        fontWeight: FontWeight.w600,
+        color: AppColors.textPrimary,
+      ),
+      filled: true,
+      fillColor: AppColors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: AppColors.primary, width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: AppColors.red),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    );
+  }
+
   Future<void> _saveStock() async {
     if (_formKey.currentState!.validate() && _selectedSupplier != null && _selectedPurchaseType != null) {
+      print('DEBUG: _saveStock called, mode: ${_useBatchMode ? "Batch" : "Single"}, purchaseType: $_selectedPurchaseType');
+
+      // Validate and set _stockEntries for single-entry mode
+      if (!_useBatchMode) {
+        final products = _productCubit.state is ProductLoaded
+            ? (_productCubit.state as ProductLoaded).products
+            : [];
+        final selectedProduct = products.firstWhere(
+              (product) => product.id == _selectedProductId,
+          orElse: () => Product(
+            id: _selectedProductId ?? '',
+            name: '',
+            price: 0.0,
+            stock: 0,
+            category: '',
+            categoryId: '',
+            subcategoryId: '',
+            subcategoryName: '',
+            tax: 0.0,
+          ),
+        );
+        if (selectedProduct.id.isEmpty) {
+          print('DEBUG: Invalid product selected in single mode');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Invalid product selected')),
+          );
+          return;
+        }
+        _stockEntries = [
+          {
+            'productId': selectedProduct.id,
+            'quantity': _quantity,
+            'product': selectedProduct,
+            'taxRate': selectedProduct.tax,
+            'taxAmount': selectedProduct.price * _quantity * (selectedProduct.tax / 100),
+          }
+        ];
+        print('DEBUG: Single mode _stockEntries set, product: ${selectedProduct.name}, quantity: $_quantity');
+      }
+
+      if (_stockEntries.isEmpty) {
+        print('DEBUG: No stock entries to save');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No products selected')),
+        );
+        return;
+      }
+
       final confirmed = await _showReviewDialog();
-      if (!confirmed) return;
+      if (!confirmed) {
+        print('DEBUG: Review dialog cancelled');
+        return;
+      }
 
       setState(() => _isLoading = true);
+      print('DEBUG: Set _isLoading to true');
 
       try {
         final userInfo = await _accountRepository.getUserInfo();
@@ -723,6 +1005,8 @@ class _AddStockPageState extends State<AddStockPage> {
         final billNumber = _billNumberController.text;
         final finalAmount = double.parse(_finalAmountController.text);
         final amountReceived = double.tryParse(_amountReceivedController.text) ?? 0.0;
+
+        print('DEBUG: userInfo.companyId: $companyId, userId: $userId, billNumber: $billNumber, finalAmount: $finalAmount, amountReceived: $amountReceived');
 
         final paymentStatus = amountReceived >= finalAmount
             ? 'Paid'
@@ -739,13 +1023,16 @@ class _AddStockPageState extends State<AddStockPage> {
         ]
             : null;
 
+        print('DEBUG: paymentStatus: $paymentStatus, paymentDetails: $paymentDetails');
+
         // Ensure ledgers
         final supplierLedgerId = _selectedSupplier!.accountLedgerId ??
             await _ledgerCubit.ensureLedger(_selectedSupplier!.userId!, UserType.Supplier, _selectedSupplier!);
         final store = (await sl<StockRepository>().getStores(companyId))
-            .firstWhere((s) => s.storeId == _selectedStoreId, orElse: () => StoreDto(storeId: '', name: '', createdBy: '', createdAt: DateTime.timestamp()));
+            .firstWhere((s) => s.storeId == _selectedStoreId, orElse: () => StoreDto(storeId: '', name: '', createdBy: '', createdAt: DateTime.now()));
         final storeLedgerId = store.accountLedgerId ??
             await _ledgerCubit.ensureLedgerForStore(_selectedStoreId!, store);
+
 
         // Create purchase items
         final purchaseItems = _stockEntries.map((entry) {
@@ -760,6 +1047,8 @@ class _AddStockPageState extends State<AddStockPage> {
             taxAmount: (product.price * quantity) * (product.tax / 100),
           );
         }).toList();
+
+        print('DEBUG: Created ${purchaseItems.length} purchase items');
 
         // Create purchase order
         final purchaseOrder = AdminPurchaseOrder(
@@ -783,8 +1072,9 @@ class _AddStockPageState extends State<AddStockPage> {
           storeLedgerId: storeLedgerId as String,
         );
 
-        // Save purchase order and invoice
+        print('DEBUG: Saving purchase order: ${purchaseOrder.id}');
         await _purchaseCubit.createPurchaseOrder(purchaseOrder);
+        print('DEBUG: Purchase order saved');
 
         // Add stock
         for (var entry in _stockEntries) {
@@ -806,69 +1096,97 @@ class _AddStockPageState extends State<AddStockPage> {
             tax: product.tax,
           );
           await _stockCubit.addStock(stock, product: product);
+          print('DEBUG: Added stock for product: ${product.name}, quantity: $quantity');
         }
 
-        // Ledger entries
+        // Ledger entries for supplier
+        // Always add Credit for purchase
         await _ledgerCubit.addTransaction(
           ledgerId: supplierLedgerId,
           amount: finalAmount,
           type: 'Credit',
           billNumber: billNumber,
-          purpose: 'Purchase',
+          purpose: 'Purchase stock',
           typeOfPurpose: _selectedPurchaseType,
           remarks: 'Purchase order ${purchaseOrder.id}',
           userType: UserType.Supplier,
         );
+        print('DEBUG: Added Credit transaction to supplier ledger: $finalAmount, purpose: Purchase stock, billNumber: $billNumber');
+
         if (_selectedPurchaseType == 'Cash' && amountReceived > 0) {
+          // For cash payments, add Debit for payment
           await _ledgerCubit.addTransaction(
             ledgerId: supplierLedgerId,
             amount: amountReceived,
             type: 'Debit',
             billNumber: billNumber,
-            purpose: 'Cash Received',
+            purpose: 'Cash payment for purchased stock',
             typeOfPurpose: 'Cash',
-            remarks: 'Cash received for purchase order ${purchaseOrder.id}',
+            remarks: 'Purchase order ${purchaseOrder.id}',
             userType: UserType.Supplier,
           );
+          print('DEBUG: Added Debit transaction to supplier ledger: $amountReceived, purpose: Cash payment for purchased stock, billNumber: $billNumber');
         }
+
+        // Ledger entries for store (mirror entries)
+        // Always add Debit for purchase
         await _ledgerCubit.addTransaction(
           ledgerId: storeLedgerId,
           amount: finalAmount,
           type: 'Debit',
           billNumber: billNumber,
-          purpose: 'Purchase',
+          purpose: 'Purchase stock',
           typeOfPurpose: _selectedPurchaseType,
           remarks: 'Purchase order ${purchaseOrder.id}',
           userType: UserType.Store,
         );
+        print('DEBUG: Added Debit transaction to store ledger: $finalAmount, purpose: Purchase stock, billNumber: $billNumber');
+
         if (_selectedPurchaseType == 'Cash' && amountReceived > 0) {
+          // For cash payments, add Credit for payment
           await _ledgerCubit.addTransaction(
             ledgerId: storeLedgerId,
             amount: amountReceived,
             type: 'Credit',
             billNumber: billNumber,
-            purpose: 'Payment',
+            purpose: 'Cash payment for purchased stock',
             typeOfPurpose: 'Cash',
-            remarks: 'Payment for purchase order ${purchaseOrder.id}',
+            remarks: 'Purchase order ${purchaseOrder.id}',
             userType: UserType.Store,
           );
+          print('DEBUG: Added Credit transaction to store ledger: $amountReceived, purpose: Cash payment for purchased stock, billNumber: $billNumber');
+        }
+
+        // Verify ledger balance for debugging
+        if (_selectedPurchaseType == 'Cash' && amountReceived >= finalAmount) {
+          print('DEBUG: Cash payment fully paid, expected supplier ledger balance: 0');
+          print('DEBUG: Cash payment fully paid, expected store ledger balance: 0');
+        } else if (_selectedPurchaseType == 'Cash' && amountReceived > 0) {
+          print('DEBUG: Partial cash payment, expected supplier ledger balance: ${finalAmount - amountReceived}');
+          print('DEBUG: Partial cash payment, expected store ledger balance: ${finalAmount - amountReceived}');
+        } else if (_selectedPurchaseType == 'Credit') {
+          print('DEBUG: Credit payment, expected supplier ledger balance: $finalAmount');
+          print('DEBUG: Credit payment, expected store ledger balance: $finalAmount');
         }
 
         setState(() => _isStockAdded = true);
+        print('DEBUG: Set _isStockAdded to true');
       } catch (e) {
+        print('DEBUG: Error in _saveStock: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.red),
         );
       } finally {
         setState(() => _isLoading = false);
+        print('DEBUG: Set _isLoading to false');
       }
     } else {
+      print('DEBUG: Validation failed or missing supplier/purchase type');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill all required fields')),
       );
     }
   }
-
   Widget _buildStockEntries() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1243,7 +1561,7 @@ class _AddStockPageState extends State<AddStockPage> {
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          _selectedSupplier?.userName ?? 'Select Supplier',
+                                          _selectedSupplier?.name ?? 'Select Supplier',
                                           style: const TextStyle(fontSize: 16),
                                         ),
                                         const Icon(Icons.arrow_drop_down),

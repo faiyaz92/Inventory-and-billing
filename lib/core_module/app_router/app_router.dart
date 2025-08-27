@@ -30,6 +30,7 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/produ
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/category_sub_category_list_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/dashboard/product_mgt_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/product_list_page.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/purchase/purchase_invoices.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/tasks/add_edit_task.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/tasks/task_list_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/add_company_user_page.dart';
@@ -151,6 +152,7 @@ class AppRouter extends RootStackRouter {
             AutoRoute(page: AccountsDashboardRoute.page, path: '/accounts-dashboard'), // New route
             AutoRoute(page: AdminInvoicePanelRoute.page, path: '/invoice-list'),
             AutoRoute(page: AnalyticsRoute.page, path: '/analytics'),
-            AutoRoute(page: QuickTransactionRoute.page, path: '/quick-transaction'), // Add this line
+            AutoRoute(page: QuickTransactionRoute.page, path: '/quick-transaction'),
+            AutoRoute(page: PurchaseInvoicePanelRoute.page, path: '/purchase-invoice-panel'),// Add this line
       ];
 }

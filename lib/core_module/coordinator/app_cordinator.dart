@@ -407,4 +407,8 @@ class AppCoordinator implements Coordinator {
   Future<dynamic> navigateToQuickTransactionPage(String transactionType) {
     return _router.push(QuickTransactionRoute(transactionType: transactionType));
   }
+  @override
+  Future<dynamic> navigateToPurchaseInvoicePanelPage() {
+    return _router.push(const PurchaseInvoicePanelRoute());
+  }
 }

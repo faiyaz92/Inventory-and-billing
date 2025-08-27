@@ -35,7 +35,7 @@ class _BillingPageState extends State<BillingPage> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _customerNameController = TextEditingController();
   final TextEditingController _productSearchController =
-      TextEditingController();
+  TextEditingController();
   List<StockModel> _filteredProducts = [];
   List<CartItem> _cartItems = [];
   String? _selectedStoreId;
@@ -96,7 +96,7 @@ class _BillingPageState extends State<BillingPage> {
         throw Exception('User ID not found');
       }
       final user = users.firstWhere(
-        (u) => u.userId == userId,
+            (u) => u.userId == userId,
         orElse: () => UserInfo(userId: userId, userName: 'Unknown'),
       );
       return user.storeId;
@@ -118,7 +118,7 @@ class _BillingPageState extends State<BillingPage> {
     }
     setState(() {
       final existingItem = _cartItems.firstWhere(
-        (item) => item.productId == product.productId,
+            (item) => item.productId == product.productId,
         orElse: () => CartItem(
           productId: product.productId!,
           productName: product.name!,
@@ -182,7 +182,7 @@ class _BillingPageState extends State<BillingPage> {
       builder: (dialogContext) {
         return AlertDialog(
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: const Text('Set Quantity'),
           content: Form(
             key: _formKey,
@@ -190,7 +190,7 @@ class _BillingPageState extends State<BillingPage> {
               decoration: InputDecoration(
                 labelText: 'Enter Quantity',
                 border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 filled: true,
                 fillColor: Colors.grey[100],
               ),
@@ -260,476 +260,578 @@ class _BillingPageState extends State<BillingPage> {
   }
 
   Future<bool> _showReviewDialog(Order order) async {
-    final TextEditingController discountController = TextEditingController(
-      text: (_discount ?? order.discount ?? 0.0).toStringAsFixed(2),
-    );
     final double subtotal = order.items
         .fold(0.0, (sum, item) => sum + (item.price * item.quantity));
     final double totalTax =
-        order.items.fold(0.0, (sum, item) => sum + item.taxAmount);
+    order.items.fold(0.0, (sum, item) => sum + item.taxAmount);
     final double total = subtotal + totalTax;
+    List<double> itemDiscounts = List.filled(order.items.length, 0.0);
+    double additionalDiscount = (_discount ?? order.discount ?? 0.0);
+    final TextEditingController discountController = TextEditingController(
+      text: additionalDiscount.toStringAsFixed(2),
+    );
 
     return await showModalBottomSheet<bool>(
-          context: context,
-          isScrollControlled: true,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          backgroundColor: AppColors.white,
-          builder: (dialogContext) {
-            return StatefulBuilder(
-              builder: (context, setState) => Padding(
-                padding: const EdgeInsets.all(20),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      backgroundColor: AppColors.white,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) => Padding(
+            padding: const EdgeInsets.all(20),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            widget.orderId == null
-                                ? 'Order Summary'
-                                : 'Review Bill',
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.close,
-                              color: AppColors.textSecondary,
-                              size: 24,
-                            ),
-                            onPressed: () =>
-                                Navigator.pop(dialogContext, false),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Order Details',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
+                      Text(
+                        widget.orderId == null
+                            ? 'Order Summary'
+                            : 'Review Bill',
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                              color: AppColors.textSecondary.withOpacity(0.3)),
-                          borderRadius: BorderRadius.circular(12),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.close,
+                          color: AppColors.textSecondary,
+                          size: 24,
                         ),
-                        child: Table(
-                          border: TableBorder(
-                            verticalInside: BorderSide(
-                                color:
-                                    AppColors.textSecondary.withOpacity(0.3)),
-                            horizontalInside: BorderSide(
-                                color:
-                                    AppColors.textSecondary.withOpacity(0.3)),
-                          ),
-                          columnWidths: const {
-                            0: FlexColumnWidth(3),
-                            1: FlexColumnWidth(1),
-                            2: FlexColumnWidth(1),
-                            3: FlexColumnWidth(1),
-                            4: FlexColumnWidth(1),
-                          },
-                          children: [
-                            TableRow(
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withOpacity(0.05),
-                              ),
-                              children: [
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  child: Text(
-                                    'Product',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                ),
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  child: Text(
-                                    'Qty',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                ),
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  child: Text(
-                                    'Subtotal',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                ),
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  child: Text(
-                                    'Tax',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                ),
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  child: Text(
-                                    'Total',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            ...order.items.map((item) => TableRow(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 8, horizontal: 12),
-                                      child: Text(
-                                        item.productName,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: AppColors.textPrimary,
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 8, horizontal: 12),
-                                      child: Text(
-                                        '${item.quantity}',
-                                        textAlign: TextAlign.right,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: AppColors.textPrimary,
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 8, horizontal: 12),
-                                      child: Text(
-                                        '₹${(item.price * item.quantity).toStringAsFixed(2)}',
-                                        textAlign: TextAlign.right,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: AppColors.textPrimary,
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 8, horizontal: 12),
-                                      child: Text(
-                                        '₹${item.taxAmount.toStringAsFixed(2)}',
-                                        textAlign: TextAlign.right,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: AppColors.textSecondary,
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 8, horizontal: 12),
-                                      child: Text(
-                                        '₹${((item.price * item.quantity) + item.taxAmount).toStringAsFixed(2)}',
-                                        textAlign: TextAlign.right,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.textPrimary,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                )),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      TextField(
-                        controller: discountController,
-                        decoration: InputDecoration(
-                          labelText: 'Discount (₹)',
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          filled: true,
-                          fillColor: Colors.grey[100],
-                        ),
-                        keyboardType: TextInputType.number,
-                        onChanged: (value) {
-                          final discount = double.tryParse(value) ?? 0.0;
-                          setState(() {
-                            _discount = discount;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                              color: AppColors.textSecondary.withOpacity(0.3)),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Table(
-                          border: TableBorder(
-                            verticalInside: BorderSide(
-                                color:
-                                    AppColors.textSecondary.withOpacity(0.3)),
-                            horizontalInside: BorderSide(
-                                color:
-                                    AppColors.textSecondary.withOpacity(0.3)),
-                          ),
-                          columnWidths: const {
-                            0: FlexColumnWidth(3),
-                            1: FlexColumnWidth(2),
-                          },
-                          children: [
-                            TableRow(
-                              children: [
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 16),
-                                  child: Text(
-                                    'Subtotal (All Items)',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 16),
-                                  child: Text(
-                                    '₹${subtotal.toStringAsFixed(2)}',
-                                    textAlign: TextAlign.right,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            TableRow(
-                              children: [
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 16),
-                                  child: Text(
-                                    'Total Tax',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 16),
-                                  child: Text(
-                                    '₹${totalTax.toStringAsFixed(2)}',
-                                    textAlign: TextAlign.right,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            TableRow(
-                              children: [
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 16),
-                                  child: Text(
-                                    'Total',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 16),
-                                  child: Text(
-                                    '₹${total.toStringAsFixed(2)}',
-                                    textAlign: TextAlign.right,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            TableRow(
-                              children: [
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 16),
-                                  child: Text(
-                                    'Discount',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 16),
-                                  child: Text(
-                                    '₹${(_discount ?? order.discount ?? 0.0).toStringAsFixed(2)}',
-                                    textAlign: TextAlign.right,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            TableRow(
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withOpacity(0.05),
-                                borderRadius: const BorderRadius.only(
-                                  bottomLeft: Radius.circular(12),
-                                  bottomRight: Radius.circular(12),
-                                ),
-                              ),
-                              children: [
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 16),
-                                  child: Text(
-                                    'Final Total',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 16),
-                                  child: Text(
-                                    '₹${(total - (_discount ?? order.discount ?? 0.0)).toStringAsFixed(2)}',
-                                    textAlign: TextAlign.right,
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            final discount =
-                                double.tryParse(discountController.text) ?? 0.0;
-                            if (discount < 0) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Invalid discount',
-                                    style: TextStyle(color: AppColors.white),
-                                  ),
-                                  backgroundColor: AppColors.red,
-                                  behavior: SnackBarBehavior.floating,
-                                  margin: EdgeInsets.all(16),
-                                ),
-                              );
-                              return;
-                            }
-                            if (discount > total) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Discount cannot exceed total',
-                                    style: TextStyle(color: AppColors.white),
-                                  ),
-                                  backgroundColor: AppColors.red,
-                                  behavior: SnackBarBehavior.floating,
-                                  margin: EdgeInsets.all(16),
-                                ),
-                              );
-                              return;
-                            }
-                            setState(() {
-                              _discount = discount;
-                            });
-                            Navigator.pop(dialogContext, true);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                          child: const Text(
-                            'Confirm',
-                            style: TextStyle(
-                              color: AppColors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
+                        onPressed: () =>
+                            Navigator.pop(dialogContext, false),
                       ),
                     ],
                   ),
-                ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Order Details',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                          color: AppColors.textSecondary.withOpacity(0.3)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Table(
+                      border: TableBorder(
+                        verticalInside: BorderSide(
+                            color:
+                            AppColors.textSecondary.withOpacity(0.3)),
+                        horizontalInside: BorderSide(
+                            color:
+                            AppColors.textSecondary.withOpacity(0.3)),
+                      ),
+                      columnWidths: const {
+                        0: FlexColumnWidth(3),
+                        1: FlexColumnWidth(1),
+                        2: FlexColumnWidth(1),
+                        3: FlexColumnWidth(1),
+                        4: FlexColumnWidth(1),
+                        5: FlexColumnWidth(1),
+                      },
+                      children: [
+                        TableRow(
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.05),
+                          ),
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 8, horizontal: 12),
+                              child: Text(
+                                'Product',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 8, horizontal: 12),
+                              child: Text(
+                                'Qty',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 8, horizontal: 12),
+                              child: Text(
+                                'Subtotal',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 8, horizontal: 12),
+                              child: Text(
+                                'Tax',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 8, horizontal: 12),
+                              child: Text(
+                                'Discount',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 8, horizontal: 12),
+                              child: Text(
+                                'Total',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        ...order.items.asMap().entries.map((entry) {
+                          final int index = entry.key;
+                          final item = entry.value;
+                          return TableRow(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 12),
+                                child: Text(
+                                  item.productName,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 12),
+                                child: Text(
+                                  '${item.quantity}',
+                                  textAlign: TextAlign.right,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 12),
+                                child: Text(
+                                  '₹${(item.price * item.quantity).toStringAsFixed(2)}',
+                                  textAlign: TextAlign.right,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 12),
+                                child: Text(
+                                  '₹${item.taxAmount.toStringAsFixed(2)}',
+                                  textAlign: TextAlign.right,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 12),
+                                child: TextFormField(
+                                  initialValue: itemDiscounts[index].toStringAsFixed(2),
+                                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                                  textAlign: TextAlign.right,
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.zero,
+                                    isDense: true,
+                                  ),
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                  onChanged: (value) {
+                                    final disc = double.tryParse(value) ?? 0.0;
+                                    itemDiscounts[index] = disc;
+                                    setState(() {});
+                                  },
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 12),
+                                child: Text(
+                                  '₹${((item.price * item.quantity) + item.taxAmount - itemDiscounts[index]).toStringAsFixed(2)}',
+                                  textAlign: TextAlign.right,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: discountController,
+                    decoration: InputDecoration(
+                      labelText: 'Additional Discount (₹)',
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                    ),
+                    keyboardType: TextInputType.number,
+                    onChanged: (value) {
+                      additionalDiscount = double.tryParse(value) ?? 0.0;
+                      setState(() {});
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                          color: AppColors.textSecondary.withOpacity(0.3)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Table(
+                      border: TableBorder(
+                        verticalInside: BorderSide(
+                            color:
+                            AppColors.textSecondary.withOpacity(0.3)),
+                        horizontalInside: BorderSide(
+                            color:
+                            AppColors.textSecondary.withOpacity(0.3)),
+                      ),
+                      columnWidths: const {
+                        0: FlexColumnWidth(3),
+                        1: FlexColumnWidth(2),
+                      },
+                      children: [
+                        TableRow(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 16),
+                              child: Text(
+                                'Subtotal (All Items)',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 16),
+                              child: Text(
+                                '₹${subtotal.toStringAsFixed(2)}',
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 16),
+                              child: Text(
+                                'Total Tax',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 16),
+                              child: Text(
+                                '₹${totalTax.toStringAsFixed(2)}',
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 16),
+                              child: Text(
+                                'Total',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 16),
+                              child: Text(
+                                '₹${total.toStringAsFixed(2)}',
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 16),
+                              child: Text(
+                                'Item Discounts',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 16),
+                              child: Text(
+                                '₹${itemDiscounts.fold<double>(0.0, (sum, disc) => sum + disc).toStringAsFixed(2)}',
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 16),
+                              child: Text(
+                                'Additional Discount',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 16),
+                              child: Text(
+                                '₹${additionalDiscount.toStringAsFixed(2)}',
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.05),
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft: Radius.circular(12),
+                              bottomRight: Radius.circular(12),
+                            ),
+                          ),
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 16),
+                              child: Text(
+                                'Final Total',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 16),
+                              child: Text(
+                                '₹${(total - itemDiscounts.fold<double>(0.0, (sum, disc) => sum + disc) - additionalDiscount).toStringAsFixed(2)}',
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final sumItemDisc = itemDiscounts.fold<double>(0.0, (sum, disc) => sum + disc);
+                        // Validate item discounts
+                        for (int i = 0; i < order.items.length; i++) {
+                          final item = order.items[i];
+                          final itemTotal = item.price * item.quantity + item.taxAmount;
+                          if (itemDiscounts[i] < 0) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Item discount cannot be negative',
+                                  style: TextStyle(color: AppColors.white),
+                                ),
+                                backgroundColor: AppColors.red,
+                                behavior: SnackBarBehavior.floating,
+                                margin: EdgeInsets.all(16),
+                              ),
+                            );
+                            return;
+                          }
+                          if (itemDiscounts[i] > itemTotal) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Discount for ${item.productName} cannot exceed item total',
+                                  style: TextStyle(color: AppColors.white),
+                                ),
+                                backgroundColor: AppColors.red,
+                                behavior: SnackBarBehavior.floating,
+                                margin: EdgeInsets.all(16),
+                              ),
+                            );
+                            return;
+                          }
+                        }
+                        // Validate additional discount
+                        if (additionalDiscount < 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Invalid additional discount',
+                                style: TextStyle(color: AppColors.white),
+                              ),
+                              backgroundColor: AppColors.red,
+                              behavior: SnackBarBehavior.floating,
+                              margin: EdgeInsets.all(16),
+                            ),
+                          );
+                          return;
+                        }
+                        final totalAfterItemDisc = total - sumItemDisc;
+                        if (additionalDiscount > totalAfterItemDisc) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Additional discount cannot exceed total after item discounts',
+                                style: TextStyle(color: AppColors.white),
+                              ),
+                              backgroundColor: AppColors.red,
+                              behavior: SnackBarBehavior.floating,
+                              margin: EdgeInsets.all(16),
+                            ),
+                          );
+                          return;
+                        }
+                        // Set total discount
+                        this.setState(() {
+                          _discount = sumItemDisc + additionalDiscount;
+                        });
+                        Navigator.pop(dialogContext, true);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: const Text(
+                        'Confirm',
+                        style: TextStyle(
+                          color: AppColors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            );
-          },
-        ) ??
+            ),
+          ),
+        );
+      },
+    ) ??
         false;
   }
 
@@ -1699,7 +1801,7 @@ class _BillingPageState extends State<BillingPage> {
         minimumSize: const Size(double.infinity, 50),
       ),
       child:
-          Text(_existingBillNumber == null ? 'Generate Bill' : 'Update Bill'),
+      Text(_existingBillNumber == null ? 'Generate Bill' : 'Update Bill'),
     );
   }
 
@@ -1720,7 +1822,7 @@ class _BillingPageState extends State<BillingPage> {
             filled: true,
             fillColor: Colors.grey[50],
             contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             errorStyle: const TextStyle(color: Colors.red),
           ),
           value: _selectedStatus,
@@ -1740,7 +1842,7 @@ class _BillingPageState extends State<BillingPage> {
 
   Widget _buildCart() {
     final total = _cartItems.fold<double>(0.0,
-        (sum, item) => sum + (item.price * item.quantity) + item.taxAmount);
+            (sum, item) => sum + (item.price * item.quantity) + item.taxAmount);
     final finalTotal = total - (_discount ?? 0.0);
 
     return Card(
@@ -1760,7 +1862,7 @@ class _BillingPageState extends State<BillingPage> {
                 child: Text(
                   'No items in cart',
                   style:
-                      TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                  TextStyle(fontSize: 16, color: AppColors.textSecondary),
                 ),
               )
             else
@@ -1868,7 +1970,7 @@ class _BillingPageState extends State<BillingPage> {
                                         backgroundColor: AppColors.primary,
                                         shape: RoundedRectangleBorder(
                                             borderRadius:
-                                                BorderRadius.circular(8)),
+                                            BorderRadius.circular(8)),
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 8, vertical: 4),
                                       ),
@@ -1885,31 +1987,31 @@ class _BillingPageState extends State<BillingPage> {
                                     ElevatedButton(
                                       onPressed: item.quantity > 0
                                           ? () {
-                                              setState(() {
-                                                _cartItems =
-                                                    _cartItems.map((cartItem) {
-                                                  if (cartItem.productId ==
-                                                      item.productId) {
-                                                    return cartItem.copyWith(
-                                                        quantity: 0,
-                                                        taxAmount: 0.0);
-                                                  }
-                                                  return cartItem;
-                                                }).toList();
-                                                _cartItems.removeWhere(
-                                                    (cartItem) =>
-                                                        cartItem.quantity == 0);
-                                                if (_cartItems.isEmpty) {
-                                                  _discount = 0.0;
+                                        setState(() {
+                                          _cartItems =
+                                              _cartItems.map((cartItem) {
+                                                if (cartItem.productId ==
+                                                    item.productId) {
+                                                  return cartItem.copyWith(
+                                                      quantity: 0,
+                                                      taxAmount: 0.0);
                                                 }
-                                              });
-                                            }
+                                                return cartItem;
+                                              }).toList();
+                                          _cartItems.removeWhere(
+                                                  (cartItem) =>
+                                              cartItem.quantity == 0);
+                                          if (_cartItems.isEmpty) {
+                                            _discount = 0.0;
+                                          }
+                                        });
+                                      }
                                           : null,
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: AppColors.red,
                                         shape: RoundedRectangleBorder(
                                             borderRadius:
-                                                BorderRadius.circular(8)),
+                                            BorderRadius.circular(8)),
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 8, vertical: 4),
                                       ),
@@ -1934,7 +2036,7 @@ class _BillingPageState extends State<BillingPage> {
                             decoration: BoxDecoration(
                               border: Border.all(
                                   color:
-                                      AppColors.textSecondary.withOpacity(0.3)),
+                                  AppColors.textSecondary.withOpacity(0.3)),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Table(
@@ -2081,10 +2183,10 @@ class _BillingPageState extends State<BillingPage> {
     filteredProducts.value = query.isEmpty
         ? List.from(products)
         : products
-            .where((product) =>
-                product.name?.toLowerCase().contains(query.toLowerCase()) ??
-                false)
-            .toList();
+        .where((product) =>
+    product.name?.toLowerCase().contains(query.toLowerCase()) ??
+        false)
+        .toList();
     debugPrint('Dialog: Filtered ${filteredProducts.value.length} products');
   }
 
@@ -2105,7 +2207,7 @@ class _BillingPageState extends State<BillingPage> {
         builder: (dialogContext, scrollController) => StatefulBuilder(
           builder: (dialogContext, setState) {
             final ValueNotifier<List<StockModel>> filteredProducts =
-                ValueNotifier([]);
+            ValueNotifier([]);
             bool isDialogInitialized = false;
 
             if (!isDialogInitialized &&
@@ -2154,7 +2256,7 @@ class _BillingPageState extends State<BillingPage> {
                       prefixIcon: const Icon(Icons.search,
                           color: AppColors.textSecondary),
                       hintStyle:
-                          const TextStyle(color: AppColors.textSecondary),
+                      const TextStyle(color: AppColors.textSecondary),
                       filled: true,
                       fillColor: AppColors.white,
                       border: OutlineInputBorder(
@@ -2283,27 +2385,27 @@ class _BillingPageState extends State<BillingPage> {
               child: storeList.isEmpty
                   ? const Center(child: Text('No stores available'))
                   : ListView.builder(
-                      controller: scrollController,
-                      itemCount: storeList.length,
-                      itemBuilder: (context, index) {
-                        final store = storeList[index];
-                        return ListTile(
-                          title: Text(
-                            store.name,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          onTap: () {
-                            setState(() {
-                              _selectedStoreId = store.storeId;
-                              if (_selectedStoreId != null) {
-                                _stockCubit.fetchStock(_selectedStoreId!);
-                              }
-                            });
-                            Navigator.of(context).pop();
-                          },
-                        );
-                      },
+                controller: scrollController,
+                itemCount: storeList.length,
+                itemBuilder: (context, index) {
+                  final store = storeList[index];
+                  return ListTile(
+                    title: Text(
+                      store.name,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
+                    onTap: () {
+                      setState(() {
+                        _selectedStoreId = store.storeId;
+                        if (_selectedStoreId != null) {
+                          _stockCubit.fetchStock(_selectedStoreId!);
+                        }
+                      });
+                      Navigator.of(context).pop();
+                    },
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -2377,87 +2479,87 @@ class _BillingPageState extends State<BillingPage> {
             child: _isLoading
                 ? const CustomLoadingDialog(message: 'Loading...')
                 : SingleChildScrollView(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: MediaQuery.of(context).size.height -
-                            MediaQuery.of(context).padding.top -
-                            kToolbarHeight,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: BlocListener<AdminOrderCubit, AdminOrderState>(
-                          listener: (context, state) {
-                            if (state is AdminOrderFetchSuccess &&
-                                widget.orderId != null) {
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: MediaQuery.of(context).size.height -
+                      MediaQuery.of(context).padding.top -
+                      kToolbarHeight,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: BlocListener<AdminOrderCubit, AdminOrderState>(
+                    listener: (context, state) {
+                      if (state is AdminOrderFetchSuccess &&
+                          widget.orderId != null) {
+                        setState(() {
+                          _cartItems = state.order.items;
+                          _selectedStatus = state.normalizedStatus;
+                          _selectedStoreId =
+                              state.order.storeId ?? _selectedStoreId;
+                          _existingBillNumber = state.order.billNumber;
+                          _discount = state.order.discount;
+                          if (state.order.userId != null) {
+                            sl<UserServices>()
+                                .getUsersFromTenantCompany()
+                                .then((users) {
+                              final customer = users.firstWhere(
+                                    (u) => u.userId == state.order.userId,
+                                orElse: () => UserInfo(
+                                  userId: state.order.userId!,
+                                  userName:
+                                  state.order.userName ?? 'Unknown',
+                                ),
+                              );
                               setState(() {
-                                _cartItems = state.order.items;
-                                _selectedStatus = state.normalizedStatus;
-                                _selectedStoreId =
-                                    state.order.storeId ?? _selectedStoreId;
-                                _existingBillNumber = state.order.billNumber;
-                                _discount = state.order.discount;
-                                if (state.order.userId != null) {
-                                  sl<UserServices>()
-                                      .getUsersFromTenantCompany()
-                                      .then((users) {
-                                    final customer = users.firstWhere(
-                                      (u) => u.userId == state.order.userId,
-                                      orElse: () => UserInfo(
-                                        userId: state.order.userId!,
-                                        userName:
-                                            state.order.userName ?? 'Unknown',
-                                      ),
-                                    );
-                                    setState(() {
-                                      _selectedCustomer = customer;
+                                _selectedCustomer = customer;
 
-                                    });
-                                  });
-                                }
                               });
-                              if (_selectedStoreId != null) {
-                                _stockCubit.fetchStock(_selectedStoreId!);
-                              }
-                            } else if (state is AdminOrderFetchError) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(state.message)),
-                              );
-                            }
-                          },
-                          child: BlocBuilder<StockCubit, StockState>(
-                            builder: (context, stockState) {
-                              final products = stockState is StockLoaded
-                                  ? stockState.stockItems
-                                  : <StockModel>[];
-                              final stores = stockState is StockLoaded
-                                  ? stockState.stores
-                                  : <StoreDto>[];
-                              if (stockState is StockError) {
-                                return Center(
-                                    child: Text('Error: ${stockState.error}'));
-                              }
-                              if (_filteredProducts.isEmpty &&
-                                  products.isNotEmpty) {
-                                _filteredProducts = products;
-                              }
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  _buildSelectionButtons(products, stores),
-                                  const SizedBox(height: 16),
-                                  _buildCart(),
-                                  const SizedBox(height: 16),
-                                  _buildStatusSelector(),
-                                  const SizedBox(height: 16),
-                                  _buildGenerateBillButton(),
-                                ],
-                              );
-                            },
-                          ),
-                        ),
-                      ),
+                            });
+                          }
+                        });
+                        if (_selectedStoreId != null) {
+                          _stockCubit.fetchStock(_selectedStoreId!);
+                        }
+                      } else if (state is AdminOrderFetchError) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(state.message)),
+                        );
+                      }
+                    },
+                    child: BlocBuilder<StockCubit, StockState>(
+                      builder: (context, stockState) {
+                        final products = stockState is StockLoaded
+                            ? stockState.stockItems
+                            : <StockModel>[];
+                        final stores = stockState is StockLoaded
+                            ? stockState.stores
+                            : <StoreDto>[];
+                        if (stockState is StockError) {
+                          return Center(
+                              child: Text('Error: ${stockState.error}'));
+                        }
+                        if (_filteredProducts.isEmpty &&
+                            products.isNotEmpty) {
+                          _filteredProducts = products;
+                        }
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _buildSelectionButtons(products, stores),
+                            const SizedBox(height: 16),
+                            _buildCart(),
+                            const SizedBox(height: 16),
+                            _buildStatusSelector(),
+                            const SizedBox(height: 16),
+                            _buildGenerateBillButton(),
+                          ],
+                        );
+                      },
                     ),
                   ),
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -2526,16 +2628,16 @@ class _BillingPageState extends State<BillingPage> {
                 icon: Icons.store,
                 label: _selectedStoreId != null
                     ? stores
-                        .firstWhere(
-                          (store) => store.storeId == _selectedStoreId,
-                          orElse: () => StoreDto(
-                            name: 'Unknown',
-                            storeId: '',
-                            createdBy: '',
-                            createdAt: DateTime.now(),
-                          ),
-                        )
-                        .name
+                    .firstWhere(
+                      (store) => store.storeId == _selectedStoreId,
+                  orElse: () => StoreDto(
+                    name: 'Unknown',
+                    storeId: '',
+                    createdBy: '',
+                    createdAt: DateTime.now(),
+                  ),
+                )
+                    .name
                     : 'Select Store',
                 onPressed: () => _showStoreSelectionDialog(stores),
                 hasError: _selectedStoreId == null,
@@ -2555,7 +2657,7 @@ class _BillingPageState extends State<BillingPage> {
         Card(
           elevation: 4,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Padding(
             padding: const EdgeInsets.all(12.0),
             child: DropdownButtonFormField<String>(
@@ -2569,7 +2671,7 @@ class _BillingPageState extends State<BillingPage> {
                 filled: true,
                 fillColor: Colors.grey[50],
                 contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               ),
               value: _selectedBillType,
               items: ['Cash', 'Credit'].map((type) {
@@ -2580,10 +2682,10 @@ class _BillingPageState extends State<BillingPage> {
               }).toList(),
               onChanged: _existingBillNumber == null
                   ? (value) {
-                      setState(() {
-                        _selectedBillType = value ?? 'Cash';
-                      });
-                    }
+                setState(() {
+                  _selectedBillType = value ?? 'Cash';
+                });
+              }
                   : null,
             ),
           ),
@@ -2593,7 +2695,7 @@ class _BillingPageState extends State<BillingPage> {
           Card(
             elevation: 4,
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: Padding(
               padding: const EdgeInsets.all(12.0),
               child: DropdownButtonFormField<String>(
@@ -2607,7 +2709,7 @@ class _BillingPageState extends State<BillingPage> {
                   filled: true,
                   fillColor: Colors.grey[50],
                   contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 ),
                 value: _selectedReturnMethod,
                 items: ['Cash', 'Credit'].map((method) {
