@@ -67,4 +67,16 @@ abstract class IFirestorePathProvider {
   DocumentReference getTaxiBookingSettingsRef(String companyId);
 
   CollectionReference getVisitorCountersCollectionRef(String companyId);
+
+
+  CollectionReference getPurchaseOrdersCollectionRef(String companyId);
+
+
+  DocumentReference getSinglePurchaseOrderRef(String companyId, String orderId) ;
+
+
+  CollectionReference getPurchaseInvoicesCollectionRef(String companyId);
+
+
+  DocumentReference getSinglePurchaseInvoiceRef(String companyId, String invoiceId) ;
 }

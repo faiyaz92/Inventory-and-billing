@@ -90,7 +90,7 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
       final ledger = await _accountLedgerService.getLedger(ledgerId);
       final sortedTransactions =
       List<AccountTransactionModel>.from(ledger.transactions ?? [])
-        ..sort((a, b) => b.createdAt!.compareTo(a.createdAt));
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
       emit(AccountLedgerUpdated(
           ledger.copyWith(transactions: sortedTransactions)));
     } catch (e) {
@@ -165,7 +165,7 @@ class UserLedgerCubit extends Cubit<AccountLedgerState> {
       emit(TransactionPopupOpened(
         isDebit: isDebit,
         companyType: null,
-        purposeTypeMap: {
+        purposeTypeMap: const {
           'Salary': ['Cash'],
           'Expenses': ['Cash'],
           'Other': ['Cash'],

@@ -290,4 +290,33 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
         .doc('visitorCounters')
         .collection('daily');
   }
+  @override
+  CollectionReference getPurchaseOrdersCollectionRef(String companyId) {
+    return _firestore
+        .collection(rootPath)
+        .doc(companyDirectory)
+        .collection(tenantCompanies)
+        .doc(companyId)
+        .collection('purchase_orders');
+  }
+
+  @override
+  DocumentReference getSinglePurchaseOrderRef(String companyId, String orderId) {
+    return getPurchaseOrdersCollectionRef(companyId).doc(orderId);
+  }
+
+  @override
+  CollectionReference getPurchaseInvoicesCollectionRef(String companyId) {
+    return _firestore
+        .collection(rootPath)
+        .doc(companyDirectory)
+        .collection(tenantCompanies)
+        .doc(companyId)
+        .collection('purchase_invoices');
+  }
+
+  @override
+  DocumentReference getSinglePurchaseInvoiceRef(String companyId, String invoiceId) {
+    return getPurchaseInvoicesCollectionRef(companyId).doc(invoiceId);
+  }
 }
