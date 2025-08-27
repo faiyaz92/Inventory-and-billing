@@ -1033,7 +1033,6 @@ class _AddStockPageState extends State<AddStockPage> {
         final storeLedgerId = store.accountLedgerId ??
             await _ledgerCubit.ensureLedgerForStore(_selectedStoreId!, store);
 
-
         // Create purchase items
         final purchaseItems = _stockEntries.map((entry) {
           final product = entry['product'] as Product;
@@ -1171,6 +1170,42 @@ class _AddStockPageState extends State<AddStockPage> {
 
         setState(() => _isStockAdded = true);
         print('DEBUG: Set _isStockAdded to true');
+
+        // Show success dialog
+        await showDialog(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            title: const Text(
+              'Success',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
+              ),
+            ),
+            content: Text(
+              _useBatchMode
+                  ? 'Stock batch added successfully'
+                  : 'Stock added successfully',
+              style: const TextStyle(fontSize: 16, color: AppColors.textSecondary),
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  sl<Coordinator>().navigateBack(isUpdated: true);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
       } catch (e) {
         print('DEBUG: Error in _saveStock: $e');
         ScaffoldMessenger.of(context).showSnackBar(

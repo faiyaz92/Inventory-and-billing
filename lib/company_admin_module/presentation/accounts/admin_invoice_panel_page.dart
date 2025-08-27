@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -7,7 +8,6 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:requirment_gathering_app/company_admin_module/presentation/accounts/invoice_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/store_services.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
@@ -119,7 +119,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
           children: [
             Text(
               'Quick filter',
-              style: defaultTextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style:
+                  defaultTextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Wrap(
@@ -133,7 +134,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                     filter['label'] as String,
                     style: TextStyle(
                       color: isSelected ? Colors.white : AppColors.textPrimary,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                   selected: isSelected,
@@ -190,7 +192,6 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                         padding: const EdgeInsets.all(16.0),
                         sliver: SliverList(
                           delegate: SliverChildListDelegate([
-                            // Search Bar
                             TextField(
                               decoration: InputDecoration(
                                 hintText: 'Search by Invoice ID',
@@ -233,7 +234,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
   Widget _buildFilters(BuildContext context) {
     return BlocBuilder<AdminInvoiceCubit, AdminInvoiceState>(
       buildWhen: (previous, current) =>
-      current is AdminInvoiceListFetchLoading ||
+          current is AdminInvoiceListFetchLoading ||
           current is AdminInvoiceListFetchSuccess ||
           current is AdminInvoiceListFetchError,
       builder: (context, state) {
@@ -264,11 +265,12 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
               .toList();
 
           final validInvoiceIssuer = selectedInvoiceIssuer != null &&
-              employeeUsers.any((user) => user.userId == selectedInvoiceIssuer)
+                  employeeUsers
+                      .any((user) => user.userId == selectedInvoiceIssuer)
               ? selectedInvoiceIssuer
               : null;
           final validUserId = selectedUserId != null &&
-              customerUsers.any((user) => user.userId == selectedUserId)
+                  customerUsers.any((user) => user.userId == selectedUserId)
               ? selectedUserId
               : null;
 
@@ -277,9 +279,9 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
             ...employeeUsers
                 .where((user) => user.userId != null && user.userId!.isNotEmpty)
                 .map((user) => DropdownMenuItem<String>(
-              value: user.userId,
-              child: Text(user.name ?? 'Unknown'),
-            )),
+                      value: user.userId,
+                      child: Text(user.name ?? 'Unknown'),
+                    )),
           ];
 
           final customerDropdownItems = [
@@ -287,9 +289,9 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
             ...customerUsers
                 .where((user) => user.userId != null && user.userId!.isNotEmpty)
                 .map((user) => DropdownMenuItem<String>(
-              value: user.userId,
-              child: Text(user.name ?? 'Unknown'),
-            )),
+                      value: user.userId,
+                      child: Text(user.name ?? 'Unknown'),
+                    )),
           ];
 
           return Column(
@@ -346,7 +348,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                     child: DropdownButtonFormField<String>(
                       decoration: InputDecoration(
                         labelText: 'Filter by Invoice Type',
-                        labelStyle: const TextStyle(color: AppColors.textSecondary),
+                        labelStyle:
+                            const TextStyle(color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
@@ -368,9 +371,11 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                         style: TextStyle(color: AppColors.textSecondary),
                       ),
                       items: const [
-                        DropdownMenuItem(value: null, child: Text('All Invoice Types')),
+                        DropdownMenuItem(
+                            value: null, child: Text('All Invoice Types')),
                         DropdownMenuItem(value: 'Cash', child: Text('Cash')),
-                        DropdownMenuItem(value: 'Credit', child: Text('Credit')),
+                        DropdownMenuItem(
+                            value: 'Credit', child: Text('Credit')),
                       ],
                       onChanged: (value) {
                         _adminInvoiceCubit.fetchInvoices(
@@ -392,7 +397,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                     child: DropdownButtonFormField<String>(
                       decoration: InputDecoration(
                         labelText: 'Filter by Payment Status',
-                        labelStyle: const TextStyle(color: AppColors.textSecondary),
+                        labelStyle:
+                            const TextStyle(color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
@@ -414,10 +420,13 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                         style: TextStyle(color: AppColors.textSecondary),
                       ),
                       items: const [
-                        DropdownMenuItem(value: null, child: Text('All Payment Statuses')),
+                        DropdownMenuItem(
+                            value: null, child: Text('All Payment Statuses')),
                         DropdownMenuItem(value: 'Paid', child: Text('Paid')),
-                        DropdownMenuItem(value: 'Partial Paid', child: Text('Partial Paid')),
-                        DropdownMenuItem(value: 'Not Paid', child: Text('Not Paid')),
+                        DropdownMenuItem(
+                            value: 'Partial Paid', child: Text('Partial Paid')),
+                        DropdownMenuItem(
+                            value: 'Not Paid', child: Text('Not Paid')),
                       ],
                       onChanged: (value) {
                         _adminInvoiceCubit.fetchInvoices(
@@ -443,7 +452,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                     child: DropdownButtonFormField<String>(
                       decoration: InputDecoration(
                         labelText: 'Invoice Issuer',
-                        labelStyle: const TextStyle(color: AppColors.textSecondary),
+                        labelStyle:
+                            const TextStyle(color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
@@ -485,7 +495,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                     child: DropdownButtonFormField<String>(
                       decoration: InputDecoration(
                         labelText: 'Filter by Customer',
-                        labelStyle: const TextStyle(color: AppColors.textSecondary),
+                        labelStyle:
+                            const TextStyle(color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
@@ -531,7 +542,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                     child: DropdownButtonFormField<String>(
                       decoration: InputDecoration(
                         labelText: 'Filter by Store',
-                        labelStyle: const TextStyle(color: AppColors.textSecondary),
+                        labelStyle:
+                            const TextStyle(color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
@@ -553,11 +565,12 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                         style: TextStyle(color: AppColors.textSecondary),
                       ),
                       items: [
-                        const DropdownMenuItem(value: null, child: Text('All Stores')),
+                        const DropdownMenuItem(
+                            value: null, child: Text('All Stores')),
                         ...stores.map((store) => DropdownMenuItem(
-                          value: store.storeId,
-                          child: Text(store.name),
-                        )),
+                              value: store.storeId,
+                              child: Text(store.name),
+                            )),
                       ],
                       onChanged: (value) {
                         _adminInvoiceCubit.fetchInvoices(
@@ -585,7 +598,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                         labelText: 'Min Total Amount',
                         border: OutlineInputBorder(),
                         contentPadding:
-                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
                       keyboardType: TextInputType.number,
                       initialValue: minTotalAmount?.toString() ?? '',
@@ -612,7 +625,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                         labelText: 'Max Total Amount',
                         border: OutlineInputBorder(),
                         contentPadding:
-                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
                       keyboardType: TextInputType.number,
                       initialValue: maxTotalAmount?.toString() ?? '',
@@ -660,7 +673,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
   Widget _buildStatsCard(BuildContext context) {
     return BlocBuilder<AdminInvoiceCubit, AdminInvoiceState>(
       buildWhen: (previous, current) =>
-      current is AdminInvoiceListFetchLoading ||
+          current is AdminInvoiceListFetchLoading ||
           current is AdminInvoiceListFetchSuccess ||
           current is AdminInvoiceListFetchError,
       builder: (context, state) {
@@ -685,6 +698,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
           );
         }
         if (state is AdminInvoiceListFetchSuccess) {
+          final crossAxisCount = kIsWeb ? 7 : 4;
           return Card(
             elevation: 4,
             shape: RoundedRectangleBorder(
@@ -719,7 +733,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                         ),
                         child: const Text(
                           'View',
-                          style: TextStyle(fontSize: 12, color: AppColors.white),
+                          style:
+                              TextStyle(fontSize: 12, color: AppColors.white),
                         ),
                       ),
                     ],
@@ -728,18 +743,15 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 4,
-                      childAspectRatio: 3,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      childAspectRatio: kIsWeb ? 1.0 : 1.2,
                       mainAxisSpacing: 8,
                       crossAxisSpacing: 8,
                     ),
-                    itemCount: state.statistics.length * 2,
+                    itemCount: state.statistics.length,
                     itemBuilder: (context, index) {
-                      final statIndex = index ~/ 2;
-                      final isLabel = index % 2 == 0;
-                      final stat = state.statistics[statIndex];
+                      final stat = state.statistics[index];
                       return Container(
                         decoration: BoxDecoration(
                           color: stat['highlight'] == true
@@ -751,24 +763,38 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                           ),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 4, horizontal: 8),
-                        child: Align(
-                          alignment: isLabel
-                              ? Alignment.centerLeft
-                              : Alignment.centerRight,
-                          child: Text(
-                            isLabel ? stat['label'] : stat['value'],
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: isLabel
-                                  ? AppColors.textSecondary
-                                  : stat['color'],
-                              fontWeight: stat['highlight'] == true && !isLabel
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              _getIconForStat(stat['label']),
+                              color: stat['color'],
+                              size: kIsWeb ? 28 : 24,
                             ),
-                          ),
+                            const SizedBox(height: 4),
+                            Text(
+                              stat['label'],
+                              style: TextStyle(
+                                fontSize: kIsWeb ? 16 : 14,
+                                color: AppColors.textSecondary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              stat['value'],
+                              style: TextStyle(
+                                fontSize: kIsWeb ? 16 : 14,
+                                color: stat['color'],
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ),
                       );
                     },
@@ -783,7 +809,37 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
     );
   }
 
-  void _showStatsDialog(BuildContext context, AdminInvoiceListFetchSuccess state) {
+  IconData _getIconForStat(String label) {
+    switch (label) {
+      case 'Total Invoices':
+        return Icons.receipt_long;
+      case 'Total Amount':
+        return Icons.account_balance_wallet;
+      case 'Cash Sales':
+        return Icons.money;
+      case 'Credit Sales':
+        return Icons.credit_card;
+      case 'No of Cash Invoices':
+        return Icons.attach_money;
+      case 'Paid':
+        return Icons.check_circle;
+      case 'Partial Paid':
+        return Icons.hourglass_top;
+      case 'Not Paid':
+        return Icons.cancel;
+      case "Today's Invoices":
+        return Icons.today;
+      case 'Total Collected Amount':
+        return Icons.payments;
+      case 'Pending Collection Amount':
+        return Icons.warning;
+      default:
+        return Icons.info;
+    }
+  }
+
+  void _showStatsDialog(
+      BuildContext context, AdminInvoiceListFetchSuccess state) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -837,21 +893,21 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                       stat['value'],
                       valueColor: stat['color'],
                       valueWeight:
-                      stat['highlight'] == true ? FontWeight.bold : null,
+                          stat['highlight'] == true ? FontWeight.bold : null,
                       backgroundColor: stat['highlight'] == true
                           ? (stat['color'] as Color).withOpacity(0.1)
                           : null,
                       borderRadius: isFirst
                           ? const BorderRadius.only(
-                        topLeft: Radius.circular(12),
-                        topRight: Radius.circular(12),
-                      )
+                              topLeft: Radius.circular(12),
+                              topRight: Radius.circular(12),
+                            )
                           : isLast
-                          ? const BorderRadius.only(
-                        bottomLeft: Radius.circular(12),
-                        bottomRight: Radius.circular(12),
-                      )
-                          : null,
+                              ? const BorderRadius.only(
+                                  bottomLeft: Radius.circular(12),
+                                  bottomRight: Radius.circular(12),
+                                )
+                              : null,
                     );
                   }).toList(),
                 ),
@@ -885,7 +941,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
   Widget _buildInvoiceGeneratedDateLabel() {
     return BlocBuilder<AdminInvoiceCubit, AdminInvoiceState>(
       buildWhen: (previous, current) =>
-      current is AdminInvoiceListFetchSuccess ||
+          current is AdminInvoiceListFetchSuccess ||
           current is AdminInvoiceListFetchLoading ||
           current is AdminInvoiceListFetchError,
       builder: (context, state) {
@@ -915,7 +971,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
   Widget _buildInvoiceList() {
     return BlocBuilder<AdminInvoiceCubit, AdminInvoiceState>(
       buildWhen: (previous, current) =>
-      current is AdminInvoiceListFetchLoading ||
+          current is AdminInvoiceListFetchLoading ||
           current is AdminInvoiceListFetchSuccess ||
           current is AdminInvoiceListFetchError,
       builder: (context, state) {
@@ -924,13 +980,13 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
             ..sort((a, b) => a == 'No Date'
                 ? 1
                 : b == 'No Date'
-                ? -1
-                : DateFormat('MMM dd, yyyy')
-                .parse(b)
-                .compareTo(DateFormat('MMM dd, yyyy').parse(a)));
+                    ? -1
+                    : DateFormat('MMM dd, yyyy')
+                        .parse(b)
+                        .compareTo(DateFormat('MMM dd, yyyy').parse(a)));
           return SliverList(
             delegate: SliverChildBuilderDelegate(
-                  (context, index) {
+              (context, index) {
                 final date = dates[index];
                 final invoices = state.groupedInvoices[date]!;
                 return StickyHeader(
@@ -938,7 +994,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                     width: double.infinity,
                     color: Theme.of(context).scaffoldBackgroundColor,
                     padding:
-                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                        const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                     child: Text(
                       date,
                       style: const TextStyle(
@@ -950,7 +1006,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                   ),
                   content: Column(
                     children: invoices
-                        .map((invoice) => _buildInvoiceCard(context, invoice, state))
+                        .map((invoice) =>
+                            _buildInvoiceCard(context, invoice, state))
                         .toList(),
                   ),
                 );
@@ -966,7 +1023,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
 
   Widget _buildInvoiceCard(
       BuildContext context, Order invoice, AdminInvoiceListFetchSuccess state) {
-    final statusStyles = _adminInvoiceCubit.getStatusColors(invoice.paymentStatus);
+    final statusStyles =
+        _adminInvoiceCubit.getStatusColors(invoice.paymentStatus);
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
@@ -974,8 +1032,9 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
       ),
       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
       child: InkWell(
-        onTap: () =>
-        {/*sl<Coordinator>().navigateToAdminInvoiceDetailsPage(invoice.id)*/},
+        onTap: () {
+// sl<Coordinator>().navigateToAdminInvoiceDetailsPage(invoice.id);
+        },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
@@ -1011,17 +1070,19 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                     ],
                   ),
                   const Expanded(child: SizedBox()),
-                  if (invoice.paymentStatus != 'Paid') // Show only if not fully paid
+                  if (invoice.paymentStatus != 'Paid')
                     Padding(
                       padding: const EdgeInsets.only(right: 8.0),
                       child: ElevatedButton(
-                        onPressed: () => _showReceiveCashDialog(context, invoice),
+                        onPressed: () =>
+                            _showReceiveCashDialog(context, invoice),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           minimumSize: const Size(40, 30),
                         ),
                         child: const Text(
@@ -1034,14 +1095,15 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                       ),
                     ),
                   ElevatedButton(
-                    onPressed: () =>
-                        sl<Coordinator>().navigateToBillingPage(orderId: invoice.id),
+                    onPressed: () => sl<Coordinator>()
+                        .navigateToBillingPage(orderId: invoice.id),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       minimumSize: const Size(40, 30),
                     ),
                     child: Text(
@@ -1069,8 +1131,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                 child: Text(
                   invoice.invoiceGeneratedDate != null
                       ? context
-                      .read<AdminInvoiceCubit>()
-                      .formatInvoiceDate(invoice.invoiceGeneratedDate!)
+                          .read<AdminInvoiceCubit>()
+                          .formatInvoiceDate(invoice.invoiceGeneratedDate!)
                       : 'No Date',
                   style: const TextStyle(
                     fontSize: 12,
@@ -1107,19 +1169,22 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                     children: [
                       _buildTableRow(
                         'Products',
-                        context.read<AdminInvoiceCubit>().getProductNames(invoice.items),
+                        context
+                            .read<AdminInvoiceCubit>()
+                            .getProductNames(invoice.items),
                         maxLines: 2,
                       ),
                       _buildTableRow(
                         'Invoice Type',
                         invoice.invoiceType ?? 'N/A',
-                        valueColor:
-                        invoice.invoiceType == 'Cash' ? Colors.green : Colors.blue,
+                        valueColor: invoice.invoiceType == 'Cash'
+                            ? Colors.green
+                            : Colors.blue,
                         backgroundColor: invoice.invoiceType != null
                             ? (invoice.invoiceType == 'Cash'
-                            ? Colors.green
-                            : Colors.blue)
-                            .withOpacity(0.1)
+                                    ? Colors.green
+                                    : Colors.blue)
+                                .withOpacity(0.1)
                             : Colors.transparent,
                       ),
                       _buildTableRow(
@@ -1128,7 +1193,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                         valueColor: statusStyles['color'],
                         backgroundColor: statusStyles['backgroundColor'],
                         valueWeight: invoice.paymentStatus == 'Partial Paid' ||
-                            invoice.paymentStatus == 'Not Paid'
+                                invoice.paymentStatus == 'Not Paid'
                             ? FontWeight.bold
                             : null,
                       ),
@@ -1138,6 +1203,13 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                         isBold: true,
                         valueColor: AppColors.textPrimary,
                         backgroundColor: AppColors.primary.withOpacity(0.1),
+                      ),
+                      _buildTableRow(
+                        'Outstanding',
+                        '₹${(invoice.totalAmount - (invoice.amountReceived ?? 0.0)).toStringAsFixed(2)}',
+                        isBold: true,
+                        valueColor: AppColors.red,
+                        backgroundColor: AppColors.red.withOpacity(0.1),
                         borderRadius: const BorderRadius.only(
                           bottomLeft: Radius.circular(12),
                           bottomRight: Radius.circular(12),
@@ -1155,21 +1227,21 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
   }
 
   TableRow _buildTableRow(
-      String label,
-      String value, {
-        bool isBold = false,
-        FontWeight? valueWeight,
-        Color? valueColor = AppColors.textSecondary,
-        Color? backgroundColor,
-        BorderRadius? borderRadius,
-        int maxLines = 1,
-      }) {
+    String label,
+    String value, {
+    bool isBold = false,
+    FontWeight? valueWeight,
+    Color? valueColor = AppColors.textSecondary,
+    Color? backgroundColor,
+    BorderRadius? borderRadius,
+    int maxLines = 1,
+  }) {
     return TableRow(
       decoration: backgroundColor != null || borderRadius != null
           ? BoxDecoration(
-        color: backgroundColor,
-        borderRadius: borderRadius,
-      )
+              color: backgroundColor,
+              borderRadius: borderRadius,
+            )
           : null,
       children: [
         Padding(
@@ -1210,58 +1282,85 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
   Future<void> _showReceiveCashDialog(BuildContext context, Order invoice) async {
     final TextEditingController amountController = TextEditingController();
     final formKey = GlobalKey<FormState>();
+    bool isLoading = false; // Track loading state
 
     await showDialog(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Receive Cash'),
-          content: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Order ID: ${invoice.id}', style: const TextStyle(fontSize: 14)),
-                Text('Invoice Number: ${invoice.billNumber ?? 'N/A'}', style: const TextStyle(fontSize: 14)),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: amountController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(
-                    labelText: 'Amount',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Amount is required';
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Receive Cash'),
+              content: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Order ID: ${invoice.id}', style: const TextStyle(fontSize: 14)),
+                    Text('Invoice Number: ${invoice.billNumber ?? 'N/A'}', style: const TextStyle(fontSize: 14)),
+                    Text(
+                      'Outstanding: ₹${(invoice.totalAmount - (invoice.amountReceived ?? 0.0)).toStringAsFixed(2)}',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: amountController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: const InputDecoration(
+                        labelText: 'Amount',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Amount is required';
+                        }
+                        final amount = double.tryParse(value);
+                        if (amount == null || amount <= 0) {
+                          return 'Enter a valid positive amount';
+                        }
+                        final outstanding = invoice.totalAmount - (invoice.amountReceived ?? 0.0);
+                        if (amount > outstanding) {
+                          return 'Amount cannot exceed outstanding balance of ₹${outstanding.toStringAsFixed(2)}';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isLoading ? null : () => Navigator.pop(dialogContext),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                    if (formKey.currentState!.validate()) {
+                      setState(() => isLoading = true); // Show loading
+                      final amount = double.parse(amountController.text);
+                      await _processPayment(context, invoice, amount);
+                      if (dialogContext.mounted) {
+                        Navigator.pop(dialogContext);
+                      }
                     }
-                    final amount = double.tryParse(value);
-                    if (amount == null || amount <= 0) {
-                      return 'Enter a valid positive amount';
-                    }
-                    return null;
                   },
+                  child: isLoading
+                      ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.white,
+                    ),
+                  )
+                      : const Text('Receive'),
                 ),
               ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (formKey.currentState!.validate()) {
-                  final amount = double.parse(amountController.text);
-                  _processPayment(context, invoice, amount);
-                  Navigator.pop(dialogContext);
-                }
-              },
-              child: const Text('Receive'),
-            ),
-          ],
+            );
+          },
         );
       },
     );
@@ -1279,12 +1378,18 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
       return;
     }
 
-    // Calculate new amount received and payment status
     final currentAmountReceived = invoice.amountReceived ?? 0.0;
+    final outstanding = invoice.totalAmount - currentAmountReceived;
+    if (amount > outstanding) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Amount cannot exceed outstanding balance of ₹${outstanding.toStringAsFixed(2)}')),
+      );
+      return;
+    }
+
     final newAmountReceived = currentAmountReceived + amount;
     final paymentStatus = newAmountReceived >= invoice.totalAmount ? 'Paid' : 'Partial Paid';
 
-    // Update Order model
     final updatedOrder = invoice.copyWith(
       amountReceived: newAmountReceived,
       paymentStatus: paymentStatus,
@@ -1299,10 +1404,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
       invoiceLastUpdatedBy: userId,
     );
 
-    // Update invoice in the service
     await orderService.updateInvoice(updatedOrder);
 
-    // Ledger entries
     final customerLedgerId = invoice.customerLedgerId;
     if (customerLedgerId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1319,7 +1422,6 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
       return;
     }
 
-    // Credit customer ledger (payment received reduces liability)
     await ledgerCubit.addTransaction(
       ledgerId: customerLedgerId,
       amount: amount,
@@ -1331,7 +1433,6 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
       userType: UserType.Customer,
     );
 
-    // Debit logged-in user's ledger (cash received increases asset)
     await ledgerCubit.addTransaction(
       ledgerId: loggedInUserLedgerId,
       amount: amount,
@@ -1343,24 +1444,19 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
       userType: userInfo?.userType ?? UserType.Employee,
     );
 
-    // Generate receipt
     final receiptPdf = await _generateReceiptPdf(updatedOrder, amount);
 
-    // Navigate to receipt PDF page
     await sl<Coordinator>().navigateToBillPdfPage(pdf: receiptPdf, billNumber: invoice.id);
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Payment received successfully')),
     );
 
-    // Refresh the invoice list
     _adminInvoiceCubit.fetchInvoices(
       startDate: startDate,
       endDate: endDate,
     );
-  }
-
-  Future<pw.Document> _generateReceiptPdf(Order order, double amount) async {
+  }  Future<pw.Document> _generateReceiptPdf(Order order, double amount) async {
     final pdf = pw.Document();
     final accountRepository = sl<AccountRepository>();
 
@@ -1388,7 +1484,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
         header: (context) => pw.Container(
           padding: const pw.EdgeInsets.only(bottom: 12),
           decoration: pw.BoxDecoration(
-            border: pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
+            border:
+                pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
           ),
           child: pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -1398,12 +1495,16 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                 children: [
                   pw.Text(
                     companyName,
-                    style: pw.TextStyle(font: boldFont, fontSize: 22, color: primaryColor),
+                    style: pw.TextStyle(
+                        font: boldFont, fontSize: 22, color: primaryColor),
                   ),
                   pw.SizedBox(height: 4),
                   pw.Text(
                     '123 Business Street, City, Country',
-                    style: pw.TextStyle(font: regularFont, fontSize: 12, color: textSecondaryColor),
+                    style: pw.TextStyle(
+                        font: regularFont,
+                        fontSize: 12,
+                        color: textSecondaryColor),
                   ),
                 ],
               ),
@@ -1412,7 +1513,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                 children: [
                   pw.Text(
                     'RECEIPT',
-                    style: pw.TextStyle(font: boldFont, fontSize: 28, color: primaryColor),
+                    style: pw.TextStyle(
+                        font: boldFont, fontSize: 28, color: primaryColor),
                   ),
                   pw.SizedBox(height: 4),
                   pw.Text(
@@ -1440,12 +1542,14 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
           pw.SizedBox(height: 24),
           pw.Text(
             'Received From:',
-            style: pw.TextStyle(font: boldFont, fontSize: 18, color: PdfColors.black),
+            style: pw.TextStyle(
+                font: boldFont, fontSize: 18, color: PdfColors.black),
           ),
           pw.SizedBox(height: 8),
           pw.Text(
             order.userName ?? 'Unknown Customer',
-            style: pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
+            style:
+                pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
           ),
           pw.SizedBox(height: 24),
           pw.Text(
@@ -1465,17 +1569,20 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                 children: [
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Description', style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                    child: pw.Text('Description',
+                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Amount', style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                    child: pw.Text('Amount',
+                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
                   ),
                 ],
               ),
               pw.TableRow(
                 decoration: pw.BoxDecoration(
-                  border: pw.Border(bottom: pw.BorderSide(color: greyColor, width: 0.5)),
+                  border: pw.Border(
+                      bottom: pw.BorderSide(color: greyColor, width: 0.5)),
                 ),
                 children: [
                   pw.Padding(
@@ -1512,7 +1619,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                   children: [
                     pw.Text(
                       'Total Amount Received: ${amount.toStringAsFixed(2)}',
-                      style: pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
+                      style: pw.TextStyle(
+                          font: boldFont, fontSize: 16, color: primaryColor),
                     ),
                     pw.SizedBox(height: 8),
                     pw.Text(
@@ -1530,7 +1638,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
           padding: const pw.EdgeInsets.only(top: 12),
           child: pw.Text(
             'Generated by $companyName | Page ${context.pageNumber} of ${context.pagesCount}',
-            style: pw.TextStyle(font: regularFont, fontSize: 10, color: textSecondaryColor),
+            style: pw.TextStyle(
+                font: regularFont, fontSize: 10, color: textSecondaryColor),
           ),
         ),
       ),

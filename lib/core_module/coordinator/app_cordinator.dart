@@ -411,4 +411,8 @@ class AppCoordinator implements Coordinator {
   Future<dynamic> navigateToPurchaseInvoicePanelPage() {
     return _router.push(const PurchaseInvoicePanelRoute());
   }
+  @override
+  Future<dynamic> navigateToDashboardStaticsPage() {
+    return _router.push(const DashboardStaticsRoute());
+  }
 }

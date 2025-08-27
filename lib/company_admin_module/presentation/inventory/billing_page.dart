@@ -918,7 +918,7 @@ class _BillingPageState extends State<BillingPage> {
           amountReceived: _selectedBillType == 'Cash' ? totalAmount : 0.0,
           paymentDetails: state.order.paymentDetails ?? [],
           slipNumber: state.order.slipNumber,
-          customerLedgerId: customerLedgerId, // Added
+          customerLedgerId: customerLedgerId,
         );
       } else {
         tempOrder = Order(
@@ -943,7 +943,7 @@ class _BillingPageState extends State<BillingPage> {
           amountReceived: _selectedBillType == 'Cash' ? totalAmount : 0.0,
           paymentDetails: [],
           slipNumber: null,
-          customerLedgerId: customerLedgerId, // Added
+          customerLedgerId: customerLedgerId,
         );
       }
     } else {
@@ -968,7 +968,7 @@ class _BillingPageState extends State<BillingPage> {
         amountReceived: _selectedBillType == 'Cash' ? totalAmount : 0.0,
         paymentDetails: [],
         slipNumber: null,
-        customerLedgerId: customerLedgerId, // Added
+        customerLedgerId: customerLedgerId,
       );
     }
 
@@ -999,7 +999,7 @@ class _BillingPageState extends State<BillingPage> {
           amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : 0.0,
           paymentDetails: state.order.paymentDetails ?? [],
           slipNumber: state.order.slipNumber,
-          customerLedgerId: customerLedgerId, // Added
+          customerLedgerId: customerLedgerId,
         );
       } else {
         order = Order(
@@ -1024,7 +1024,7 @@ class _BillingPageState extends State<BillingPage> {
           amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : 0.0,
           paymentDetails: [],
           slipNumber: null,
-          customerLedgerId: customerLedgerId, // Added
+          customerLedgerId: customerLedgerId,
         );
       }
     } else {
@@ -1049,7 +1049,7 @@ class _BillingPageState extends State<BillingPage> {
         amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : 0.0,
         paymentDetails: [],
         slipNumber: null,
-        customerLedgerId: customerLedgerId, // Added
+        customerLedgerId: customerLedgerId,
       );
     }
 
@@ -1098,6 +1098,9 @@ class _BillingPageState extends State<BillingPage> {
       }
 
       print('Processing bill: billNumber=$billNumber, cartItems=${_cartItems.length}, totalAmount=$updatedTotalAmount, discount=${_discount ?? 0.0}, store=${store.name}');
+
+      // Start PDF generation in parallel
+      final pdfFuture = _generatePdf(order); // Start PDF generation immediately
 
       // Check if invoice already exists
       Order? existingInvoice;
@@ -1166,7 +1169,7 @@ class _BillingPageState extends State<BillingPage> {
           );
         }
 
-        // Customer ledger entries (unchanged)
+        // Customer ledger entries
         await ledgerCubit.addTransaction(
           ledgerId: customerLedgerId,
           amount: updatedTotalAmount,
@@ -1192,7 +1195,6 @@ class _BillingPageState extends State<BillingPage> {
         }
 
         // Store ledger entries for new order
-        // Credit for sale (stock liability transferred to customer)
         await ledgerCubit.addTransaction(
           ledgerId: storeLedgerId,
           amount: updatedTotalAmount,
@@ -1205,7 +1207,6 @@ class _BillingPageState extends State<BillingPage> {
         );
 
         if (_selectedBillType == 'Cash') {
-          // Debit for cash received
           await ledgerCubit.addTransaction(
             ledgerId: storeLedgerId,
             amount: updatedTotalAmount,
@@ -1220,22 +1221,17 @@ class _BillingPageState extends State<BillingPage> {
 
         order = order.copyWith(billNumber: billNumber);
         await orderService.placeOrder(order);
-        // Add to invoice collection if it doesn't exist
         if (existingInvoice == null) {
           await orderService.placeInvoice(order);
         }
       } else {
-        // Existing order: Handle returns and update
         if (widget.orderId != null) {
           final originalOrder = (await orderService.getOrderById(widget.orderId!))!;
-          // Calculate return amount as difference between original and updated total
           final returnAmount = originalOrder.totalAmount - updatedTotalAmount;
 
-          // Track processed items to prevent duplicates
           final processedProductIds = <String>{};
           print('Starting return processing for order ${widget.orderId}, originalItems=${originalOrder.items.length}, currentItems=${_cartItems.length}');
 
-          // Update stock for returned items
           for (var item in originalOrder.items) {
             if (processedProductIds.contains(item.productId)) {
               print('Skipping duplicate item ${item.productName}, productId=${item.productId}');
@@ -1289,7 +1285,6 @@ class _BillingPageState extends State<BillingPage> {
           }
           print('Completed return processing, processed ${processedProductIds.length} items');
 
-          // Customer ledger entry for return (unchanged)
           final totalOriginalQuantity = originalOrder.items.fold<int>(
               0, (sum, item) => sum + item.quantity);
           final totalCurrentQuantity =
@@ -1321,7 +1316,6 @@ class _BillingPageState extends State<BillingPage> {
             }
           }
 
-          // Customer ledger entries for updated order (unchanged)
           if (_cartItems.isNotEmpty) {
             await ledgerCubit.addTransaction(
               ledgerId: customerLedgerId,
@@ -1347,9 +1341,7 @@ class _BillingPageState extends State<BillingPage> {
             }
           }
 
-          // Store ledger entries for updated order
           if (_cartItems.isNotEmpty) {
-            // Credit for sale (stock liability transferred to customer)
             await ledgerCubit.addTransaction(
               ledgerId: storeLedgerId,
               amount: updatedTotalAmount,
@@ -1362,7 +1354,6 @@ class _BillingPageState extends State<BillingPage> {
             );
 
             if (_selectedBillType == 'Cash') {
-              // Debit for cash received
               await ledgerCubit.addTransaction(
                 ledgerId: storeLedgerId,
                 amount: updatedTotalAmount,
@@ -1376,9 +1367,7 @@ class _BillingPageState extends State<BillingPage> {
             }
           }
 
-          // Store ledger entries for return (if any items were returned)
           if (totalOriginalQuantity > totalCurrentQuantity && returnAmount > 0) {
-            // Debit for returned stock (store takes back stock liability)
             await ledgerCubit.addTransaction(
               ledgerId: storeLedgerId,
               amount: returnAmount,
@@ -1391,7 +1380,6 @@ class _BillingPageState extends State<BillingPage> {
             );
 
             if (_selectedBillType == 'Cash' && _selectedReturnMethod == 'Cash') {
-              // Credit for cash paid back
               await ledgerCubit.addTransaction(
                 ledgerId: storeLedgerId,
                 amount: returnAmount,
@@ -1407,12 +1395,12 @@ class _BillingPageState extends State<BillingPage> {
 
           await orderService.updateOrderStatus(widget.orderId!, _selectedStatus);
           await orderService.updateOrder(order);
-          // Update invoice collection
           await orderService.updateInvoice(order);
         }
       }
 
-      final pdf = await _generatePdf(order);
+      // Await the PDF generation that was started earlier
+      final pdf = await pdfFuture;
 
       await sl<Coordinator>()
           .navigateToBillPdfPage(pdf: pdf, billNumber: billNumber);
@@ -1433,6 +1421,7 @@ class _BillingPageState extends State<BillingPage> {
       setState(() => _isLoading = false);
     }
   }
+
   Future<pw.Document> _generatePdf(Order order) async {
     final pdf = pw.Document();
     final accountRepository = sl<AccountRepository>();

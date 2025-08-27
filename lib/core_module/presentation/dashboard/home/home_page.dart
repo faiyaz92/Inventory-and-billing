@@ -228,7 +228,15 @@ class HomePage extends StatelessWidget {
       case Role.COMPANY_ADMIN:
       case Role.COMPANY_ACCOUNTANT:
         gridItems.addAll([
-
+          _buildGridItem(
+            icon: Icons.dashboard,
+            label: 'Statics',
+            color: Colors.blueAccent,
+            onTap: () {
+              sl<Coordinator>().navigateToDashboardStaticsPage();
+            },
+            isWeb: isWeb,
+          ),
           _buildGridItem(
             icon: Icons.inventory_2_outlined,
             label: 'Product Management',

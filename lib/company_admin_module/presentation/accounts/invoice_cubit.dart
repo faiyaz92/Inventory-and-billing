@@ -31,6 +31,7 @@ class AdminInvoiceListFetchSuccess extends AdminInvoiceState {
   final Map<String, List<Order>> groupedInvoices;
   final String dateRangeLabel;
   final List<Map<String, dynamic>> statistics;
+  final List<Map<String, dynamic>> previousStatistics;
   final bool showTodayStats;
 
   AdminInvoiceListFetchSuccess({
@@ -49,6 +50,7 @@ class AdminInvoiceListFetchSuccess extends AdminInvoiceState {
     required this.groupedInvoices,
     required this.dateRangeLabel,
     required this.statistics,
+    required this.previousStatistics,
     required this.showTodayStats,
   });
 }
@@ -170,58 +172,105 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
     final notPaidInvoices = invoices
         .where((invoice) => invoice.paymentStatus == 'Not Paid')
         .length;
+    final cashInvoicesCount = invoices
+        .where((invoice) => invoice.invoiceType == 'Cash')
+        .length;
+    final totalCollectedAmount = invoices
+        .where((invoice) =>
+    invoice.paymentStatus == 'Paid' || invoice.paymentStatus == 'Partial Paid')
+        .fold<double>(
+        0.0, (sum, invoice) => sum + (invoice.amountReceived ?? 0.0));
+    final totalPendingAmount = invoices
+        .where((invoice) =>
+    invoice.paymentStatus == 'Not Paid' ||
+        invoice.paymentStatus == 'Partial Paid')
+        .fold<double>(0.0,
+            (sum, invoice) => sum + (invoice.totalAmount - (invoice.amountReceived ?? 0.0)));
 
-    return [
+    var stats = <Map<String, dynamic>>[
       {
         'label': 'Total Invoices',
+        'rawValue': totalInvoices,
         'value': totalInvoices.toString(),
         'color': AppColors.textPrimary,
         'highlight': true
       },
       {
         'label': 'Total Amount',
+        'rawValue': totalAmount,
         'value': '₹${totalAmount.toStringAsFixed(2)}',
         'color': AppColors.textPrimary,
         'highlight': true
       },
       {
         'label': 'Cash Sales',
+        'rawValue': cashSales,
         'value': '₹${cashSales.toStringAsFixed(2)}',
         'color': Colors.green,
         'highlight': true
       },
       {
         'label': 'Credit Sales',
+        'rawValue': creditSales,
         'value': '₹${creditSales.toStringAsFixed(2)}',
         'color': Colors.blue,
         'highlight': true
       },
       {
+        'label': 'No of Cash Invoices',
+        'rawValue': cashInvoicesCount,
+        'value': cashInvoicesCount.toString(),
+        'color': Colors.green,
+        'highlight': true
+      },
+      {
         'label': 'Paid',
+        'rawValue': paidInvoices,
         'value': paidInvoices.toString(),
         'color': Colors.green,
         'highlight': true
       },
       {
         'label': 'Partial Paid',
+        'rawValue': partialPaidInvoices,
         'value': partialPaidInvoices.toString(),
         'color': Colors.orange,
         'highlight': true
       },
       {
         'label': 'Not Paid',
+        'rawValue': notPaidInvoices,
         'value': notPaidInvoices.toString(),
         'color': Colors.red,
         'highlight': true
       },
-      if (showTodayStats)
-        {
-          'label': "Today's Invoices",
-          'value': newInvoices.toString(),
-          'color': Colors.green,
-          'highlight': true
-        },
+      {
+        'label': 'Total Collected Amount',
+        'rawValue': totalCollectedAmount,
+        'value': '₹${totalCollectedAmount.toStringAsFixed(2)}',
+        'color': Colors.green,
+        'highlight': true
+      },
+      {
+        'label': 'Pending Collection Amount',
+        'rawValue': totalPendingAmount,
+        'value': '₹${totalPendingAmount.toStringAsFixed(2)}',
+        'color': Colors.red,
+        'highlight': true
+      },
     ];
+
+    if (showTodayStats) {
+      stats.add({
+        'label': "Today's Invoices",
+        'rawValue': newInvoices,
+        'value': newInvoices.toString(),
+        'color': Colors.green,
+        'highlight': true
+      });
+    }
+
+    return stats;
   }
 
   Map<String, Color> getStatusColors(String? status) {
@@ -258,6 +307,7 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
     String? userId,
     double? minTotalAmount,
     double? maxTotalAmount,
+    bool computePrevious = false,
   }) async {
     emit(AdminInvoiceListFetchLoading());
     try {
@@ -320,6 +370,62 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
             .toList();
       }
 
+      List<Map<String, dynamic>> previousStatistics = [];
+      if (computePrevious && startDate != null && endDate != null) {
+        final delta = endDate.difference(startDate).inDays + 1;
+        final prevEnd = startDate.subtract(const Duration(days: 1));
+        final prevStart = prevEnd.subtract(Duration(days: delta - 1));
+        List<Order> previousFiltered = invoices.where((invoice) {
+          final date = invoice.invoiceGeneratedDate ?? invoice.orderDate;
+          return date.isAfter(prevStart) &&
+              date.isBefore(prevEnd.add(const Duration(days: 1)));
+        }).toList();
+
+        if (invoiceType != null) {
+          previousFiltered = previousFiltered
+              .where((invoice) => invoice.invoiceType == invoiceType)
+              .toList();
+        }
+
+        if (paymentStatus != null) {
+          previousFiltered = previousFiltered
+              .where((invoice) => invoice.paymentStatus == paymentStatus)
+              .toList();
+        }
+
+        if (invoiceLastUpdatedBy != null) {
+          previousFiltered = previousFiltered
+              .where((invoice) => invoice.invoiceLastUpdatedBy == invoiceLastUpdatedBy)
+              .toList();
+        }
+
+        if (storeId != null) {
+          previousFiltered = previousFiltered
+              .where((invoice) => invoice.storeId == storeId)
+              .toList();
+        }
+
+        if (userId != null) {
+          previousFiltered = previousFiltered
+              .where((invoice) => invoice.userId == userId)
+              .toList();
+        }
+
+        if (minTotalAmount != null && maxTotalAmount != null) {
+          previousFiltered = previousFiltered.where((invoice) =>
+          invoice.totalAmount >= minTotalAmount &&
+              invoice.totalAmount <= maxTotalAmount).toList();
+        }
+
+        if (_searchQuery.isNotEmpty) {
+          previousFiltered = previousFiltered
+              .where((invoice) => invoice.id.toLowerCase().contains(_searchQuery.toLowerCase()))
+              .toList();
+        }
+
+        previousStatistics = _computeStatistics(previousFiltered, false);
+      }
+
       final showTodayStats = _shouldShowTodayStats(startDate, endDate);
       emit(AdminInvoiceListFetchSuccess(
         invoices: filteredInvoices,
@@ -337,6 +443,7 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
         groupedInvoices: _groupInvoicesByDate(filteredInvoices),
         dateRangeLabel: _formatDateRange(startDate, endDate),
         statistics: _computeStatistics(filteredInvoices, showTodayStats),
+        previousStatistics: previousStatistics,
         showTodayStats: showTodayStats,
       ));
     } catch (e) {
@@ -400,6 +507,62 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
             invoice.totalAmount <= currentState.maxTotalAmount!).toList();
       }
 
+      List<Map<String, dynamic>> previousStatistics = [];
+      if (currentState.previousStatistics.isNotEmpty && currentState.startDate != null && currentState.endDate != null) {
+        final delta = currentState.endDate!.difference(currentState.startDate!).inDays + 1;
+        final prevEnd = currentState.startDate!.subtract(const Duration(days: 1));
+        final prevStart = prevEnd.subtract(Duration(days: delta - 1));
+        List<Order> previousFiltered = _allInvoices.where((invoice) {
+          final date = invoice.invoiceGeneratedDate ?? invoice.orderDate;
+          return date.isAfter(prevStart) &&
+              date.isBefore(prevEnd.add(const Duration(days: 1)));
+        }).toList();
+
+        if (currentState.invoiceType != null) {
+          previousFiltered = previousFiltered
+              .where((invoice) => invoice.invoiceType == currentState.invoiceType)
+              .toList();
+        }
+
+        if (currentState.paymentStatus != null) {
+          previousFiltered = previousFiltered
+              .where((invoice) => invoice.paymentStatus == currentState.paymentStatus)
+              .toList();
+        }
+
+        if (currentState.invoiceLastUpdatedBy != null) {
+          previousFiltered = previousFiltered
+              .where((invoice) => invoice.invoiceLastUpdatedBy == currentState.invoiceLastUpdatedBy)
+              .toList();
+        }
+
+        if (currentState.storeId != null) {
+          previousFiltered = previousFiltered
+              .where((invoice) => invoice.storeId == currentState.storeId)
+              .toList();
+        }
+
+        if (currentState.userId != null) {
+          previousFiltered = previousFiltered
+              .where((invoice) => invoice.userId == currentState.userId)
+              .toList();
+        }
+
+        if (currentState.minTotalAmount != null && currentState.maxTotalAmount != null) {
+          previousFiltered = previousFiltered.where((invoice) =>
+          invoice.totalAmount >= currentState.minTotalAmount! &&
+              invoice.totalAmount <= currentState.maxTotalAmount!).toList();
+        }
+
+        if (_searchQuery.isNotEmpty) {
+          previousFiltered = previousFiltered
+              .where((invoice) => invoice.id.toLowerCase().contains(_searchQuery.toLowerCase()))
+              .toList();
+        }
+
+        previousStatistics = _computeStatistics(previousFiltered, false);
+      }
+
       final showTodayStats = _shouldShowTodayStats(currentState.startDate, currentState.endDate);
       emit(AdminInvoiceListFetchSuccess(
         invoices: filteredInvoices,
@@ -417,6 +580,7 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
         groupedInvoices: _groupInvoicesByDate(filteredInvoices),
         dateRangeLabel: _formatDateRange(currentState.startDate, currentState.endDate),
         statistics: _computeStatistics(filteredInvoices, showTodayStats),
+        previousStatistics: previousStatistics,
         showTodayStats: showTodayStats,
       ));
     }

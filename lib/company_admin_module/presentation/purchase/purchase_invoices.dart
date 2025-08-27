@@ -1281,61 +1281,80 @@ class _PurchaseInvoicePanelPageState extends State<PurchaseInvoicePanelPage> {
       BuildContext context, AdminPurchaseOrder order) async {
     final TextEditingController amountController = TextEditingController();
     final formKey = GlobalKey<FormState>();
+    bool isLoading = false; // Track loading state
 
     await showDialog(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Pay Supplier'),
-          content: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Purchase Order ID: ${order.id}',
-                    style: const TextStyle(fontSize: 14)),
-                Text('Bill Number: ${order.billNumber ?? 'N/A'}',
-                    style: const TextStyle(fontSize: 14)),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: amountController,
-                  keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(
-                    labelText: 'Amount',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Amount is required';
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Pay Supplier'),
+              content: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Purchase Order ID: ${order.id}',
+                        style: const TextStyle(fontSize: 14)),
+                    Text('Bill Number: ${order.billNumber ?? 'N/A'}',
+                        style: const TextStyle(fontSize: 14)),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: amountController,
+                      keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                      decoration: const InputDecoration(
+                        labelText: 'Amount',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Amount is required';
+                        }
+                        final amount = double.tryParse(value);
+                        if (amount == null || amount <= 0) {
+                          return 'Enter a valid positive amount';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isLoading ? null : () => Navigator.pop(dialogContext),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                    if (formKey.currentState!.validate()) {
+                      setState(() => isLoading = true); // Show loading
+                      final amount = double.parse(amountController.text);
+                      await _processPayment(context, order, amount);
+                      if (dialogContext.mounted) {
+                        Navigator.pop(dialogContext);
+                      }
                     }
-                    final amount = double.tryParse(value);
-                    if (amount == null || amount <= 0) {
-                      return 'Enter a valid positive amount';
-                    }
-                    return null;
                   },
+                  child: isLoading
+                      ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.white,
+                    ),
+                  )
+                      : const Text('Pay'),
                 ),
               ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (formKey.currentState!.validate()) {
-                  final amount = double.parse(amountController.text);
-                  _processPayment(context, order, amount);
-                  Navigator.pop(dialogContext);
-                }
-              },
-              child: const Text('Pay'),
-            ),
-          ],
+            );
+          },
         );
       },
     );
@@ -1355,9 +1374,16 @@ class _PurchaseInvoicePanelPageState extends State<PurchaseInvoicePanelPage> {
     }
 
     final currentAmountReceived = order.amountReceived ?? 0.0;
+    final outstanding = order.totalAmount - currentAmountReceived;
+    if (amount > outstanding) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Amount cannot exceed outstanding balance of ₹${outstanding.toStringAsFixed(2)}')),
+      );
+      return;
+    }
+
     final newAmountReceived = currentAmountReceived + amount;
-    final paymentStatus =
-    newAmountReceived >= order.totalAmount ? 'Paid' : 'Partial Paid';
+    final paymentStatus = newAmountReceived >= order.totalAmount ? 'Paid' : 'Partial Paid';
 
     final updatedOrder = order.copyWith(
       amountReceived: newAmountReceived,
@@ -1408,8 +1434,7 @@ class _PurchaseInvoicePanelPageState extends State<PurchaseInvoicePanelPage> {
 
     final receiptPdf = await _generateReceiptPdf(updatedOrder, amount);
 
-    await sl<Coordinator>()
-        .navigateToBillPdfPage(pdf: receiptPdf, billNumber: order.id);
+    await sl<Coordinator>().navigateToBillPdfPage(pdf: receiptPdf, billNumber: order.id);
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Payment processed successfully')),
@@ -1420,7 +1445,6 @@ class _PurchaseInvoicePanelPageState extends State<PurchaseInvoicePanelPage> {
       endDate: endDate,
     );
   }
-
   Future<pw.Document> _generateReceiptPdf(
       AdminPurchaseOrder order, double amount) async {
     final pdf = pw.Document();

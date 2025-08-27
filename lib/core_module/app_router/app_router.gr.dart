@@ -876,6 +876,22 @@ class DashboardRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DashboardStaticsPage]
+class DashboardStaticsRoute extends PageRouteInfo<void> {
+  const DashboardStaticsRoute({List<PageRouteInfo>? children})
+    : super(DashboardStaticsRoute.name, initialChildren: children);
+
+  static const String name = 'DashboardStaticsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DashboardStaticsPage();
+    },
+  );
+}
+
+/// generated route for
 /// [DeliveryManOrderListPage]
 class DeliveryManOrderListRoute extends PageRouteInfo<void> {
   const DeliveryManOrderListRoute({List<PageRouteInfo>? children})

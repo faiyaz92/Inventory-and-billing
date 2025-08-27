@@ -4,6 +4,7 @@ import 'package:pdf/widgets.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/accounts/accounts_dashboard.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/accounts/admin_invoice_panel_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/analytics/analytics_dashboard.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/analytics/statics_dashboard.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/bill_pdf.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/billing_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/quick_pay_recieve.dart';
@@ -153,6 +154,7 @@ class AppRouter extends RootStackRouter {
             AutoRoute(page: AdminInvoicePanelRoute.page, path: '/invoice-list'),
             AutoRoute(page: AnalyticsRoute.page, path: '/analytics'),
             AutoRoute(page: QuickTransactionRoute.page, path: '/quick-transaction'),
-            AutoRoute(page: PurchaseInvoicePanelRoute.page, path: '/purchase-invoice-panel'),// Add this line
+            AutoRoute(page: PurchaseInvoicePanelRoute.page, path: '/purchase-invoice-panel'),
+            AutoRoute(page: DashboardStaticsRoute.page, path: '/dashboard-statics'),// Add this line
       ];
 }

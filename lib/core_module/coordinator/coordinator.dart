@@ -124,4 +124,5 @@ abstract class Coordinator {
   Future<dynamic> navigateToAnalyticsPage();
   Future<dynamic> navigateToQuickTransactionPage(String transactionType); // Add this line
   Future<dynamic> navigateToPurchaseInvoicePanelPage();
+  Future<dynamic> navigateToDashboardStaticsPage();
 }

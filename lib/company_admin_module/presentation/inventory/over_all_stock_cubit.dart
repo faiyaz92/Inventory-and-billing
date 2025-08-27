@@ -7,6 +7,7 @@ import 'package:requirment_gathering_app/company_admin_module/service/stock_serv
 abstract class OverallStockState extends Equatable {
   final List<ProductStock> productStocks;
   final List<ProductStock> filteredProductStocks;
+  final double totalStockValue; // Added to store total stock value
   final String? searchQuery;
   final String? selectedCategory;
   final String? selectedSubcategory;
@@ -18,6 +19,7 @@ abstract class OverallStockState extends Equatable {
   const OverallStockState({
     required this.productStocks,
     required this.filteredProductStocks,
+    required this.totalStockValue,
     this.searchQuery,
     this.selectedCategory,
     this.selectedSubcategory,
@@ -31,6 +33,7 @@ abstract class OverallStockState extends Equatable {
   List<Object?> get props => [
     productStocks,
     filteredProductStocks,
+    totalStockValue,
     searchQuery,
     selectedCategory,
     selectedSubcategory,
@@ -47,6 +50,7 @@ class OverallStockInitial extends OverallStockState {
       : super(
     productStocks: const [],
     filteredProductStocks: const [],
+    totalStockValue: 0.0,
     searchQuery: null,
     selectedCategory: null,
     selectedSubcategory: null,
@@ -62,6 +66,7 @@ class OverallStockLoading extends OverallStockState {
   const OverallStockLoading({
     required super.productStocks,
     required super.filteredProductStocks,
+    required super.totalStockValue,
     super.searchQuery,
     super.selectedCategory,
     super.selectedSubcategory,
@@ -76,6 +81,7 @@ class OverallStockSuccess extends OverallStockState {
   const OverallStockSuccess({
     required super.productStocks,
     required super.filteredProductStocks,
+    required super.totalStockValue,
     super.searchQuery,
     super.selectedCategory,
     super.selectedSubcategory,
@@ -89,6 +95,7 @@ class OverallStockError extends OverallStockState {
   const OverallStockError({
     required super.productStocks,
     required super.filteredProductStocks,
+    required super.totalStockValue,
     super.searchQuery,
     super.selectedCategory,
     super.selectedSubcategory,
@@ -101,8 +108,8 @@ class OverallStockError extends OverallStockState {
 class ProductStock {
   final String productId;
   final String productName;
-  final String? category; // Added for filtering
-  final String? subcategory; // Added for filtering
+  final String? category;
+  final String? subcategory;
   int totalStock;
   final Map<String, int> storeStocks;
   final Map<String, String> storeNames;
@@ -129,6 +136,7 @@ class OverallStockCubit extends Cubit<OverallStockState> {
     emit(OverallStockLoading(
       productStocks: state.productStocks,
       filteredProductStocks: state.filteredProductStocks,
+      totalStockValue: state.totalStockValue,
       searchQuery: state.searchQuery,
       selectedCategory: state.selectedCategory,
       selectedSubcategory: state.selectedSubcategory,
@@ -145,8 +153,31 @@ class OverallStockCubit extends Cubit<OverallStockState> {
         allStockItems.addAll(stockItems);
       }
 
-      // Aggregate stock by product
-      final productStocks = _aggregateStockByProduct(allStockItems, storeNames);
+      // Aggregate stock by product and calculate total stock value
+      final productStocks = <ProductStock>[];
+      final Map<String, ProductStock> productMap = {};
+      double totalStockValue = 0.0;
+
+      for (final stock in allStockItems) {
+        if (!productMap.containsKey(stock.productId)) {
+          print('Processing stock item: ${stock.productId}, name: ${stock.name}');
+          productMap[stock.productId] = ProductStock(
+            productId: stock.productId.isNotEmpty ? stock.productId : 'Unknown_${stock.hashCode}',
+            productName: stock.name?.isNotEmpty == true ? stock.name! : 'Unknown',
+            category: stock.category,
+            subcategory: stock.subcategoryName,
+            totalStock: 0,
+            storeStocks: {},
+            storeNames: storeNames,
+          );
+        }
+        final productStock = productMap[stock.productId]!;
+        productStock.totalStock += stock.quantity;
+        productStock.storeStocks[stock.storeId] = stock.quantity;
+        final price = stock.price ?? 0.0;
+        totalStockValue += stock.quantity * price;
+      }
+      productStocks.addAll(productMap.values);
 
       // Extract unique categories and subcategories
       final categories = productStocks
@@ -166,10 +197,12 @@ class OverallStockCubit extends Cubit<OverallStockState> {
 
       print('Loaded ${productStocks.length} products, '
           '${categories.length} categories, '
-          '${subcategories.length} subcategories'); // Debug
+          '${subcategories.length} subcategories, '
+          'Total Stock Value: ₹$totalStockValue');
       emit(OverallStockSuccess(
         productStocks: productStocks,
         filteredProductStocks: List.from(productStocks),
+        totalStockValue: totalStockValue,
         searchQuery: null,
         selectedCategory: null,
         selectedSubcategory: null,
@@ -177,10 +210,11 @@ class OverallStockCubit extends Cubit<OverallStockState> {
         availableSubcategories: subcategories,
       ));
     } catch (e) {
-      print('Error loading stock: $e'); // Debug
+      print('Error loading stock: $e');
       emit(OverallStockError(
         productStocks: state.productStocks,
         filteredProductStocks: state.filteredProductStocks,
+        totalStockValue: state.totalStockValue,
         searchQuery: state.searchQuery,
         selectedCategory: state.selectedCategory,
         selectedSubcategory: state.selectedSubcategory,
@@ -202,7 +236,7 @@ class OverallStockCubit extends Cubit<OverallStockState> {
 
     print('Filtering with query: $trimmedQuery, '
         'category: $selectedCategory, '
-        'subcategory: $selectedSubcategory'); // Debug
+        'subcategory: $selectedSubcategory');
 
     final filteredProducts = state.productStocks.where((product) {
       final matchesQuery = trimmedQuery == null || trimmedQuery.isEmpty
@@ -212,45 +246,23 @@ class OverallStockCubit extends Cubit<OverallStockState> {
       final matchesCategory = selectedCategory == null || selectedCategory.isEmpty
           ? true
           : product.category == selectedCategory;
-      final matchesSubcategory = selectedSubcategory == null || selectedSubcategory.isEmpty
+      final matchesSubcategory =
+      selectedSubcategory == null || selectedSubcategory.isEmpty
           ? true
           : product.subcategory == selectedSubcategory;
       return matchesQuery && matchesCategory && matchesSubcategory;
     }).toList();
 
-    print('Filtered ${filteredProducts.length} products'); // Debug
+    print('Filtered ${filteredProducts.length} products');
     emit(OverallStockSuccess(
       productStocks: state.productStocks,
       filteredProductStocks: List.from(filteredProducts),
+      totalStockValue: state.totalStockValue,
       searchQuery: trimmedQuery,
       selectedCategory: selectedCategory,
       selectedSubcategory: selectedSubcategory,
       availableCategories: state.availableCategories,
       availableSubcategories: state.availableSubcategories,
     ));
-  }
-
-  List<ProductStock> _aggregateStockByProduct(List<StockModel> stockItems, Map<String, String> storeNames) {
-    final Map<String, ProductStock> productMap = {};
-    for (final stock in stockItems) {
-      if (!productMap.containsKey(stock.productId)) {
-        print('Processing stock item: ${stock.productId}, name: ${stock.name}'); // Debug
-        productMap[stock.productId] = ProductStock(
-          productId: stock.productId.isNotEmpty ? stock.productId : 'Unknown_${stock.hashCode}',
-          productName: stock.name?.isNotEmpty == true ? stock.name! : 'Unknown',
-          category: stock.category,
-          subcategory: stock.subcategoryName,
-          totalStock: 0,
-          storeStocks: {},
-          storeNames: storeNames,
-        );
-      }
-      final productStock = productMap[stock.productId]!;
-      productStock.totalStock += stock.quantity;
-      productStock.storeStocks[stock.storeId] = stock.quantity;
-    }
-    final products = productMap.values.toList();
-    print('Aggregated ${products.length} products'); // Debug
-    return products;
   }
 }
