@@ -4,9 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_page.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/home_cubit.dart';
-import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
-import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 
 @RoutePage()
@@ -16,12 +14,13 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Define demo expiration date
-    final DateTime demoExpirationDate = DateTime(2025,10 , 10);
+    final DateTime demoExpirationDate = DateTime(2025, 10, 10);
     final bool isDemoExpired = DateTime.now().isAfter(demoExpirationDate);
 
     // Determine screen size for responsive design
     final double screenWidth = MediaQuery.of(context).size.width;
-    final bool isWeb = screenWidth > 600; // Consider web for screens wider than 600px
+    final bool isWeb =
+        screenWidth > 600; // Consider web for screens wider than 600px
 
     return BlocProvider(
       create: (context) => sl<HomeCubit>()..fetchUserInfo(),
@@ -161,7 +160,8 @@ class HomePage extends StatelessWidget {
                         SizedBox(height: isWeb ? 32 : 24),
                         Expanded(
                           child: GridView.count(
-                            crossAxisCount: isWeb ? 4 : 3, // More columns on web
+                            crossAxisCount: isWeb ? 4 : 3,
+                            // More columns on web
                             crossAxisSpacing: isWeb ? 16 : 12,
                             mainAxisSpacing: isWeb ? 16 : 12,
                             childAspectRatio: isWeb ? 1.2 : 1.0,
@@ -193,14 +193,13 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  // File: core_module/presentation/dashboard/home/home_page.dart
   List<Widget> _buildGridItemsForRole({
     required BuildContext context,
     required Role role,
     required bool isWeb,
   }) {
     final List<Widget> gridItems = [];
-
-
 
     // Role-based access
     switch (role) {
@@ -229,6 +228,99 @@ class HomePage extends StatelessWidget {
       case Role.COMPANY_ADMIN:
       case Role.COMPANY_ACCOUNTANT:
         gridItems.addAll([
+
+          _buildGridItem(
+            icon: Icons.inventory_2_outlined,
+            label: 'Product Management',
+            color: Colors.lightGreenAccent,
+            onTap: () {
+              sl<Coordinator>().navigateToProductManagementPage();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.shopping_cart,
+            label: 'Sales',
+            color: Colors.pink,
+            onTap: () {
+              sl<Coordinator>().navigateToCartDashboard();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.warehouse_outlined,
+            label: 'Inventory',
+            color: Colors.teal,
+            onTap: () {
+              sl<Coordinator>().navigateToInventoryDashBoard();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.account_balance_wallet,
+            label: 'Accounts',
+            color: Colors.green,
+            onTap: () {
+              sl<Coordinator>().navigateToAccountsDashboard();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.money,
+            label: 'Add Expenses',
+            color: Colors.orangeAccent,
+            onTap: () {
+              sl<Coordinator>().navigateToUserLedgerPage(
+                  transactionType: TransactionType.Expense);
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.money,
+            label: 'Add Reimbursement',
+            color: Colors.orangeAccent,
+            onTap: () {
+              sl<Coordinator>().navigateToUserLedgerPage(
+                  transactionType: TransactionType.Reimbursement);
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.analytics_outlined,
+            label: 'Analytics',
+            color: Colors.blue,
+            onTap: () {
+              sl<Coordinator>().navigateToAnalyticsPage();
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.account_balance_wallet,
+            label: 'Quick Receive',
+            color: Colors.green,
+            onTap: () {
+              sl<Coordinator>().navigateToQuickTransactionPage('receive');
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.payment,
+            label: 'Quick Pay',
+            color: Colors.red,
+            onTap: () {
+              sl<Coordinator>().navigateToQuickTransactionPage('pay');
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.money,
+            label: 'My Account',
+            color: Colors.orangeAccent,
+            onTap: () {
+              sl<Coordinator>().navigateToUserLedgerPage();
+            },
+            isWeb: isWeb,
+          ),
           _buildGridItem(
             icon: Icons.admin_panel_settings_outlined,
             label: 'Company Admin',
@@ -262,69 +354,6 @@ class HomePage extends StatelessWidget {
             color: Colors.indigo,
             onTap: () {
               sl<Coordinator>().navigateToCompanySettingsPage();
-            },
-            isWeb: isWeb,
-          ),
-          _buildGridItem(
-            icon: Icons.inventory_2_outlined,
-            label: 'Product Management',
-            color: Colors.lightGreenAccent,
-            onTap: () {
-              sl<Coordinator>().navigateToProductManagementPage();
-            },
-            isWeb: isWeb,
-          ),
-          _buildGridItem(
-            icon: Icons.bar_chart_outlined,
-            label: 'Sales Dashboard',
-            color: Colors.pink,
-            onTap: () {
-              sl<Coordinator>().navigateToCartDashboard();
-            },
-            isWeb: isWeb,
-          ),
-          _buildGridItem(
-            icon: Icons.warehouse_outlined,
-            label: 'Inventory',
-            color: Colors.teal,
-            onTap: () {
-              sl<Coordinator>().navigateToInventoryDashBoard();
-            },
-            isWeb: isWeb,
-          ),
-          _buildGridItem(
-            icon: Icons.account_balance_wallet,
-            label: 'Accounts',
-            color: Colors.green,
-            onTap: () {
-              sl<Coordinator>().navigateToAccountsDashboard();
-            },
-            isWeb: isWeb,
-          ),
-          _buildGridItem(
-            icon: Icons.money,
-            label: 'Add Expenses',
-            color: Colors.orangeAccent,
-            onTap: () {
-              sl<Coordinator>().navigateToUserLedgerPage(transactionType: TransactionType.Expense);
-            },
-            isWeb: isWeb,
-          ),
-          _buildGridItem(
-            icon: Icons.money,
-            label: 'Add Reimbursement',
-            color: Colors.orangeAccent,
-            onTap: () {
-              sl<Coordinator>().navigateToUserLedgerPage(transactionType: TransactionType.Reimbursement);
-            },
-            isWeb: isWeb,
-          ),
-          _buildGridItem(
-            icon: Icons.analytics_outlined,
-            label: 'Analytics',
-            color: Colors.blue,
-            onTap: () {
-              sl<Coordinator>().navigateToAnalyticsPage();
             },
             isWeb: isWeb,
           ),
@@ -463,11 +492,46 @@ class HomePage extends StatelessWidget {
             isWeb: isWeb,
           ),
           _buildGridItem(
+            icon: Icons.receipt_long,
+            label: 'My Stock',
+            color: Colors.cyan,
+            onTap: () => sl<Coordinator>().navigateToStoreDetailsPage(''),
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
             icon: Icons.money,
             label: 'Add Expenses',
             color: Colors.orangeAccent,
             onTap: () {
-              sl<Coordinator>().navigateToUserLedgerPage(transactionType: TransactionType.Expense);
+              sl<Coordinator>().navigateToUserLedgerPage(
+                  transactionType: TransactionType.Expense);
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.account_balance_wallet,
+            label: 'Quick Receive',
+            color: Colors.green,
+            onTap: () {
+              sl<Coordinator>().navigateToQuickTransactionPage('receive');
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.payment,
+            label: 'Quick Pay',
+            color: Colors.red,
+            onTap: () {
+              sl<Coordinator>().navigateToQuickTransactionPage('pay');
+            },
+            isWeb: isWeb,
+          ),
+          _buildGridItem(
+            icon: Icons.money,
+            label: 'My Account',
+            color: Colors.orangeAccent,
+            onTap: () {
+              sl<Coordinator>().navigateToUserLedgerPage();
             },
             isWeb: isWeb,
           ),
@@ -477,12 +541,44 @@ class HomePage extends StatelessWidget {
       case Role.STORE_ACCOUNTANT:
       case Role.STORE_MANAGER:
       case Role.USER:
-      // Only User Ledger is added (from common grid items)
+      // Only common items will be added below
         break;
     }
 
+    // Add common grid items for all roles
+    // gridItems.addAll([
+    //   _buildGridItem(
+    //     icon: Icons.account_balance_wallet,
+    //     label: 'Quick Receive',
+    //     color: Colors.green,
+    //     onTap: () {
+    //       sl<Coordinator>().navigateToQuickTransactionPage('receive');
+    //     },
+    //     isWeb: isWeb,
+    //   ),
+    //   _buildGridItem(
+    //     icon: Icons.payment,
+    //     label: 'Quick Pay',
+    //     color: Colors.red,
+    //     onTap: () {
+    //       sl<Coordinator>().navigateToQuickTransactionPage('pay');
+    //     },
+    //     isWeb: isWeb,
+    //   ),
+    //   _buildGridItem(
+    //     icon: Icons.money,
+    //     label: 'My Account',
+    //     color: Colors.orangeAccent,
+    //     onTap: () {
+    //       sl<Coordinator>().navigateToUserLedgerPage();
+    //     },
+    //     isWeb: isWeb,
+    //   ),
+    // ]);
+
     return gridItems;
   }
+
   Widget _buildGridItem({
     required IconData icon,
     required String label,

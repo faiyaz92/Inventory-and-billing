@@ -9,6 +9,7 @@ import 'package:requirment_gathering_app/core_module/app_router/app_router.dart'
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/tenant_company.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 import 'package:requirment_gathering_app/user_module/data/partner.dart';
 
@@ -329,8 +330,8 @@ class AppCoordinator implements Coordinator {
   }
 
   @override
-  Future navigateToSimpleUserList({UserType? userType}) {
-    return _router.push(SimpleUsersRoute(userType: userType));
+  Future navigateToSimpleUserList({UserType? userType,Role? role}) {
+    return _router.push(SimpleUsersRoute(userType: userType,role: role));
   }
 
   @override
@@ -401,5 +402,9 @@ class AppCoordinator implements Coordinator {
   @override
   Future<dynamic> navigateToAnalyticsPage() {
     return _router.push(const AnalyticsRoute());
+  }
+  @override
+  Future<dynamic> navigateToQuickTransactionPage(String transactionType) {
+    return _router.push(QuickTransactionRoute(transactionType: transactionType));
   }
 }

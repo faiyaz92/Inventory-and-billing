@@ -1234,6 +1234,49 @@ class ProfileRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [QuickTransactionPage]
+class QuickTransactionRoute extends PageRouteInfo<QuickTransactionRouteArgs> {
+  QuickTransactionRoute({
+    Key? key,
+    required String transactionType,
+    List<PageRouteInfo>? children,
+  }) : super(
+         QuickTransactionRoute.name,
+         args: QuickTransactionRouteArgs(
+           key: key,
+           transactionType: transactionType,
+         ),
+         initialChildren: children,
+       );
+
+  static const String name = 'QuickTransactionRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<QuickTransactionRouteArgs>();
+      return QuickTransactionPage(
+        key: args.key,
+        transactionType: args.transactionType,
+      );
+    },
+  );
+}
+
+class QuickTransactionRouteArgs {
+  const QuickTransactionRouteArgs({this.key, required this.transactionType});
+
+  final Key? key;
+
+  final String transactionType;
+
+  @override
+  String toString() {
+    return 'QuickTransactionRouteArgs{key: $key, transactionType: $transactionType}';
+  }
+}
+
+/// generated route for
 /// [SalesReportPage]
 class SalesReportRoute extends PageRouteInfo<void> {
   const SalesReportRoute({List<PageRouteInfo>? children})
@@ -1287,10 +1330,11 @@ class SimpleUsersRoute extends PageRouteInfo<SimpleUsersRouteArgs> {
   SimpleUsersRoute({
     Key? key,
     UserType? userType,
+    Role? role,
     List<PageRouteInfo>? children,
   }) : super(
          SimpleUsersRoute.name,
-         args: SimpleUsersRouteArgs(key: key, userType: userType),
+         args: SimpleUsersRouteArgs(key: key, userType: userType, role: role),
          initialChildren: children,
        );
 
@@ -1302,21 +1346,27 @@ class SimpleUsersRoute extends PageRouteInfo<SimpleUsersRouteArgs> {
       final args = data.argsAs<SimpleUsersRouteArgs>(
         orElse: () => const SimpleUsersRouteArgs(),
       );
-      return SimpleUsersPage(key: args.key, userType: args.userType);
+      return SimpleUsersPage(
+        key: args.key,
+        userType: args.userType,
+        role: args.role,
+      );
     },
   );
 }
 
 class SimpleUsersRouteArgs {
-  const SimpleUsersRouteArgs({this.key, this.userType});
+  const SimpleUsersRouteArgs({this.key, this.userType, this.role});
 
   final Key? key;
 
   final UserType? userType;
 
+  final Role? role;
+
   @override
   String toString() {
-    return 'SimpleUsersRouteArgs{key: $key, userType: $userType}';
+    return 'SimpleUsersRouteArgs{key: $key, userType: $userType, role: $role}';
   }
 }
 

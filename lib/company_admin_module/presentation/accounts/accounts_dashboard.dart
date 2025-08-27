@@ -1,8 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_page.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 
 @RoutePage()
@@ -64,6 +66,25 @@ class AccountsDashboardPage extends StatelessWidget {
                     mainAxisSpacing: isWeb ? 16 : 12,
                     childAspectRatio: isWeb ? 1.2 : 1.0,
                     children: [
+                      _buildDashboardCard(
+                        context,
+                        'Check Accounts', // Adjusted to singular for consistency
+                        Icons.account_balance, // Changed to a more relevant icon
+                        Colors.green,
+                            () {
+                              sl<Coordinator>().navigateToUserLedgerPage(transactionType: TransactionType.OtherLedger);
+                        },
+                        isWeb,
+                      ),_buildDashboardCard(
+                        context,
+                        'Sales man Accounts', // Adjusted to singular for consistency
+                        Icons.account_balance, // Changed to a more relevant icon
+                        Colors.green,
+                            () {
+                          sl<Coordinator>().navigateToSimpleUserList(userType: UserType.Employee,role: Role.SALES_MAN);
+                        },
+                        isWeb,
+                      ),
                       ..._buildGridItems(context, isWeb),
                       _buildDashboardCard(
                         context,

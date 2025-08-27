@@ -2,11 +2,15 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:requirment_gathering_app/company_admin_module/presentation/accounts/invoice_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/store_services.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
+import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
@@ -15,6 +19,7 @@ import 'package:requirment_gathering_app/core_module/utils/text_styles.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
+import 'package:requirment_gathering_app/user_module/cart/services/iorder_service.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 
 @RoutePage()
@@ -1006,6 +1011,28 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                     ],
                   ),
                   const Expanded(child: SizedBox()),
+                  if (invoice.paymentStatus != 'Paid') // Show only if not fully paid
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: ElevatedButton(
+                        onPressed: () => _showReceiveCashDialog(context, invoice),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          minimumSize: const Size(40, 30),
+                        ),
+                        child: const Text(
+                          'Receive Cash',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.white,
+                          ),
+                        ),
+                      ),
+                    ),
                   ElevatedButton(
                     onPressed: () =>
                         sl<Coordinator>().navigateToBillingPage(orderId: invoice.id),
@@ -1178,5 +1205,337 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
         ),
       ],
     );
+  }
+
+  Future<void> _showReceiveCashDialog(BuildContext context, Order invoice) async {
+    final TextEditingController amountController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Receive Cash'),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Order ID: ${invoice.id}', style: const TextStyle(fontSize: 14)),
+                Text('Invoice Number: ${invoice.billNumber ?? 'N/A'}', style: const TextStyle(fontSize: 14)),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: amountController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    labelText: 'Amount',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Amount is required';
+                    }
+                    final amount = double.tryParse(value);
+                    if (amount == null || amount <= 0) {
+                      return 'Enter a valid positive amount';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  final amount = double.parse(amountController.text);
+                  _processPayment(context, invoice, amount);
+                  Navigator.pop(dialogContext);
+                }
+              },
+              child: const Text('Receive'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _processPayment(BuildContext context, Order invoice, double amount) async {
+    final orderService = sl<IOrderService>();
+    final ledgerCubit = sl<UserLedgerCubit>();
+    final userInfo = await sl<AccountRepository>().getUserInfo();
+    final userId = userInfo?.userId;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User ID not found')),
+      );
+      return;
+    }
+
+    // Calculate new amount received and payment status
+    final currentAmountReceived = invoice.amountReceived ?? 0.0;
+    final newAmountReceived = currentAmountReceived + amount;
+    final paymentStatus = newAmountReceived >= invoice.totalAmount ? 'Paid' : 'Partial Paid';
+
+    // Update Order model
+    final updatedOrder = invoice.copyWith(
+      amountReceived: newAmountReceived,
+      paymentStatus: paymentStatus,
+      paymentDetails: [
+        ...(invoice.paymentDetails ?? []),
+        {
+          'date': DateTime.now(),
+          'amount': amount,
+          'method': 'Cash',
+        },
+      ],
+      invoiceLastUpdatedBy: userId,
+    );
+
+    // Update invoice in the service
+    await orderService.updateInvoice(updatedOrder);
+
+    // Ledger entries
+    final customerLedgerId = invoice.customerLedgerId;
+    if (customerLedgerId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Customer ledger ID not found')),
+      );
+      return;
+    }
+
+    final loggedInUserLedgerId = userInfo?.accountLedgerId;
+    if (loggedInUserLedgerId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Logged-in user ledger ID not found')),
+      );
+      return;
+    }
+
+    // Credit customer ledger (payment received reduces liability)
+    await ledgerCubit.addTransaction(
+      ledgerId: customerLedgerId,
+      amount: amount,
+      type: 'Credit',
+      billNumber: invoice.billNumber,
+      purpose: 'Payment',
+      typeOfPurpose: 'Cash',
+      remarks: 'Payment received for invoice ${invoice.id}',
+      userType: UserType.Customer,
+    );
+
+    // Debit logged-in user's ledger (cash received increases asset)
+    await ledgerCubit.addTransaction(
+      ledgerId: loggedInUserLedgerId,
+      amount: amount,
+      type: 'Debit',
+      billNumber: invoice.billNumber,
+      purpose: 'Cash Received',
+      typeOfPurpose: 'Cash',
+      remarks: 'Cash received from customer for invoice ${invoice.id}',
+      userType: userInfo?.userType ?? UserType.Employee,
+    );
+
+    // Generate receipt
+    final receiptPdf = await _generateReceiptPdf(updatedOrder, amount);
+
+    // Navigate to receipt PDF page
+    await sl<Coordinator>().navigateToBillPdfPage(pdf: receiptPdf, billNumber: invoice.id);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Payment received successfully')),
+    );
+
+    // Refresh the invoice list
+    _adminInvoiceCubit.fetchInvoices(
+      startDate: startDate,
+      endDate: endDate,
+    );
+  }
+
+  Future<pw.Document> _generateReceiptPdf(Order order, double amount) async {
+    final pdf = pw.Document();
+    final accountRepository = sl<AccountRepository>();
+
+    String companyName = 'Abc Pvt. Ltd.';
+    String issuerName = 'Unknown Issuer';
+    try {
+      final userInfo = await accountRepository.getUserInfo();
+      companyName = userInfo?.companyId ?? companyName;
+      issuerName = userInfo?.name ?? userInfo?.userName ?? issuerName;
+    } catch (e) {
+      print('Error fetching company or issuer name: $e');
+    }
+
+    final primaryColor = PdfColor.fromInt(AppColors.primary.value);
+    final textSecondaryColor = PdfColor.fromInt(AppColors.textSecondary.value);
+    final greyColor = PdfColors.grey300;
+
+    final regularFont = pw.Font.times();
+    final boldFont = pw.Font.timesBold();
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(40),
+        header: (context) => pw.Container(
+          padding: const pw.EdgeInsets.only(bottom: 12),
+          decoration: pw.BoxDecoration(
+            border: pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
+          ),
+          child: pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    companyName,
+                    style: pw.TextStyle(font: boldFont, fontSize: 22, color: primaryColor),
+                  ),
+                  pw.SizedBox(height: 4),
+                  pw.Text(
+                    '123 Business Street, City, Country',
+                    style: pw.TextStyle(font: regularFont, fontSize: 12, color: textSecondaryColor),
+                  ),
+                ],
+              ),
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.end,
+                children: [
+                  pw.Text(
+                    'RECEIPT',
+                    style: pw.TextStyle(font: boldFont, fontSize: 28, color: primaryColor),
+                  ),
+                  pw.SizedBox(height: 4),
+                  pw.Text(
+                    'Invoice #: ${order.id}',
+                    style: pw.TextStyle(font: regularFont, fontSize: 14),
+                  ),
+                  pw.Text(
+                    'Bill #: ${order.billNumber ?? 'N/A'}',
+                    style: pw.TextStyle(font: regularFont, fontSize: 14),
+                  ),
+                  pw.Text(
+                    'Date: ${DateTime.now().toString().substring(0, 10)}',
+                    style: pw.TextStyle(font: regularFont, fontSize: 14),
+                  ),
+                  pw.Text(
+                    'Issuer: $issuerName',
+                    style: pw.TextStyle(font: regularFont, fontSize: 14),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        build: (context) => [
+          pw.SizedBox(height: 24),
+          pw.Text(
+            'Received From:',
+            style: pw.TextStyle(font: boldFont, fontSize: 18, color: PdfColors.black),
+          ),
+          pw.SizedBox(height: 8),
+          pw.Text(
+            order.userName ?? 'Unknown Customer',
+            style: pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
+          ),
+          pw.SizedBox(height: 24),
+          pw.Text(
+            'Payment Details',
+            style: pw.TextStyle(font: boldFont, fontSize: 18),
+          ),
+          pw.SizedBox(height: 12),
+          pw.Table(
+            border: pw.TableBorder.all(color: greyColor, width: 1),
+            columnWidths: {
+              0: const pw.FlexColumnWidth(2),
+              1: const pw.FlexColumnWidth(2),
+            },
+            children: [
+              pw.TableRow(
+                decoration: const pw.BoxDecoration(color: PdfColors.grey100),
+                children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text('Description', style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text('Amount', style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                  ),
+                ],
+              ),
+              pw.TableRow(
+                decoration: pw.BoxDecoration(
+                  border: pw.Border(bottom: pw.BorderSide(color: greyColor, width: 0.5)),
+                ),
+                children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text(
+                      'Payment for Invoice #${order.id}',
+                      style: pw.TextStyle(font: regularFont, fontSize: 12),
+                    ),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text(
+                      amount.toStringAsFixed(2),
+                      style: pw.TextStyle(font: regularFont, fontSize: 12),
+                      textAlign: pw.TextAlign.right,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          pw.SizedBox(height: 24),
+          pw.Container(
+            padding: const pw.EdgeInsets.all(12),
+            decoration: pw.BoxDecoration(
+              color: PdfColors.grey50,
+              border: pw.Border.all(color: greyColor, width: 1),
+            ),
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.end,
+              children: [
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                  children: [
+                    pw.Text(
+                      'Total Amount Received: ${amount.toStringAsFixed(2)}',
+                      style: pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
+                    ),
+                    pw.SizedBox(height: 8),
+                    pw.Text(
+                      'Outstanding: ${(order.totalAmount - (order.amountReceived ?? 0.0)).toStringAsFixed(2)}',
+                      style: pw.TextStyle(font: regularFont, fontSize: 14),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+        footer: (context) => pw.Container(
+          alignment: pw.Alignment.center,
+          padding: const pw.EdgeInsets.only(top: 12),
+          child: pw.Text(
+            'Generated by $companyName | Page ${context.pageNumber} of ${context.pagesCount}',
+            style: pw.TextStyle(font: regularFont, fontSize: 10, color: textSecondaryColor),
+          ),
+        ),
+      ),
+    );
+
+    return pdf;
   }
 }
