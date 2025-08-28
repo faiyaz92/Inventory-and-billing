@@ -1475,7 +1475,7 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                                     trailing: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        IconButton(
+                                        /*IconButton(
                                           icon: Icon(
                                             Icons.add,
                                             color: Theme.of(context).primaryColor,
@@ -1490,7 +1490,7 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                                           ),
                                           onPressed: () => _showSubtractStockDialog(context, stock),
                                           tooltip: 'Subtract Stock',
-                                        ),
+                                        ),*/
                                         IconButton(
                                           icon: Icon(
                                             Icons.swap_horiz,
