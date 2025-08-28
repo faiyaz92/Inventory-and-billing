@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdf/pdf.dart';
@@ -58,6 +59,19 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
   void initState() {
     _stockCubit = sl<StockCubit>()..fetchStock(widget.storeId);
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _stockCubit.close();
+    super.dispose();
+  }
+
+  double _calculateStockValue(List<StockModel> stockItems) {
+    return stockItems.fold(0.0, (sum, item) {
+      final price = item.price ?? 0.0;
+      return sum + (price * item.quantity);
+    });
   }
 
   void _showAddStockDialog(BuildContext context, StockModel stock) {
@@ -428,7 +442,7 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                                                   ),
                                                   const SizedBox(height: 8),
                                                   Text(
-                                                    'Price: ${price.toStringAsFixed(2)}',
+                                                    'Price: ₹${price.toStringAsFixed(2)}',
                                                     style: const TextStyle(fontSize: 14, color: Colors.grey),
                                                   ),
                                                   Text(
@@ -530,14 +544,14 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                                                     Padding(
                                                       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                                                       child: Text(
-                                                        'Subtotal (${price.toStringAsFixed(2)} x $quantity)',
+                                                        'Subtotal (₹${price.toStringAsFixed(2)} x $quantity)',
                                                         style: const TextStyle(fontSize: 14, color: Colors.grey),
                                                       ),
                                                     ),
                                                     Padding(
                                                       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                                                       child: Text(
-                                                        '${subtotal.toStringAsFixed(2)}',
+                                                        '₹${subtotal.toStringAsFixed(2)}',
                                                         textAlign: TextAlign.right,
                                                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                                                       ),
@@ -556,7 +570,7 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                                                     Padding(
                                                       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                                                       child: Text(
-                                                        '${taxAmount.toStringAsFixed(2)}',
+                                                        '₹${taxAmount.toStringAsFixed(2)}',
                                                         textAlign: TextAlign.right,
                                                         style: const TextStyle(fontSize: 14, color: Colors.grey),
                                                       ),
@@ -582,7 +596,7 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                                                     Padding(
                                                       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                                                       child: Text(
-                                                        '${(subtotal + taxAmount).toStringAsFixed(2)}',
+                                                        '₹${(subtotal + taxAmount).toStringAsFixed(2)}',
                                                         textAlign: TextAlign.right,
                                                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
                                                       ),
@@ -1025,6 +1039,244 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
     return pdf;
   }
 
+  Widget _buildStockValueCard(double totalStockValue, BuildContext context) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Stock Value',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    final state = _stockCubit.state;
+                    if (state is StockLoaded) {
+                      final pdf = await _generateStockValuePdf(
+                        totalStockValue,
+                        widget.storeId,
+                        state.stores,
+                      );
+                      sl<Coordinator>().navigateToBillPdfPage(
+                        pdf: pdf,
+                        billNumber: 'Stock_Value_${widget.storeId}_${DateTime.now().millisecondsSinceEpoch}',
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    minimumSize: const Size(40, 40),
+                  ),
+                  child: const Text(
+                    'Export as PDF',
+                    style: TextStyle(fontSize: 12, color: AppColors.white),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                border: Border.all(color: AppColors.textSecondary.withOpacity(0.5)),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.inventory,
+                    color: AppColors.primary,
+                    size: kIsWeb ? 28 : 24,
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Total Stock Value',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '₹${totalStockValue.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<pw.Document> _generateStockValuePdf(
+      double totalStockValue, String storeId, List<StoreDto> stores) async {
+    final pdf = pw.Document();
+    final accountRepository = sl<AccountRepository>();
+    String companyName = 'Abc Pvt. Ltd.';
+    String issuerName = 'Unknown Issuer';
+    try {
+      final userInfo = await accountRepository.getUserInfo();
+      companyName = userInfo?.companyId ?? companyName;
+      issuerName = userInfo?.name ?? userInfo?.userName ?? issuerName;
+    } catch (e) {
+      print('Error fetching company or issuer name: $e');
+    }
+
+    final store = stores.firstWhere(
+          (s) => s.storeId == storeId,
+      orElse: () => StoreDto(
+        storeId: storeId,
+        name: 'Unknown Store',
+        createdBy: '',
+        createdAt: DateTime.now(),
+        accountLedgerId: null,
+      ),
+    );
+
+    final primaryColor = PdfColor.fromInt(AppColors.primary.value);
+    final textSecondaryColor = PdfColor.fromInt(AppColors.textSecondary.value);
+    const greyColor = PdfColors.grey300;
+
+    final regularFont = pw.Font.times();
+    final boldFont = pw.Font.timesBold();
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(40),
+        header: (context) => pw.Container(
+          padding: const pw.EdgeInsets.only(bottom: 12),
+          decoration: pw.BoxDecoration(
+            border: pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
+          ),
+          child: pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    companyName,
+                    style: pw.TextStyle(font: boldFont, fontSize: 22, color: primaryColor),
+                  ),
+                  pw.SizedBox(height: 4),
+                  pw.Text(
+                    '123 Business Street, City, Country',
+                    style: pw.TextStyle(font: regularFont, fontSize: 12, color: textSecondaryColor),
+                  ),
+                ],
+              ),
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.end,
+                children: [
+                  pw.Text(
+                    'STOCK VALUE REPORT',
+                    style: pw.TextStyle(font: boldFont, fontSize: 28, color: primaryColor),
+                  ),
+                  pw.SizedBox(height: 4),
+                  pw.Text(
+                    'Store: ${store.name}',
+                    style: pw.TextStyle(font: regularFont, fontSize: 14),
+                  ),
+                  pw.Text(
+                    'Date: ${DateTime.now().toString().substring(0, 10)}',
+                    style: pw.TextStyle(font: regularFont, fontSize: 14),
+                  ),
+                  pw.Text(
+                    'Issuer: $issuerName',
+                    style: pw.TextStyle(font: regularFont, fontSize: 14),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        build: (context) => [
+          pw.SizedBox(height: 24),
+          pw.Text(
+            'Stock Value',
+            style: pw.TextStyle(font: boldFont, fontSize: 18),
+          ),
+          pw.SizedBox(height: 12),
+          pw.Table(
+            border: pw.TableBorder.all(color: greyColor, width: 1),
+            columnWidths: {
+              0: const pw.FlexColumnWidth(6),
+              1: const pw.FlexColumnWidth(2),
+            },
+            children: [
+              pw.TableRow(
+                decoration: const pw.BoxDecoration(color: PdfColors.grey100),
+                children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text('Label', style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text('Value', style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                  ),
+                ],
+              ),
+              pw.TableRow(
+                children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text('Total Stock Value', style: pw.TextStyle(font: regularFont, fontSize: 12)),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text(
+                      '₹${totalStockValue.toStringAsFixed(2)}',
+                      style: pw.TextStyle(font: regularFont, fontSize: 12),
+                      textAlign: pw.TextAlign.right,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+        footer: (context) => pw.Container(
+          alignment: pw.Alignment.center,
+          padding: const pw.EdgeInsets.only(top: 12),
+          child: pw.Text(
+            'Generated by $companyName | Page ${context.pageNumber} of ${context.pagesCount}',
+            style: pw.TextStyle(font: regularFont, fontSize: 10, color: textSecondaryColor),
+          ),
+        ),
+      ),
+    );
+
+    return pdf;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -1078,6 +1330,7 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
 
                       final stores = (state is StockLoaded) ? state.stores : [];
                       final stockItems = (state is StockLoaded) ? state.stockItems : [];
+                      final totalStockValue = _calculateStockValue(stockItems as List<StockModel>);
 
                       String storeName = 'Store';
                       if (state is StockLoaded) {
@@ -1098,48 +1351,56 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                           .where((item) => item.name?.toLowerCase().contains(_searchQuery) ?? false)
                           .toList();
 
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Text(
-                              'Store: $storeName',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                                fontSize: 18,
-                              ),
-                            ),
-                          ),
-                          Card(
-                            elevation: 4,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                              child: TextField(
-                                decoration: InputDecoration(
-                                  hintText: 'Search products...',
-                                  border: InputBorder.none,
-                                  prefixIcon: Icon(
-                                    Icons.search,
-                                    color: Theme.of(context).primaryColor,
+                      return CustomScrollView(
+                        slivers: [
+                          SliverToBoxAdapter(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(
+                                    'Store: $storeName',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                      fontSize: 18,
+                                    ),
                                   ),
                                 ),
-                                onChanged: (value) {
-                                  setState(() {
-                                    _searchQuery = value.toLowerCase();
-                                  });
-                                },
-                              ),
+                                _buildStockValueCard(totalStockValue, context),
+                                const SizedBox(height: 16),
+                                Card(
+                                  elevation: 4,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                    child: TextField(
+                                      decoration: InputDecoration(
+                                        hintText: 'Search products...',
+                                        border: InputBorder.none,
+                                        prefixIcon: Icon(
+                                          Icons.search,
+                                          color: Theme.of(context).primaryColor,
+                                        ),
+                                      ),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _searchQuery = value.toLowerCase();
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          Expanded(
-                            child: filteredItems.isEmpty
-                                ? Center(
+                          filteredItems.isEmpty
+                              ? SliverToBoxAdapter(
+                            child: Center(
                               child: Card(
                                 elevation: 4,
                                 shape: RoundedRectangleBorder(
@@ -1158,12 +1419,14 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                                   ),
                                 ),
                               ),
-                            )
-                                : ListView.separated(
-                              itemCount: filteredItems.length,
-                              separatorBuilder: (context, index) => const SizedBox(height: 12),
-                              itemBuilder: (context, index) {
+                            ),
+                          )
+                              : SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                                  (context, index) {
                                 final stock = filteredItems[index];
+                                final price = stock.price ?? 0.0;
+                                final totalValue = price * stock.quantity;
                                 return Card(
                                   elevation: 4,
                                   shape: RoundedRectangleBorder(
@@ -1182,12 +1445,32 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    subtitle: Text(
-                                      'Quantity: ${stock.quantity}',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey[600],
-                                      ),
+                                    subtitle: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Quantity: ${stock.quantity}',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                        Text(
+                                          'Price: ₹${price.toStringAsFixed(2)}',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                        Text(
+                                          'Total Value: ₹${totalValue.toStringAsFixed(2)}',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey[600],
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                     trailing: Row(
                                       mainAxisSize: MainAxisSize.min,
@@ -1213,7 +1496,7 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                                             Icons.swap_horiz,
                                             color: Theme.of(context).primaryColor,
                                           ),
-                                          onPressed: () => _showTransferStockDialog(context, filteredItems as  List<StockModel> , stores as  List<StoreDto>),
+                                          onPressed: () => _showTransferStockDialog(context, filteredItems as List<StockModel>, stores as List<StoreDto>),
                                           tooltip: 'Transfer Stock',
                                         ),
                                       ],
@@ -1221,6 +1504,7 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                                   ),
                                 );
                               },
+                              childCount: filteredItems.length,
                             ),
                           ),
                         ],

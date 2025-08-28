@@ -292,7 +292,7 @@ class _PurchaseInvoicePanelPageState extends State<PurchaseInvoicePanelPage> {
                 .where((user) => user.userId != null && user.userId!.isNotEmpty)
                 .map((user) => DropdownMenuItem<String>(
               value: user.userId,
-              child: Text(user.userName ?? 'Unknown'),
+              child: Text(user.name ?? 'Unknown'),
             )),
           ];
 
@@ -418,7 +418,7 @@ class _PurchaseInvoicePanelPageState extends State<PurchaseInvoicePanelPage> {
                       ),
                       value: selectedPaymentStatus,
                       hint: const Text(
-                        'All Payment Statuses',
+                        'All Statuses',
                         style: TextStyle(color: AppColors.textSecondary),
                       ),
                       items: const [
@@ -700,7 +700,7 @@ class _PurchaseInvoicePanelPageState extends State<PurchaseInvoicePanelPage> {
           );
         }
         if (state is AdminPurchaseListFetchSuccess) {
-          final crossAxisCount = kIsWeb ? 7 : 4;
+          final crossAxisCount = kIsWeb ? 7 : 2;
           return Card(
             elevation: 4,
             shape: RoundedRectangleBorder(
@@ -1019,7 +1019,8 @@ class _PurchaseInvoicePanelPageState extends State<PurchaseInvoicePanelPage> {
     );
   }
 
-  Widget _buildPurchaseOrderCard(BuildContext context, AdminPurchaseOrder order,
+  Widget _buildPurchaseOrderCard(
+      BuildContext context, AdminPurchaseOrder order,
       AdminPurchaseListFetchSuccess state) {
     final statusStyles =
     _adminPurchaseCubit.getStatusColors(order.paymentStatus);
@@ -1031,8 +1032,8 @@ class _PurchaseInvoicePanelPageState extends State<PurchaseInvoicePanelPage> {
       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
       child: InkWell(
         onTap: () {
-// Navigate to purchase order details page if needed
-// sl<Coordinator>().navigateToPurchaseOrderDetailsPage(order.id);
+          // Navigate to purchase order details page if needed
+          // sl<Coordinator>().navigateToPurchaseOrderDetailsPage(order.id);
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
@@ -1068,75 +1069,62 @@ class _PurchaseInvoicePanelPageState extends State<PurchaseInvoicePanelPage> {
                       ),
                     ],
                   ),
-                  const Expanded(child: SizedBox()),
-                  if (order.paymentStatus != 'Paid')
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: ElevatedButton(
-                        onPressed: () => _showPaySupplierDialog(context, order),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          minimumSize: const Size(40, 30),
-                        ),
-                        child: const Text(
-                          'Pay Supplier',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppColors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  // ElevatedButton(
-                  //   onPressed: () => sl<Coordinator>()
-                  //       .navigateToBillingPage(orderId: order.id),
-                  //   style: ElevatedButton.styleFrom(
-                  //     backgroundColor: AppColors.primary,
-                  //     shape: RoundedRectangleBorder(
-                  //       borderRadius: BorderRadius.circular(8),
-                  //     ),
-                  //     padding: const EdgeInsets.symmetric(
-                  //         horizontal: 8, vertical: 4),
-                  //     minimumSize: const Size(40, 30),
-                  //   ),
-                  //   child: Text(
-                  //     order.billNumber == null || order.billNumber!.isEmpty
-                  //         ? 'View Invoice'
-                  //         : 'Update Invoice',
-                  //     style: const TextStyle(
-                  //       fontSize: 12,
-                  //       color: AppColors.white,
-                  //     ),
-                  //   ),
-                  // ),
                 ],
               ),
               const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: AppColors.textSecondary.withOpacity(0.5),
-                    width: 1,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: AppColors.textSecondary.withOpacity(0.5),
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      order.invoiceGeneratedDate != null
+                          ? context
+                          .read<AdminPurchaseCubit>()
+                          .formatInvoiceDate(order.invoiceGeneratedDate!)
+                          : 'No Date',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  order.invoiceGeneratedDate != null
-                      ? context
-                      .read<AdminPurchaseCubit>()
-                      .formatInvoiceDate(order.invoiceGeneratedDate!)
-                      : 'No Date',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (order.paymentStatus != 'Paid')
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: ElevatedButton(
+                            onPressed: () => _showPaySupplierDialog(context, order),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              minimumSize: const Size(40, 30),
+                            ),
+                            child: const Text(
+                              'Pay Supplier',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-                ),
+                ],
               ),
               const SizedBox(height: 8),
               Align(

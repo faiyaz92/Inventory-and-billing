@@ -2909,7 +2909,7 @@ class _BillingPageState extends State<BillingPage> {
                           backgroundColor: AppColors.primary,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          padding: const EdgeInsets.symmetric(vertical: 12,horizontal: 8),
                         ),
                         child: const Text(
                           'Add New Customer',

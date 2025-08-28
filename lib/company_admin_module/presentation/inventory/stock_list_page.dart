@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdf/pdf.dart';
@@ -59,6 +60,19 @@ class _StockListPageState extends State<StockListPage> {
     super.initState();
   }
 
+  @override
+  void dispose() {
+    _stockCubit.close();
+    super.dispose();
+  }
+
+  double _calculateStockValue(List<StockModel> stockItems) {
+    return stockItems.fold(0.0, (sum, item) {
+      final price = item.price ?? 0.0;
+      return sum + (price * item.quantity);
+    });
+  }
+
   void _showAddStockDialog(BuildContext context, StockModel stock) {
     int quantity = 0;
     String? remarks;
@@ -68,7 +82,7 @@ class _StockListPageState extends State<StockListPage> {
       builder: (context) {
         return AlertDialog(
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: const Text('Add Stock'),
           content: Form(
             key: _formKey,
@@ -158,7 +172,7 @@ class _StockListPageState extends State<StockListPage> {
       builder: (context) {
         return AlertDialog(
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: const Text('Subtract Stock'),
           content: Form(
             key: _formKey,
@@ -233,15 +247,14 @@ class _StockListPageState extends State<StockListPage> {
     String? remarks;
     bool generatePdf = true;
     List<Map<String, dynamic>> transferEntries = [];
-    bool isLoading = false; // Track loading state
-    String? selectedStockId; // For dropdown to add specific products
+    bool isLoading = false;
+    String? selectedStockId;
     final _formKey = GlobalKey<FormState>();
 
-// Add stock item to transfer entries with specified quantity
     void addToTransferEntries(StockModel stock, int quantity) {
       if (quantity <= 0 || quantity > stock.quantity) return;
       final existingEntry = transferEntries.firstWhere(
-        (entry) => entry['stock'].id == stock.id,
+            (entry) => entry['stock'].id == stock.id,
         orElse: () => {'stock': stock, 'quantity': 0},
       );
       if (!transferEntries.contains(existingEntry)) {
@@ -257,12 +270,11 @@ class _StockListPageState extends State<StockListPage> {
       transferEntries.removeWhere((entry) => entry['quantity'] <= 0);
     }
 
-// Update quantity in transfer entries
     void updateTransferEntryQuantity(String stockId, int change) {
       transferEntries = transferEntries.map((entry) {
         if (entry['stock'].id == stockId) {
           final newQuantity =
-              (entry['quantity'] + change).clamp(0, entry['stock'].quantity);
+          (entry['quantity'] + change).clamp(0, entry['stock'].quantity);
           return {'stock': entry['stock'], 'quantity': newQuantity};
         }
         return entry;
@@ -270,22 +282,20 @@ class _StockListPageState extends State<StockListPage> {
       transferEntries.removeWhere((entry) => entry['quantity'] <= 0);
     }
 
-// Clear a transfer entry
     void clearTransferEntry(String stockId) {
       transferEntries.removeWhere((entry) => entry['stock'].id == stockId);
     }
 
-// Show dialog to set quantity for a specific stock item
     void showQuantityInputDialog(StockModel stock, {int initialQuantity = 1}) {
       final TextEditingController quantityController =
-          TextEditingController(text: initialQuantity.toString());
+      TextEditingController(text: initialQuantity.toString());
       final _dialogFormKey = GlobalKey<FormState>();
 
       showDialog(
         context: context,
         builder: (dialogContext) => AlertDialog(
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: Text('Set Quantity for ${stock.name ?? 'Unknown'}'),
           content: Form(
             key: _dialogFormKey,
@@ -294,7 +304,7 @@ class _StockListPageState extends State<StockListPage> {
               decoration: InputDecoration(
                 labelText: 'Quantity',
                 border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 filled: true,
                 fillColor: Colors.grey[100],
               ),
@@ -324,7 +334,7 @@ class _StockListPageState extends State<StockListPage> {
               onPressed: () {
                 if (_dialogFormKey.currentState!.validate()) {
                   final quantity = int.parse(quantityController.text);
-                  addToTransferEntries(stock, quantity); // Replace quantity
+                  addToTransferEntries(stock, quantity);
                   Navigator.of(dialogContext).pop();
                 }
               },
@@ -371,14 +381,14 @@ class _StockListPageState extends State<StockListPage> {
                               .where((store) => !stockItems.any(
                                   (stock) => stock.storeId == store.storeId))
                               .map((store) => DropdownMenuItem(
-                                    value: store.storeId,
-                                    child: Text(store.name),
-                                  ))
+                            value: store.storeId,
+                            child: Text(store.name),
+                          ))
                               .toList(),
                           onChanged: (value) =>
                               setDialogState(() => selectedStoreId = value),
                           validator: (value) =>
-                              value == null ? 'Please select a store' : null,
+                          value == null ? 'Please select a store' : null,
                         ),
                         const SizedBox(height: 16),
                         DropdownButtonFormField<String>(
@@ -390,14 +400,13 @@ class _StockListPageState extends State<StockListPage> {
                             fillColor: Colors.grey[100],
                           ),
                           value: null,
-                          // Always null to act as a picker
                           hint: const Text('Select a product to add'),
                           items: stockItems
                               .where((stock) => stock.quantity > 0)
                               .map((stock) => DropdownMenuItem(
-                                    value: stock.id,
-                                    child: Text(stock.name ?? 'Unknown'),
-                                  ))
+                            value: stock.id,
+                            child: Text(stock.name ?? 'Unknown'),
+                          ))
                               .toList(),
                           onChanged: (value) {
                             if (value != null) {
@@ -423,12 +432,12 @@ class _StockListPageState extends State<StockListPage> {
                               const Text(
                                 'No stock items selected',
                                 style:
-                                    TextStyle(fontSize: 16, color: Colors.grey),
+                                TextStyle(fontSize: 16, color: Colors.grey),
                               )
                             else
                               ...transferEntries.asMap().entries.map((entry) {
                                 final stock =
-                                    entry.value['stock'] as StockModel;
+                                entry.value['stock'] as StockModel;
                                 final quantity = entry.value['quantity'] as int;
                                 final double price = stock.price ?? 0.0;
                                 final double taxRate = stock.tax ?? 0.0;
@@ -440,28 +449,28 @@ class _StockListPageState extends State<StockListPage> {
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12)),
                                   margin:
-                                      const EdgeInsets.symmetric(vertical: 8),
+                                  const EdgeInsets.symmetric(vertical: 8),
                                   child: Padding(
                                     padding: const EdgeInsets.all(12),
                                     child: Column(
                                       crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      CrossAxisAlignment.start,
                                       children: [
                                         Row(
                                           crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                          CrossAxisAlignment.start,
                                           children: [
                                             Expanded(
                                               child: Column(
                                                 crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
+                                                CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
                                                     stock.name ?? 'Unknown',
                                                     style: const TextStyle(
                                                       fontSize: 16,
                                                       fontWeight:
-                                                          FontWeight.w600,
+                                                      FontWeight.w600,
                                                     ),
                                                   ),
                                                   const SizedBox(height: 8),
@@ -486,15 +495,15 @@ class _StockListPageState extends State<StockListPage> {
                                                   decoration: BoxDecoration(
                                                     color: Colors.white,
                                                     borderRadius:
-                                                        BorderRadius.circular(
-                                                            24),
+                                                    BorderRadius.circular(
+                                                        24),
                                                     border: Border.all(
                                                         color: Colors.grey
                                                             .withOpacity(0.3)),
                                                   ),
                                                   child: Row(
                                                     mainAxisSize:
-                                                        MainAxisSize.min,
+                                                    MainAxisSize.min,
                                                     children: [
                                                       IconButton(
                                                         icon: Icon(
@@ -515,12 +524,12 @@ class _StockListPageState extends State<StockListPage> {
                                                         child: Text(
                                                           '$quantity',
                                                           textAlign:
-                                                              TextAlign.center,
+                                                          TextAlign.center,
                                                           style: const TextStyle(
                                                               fontSize: 16,
                                                               fontWeight:
-                                                                  FontWeight
-                                                                      .w600),
+                                                              FontWeight
+                                                                  .w600),
                                                         ),
                                                       ),
                                                       IconButton(
@@ -545,23 +554,23 @@ class _StockListPageState extends State<StockListPage> {
                                                           showQuantityInputDialog(
                                                               stock,
                                                               initialQuantity:
-                                                                  quantity),
+                                                              quantity),
                                                       style: ElevatedButton
                                                           .styleFrom(
                                                         backgroundColor:
-                                                            Theme.of(context)
-                                                                .primaryColor,
+                                                        Theme.of(context)
+                                                            .primaryColor,
                                                         shape:
-                                                            RoundedRectangleBorder(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            8)),
+                                                        RoundedRectangleBorder(
+                                                            borderRadius:
+                                                            BorderRadius
+                                                                .circular(
+                                                                8)),
                                                         padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal: 8,
-                                                                vertical: 4),
+                                                        const EdgeInsets
+                                                            .symmetric(
+                                                            horizontal: 8,
+                                                            vertical: 4),
                                                       ),
                                                       child: const Text(
                                                         'Enter Qty',
@@ -569,8 +578,8 @@ class _StockListPageState extends State<StockListPage> {
                                                             color: Colors.white,
                                                             fontSize: 12,
                                                             fontWeight:
-                                                                FontWeight
-                                                                    .w600),
+                                                            FontWeight
+                                                                .w600),
                                                       ),
                                                     ),
                                                     const SizedBox(width: 8),
@@ -582,18 +591,18 @@ class _StockListPageState extends State<StockListPage> {
                                                       style: ElevatedButton
                                                           .styleFrom(
                                                         backgroundColor:
-                                                            Colors.red,
+                                                        Colors.red,
                                                         shape:
-                                                            RoundedRectangleBorder(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            8)),
+                                                        RoundedRectangleBorder(
+                                                            borderRadius:
+                                                            BorderRadius
+                                                                .circular(
+                                                                8)),
                                                         padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal: 8,
-                                                                vertical: 4),
+                                                        const EdgeInsets
+                                                            .symmetric(
+                                                            horizontal: 8,
+                                                            vertical: 4),
                                                       ),
                                                       child: const Text(
                                                         'Clear',
@@ -601,8 +610,8 @@ class _StockListPageState extends State<StockListPage> {
                                                             color: Colors.white,
                                                             fontSize: 12,
                                                             fontWeight:
-                                                                FontWeight
-                                                                    .w600),
+                                                            FontWeight
+                                                                .w600),
                                                       ),
                                                     ),
                                                   ],
@@ -619,7 +628,7 @@ class _StockListPageState extends State<StockListPage> {
                                                   color: Colors.grey
                                                       .withOpacity(0.3)),
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                              BorderRadius.circular(12),
                                             ),
                                             child: Table(
                                               border: TableBorder(
@@ -657,12 +666,12 @@ class _StockListPageState extends State<StockListPage> {
                                                       child: Text(
                                                         '₹${subtotal.toStringAsFixed(2)}',
                                                         textAlign:
-                                                            TextAlign.right,
+                                                        TextAlign.right,
                                                         style: const TextStyle(
                                                             fontSize: 14,
                                                             fontWeight:
-                                                                FontWeight
-                                                                    .w600),
+                                                            FontWeight
+                                                                .w600),
                                                       ),
                                                     ),
                                                   ],
@@ -689,7 +698,7 @@ class _StockListPageState extends State<StockListPage> {
                                                       child: Text(
                                                         '₹${taxAmount.toStringAsFixed(2)}',
                                                         textAlign:
-                                                            TextAlign.right,
+                                                        TextAlign.right,
                                                         style: const TextStyle(
                                                             fontSize: 14,
                                                             color: Colors.grey),
@@ -703,26 +712,26 @@ class _StockListPageState extends State<StockListPage> {
                                                         .primaryColor
                                                         .withOpacity(0.05),
                                                     borderRadius:
-                                                        const BorderRadius.only(
+                                                    const BorderRadius.only(
                                                       bottomLeft:
-                                                          Radius.circular(12),
+                                                      Radius.circular(12),
                                                       bottomRight:
-                                                          Radius.circular(12),
+                                                      Radius.circular(12),
                                                     ),
                                                   ),
                                                   children: [
                                                     const Padding(
                                                       padding:
-                                                          EdgeInsets.symmetric(
-                                                              vertical: 8,
-                                                              horizontal: 12),
+                                                      EdgeInsets.symmetric(
+                                                          vertical: 8,
+                                                          horizontal: 12),
                                                       child: Text(
                                                         'Total',
                                                         style: TextStyle(
                                                             fontSize: 14,
                                                             fontWeight:
-                                                                FontWeight
-                                                                    .w700),
+                                                            FontWeight
+                                                                .w700),
                                                       ),
                                                     ),
                                                     Padding(
@@ -733,12 +742,12 @@ class _StockListPageState extends State<StockListPage> {
                                                       child: Text(
                                                         '₹${(subtotal + taxAmount).toStringAsFixed(2)}',
                                                         textAlign:
-                                                            TextAlign.right,
+                                                        TextAlign.right,
                                                         style: const TextStyle(
                                                             fontSize: 14,
                                                             fontWeight:
-                                                                FontWeight
-                                                                    .w700),
+                                                            FontWeight
+                                                                .w700),
                                                       ),
                                                     ),
                                                   ],
@@ -764,7 +773,7 @@ class _StockListPageState extends State<StockListPage> {
                             fillColor: Colors.grey[100],
                           ),
                           onChanged: (value) =>
-                              remarks = value.isEmpty ? null : value,
+                          remarks = value.isEmpty ? null : value,
                         ),
                         const SizedBox(height: 16),
                         CheckboxListTile(
@@ -791,141 +800,132 @@ class _StockListPageState extends State<StockListPage> {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8)),
                     ),
-                    onPressed: transferEntries.isEmpty ||
-                            selectedStoreId == null
+                    onPressed: transferEntries.isEmpty || selectedStoreId == null
                         ? null
                         : () async {
-                            if (_formKey.currentState!.validate()) {
-                              setDialogState(() => isLoading = true);
-                              final userInfo =
-                                  await sl<AccountRepository>().getUserInfo();
-                              final companyId =
-                                  userInfo?.companyId ?? 'Unknown';
-                              final transferId = DateTime.now()
-                                  .millisecondsSinceEpoch
-                                  .toString();
-                              final ledgerCubit = sl<UserLedgerCubit>();
-                              final storesList = await sl<StockRepository>()
-                                  .getStores(companyId);
+                      if (_formKey.currentState!.validate()) {
+                        setDialogState(() => isLoading = true);
+                        final userInfo =
+                        await sl<AccountRepository>().getUserInfo();
+                        final companyId =
+                            userInfo?.companyId ?? 'Unknown';
+                        final transferId = DateTime.now()
+                            .millisecondsSinceEpoch
+                            .toString();
+                        final ledgerCubit = sl<UserLedgerCubit>();
+                        final storesList = await sl<StockRepository>()
+                            .getStores(companyId);
 
-// Get source and destination stores
-                              final fromStore = storesList.firstWhere(
-                                (store) =>
-                                    store.storeId == stockItems.first.storeId,
-                                orElse: () => StoreDto(
-                                  storeId: stockItems.first.storeId,
-                                  name: 'Unknown',
-                                  createdBy: '',
-                                  createdAt: DateTime.now(),
-                                  accountLedgerId: null,
-                                ),
-                              );
-                              final toStore = storesList.firstWhere(
-                                (store) => store.storeId == selectedStoreId,
-                                orElse: () => StoreDto(
-                                  storeId: selectedStoreId!,
-                                  name: 'Unknown',
-                                  createdBy: '',
-                                  createdAt: DateTime.now(),
-                                  accountLedgerId: null,
-                                ),
-                              );
+                        final fromStore = storesList.firstWhere(
+                              (store) =>
+                          store.storeId == stockItems.first.storeId,
+                          orElse: () => StoreDto(
+                            storeId: stockItems.first.storeId,
+                            name: 'Unknown',
+                            createdBy: '',
+                            createdAt: DateTime.now(),
+                            accountLedgerId: null,
+                          ),
+                        );
+                        final toStore = storesList.firstWhere(
+                              (store) => store.storeId == selectedStoreId,
+                          orElse: () => StoreDto(
+                            storeId: selectedStoreId!,
+                            name: 'Unknown',
+                            createdBy: '',
+                            createdAt: DateTime.now(),
+                            accountLedgerId: null,
+                          ),
+                        );
 
-// Validate ledger IDs
-                              if (fromStore.accountLedgerId == null ||
-                                  toStore.accountLedgerId == null) {
-                                setDialogState(() => isLoading = false);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Ledger ID missing for ${fromStore.accountLedgerId == null ? 'source' : 'destination'} store',
-                                    ),
-                                  ),
-                                );
-                                return;
-                              }
+                        if (fromStore.accountLedgerId == null ||
+                            toStore.accountLedgerId == null) {
+                          setDialogState(() => isLoading = false);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Ledger ID missing for ${fromStore.accountLedgerId == null ? 'source' : 'destination'} store',
+                              ),
+                            ),
+                          );
+                          return;
+                        }
 
-                              try {
-// Process stock transfers and ledger entries sequentially
-                                for (var entry in transferEntries) {
-                                  final stock = entry['stock'] as StockModel;
-                                  final quantity = entry['quantity'] as int;
-                                  final price = stock.price ?? 0.0;
-                                  final taxRate = stock.tax ?? 0.0;
-                                  final amount = (price * quantity) +
-                                      (price * quantity * (taxRate / 100));
+                        try {
+                          for (var entry in transferEntries) {
+                            final stock = entry['stock'] as StockModel;
+                            final quantity = entry['quantity'] as int;
+                            final price = stock.price ?? 0.0;
+                            final taxRate = stock.tax ?? 0.0;
+                            final amount = (price * quantity) +
+                                (price * quantity * (taxRate / 100));
 
-// Transfer stock
-                                  await _stockCubit.transferStock(
-                                    stock,
-                                    selectedStoreId!,
-                                    quantity,
-                                    remarks: remarks,
-                                  );
+                            await _stockCubit.transferStock(
+                              stock,
+                              selectedStoreId!,
+                              quantity,
+                              remarks: remarks,
+                            );
 
-// Add ledger entry for source store (Debit)
-                                  await ledgerCubit.addTransaction(
-                                    ledgerId: fromStore.accountLedgerId!,
-                                    amount: amount,
-                                    type: 'Credit',
-                                    billNumber: 'TRANSFER-$transferId',
-                                    purpose: 'Stock Transfer Out',
-                                    typeOfPurpose: 'Transfer',
-                                    remarks:
-                                        'Transferred $quantity units of ${stock.name ?? 'Unknown'} to store ${toStore.name} (Transfer ID: $transferId)',
-                                    userType: UserType.Store,
-                                  );
+                            await ledgerCubit.addTransaction(
+                              ledgerId: fromStore.accountLedgerId!,
+                              amount: amount,
+                              type: 'Credit',
+                              billNumber: 'TRANSFER-$transferId',
+                              purpose: 'Stock Transfer Out',
+                              typeOfPurpose: 'Transfer',
+                              remarks:
+                              'Transferred $quantity units of ${stock.name ?? 'Unknown'} to store ${toStore.name} (Transfer ID: $transferId)',
+                              userType: UserType.Store,
+                            );
 
-// Add ledger entry for destination store (Credit)
-                                  await ledgerCubit.addTransaction(
-                                    ledgerId: toStore.accountLedgerId!,
-                                    amount: amount,
-                                    type: 'Debit',
-                                    billNumber: 'TRANSFER-$transferId',
-                                    purpose: 'Stock Transfer In',
-                                    typeOfPurpose: 'Transfer',
-                                    remarks:
-                                        'Received $quantity units of ${stock.name ?? 'Unknown'} from store ${fromStore.name} (Transfer ID: $transferId)',
-                                    userType: UserType.Store,
-                                  );
-                                }
+                            await ledgerCubit.addTransaction(
+                              ledgerId: toStore.accountLedgerId!,
+                              amount: amount,
+                              type: 'Debit',
+                              billNumber: 'TRANSFER-$transferId',
+                              purpose: 'Stock Transfer In',
+                              typeOfPurpose: 'Transfer',
+                              remarks:
+                              'Received $quantity units of ${stock.name ?? 'Unknown'} from store ${fromStore.name} (Transfer ID: $transferId)',
+                              userType: UserType.Store,
+                            );
+                          }
 
-// Generate PDF if requested
-                                if (generatePdf) {
-                                  final pdf = await _generateTransferPdf(
-                                    transferId,
-                                    stockItems.first.storeId,
-                                    selectedStoreId!,
-                                    transferEntries,
-                                    userInfo?.userName ?? 'Unknown',
-                                    companyId,
-                                  );
-                                  await sl<Coordinator>().navigateToBillPdfPage(
-                                    pdf: pdf,
-                                    billNumber: 'TRANSFER-$transferId',
-                                  );
-                                }
+                          if (generatePdf) {
+                            final pdf = await _generateTransferPdf(
+                              transferId,
+                              stockItems.first.storeId,
+                              selectedStoreId!,
+                              transferEntries,
+                              userInfo?.userName ?? 'Unknown',
+                              companyId,
+                            );
+                            await sl<Coordinator>().navigateToBillPdfPage(
+                              pdf: pdf,
+                              billNumber: 'TRANSFER-$transferId',
+                            );
+                          }
 
-// Refresh stock
-                                await _stockCubit
-                                    .fetchStock(stockItems.first.storeId);
-                                setDialogState(() => isLoading = false);
-                                Navigator.pop(dialogContext);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text(
-                                          'Stock transferred successfully')),
-                                );
-                              } catch (e) {
-                                setDialogState(() => isLoading = false);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content:
-                                          Text('Failed to transfer stock: $e')),
-                                );
-                              }
-                            }
-                          },
+                          await _stockCubit
+                              .fetchStock(stockItems.first.storeId);
+                          setDialogState(() => isLoading = false);
+                          Navigator.pop(dialogContext);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text(
+                                    'Stock transferred successfully')),
+                          );
+                        } catch (e) {
+                          setDialogState(() => isLoading = false);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content:
+                                Text('Failed to transfer stock: $e')),
+                          );
+                        }
+                      }
+                    },
                     child: const Text(AppLabels.saveButtonText),
                   ),
                 ],
@@ -982,7 +982,8 @@ class _StockListPageState extends State<StockListPage> {
     final double subtotal = transferEntries.fold(
       0.0,
           (sum, entry) =>
-      sum + ((entry['stock'] as StockModel).price ?? 0.0) * entry['quantity'],
+      sum +
+          ((entry['stock'] as StockModel).price ?? 0.0) * entry['quantity'],
     );
     final double totalTax = transferEntries.fold(
       0.0,
@@ -1061,11 +1062,13 @@ class _StockListPageState extends State<StockListPage> {
           pw.SizedBox(height: 8),
           pw.Text(
             'From Store: ${fromStore.name}',
-            style: pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
+            style:
+            pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
           ),
           pw.Text(
             'To Store: ${toStore.name}',
-            style: pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
+            style:
+            pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
           ),
           pw.SizedBox(height: 24),
           pw.Text(
@@ -1084,7 +1087,7 @@ class _StockListPageState extends State<StockListPage> {
             },
             children: [
               pw.TableRow(
-                decoration: pw.BoxDecoration(color: PdfColors.grey100),
+                decoration: const pw.BoxDecoration(color: PdfColors.grey100),
                 children: [
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
@@ -1219,6 +1222,257 @@ class _StockListPageState extends State<StockListPage> {
     return pdf;
   }
 
+  Widget _buildStockValueCard(double totalStockValue, BuildContext context) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Stock Value',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    final state = _stockCubit.state;
+                    if (state is StockLoaded && _selectedStoreId != null) {
+                      final pdf = await _generateStockValuePdf(
+                        totalStockValue,
+                        _selectedStoreId!,
+                        state.stores,
+                      );
+                      sl<Coordinator>().navigateToBillPdfPage(
+                        pdf: pdf,
+                        billNumber:
+                        'Stock_Value_${_selectedStoreId}_${DateTime.now().millisecondsSinceEpoch}',
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    minimumSize: const Size(40, 40),
+                  ),
+                  child: const Text(
+                    'Export as PDF',
+                    style: TextStyle(fontSize: 12, color: AppColors.white),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                border:
+                Border.all(color: AppColors.textSecondary.withOpacity(0.5)),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.inventory,
+                    color: AppColors.primary,
+                    size: kIsWeb ? 28 : 24,
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Total Stock Value',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '₹${totalStockValue.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<pw.Document> _generateStockValuePdf(
+      double totalStockValue, String storeId, List<StoreDto> stores) async {
+    final pdf = pw.Document();
+    final accountRepository = sl<AccountRepository>();
+    String companyName = 'Abc Pvt. Ltd.';
+    String issuerName = 'Unknown Issuer';
+    try {
+      final userInfo = await accountRepository.getUserInfo();
+      companyName = userInfo?.companyId ?? companyName;
+      issuerName = userInfo?.name ?? userInfo?.userName ?? issuerName;
+    } catch (e) {
+      print('Error fetching company or issuer name: $e');
+    }
+
+    final store = stores.firstWhere(
+          (s) => s.storeId == storeId,
+      orElse: () => StoreDto(
+        storeId: storeId,
+        name: 'Unknown Store',
+        createdBy: '',
+        createdAt: DateTime.now(),
+        accountLedgerId: null,
+      ),
+    );
+
+    final primaryColor = PdfColor.fromInt(AppColors.primary.value);
+    final textSecondaryColor = PdfColor.fromInt(AppColors.textSecondary.value);
+    const greyColor = PdfColors.grey300;
+
+    final regularFont = pw.Font.times();
+    final boldFont = pw.Font.timesBold();
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(40),
+        header: (context) => pw.Container(
+          padding: const pw.EdgeInsets.only(bottom: 12),
+          decoration: pw.BoxDecoration(
+            border:
+            pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
+          ),
+          child: pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    companyName,
+                    style: pw.TextStyle(
+                        font: boldFont, fontSize: 22, color: primaryColor),
+                  ),
+                  pw.SizedBox(height: 4),
+                  pw.Text(
+                    '123 Business Street, City, Country',
+                    style: pw.TextStyle(
+                        font: regularFont,
+                        fontSize: 12,
+                        color: textSecondaryColor),
+                  ),
+                ],
+              ),
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.end,
+                children: [
+                  pw.Text(
+                    'STOCK VALUE REPORT',
+                    style: pw.TextStyle(
+                        font: boldFont, fontSize: 28, color: primaryColor),
+                  ),
+                  pw.SizedBox(height: 4),
+                  pw.Text(
+                    'Store: ${store.name}',
+                    style: pw.TextStyle(font: regularFont, fontSize: 14),
+                  ),
+                  pw.Text(
+                    'Date: ${DateTime.now().toString().substring(0, 10)}',
+                    style: pw.TextStyle(font: regularFont, fontSize: 14),
+                  ),
+                  pw.Text(
+                    'Issuer: $issuerName',
+                    style: pw.TextStyle(font: regularFont, fontSize: 14),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        build: (context) => [
+          pw.SizedBox(height: 24),
+          pw.Text(
+            'Stock Value',
+            style: pw.TextStyle(font: boldFont, fontSize: 18),
+          ),
+          pw.SizedBox(height: 12),
+          pw.Table(
+            border: pw.TableBorder.all(color: greyColor, width: 1),
+            columnWidths: {
+              0: const pw.FlexColumnWidth(6),
+              1: const pw.FlexColumnWidth(2),
+            },
+            children: [
+              pw.TableRow(
+                decoration: const pw.BoxDecoration(color: PdfColors.grey100),
+                children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text('Label',
+                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text('Value',
+                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                  ),
+                ],
+              ),
+              pw.TableRow(
+                children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text('Total Stock Value',
+                        style: pw.TextStyle(font: regularFont, fontSize: 12)),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text(
+                      '₹${totalStockValue.toStringAsFixed(2)}',
+                      style: pw.TextStyle(font: regularFont, fontSize: 12),
+                      textAlign: pw.TextAlign.right,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+        footer: (context) => pw.Container(
+          alignment: pw.Alignment.center,
+          padding: const pw.EdgeInsets.only(top: 12),
+          child: pw.Text(
+            'Generated by $companyName | Page ${context.pageNumber} of ${context.pagesCount}',
+            style: pw.TextStyle(
+                font: regularFont, fontSize: 10, color: textSecondaryColor),
+          ),
+        ),
+      ),
+    );
+
+    return pdf;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -1271,12 +1525,13 @@ class _StockListPageState extends State<StockListPage> {
 
                       final stores = (state is StockLoaded) ? state.stores : [];
                       final stockItems =
-                          (state is StockLoaded) ? state.stockItems : [];
+                      (state is StockLoaded) ? state.stockItems : [];
+                      final totalStockValue = _calculateStockValue(stockItems as List<StockModel>);
 
                       final filteredItems = stockItems
                           .where((item) =>
-                              item.name?.toLowerCase().contains(_searchQuery) ??
-                              false)
+                      item.name?.toLowerCase().contains(_searchQuery) ??
+                          false)
                           .toList();
 
                       return Column(
@@ -1303,14 +1558,14 @@ class _StockListPageState extends State<StockListPage> {
                                   contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 12, vertical: 12),
                                   errorStyle:
-                                      const TextStyle(color: Colors.red),
+                                  const TextStyle(color: Colors.red),
                                 ),
                                 value: _selectedStoreId,
                                 items: stores
                                     .map((store) => DropdownMenuItem<String>(
-                                          value: store.storeId,
-                                          child: Text(store.name),
-                                        ))
+                                  value: store.storeId,
+                                  child: Text(store.name),
+                                ))
                                     .toList(),
                                 onChanged: (value) {
                                   setState(() => _selectedStoreId = value);
@@ -1326,6 +1581,11 @@ class _StockListPageState extends State<StockListPage> {
                               ),
                             ),
                           ),
+                          if (_selectedStoreId != null) ...[
+                            const SizedBox(height: 16),
+                            _buildStockValueCard(totalStockValue, context),
+                          ],
+                          const SizedBox(height: 16),
                           Card(
                             elevation: 4,
                             shape: RoundedRectangleBorder(
@@ -1333,7 +1593,7 @@ class _StockListPageState extends State<StockListPage> {
                             ),
                             child: Padding(
                               padding:
-                                  const EdgeInsets.symmetric(horizontal: 16.0),
+                              const EdgeInsets.symmetric(horizontal: 16.0),
                               child: TextField(
                                 decoration: InputDecoration(
                                   hintText: 'Search products...',
@@ -1355,122 +1615,122 @@ class _StockListPageState extends State<StockListPage> {
                           Expanded(
                             child: _selectedStoreId == null
                                 ? Center(
-                                    child: Card(
-                                      elevation: 4,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: const Padding(
-                                        padding: EdgeInsets.all(16.0),
-                                        child: Text(
-                                          'Please select a store',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            color: Colors.black87,
-                                          ),
-                                        ),
+                              child: Card(
+                                elevation: 4,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Text(
+                                    'Please select a store',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                                : filteredItems.isEmpty
+                                ? Center(
+                              child: Card(
+                                elevation: 4,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                  BorderRadius.circular(12),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(
+                                    _searchQuery.isEmpty
+                                        ? 'No stock available'
+                                        : 'No products found matching "$_searchQuery"',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                                : ListView.separated(
+                              itemCount: filteredItems.length,
+                              separatorBuilder: (context, index) =>
+                              const SizedBox(height: 12),
+                              itemBuilder: (context, index) {
+                                final stock = filteredItems[index];
+                                return Card(
+                                  elevation: 4,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                    BorderRadius.circular(12),
+                                  ),
+                                  child: ListTile(
+                                    leading: Icon(
+                                      Icons.inventory,
+                                      color: Theme.of(context)
+                                          .primaryColor,
+                                      size: 36,
+                                    ),
+                                    title: Text(
+                                      stock.name ?? 'Unknown',
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  )
-                                : filteredItems.isEmpty
-                                    ? Center(
-                                        child: Card(
-                                          elevation: 4,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                          ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(16.0),
-                                            child: Text(
-                                              _searchQuery.isEmpty
-                                                  ? 'No stock available'
-                                                  : 'No products found matching "$_searchQuery"',
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                color: Colors.black87,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                    : ListView.separated(
-                                        itemCount: filteredItems.length,
-                                        separatorBuilder: (context, index) =>
-                                            const SizedBox(height: 12),
-                                        itemBuilder: (context, index) {
-                                          final stock = filteredItems[index];
-                                          return Card(
-                                            elevation: 4,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                            ),
-                                            child: ListTile(
-                                              leading: Icon(
-                                                Icons.inventory,
-                                                color: Theme.of(context)
-                                                    .primaryColor,
-                                                size: 36,
-                                              ),
-                                              title: Text(
-                                                stock.name ?? 'Unknown',
-                                                style: const TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              subtitle: Text(
-                                                'Quantity: ${stock.quantity}',
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Colors.grey[600],
-                                                ),
-                                              ),
-                                              trailing: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  IconButton(
-                                                    icon: Icon(
-                                                      Icons.add,
-                                                      color: Theme.of(context)
-                                                          .primaryColor,
-                                                    ),
-                                                    onPressed: () =>
-                                                        _showAddStockDialog(
-                                                            context, stock),
-                                                    tooltip: 'Add Stock',
-                                                  ),
-                                                  IconButton(
-                                                    icon: Icon(
-                                                      Icons.remove,
-                                                      color: Theme.of(context)
-                                                          .primaryColor,
-                                                    ),
-                                                    onPressed: () =>
-                                                        _showSubtractStockDialog(
-                                                            context, stock),
-                                                    tooltip: 'Subtract Stock',
-                                                  ),
-                                                  IconButton(
-                                                    icon: Icon(
-                                                      Icons.swap_horiz,
-                                                      color: Theme.of(context)
-                                                          .primaryColor,
-                                                    ),
-                                                    onPressed: () =>
-                                                        _showTransferStockDialog(
-                                                            context,
-                                                            filteredItems as  List<StockModel>,
-                                                            stores as List<StoreDto>),
-                                                    tooltip: 'Transfer Stock',
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          );
-                                        },
+                                    subtitle: Text(
+                                      'Quantity: ${stock.quantity}',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey[600],
                                       ),
+                                    ),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.add,
+                                            color: Theme.of(context)
+                                                .primaryColor,
+                                          ),
+                                          onPressed: () =>
+                                              _showAddStockDialog(
+                                                  context, stock),
+                                          tooltip: 'Add Stock',
+                                        ),
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.remove,
+                                            color: Theme.of(context)
+                                                .primaryColor,
+                                          ),
+                                          onPressed: () =>
+                                              _showSubtractStockDialog(
+                                                  context, stock),
+                                          tooltip: 'Subtract Stock',
+                                        ),
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.swap_horiz,
+                                            color: Theme.of(context)
+                                                .primaryColor,
+                                          ),
+                                          onPressed: () =>
+                                              _showTransferStockDialog(
+                                                  context,
+                                                  filteredItems as List<StockModel>,
+                                                  stores as List<StoreDto>),
+                                          tooltip: 'Transfer Stock',
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                         ],
                       );

@@ -5,10 +5,11 @@ import 'package:requirment_gathering_app/company_admin_module/data/inventory/sto
 import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/purchase/admin_purchase_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/stock_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/admin_product_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/product_state.dart';
-import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/purchase/purchase_order_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
@@ -19,7 +20,6 @@ import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
 import 'package:requirment_gathering_app/core_module/utils/custom_loading_dialog.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
-import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
 
 @RoutePage()
 class AddStockPage extends StatefulWidget {
@@ -34,13 +34,17 @@ class _AddStockPageState extends State<AddStockPage> {
   String? _selectedStoreId;
   String? _selectedProductId;
   int _quantity = 0;
-  List<Map<String, dynamic>> _stockEntries = []; // {productId, quantity, product}
-  final TextEditingController _productSearchController = TextEditingController();
-  final TextEditingController _supplierSearchController = TextEditingController();
+  List<Map<String, dynamic>> _stockEntries =
+  []; // {productId, quantity, product}
+  final TextEditingController _productSearchController =
+  TextEditingController();
+  final TextEditingController _supplierSearchController =
+  TextEditingController();
   final TextEditingController _supplierNameController = TextEditingController();
   final TextEditingController _finalAmountController = TextEditingController();
   final TextEditingController _billNumberController = TextEditingController();
-  final TextEditingController _amountReceivedController = TextEditingController();
+  final TextEditingController _amountReceivedController =
+  TextEditingController();
   bool _useBatchMode = true; // Toggle between batch and single-item mode
   bool _isStockAdded = false; // Flag to track user-initiated stock addition
   bool _isLoading = false;
@@ -55,8 +59,10 @@ class _AddStockPageState extends State<AddStockPage> {
 
   @override
   void initState() {
-    _stockCubit = sl<StockCubit>()..fetchStock('');
-    _productCubit = sl<AdminProductCubit>()..loadProducts();
+    _stockCubit = sl<StockCubit>()
+      ..fetchStock('');
+    _productCubit = sl<AdminProductCubit>()
+      ..loadProducts();
     _purchaseCubit = sl<AdminPurchaseCubit>();
     _ledgerCubit = sl<UserLedgerCubit>();
     _stockEntries = []; // Ensure stock entries are empty on init
@@ -68,7 +74,8 @@ class _AddStockPageState extends State<AddStockPage> {
     setState(() {
       final existingEntry = _stockEntries.firstWhere(
             (entry) => entry['productId'] == product.id,
-        orElse: () => {'productId': product.id, 'quantity': 0, 'product': product},
+        orElse: () =>
+        {'productId': product.id, 'quantity': 0, 'product': product},
       );
       if (!_stockEntries.contains(existingEntry)) {
         _stockEntries.add({
@@ -120,83 +127,93 @@ class _AddStockPageState extends State<AddStockPage> {
     });
   }
 
-  Future<void> _showQuantityInputDialog(String productId, {int initialQuantity = 1}) async {
+  Future<void> _showQuantityInputDialog(String productId,
+      {int initialQuantity = 1}) async {
     final product = _stockEntries
-        .firstWhere((entry) => entry['productId'] == productId, orElse: () => {})
+        .firstWhere((entry) => entry['productId'] == productId,
+        orElse: () => {})
         .isNotEmpty
-        ? _stockEntries.firstWhere((entry) => entry['productId'] == productId)['product'] as Product
+        ? _stockEntries.firstWhere(
+            (entry) => entry['productId'] == productId)['product'] as Product
         : null;
     if (product == null) return;
 
-    final TextEditingController quantityController = TextEditingController(text: initialQuantity.toString());
+    final TextEditingController quantityController =
+    TextEditingController(text: initialQuantity.toString());
     final _dialogFormKey = GlobalKey<FormState>();
 
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: Text('Set Quantity for ${product.name}'),
-        content: Form(
-          key: _dialogFormKey,
-          child: TextFormField(
-            controller: quantityController,
-            decoration: InputDecoration(
-              labelText: 'Quantity',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              filled: true,
-              fillColor: Colors.grey[100],
+      builder: (dialogContext) =>
+          AlertDialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+            title: Text('Set Quantity for ${product.name}'),
+            content: Form(
+              key: _dialogFormKey,
+              child: TextFormField(
+                controller: quantityController,
+                decoration: InputDecoration(
+                  labelText: 'Quantity',
+                  border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                ),
+                keyboardType: TextInputType.number,
+                maxLength: 7,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a quantity';
+                  }
+                  final parsedValue = int.tryParse(value);
+                  if (parsedValue == null || parsedValue <= 0) {
+                    return 'Please enter a valid quantity';
+                  }
+                  if (parsedValue > 9999999) {
+                    return 'Quantity cannot exceed 7 digits';
+                  }
+                  return null;
+                },
+              ),
             ),
-            keyboardType: TextInputType.number,
-            maxLength: 7,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter a quantity';
-              }
-              final parsedValue = int.tryParse(value);
-              if (parsedValue == null || parsedValue <= 0) {
-                return 'Please enter a valid quantity';
-              }
-              if (parsedValue > 9999999) {
-                return 'Quantity cannot exceed 7 digits';
-              }
-              return null;
-            },
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  if (_dialogFormKey.currentState!.validate()) {
+                    final quantity = int.parse(quantityController.text);
+                    setState(() {
+                      _stockEntries = _stockEntries.map((entry) {
+                        if (entry['productId'] == product.id) {
+                          return {
+                            ...entry,
+                            'quantity': quantity,
+                            'taxAmount':
+                            product.price * quantity * (product.tax / 100),
+                          };
+                        }
+                        return entry;
+                      }).toList();
+                      _stockEntries.removeWhere((entry) =>
+                      entry['quantity'] == 0);
+                    });
+                    Navigator.of(dialogContext).pop();
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text('Save'),
+              ),
+            ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (_dialogFormKey.currentState!.validate()) {
-                final quantity = int.parse(quantityController.text);
-                setState(() {
-                  _stockEntries = _stockEntries.map((entry) {
-                    if (entry['productId'] == product.id) {
-                      return {
-                        ...entry,
-                        'quantity': quantity,
-                        'taxAmount': product.price * quantity * (product.tax / 100),
-                      };
-                    }
-                    return entry;
-                  }).toList();
-                  _stockEntries.removeWhere((entry) => entry['quantity'] == 0);
-                });
-                Navigator.of(dialogContext).pop();
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -204,6 +221,7 @@ class _AddStockPageState extends State<AddStockPage> {
     List<UserInfo> suppliers = [];
     List<UserInfo> _filteredSuppliers = [];
     bool _isLoadingDialog = false;
+    bool _isAddingSupplier = false; // New flag for button loading state
 
     print('DEBUG: Entering _showSupplierSelectionDialog');
 
@@ -213,186 +231,282 @@ class _AddStockPageState extends State<AddStockPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setStateDialog) {
-          print('DEBUG: Building supplier selection dialog, suppliers.length: ${suppliers.length}, _isLoadingDialog: $_isLoadingDialog');
+      builder: (dialogContext) =>
+          StatefulBuilder(
+            builder: (context, setStateDialog) {
+              print(
+                  'DEBUG: Building supplier selection dialog, suppliers.length: ${suppliers
+                      .length}, _isLoadingDialog: $_isLoadingDialog');
 
-          if (suppliers.isEmpty && !_isLoadingDialog) {
-            print('DEBUG: Suppliers empty and not loading, initiating fetch');
-            setStateDialog(() => _isLoadingDialog = true);
-            _userServices.getUsersFromTenantCompany().then((users) {
-              print('DEBUG: Fetched users from tenant company, total users: ${users.length}');
-              suppliers = users.where((u) => u.userType == UserType.Supplier).toList();
-              print('DEBUG: Filtered suppliers, count: ${suppliers.length}');
-              _filteredSuppliers = suppliers;
-              print('DEBUG: Updated _filteredSuppliers, count: ${_filteredSuppliers.length}');
-              setStateDialog(() {
-                _isLoadingDialog = false;
-                print('DEBUG: Set _isLoadingDialog to false');
-              });
-            }).catchError((error) {
-              print('DEBUG: Error fetching users: $error');
-              setStateDialog(() {
-                _isLoadingDialog = false;
-                print('DEBUG: Set _isLoadingDialog to false after error');
-              });
-            });
-          }
+              if (suppliers.isEmpty && !_isLoadingDialog) {
+                print(
+                    'DEBUG: Suppliers empty and not loading, initiating fetch');
+                setStateDialog(() => _isLoadingDialog = true);
+                _userServices.getUsersFromTenantCompany().then((users) {
+                  print(
+                      'DEBUG: Fetched users from tenant company, total users: ${users
+                          .length}');
+                  suppliers =
+                      users.where((u) => u.userType == UserType.Supplier)
+                          .toList();
+                  print(
+                      'DEBUG: Filtered suppliers, count: ${suppliers.length}');
+                  _filteredSuppliers = suppliers;
+                  print(
+                      'DEBUG: Updated _filteredSuppliers, count: ${_filteredSuppliers
+                          .length}');
+                  setStateDialog(() {
+                    _isLoadingDialog = false;
+                    print('DEBUG: Set _isLoadingDialog to false');
+                  });
+                }).catchError((error) {
+                  print('DEBUG: Error fetching users: $error');
+                  setStateDialog(() {
+                    _isLoadingDialog = false;
+                    print('DEBUG: Set _isLoadingDialog to false after error');
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text('Error fetching suppliers: $error'),
+                        backgroundColor: AppColors.red),
+                  );
+                });
+              }
 
-          return DraggableScrollableSheet(
-            initialChildSize: 0.9,
-            minChildSize: 0.5,
-            maxChildSize: 0.9,
-            expand: false,
-            builder: (BuildContext dialogContext, ScrollController scrollController) {
-              print('DEBUG: Building DraggableScrollableSheet, _isLoadingDialog: $_isLoadingDialog, _filteredSuppliers.length: ${_filteredSuppliers.length}');
-              return Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Select Supplier',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close, color: AppColors.primary),
-                          onPressed: () {
-                            print('DEBUG: Close button pressed');
-                            Navigator.of(dialogContext).pop();
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (_isLoadingDialog)
-                    const Center(child: CircularProgressIndicator())
-                  else ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                      child: TextField(
-                        controller: _supplierSearchController,
-                        decoration: InputDecoration(
-                          hintText: 'Search Suppliers',
-                          hintStyle: const TextStyle(color: AppColors.textSecondary),
-                          prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
-                          filled: true,
-                          fillColor: AppColors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.textSecondary, width: 0.3),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.textSecondary, width: 0.3),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        ),
-                        onChanged: (value) {
-                          print('DEBUG: Search query changed: $value');
-                          setStateDialog(() {
-                            _filteredSuppliers = suppliers
-                                .where((supplier) =>
-                                supplier.userName!.toLowerCase().contains(value.toLowerCase()))
-                                .toList();
-                            print('DEBUG: Filtered suppliers after search, count: ${_filteredSuppliers.length}');
-                          });
-                        },
-                      ),
-                    ),
-                    Expanded(
-                      child: ListView.builder(
-                        controller: scrollController,
-                        itemCount: _filteredSuppliers.length,
-                        itemBuilder: (context, index) {
-                          final supplier = _filteredSuppliers[index];
-                          print('DEBUG: Building ListTile for supplier: ${supplier.userName}, index: $index');
-                          return Card(
-                            elevation: 2,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              title: Text(
-                                supplier.name ?? 'Unknown',
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+              return DraggableScrollableSheet(
+                initialChildSize: 0.9,
+                minChildSize: 0.5,
+                maxChildSize: 0.9,
+                expand: false,
+                builder: (BuildContext dialogContext,
+                    ScrollController scrollController) {
+                  print(
+                      'DEBUG: Building DraggableScrollableSheet, _isLoadingDialog: $_isLoadingDialog, _filteredSuppliers.length: ${_filteredSuppliers
+                          .length}');
+                  return Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Select Supplier',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
                               ),
-                              onTap: () {
-                                print('DEBUG: Selected supplier: ${supplier.userName}');
-                                setState(() {
-                                  _selectedSupplier = supplier;
-                                });
+                            ),
+                            IconButton(
+                              icon:
+                              const Icon(Icons.close, color: AppColors.primary),
+                              onPressed: () {
+                                print('DEBUG: Close button pressed');
                                 Navigator.of(dialogContext).pop();
                               },
                             ),
-                          );
-                        },
+                          ],
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          TextField(
-                            controller: _supplierNameController,
-                            decoration: InputDecoration(
-                              labelText: 'New Supplier Name',
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                              filled: true,
-                              fillColor: AppColors.white,
+                      if (_isLoadingDialog)
+                        const Center(child: CircularProgressIndicator())
+                      else
+                        ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 8.0),
+                            child: TextField(
+                              controller: _supplierSearchController,
+                              decoration: InputDecoration(
+                                hintText: 'Search Suppliers',
+                                hintStyle:
+                                const TextStyle(color: AppColors.textSecondary),
+                                prefixIcon: const Icon(Icons.search,
+                                    color: AppColors.textSecondary),
+                                filled: true,
+                                fillColor: AppColors.white,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                      color: AppColors.textSecondary,
+                                      width: 0.3),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                      color: AppColors.textSecondary,
+                                      width: 0.3),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                              ),
+                              onChanged: (value) {
+                                print('DEBUG: Search query changed: $value');
+                                setStateDialog(() {
+                                  _filteredSuppliers = suppliers
+                                      .where((supplier) =>
+                                      supplier.name!
+                                          .toLowerCase()
+                                          .contains(value.toLowerCase()))
+                                      .toList();
+                                  print(
+                                      'DEBUG: Filtered suppliers after search, count: ${_filteredSuppliers
+                                          .length}');
+                                });
+                              },
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          ElevatedButton(
-                            onPressed: () async {
-                              if (_supplierNameController.text.isNotEmpty) {
-                                print('DEBUG: Add New Supplier button pressed, name: ${_supplierNameController.text}');
-                                final userInfo = await _accountRepository.getUserInfo();
-                                print('DEBUG: Fetched userInfo, companyId: ${userInfo?.companyId}');
-                                final newSupplier = UserInfo(
-                                  userName: _supplierNameController.text,
-                                  userType: UserType.Supplier,
-                                  companyId: userInfo?.companyId,
-                                  userId: DateTime.now().millisecondsSinceEpoch.toString(),
+                          Expanded(
+                            child: ListView.builder(
+                              controller: scrollController,
+                              itemCount: _filteredSuppliers.length,
+                              itemBuilder: (context, index) {
+                                final supplier = _filteredSuppliers[index];
+                                print(
+                                    'DEBUG: Building ListTile for supplier: ${supplier
+                                        .name}, index: $index');
+                                return Card(
+                                  elevation: 2,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8)),
+                                  child: ListTile(
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 8),
+                                    title: Text(
+                                      supplier.name ?? 'Unknown',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    onTap: () {
+                                      print(
+                                          'DEBUG: Selected supplier: ${supplier
+                                              .name}');
+                                      setState(() {
+                                        _selectedSupplier = supplier;
+                                      });
+                                      Navigator.of(dialogContext).pop();
+                                    },
+                                  ),
                                 );
-                                await _userServices.addUserToCompany(newSupplier, '');
-                                print('DEBUG: Added new supplier: ${newSupplier.userName}');
-                                suppliers = await _userServices.getUsersFromTenantCompany();
-                                print('DEBUG: Refetched suppliers, count: ${suppliers.length}');
-                                _filteredSuppliers = suppliers.where((u) => u.userType == UserType.Supplier).toList();
-                                print('DEBUG: Updated _filteredSuppliers, count: ${_filteredSuppliers.length}');
-                                setStateDialog(() {});
-                                _supplierNameController.clear();
-                                print('DEBUG: Cleared supplierNameController');
-                              } else {
-                                print('DEBUG: Add New Supplier button pressed, but supplier name is empty');
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: AppColors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              },
                             ),
-                            child: const Text('Add New Supplier'),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              children: [
+                                TextField(
+                                  controller: _supplierNameController,
+                                  decoration: InputDecoration(
+                                    labelText: 'New Supplier Name',
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8)),
+                                    filled: true,
+                                    fillColor: AppColors.white,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                ElevatedButton(
+                                  onPressed: _isAddingSupplier
+                                      ? null
+                                      : () async {
+                                    if (_supplierNameController
+                                        .text.isNotEmpty) {
+                                      print(
+                                          'DEBUG: Add New Supplier button pressed, name: ${_supplierNameController
+                                              .text}');
+                                      setStateDialog(
+                                              () => _isAddingSupplier = true);
+                                      try {
+                                        final userInfo =
+                                        await _accountRepository
+                                            .getUserInfo();
+                                        print(
+                                            'DEBUG: Fetched userInfo, companyId: ${userInfo
+                                                ?.companyId}');
+                                        final newSupplier = UserInfo(
+                                          name: _supplierNameController.text,
+                                          userType: UserType.Supplier,
+                                          companyId: userInfo?.companyId,
+                                          userId: DateTime
+                                              .now()
+                                              .millisecondsSinceEpoch
+                                              .toString(),
+                                        );
+                                        await _userServices.addUserToCompany(
+                                            newSupplier, '');
+                                        print(
+                                            'DEBUG: Added new supplier: ${newSupplier
+                                                .name}');
+                                        suppliers = await _userServices
+                                            .getUsersFromTenantCompany();
+                                        print(
+                                            'DEBUG: Refetched suppliers, count: ${suppliers
+                                                .length}');
+                                        _filteredSuppliers = suppliers
+                                            .where((u) =>
+                                        u.userType == UserType.Supplier)
+                                            .toList();
+                                        print(
+                                            'DEBUG: Updated _filteredSuppliers, count: ${_filteredSuppliers
+                                                .length}');
+                                        _supplierNameController.clear();
+                                        print(
+                                            'DEBUG: Cleared supplierNameController');
+                                      } catch (e) {
+                                        print(
+                                            'DEBUG: Error adding new supplier: $e');
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                              content: Text(
+                                                  'Error adding supplier: $e'),
+                                              backgroundColor: AppColors.red),
+                                        );
+                                      } finally {
+                                        setStateDialog(
+                                                () =>
+                                            _isAddingSupplier = false);
+                                      }
+                                    } else {
+                                      print(
+                                          'DEBUG: Add New Supplier button pressed, but supplier name is empty');
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    foregroundColor: AppColors.white,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8)),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 12),
+                                  ),
+                                  child: _isAddingSupplier
+                                      ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      color: AppColors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                      : const Text('Add New Supplier'),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
-                      ),
-                    ),
-                  ],
-                ],
+                    ],
+                  );
+                },
               );
             },
-          );
-        },
-      ),
+          ),
     );
     print('DEBUG: Supplier selection dialog closed');
   }
+
   Future<void> _showProductSelectionDialog() async {
     _productSearchController.clear();
     debugPrint('Dialog: Opening product selection dialog');
@@ -410,11 +524,14 @@ class _AddStockPageState extends State<AddStockPage> {
           minChildSize: 0.5,
           maxChildSize: 0.9,
           expand: false,
-          builder: (BuildContext dialogContext, ScrollController scrollController) {
+          builder:
+              (BuildContext dialogContext, ScrollController scrollController) {
             return BlocBuilder<AdminProductCubit, ProductState>(
               bloc: _productCubit,
               buildWhen: (previous, current) =>
-              current is ProductLoading || current is ProductError || current is ProductLoaded,
+              current is ProductLoading ||
+                  current is ProductError ||
+                  current is ProductLoaded,
               builder: (BuildContext context, ProductState productState) {
                 if (productState is ProductLoading) {
                   debugPrint('Dialog: Loading products');
@@ -447,10 +564,14 @@ class _AddStockPageState extends State<AddStockPage> {
                 } else if (productState is ProductLoaded) {
                   final List<Product> products = productState.products;
                   debugPrint('Dialog: Loaded ${products.length} products');
-                  if (!isDialogInitialized && filteredProducts.value.isEmpty && products.isNotEmpty) {
+                  if (!isDialogInitialized &&
+                      filteredProducts.value.isEmpty &&
+                      products.isNotEmpty) {
                     filteredProducts.value = List.from(products);
                     isDialogInitialized = true;
-                    debugPrint('Dialog: Initialized filteredProducts with ${filteredProducts.value.length} items');
+                    debugPrint(
+                        'Dialog: Initialized filteredProducts with ${filteredProducts
+                            .value.length} items');
                   }
 
                   return Column(
@@ -469,7 +590,8 @@ class _AddStockPageState extends State<AddStockPage> {
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.close, color: AppColors.primary),
+                              icon: const Icon(Icons.close,
+                                  color: AppColors.primary),
                               onPressed: () {
                                 debugPrint('Dialog: Closing dialog');
                                 Navigator.of(dialogContext).pop();
@@ -479,24 +601,30 @@ class _AddStockPageState extends State<AddStockPage> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 8.0),
                         child: TextField(
                           controller: _productSearchController,
                           decoration: InputDecoration(
                             hintText: 'Search Products',
-                            hintStyle: const TextStyle(color: AppColors.textSecondary),
-                            prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+                            hintStyle:
+                            const TextStyle(color: AppColors.textSecondary),
+                            prefixIcon: const Icon(Icons.search,
+                                color: AppColors.textSecondary),
                             filled: true,
                             fillColor: AppColors.white,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: AppColors.textSecondary, width: 0.3),
+                              borderSide: const BorderSide(
+                                  color: AppColors.textSecondary, width: 0.3),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: AppColors.textSecondary, width: 0.3),
+                              borderSide: const BorderSide(
+                                  color: AppColors.textSecondary, width: 0.3),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
                           ),
                           onChanged: (value) {
                             filteredProducts.value = [];
@@ -504,7 +632,10 @@ class _AddStockPageState extends State<AddStockPage> {
                               filteredProducts.value = List.from(products);
                             } else {
                               filteredProducts.value = products
-                                  .where((product) => product.name.toLowerCase().contains(value.toLowerCase()))
+                                  .where((product) =>
+                                  product.name
+                                      .toLowerCase()
+                                      .contains(value.toLowerCase()))
                                   .toList();
                             }
                           },
@@ -518,56 +649,78 @@ class _AddStockPageState extends State<AddStockPage> {
                               return const Center(
                                 child: Text(
                                   'No products found',
-                                  style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      color: AppColors.textSecondary),
                                 ),
                               );
                             }
                             return ListView.builder(
                               controller: scrollController,
                               itemCount: products.length,
-                              itemBuilder: (BuildContext dialogContext, int index) {
+                              itemBuilder:
+                                  (BuildContext dialogContext, int index) {
                                 final product = products[index];
                                 return Card(
                                   elevation: 2,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                   child: ListTile(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 8),
                                     title: Text(
                                       product.name,
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
                                     ),
                                     subtitle: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Price: ₹${product.price.toStringAsFixed(2)}',
-                                          style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                                          'Price: ₹${product.price
+                                              .toStringAsFixed(2)}',
+                                          style: const TextStyle(
+                                              fontSize: 14,
+                                              color: AppColors.textSecondary),
                                         ),
                                         Text(
-                                          'Tax: ${product.tax.toStringAsFixed(0)}%',
-                                          style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                                          'Tax: ${product.tax.toStringAsFixed(
+                                              0)}%',
+                                          style: const TextStyle(
+                                              fontSize: 14,
+                                              color: AppColors.textSecondary),
                                         ),
                                         if (product.category.isNotEmpty)
                                           Text(
                                             'Category: ${product.category}',
-                                            style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                                            style: const TextStyle(
+                                                fontSize: 14,
+                                                color: AppColors.textSecondary),
                                           ),
                                         if (product.subcategoryName.isNotEmpty)
                                           Text(
-                                            'Subcategory: ${product.subcategoryName}',
-                                            style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                                            'Subcategory: ${product
+                                                .subcategoryName}',
+                                            style: const TextStyle(
+                                                fontSize: 14,
+                                                color: AppColors.textSecondary),
                                           ),
                                       ],
                                     ),
                                     trailing: IconButton(
-                                      icon: const Icon(Icons.add, color: AppColors.primary),
+                                      icon: const Icon(Icons.add,
+                                          color: AppColors.primary),
                                       onPressed: () {
                                         _addToStockEntries(product, 1);
                                         setState(() {
                                           _productSearchController.clear();
-                                          filteredProducts.value = List.from(products);
+                                          filteredProducts.value =
+                                              List.from(products);
                                         });
-                                        debugPrint('Dialog: Added product "${product.name}"');
+                                        debugPrint(
+                                            'Dialog: Added product "${product
+                                                .name}"');
                                       },
                                     ),
                                   ),
@@ -581,11 +734,13 @@ class _AddStockPageState extends State<AddStockPage> {
                   );
                 }
 
-                debugPrint('Dialog: Unexpected state ${productState.runtimeType}');
+                debugPrint(
+                    'Dialog: Unexpected state ${productState.runtimeType}');
                 return const Center(
                   child: Text(
                     'No products available',
-                    style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                    style:
+                    TextStyle(fontSize: 16, color: AppColors.textSecondary),
                   ),
                 );
               },
@@ -608,265 +763,335 @@ class _AddStockPageState extends State<AddStockPage> {
     });
     final calculatedTotal = subtotal + totalTax;
     _finalAmountController.text = calculatedTotal.toStringAsFixed(2);
-    _billNumberController.text = 'BILL-${DateTime.now().millisecondsSinceEpoch}';
-    _amountReceivedController.text = _selectedPurchaseType == 'Cash' ? calculatedTotal.toStringAsFixed(2) : '0.0';
+    _billNumberController.text =
+    'BILL-${DateTime
+        .now()
+        .millisecondsSinceEpoch}';
+    _amountReceivedController.text = _selectedPurchaseType == 'Cash'
+        ? calculatedTotal.toStringAsFixed(2)
+        : '0.0';
 
     final _dialogFormKey = GlobalKey<FormState>();
 
     return await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width > 800 ? 600 : MediaQuery.of(context).size.width * 0.9,
-            minWidth: 300,
-          ),
-          child: AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            backgroundColor: AppColors.white,
-            contentPadding: const EdgeInsets.all(0),
-            title: Container(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      builder: (dialogContext) =>
+          Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery
+                    .of(context)
+                    .size
+                    .width > 800
+                    ? 600
+                    : MediaQuery
+                    .of(context)
+                    .size
+                    .width * 0.9,
+                minWidth: 300,
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Review Purchase',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+              child: AlertDialog(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+                backgroundColor: AppColors.white,
+                contentPadding: const EdgeInsets.all(0),
+                title: Container(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(16)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Review Purchase',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: AppColors.primary),
+                        onPressed: () => Navigator.pop(dialogContext, false),
+                      ),
+                    ],
+                  ),
+                ),
+                content: SingleChildScrollView(
+                  child: Form(
+                    key: _dialogFormKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Summary Section
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSummaryRow('Supplier',
+                                  _selectedSupplier?.name ?? 'None'),
+                              const SizedBox(height: 8),
+                              _buildSummaryRow(
+                                  'Store', _selectedStoreId ?? 'None'),
+                              const SizedBox(height: 8),
+                              _buildSummaryRow('Purchase Type',
+                                  _selectedPurchaseType ?? 'None'),
+                            ],
+                          ),
+                        ),
+                        // Stock Entries Table
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                  color:
+                                  AppColors.textSecondary.withOpacity(0.3)),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Table(
+                              columnWidths: const {
+                                0: FlexColumnWidth(3),
+                                1: FlexColumnWidth(2),
+                                2: FlexColumnWidth(2),
+                                3: FlexColumnWidth(2),
+                              },
+                              border: TableBorder(
+                                verticalInside: BorderSide(
+                                    color: AppColors.textSecondary
+                                        .withOpacity(0.3)),
+                                horizontalInside: BorderSide(
+                                    color: AppColors.textSecondary
+                                        .withOpacity(0.3)),
+                              ),
+                              children: [
+                                // Table Header
+                                TableRow(
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withOpacity(0.05),
+                                  ),
+                                  children: [
+                                    _buildTableCell('Product', isHeader: true),
+                                    _buildTableCell('Qty',
+                                        isHeader: true,
+                                        align: TextAlign.center),
+                                    _buildTableCell('Subtotal',
+                                        isHeader: true, align: TextAlign.right),
+                                    _buildTableCell('Tax',
+                                        isHeader: true, align: TextAlign.right),
+                                  ],
+                                ),
+                                // Table Rows for Stock Entries
+                                ..._stockEntries.map((entry) {
+                                  final product = entry['product'] as Product;
+                                  final quantity = entry['quantity'] as int;
+                                  final itemSubtotal = product.price * quantity;
+                                  final itemTax =
+                                      itemSubtotal * (product.tax / 100);
+                                  return TableRow(
+                                    children: [
+                                      _buildTableCell(product.name),
+                                      _buildTableCell(quantity.toString(),
+                                          align: TextAlign.center),
+                                      _buildTableCell(
+                                          '₹${itemSubtotal.toStringAsFixed(2)}',
+                                          align: TextAlign.right),
+                                      _buildTableCell(
+                                          '₹${itemTax.toStringAsFixed(2)}',
+                                          align: TextAlign.right),
+                                    ],
+                                  );
+                                }).toList(),
+                                // Total Row
+                                TableRow(
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withOpacity(0.1),
+                                    borderRadius: const BorderRadius.vertical(
+                                        bottom: Radius.circular(12)),
+                                  ),
+                                  children: [
+                                    _buildTableCell('Total', isHeader: true),
+                                    _buildTableCell('',
+                                        align: TextAlign.center),
+                                    _buildTableCell(
+                                        '₹${subtotal.toStringAsFixed(2)}',
+                                        isHeader: true,
+                                        align: TextAlign.right),
+                                    _buildTableCell(
+                                        '₹${totalTax.toStringAsFixed(2)}',
+                                        isHeader: true,
+                                        align: TextAlign.right),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        // Form Fields
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              TextFormField(
+                                controller: _finalAmountController,
+                                decoration:
+                                _buildInputDecoration('Final Amount'),
+                                keyboardType: TextInputType.number,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty)
+                                    return 'Please enter final amount';
+                                  final parsed = double.tryParse(value);
+                                  if (parsed == null || parsed <= 0)
+                                    return 'Please enter a valid amount';
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 12),
+                              TextFormField(
+                                controller: _billNumberController,
+                                decoration:
+                                _buildInputDecoration('Bill Number'),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty)
+                                    return 'Please enter bill number';
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 12),
+                              if (_selectedPurchaseType == 'Cash') ...[
+                                TextFormField(
+                                  controller: _amountReceivedController,
+                                  decoration: _buildInputDecoration(
+                                      'Initial Payment (Fixed)'),
+                                  keyboardType: TextInputType.number,
+                                  enabled: false,
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty)
+                                      return 'Please enter a valid amount';
+                                    final parsed = double.tryParse(value);
+                                    if (parsed == null || parsed <= 0)
+                                      return 'Please enter a valid amount';
+                                    return null;
+                                  },
+                                ),
+                              ] else
+                                ...[
+                                  TextFormField(
+                                    controller: _amountReceivedController,
+                                    decoration: _buildInputDecoration(
+                                        'Initial Payment (Optional)'),
+                                    keyboardType: TextInputType.number,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty)
+                                        return null;
+                                      final parsed = double.tryParse(value);
+                                      if (parsed == null || parsed < 0)
+                                        return 'Please enter a valid amount';
+                                      if (parsed >
+                                          double.parse(
+                                              _finalAmountController.text)) {
+                                        return 'Initial payment cannot exceed final amount';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ],
+                              const SizedBox(height: 16),
+                              Builder(
+                                builder: (context) {
+                                  final amountReceived = double.tryParse(
+                                      _amountReceivedController.text) ??
+                                      0.0;
+                                  final payableAmount = double.parse(
+                                      _finalAmountController.text) -
+                                      amountReceived;
+                                  return Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color:
+                                      AppColors.primary.withOpacity(0.05),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        const Text(
+                                          'Payable Amount',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.textPrimary,
+                                          ),
+                                        ),
+                                        Text(
+                                          '₹${payableAmount.toStringAsFixed(
+                                              2)}',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.primary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: AppColors.primary),
+                ),
+                actions: [
+                  TextButton(
                     onPressed: () => Navigator.pop(dialogContext, false),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.red,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                    ),
+                    child: const Text(
+                      'Cancel',
+                      style:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (_dialogFormKey.currentState!.validate()) {
+                        Navigator.pop(dialogContext, true);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                      elevation: 2,
+                    ),
+                    child: const Text(
+                      'Confirm',
+                      style:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
                   ),
                 ],
               ),
             ),
-            content: SingleChildScrollView(
-              child: Form(
-                key: _dialogFormKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Summary Section
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildSummaryRow('Supplier', _selectedSupplier?.name ?? 'None'),
-                          const SizedBox(height: 8),
-                          _buildSummaryRow('Store', _selectedStoreId ?? 'None'),
-                          const SizedBox(height: 8),
-                          _buildSummaryRow('Purchase Type', _selectedPurchaseType ?? 'None'),
-                        ],
-                      ),
-                    ),
-                    // Stock Entries Table
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: AppColors.textSecondary.withOpacity(0.3)),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Table(
-                          columnWidths: const {
-                            0: FlexColumnWidth(3),
-                            1: FlexColumnWidth(2),
-                            2: FlexColumnWidth(2),
-                            3: FlexColumnWidth(2),
-                          },
-                          border: TableBorder(
-                            verticalInside: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
-                            horizontalInside: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
-                          ),
-                          children: [
-                            // Table Header
-                            TableRow(
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withOpacity(0.05),
-                              ),
-                              children: [
-                                _buildTableCell('Product', isHeader: true),
-                                _buildTableCell('Qty', isHeader: true, align: TextAlign.center),
-                                _buildTableCell('Subtotal', isHeader: true, align: TextAlign.right),
-                                _buildTableCell('Tax', isHeader: true, align: TextAlign.right),
-                              ],
-                            ),
-                            // Table Rows for Stock Entries
-                            ..._stockEntries.map((entry) {
-                              final product = entry['product'] as Product;
-                              final quantity = entry['quantity'] as int;
-                              final itemSubtotal = product.price * quantity;
-                              final itemTax = itemSubtotal * (product.tax / 100);
-                              return TableRow(
-                                children: [
-                                  _buildTableCell(product.name),
-                                  _buildTableCell(quantity.toString(), align: TextAlign.center),
-                                  _buildTableCell('₹${itemSubtotal.toStringAsFixed(2)}', align: TextAlign.right),
-                                  _buildTableCell('₹${itemTax.toStringAsFixed(2)}', align: TextAlign.right),
-                                ],
-                              );
-                            }).toList(),
-                            // Total Row
-                            TableRow(
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withOpacity(0.1),
-                                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
-                              ),
-                              children: [
-                                _buildTableCell('Total', isHeader: true),
-                                _buildTableCell('', align: TextAlign.center),
-                                _buildTableCell('₹${subtotal.toStringAsFixed(2)}', isHeader: true, align: TextAlign.right),
-                                _buildTableCell('₹${totalTax.toStringAsFixed(2)}', isHeader: true, align: TextAlign.right),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    // Form Fields
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          TextFormField(
-                            controller: _finalAmountController,
-                            decoration: _buildInputDecoration('Final Amount'),
-                            keyboardType: TextInputType.number,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) return 'Please enter final amount';
-                              final parsed = double.tryParse(value);
-                              if (parsed == null || parsed <= 0) return 'Please enter a valid amount';
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          TextFormField(
-                            controller: _billNumberController,
-                            decoration: _buildInputDecoration('Bill Number'),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) return 'Please enter bill number';
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          if (_selectedPurchaseType == 'Cash') ...[
-                            TextFormField(
-                              controller: _amountReceivedController,
-                              decoration: _buildInputDecoration('Initial Payment (Fixed)'),
-                              keyboardType: TextInputType.number,
-                              enabled: false,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) return 'Please enter a valid amount';
-                                final parsed = double.tryParse(value);
-                                if (parsed == null || parsed <= 0) return 'Please enter a valid amount';
-                                return null;
-                              },
-                            ),
-                          ] else ...[
-                            TextFormField(
-                              controller: _amountReceivedController,
-                              decoration: _buildInputDecoration('Initial Payment (Optional)'),
-                              keyboardType: TextInputType.number,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) return null;
-                                final parsed = double.tryParse(value);
-                                if (parsed == null || parsed < 0) return 'Please enter a valid amount';
-                                if (parsed > double.parse(_finalAmountController.text)) {
-                                  return 'Initial payment cannot exceed final amount';
-                                }
-                                return null;
-                              },
-                            ),
-                          ],
-                          const SizedBox(height: 16),
-                          Builder(
-                            builder: (context) {
-                              final amountReceived = double.tryParse(_amountReceivedController.text) ?? 0.0;
-                              final payableAmount = double.parse(_finalAmountController.text) - amountReceived;
-                              return Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary.withOpacity(0.05),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text(
-                                      'Payable Amount',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.textPrimary,
-                                      ),
-                                    ),
-                                    Text(
-                                      '₹${payableAmount.toStringAsFixed(2)}',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.primary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext, false),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.red,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
-                child: const Text(
-                  'Cancel',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  if (_dialogFormKey.currentState!.validate()) {
-                    Navigator.pop(dialogContext, true);
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  elevation: 2,
-                ),
-                child: const Text(
-                  'Confirm',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
           ),
-        ),
-      ),
-    ) ?? false;
+    ) ??
+        false;
   }
 
 // Helper method to build summary row
@@ -894,7 +1119,8 @@ class _AddStockPageState extends State<AddStockPage> {
   }
 
 // Helper method to build table cell
-  Widget _buildTableCell(String text, {bool isHeader = false, TextAlign align = TextAlign.left}) {
+  Widget _buildTableCell(String text,
+      {bool isHeader = false, TextAlign align = TextAlign.left}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
       child: Text(
@@ -940,8 +1166,13 @@ class _AddStockPageState extends State<AddStockPage> {
   }
 
   Future<void> _saveStock() async {
-    if (_formKey.currentState!.validate() && _selectedSupplier != null && _selectedPurchaseType != null) {
-      print('DEBUG: _saveStock called, mode: ${_useBatchMode ? "Batch" : "Single"}, purchaseType: $_selectedPurchaseType');
+    if (_formKey.currentState!.validate() &&
+        _selectedSupplier != null &&
+        _selectedPurchaseType != null) {
+      print(
+          'DEBUG: _saveStock called, mode: ${_useBatchMode
+              ? "Batch"
+              : "Single"}, purchaseType: $_selectedPurchaseType');
 
       // Validate and set _stockEntries for single-entry mode
       if (!_useBatchMode) {
@@ -950,17 +1181,18 @@ class _AddStockPageState extends State<AddStockPage> {
             : [];
         final selectedProduct = products.firstWhere(
               (product) => product.id == _selectedProductId,
-          orElse: () => Product(
-            id: _selectedProductId ?? '',
-            name: '',
-            price: 0.0,
-            stock: 0,
-            category: '',
-            categoryId: '',
-            subcategoryId: '',
-            subcategoryName: '',
-            tax: 0.0,
-          ),
+          orElse: () =>
+              Product(
+                id: _selectedProductId ?? '',
+                name: '',
+                price: 0.0,
+                stock: 0,
+                category: '',
+                categoryId: '',
+                subcategoryId: '',
+                subcategoryName: '',
+                tax: 0.0,
+              ),
         );
         if (selectedProduct.id.isEmpty) {
           print('DEBUG: Invalid product selected in single mode');
@@ -975,10 +1207,13 @@ class _AddStockPageState extends State<AddStockPage> {
             'quantity': _quantity,
             'product': selectedProduct,
             'taxRate': selectedProduct.tax,
-            'taxAmount': selectedProduct.price * _quantity * (selectedProduct.tax / 100),
+            'taxAmount':
+            selectedProduct.price * _quantity * (selectedProduct.tax / 100),
           }
         ];
-        print('DEBUG: Single mode _stockEntries set, product: ${selectedProduct.name}, quantity: $_quantity');
+        print(
+            'DEBUG: Single mode _stockEntries set, product: ${selectedProduct
+                .name}, quantity: $_quantity');
       }
 
       if (_stockEntries.isEmpty) {
@@ -1004,9 +1239,11 @@ class _AddStockPageState extends State<AddStockPage> {
         final userId = userInfo?.userId ?? '';
         final billNumber = _billNumberController.text;
         final finalAmount = double.parse(_finalAmountController.text);
-        final amountReceived = double.tryParse(_amountReceivedController.text) ?? 0.0;
+        final amountReceived =
+            double.tryParse(_amountReceivedController.text) ?? 0.0;
 
-        print('DEBUG: userInfo.companyId: $companyId, userId: $userId, billNumber: $billNumber, finalAmount: $finalAmount, amountReceived: $amountReceived');
+        print(
+            'DEBUG: userInfo.companyId: $companyId, userId: $userId, billNumber: $billNumber, finalAmount: $finalAmount, amountReceived: $amountReceived');
 
         final paymentStatus = amountReceived >= finalAmount
             ? 'Paid'
@@ -1023,13 +1260,21 @@ class _AddStockPageState extends State<AddStockPage> {
         ]
             : null;
 
-        print('DEBUG: paymentStatus: $paymentStatus, paymentDetails: $paymentDetails');
+        print(
+            'DEBUG: paymentStatus: $paymentStatus, paymentDetails: $paymentDetails');
 
         // Ensure ledgers
         final supplierLedgerId = _selectedSupplier!.accountLedgerId ??
-            await _ledgerCubit.ensureLedger(_selectedSupplier!.userId!, UserType.Supplier, _selectedSupplier!);
+            await _ledgerCubit.ensureLedger(_selectedSupplier!.userId!,
+                UserType.Supplier, _selectedSupplier!);
         final store = (await sl<StockRepository>().getStores(companyId))
-            .firstWhere((s) => s.storeId == _selectedStoreId, orElse: () => StoreDto(storeId: '', name: '', createdBy: '', createdAt: DateTime.now()));
+            .firstWhere((s) => s.storeId == _selectedStoreId,
+            orElse: () =>
+                StoreDto(
+                    storeId: '',
+                    name: '',
+                    createdBy: '',
+                    createdAt: DateTime.now()));
         final storeLedgerId = store.accountLedgerId ??
             await _ledgerCubit.ensureLedgerForStore(_selectedStoreId!, store);
 
@@ -1051,7 +1296,10 @@ class _AddStockPageState extends State<AddStockPage> {
 
         // Create purchase order
         final purchaseOrder = AdminPurchaseOrder(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          id: DateTime
+              .now()
+              .millisecondsSinceEpoch
+              .toString(),
           supplierId: _selectedSupplier!.userId!,
           supplierName: _selectedSupplier!.userName ?? 'Unknown',
           items: purchaseItems,
@@ -1095,7 +1343,9 @@ class _AddStockPageState extends State<AddStockPage> {
             tax: product.tax,
           );
           await _stockCubit.addStock(stock, product: product);
-          print('DEBUG: Added stock for product: ${product.name}, quantity: $quantity');
+          print(
+              'DEBUG: Added stock for product: ${product
+                  .name}, quantity: $quantity');
         }
 
         // Ledger entries for supplier
@@ -1110,21 +1360,23 @@ class _AddStockPageState extends State<AddStockPage> {
           remarks: 'Purchase order ${purchaseOrder.id}',
           userType: UserType.Supplier,
         );
-        print('DEBUG: Added Credit transaction to supplier ledger: $finalAmount, purpose: Purchase stock, billNumber: $billNumber');
+        print(
+            'DEBUG: Added Credit transaction to supplier ledger: $finalAmount, purpose: Purchase stock, billNumber: $billNumber');
 
-        if (_selectedPurchaseType == 'Cash' && amountReceived > 0) {
-          // For cash payments, add Debit for payment
+        if (amountReceived > 0) {
+          // For any payment (Cash or Credit with partial payment), add Debit for payment to supplier ledger
           await _ledgerCubit.addTransaction(
             ledgerId: supplierLedgerId,
             amount: amountReceived,
             type: 'Debit',
             billNumber: billNumber,
-            purpose: 'Cash payment for purchased stock',
+            purpose: 'Payment for purchased stock',
             typeOfPurpose: 'Cash',
             remarks: 'Purchase order ${purchaseOrder.id}',
             userType: UserType.Supplier,
           );
-          print('DEBUG: Added Debit transaction to supplier ledger: $amountReceived, purpose: Cash payment for purchased stock, billNumber: $billNumber');
+          print(
+              'DEBUG: Added Debit transaction to supplier ledger: $amountReceived, purpose: Payment for purchased stock, billNumber: $billNumber');
         }
 
         // Ledger entries for store (mirror entries)
@@ -1139,33 +1391,41 @@ class _AddStockPageState extends State<AddStockPage> {
           remarks: 'Purchase order ${purchaseOrder.id}',
           userType: UserType.Store,
         );
-        print('DEBUG: Added Debit transaction to store ledger: $finalAmount, purpose: Purchase stock, billNumber: $billNumber');
+        print(
+            'DEBUG: Added Debit transaction to store ledger: $finalAmount, purpose: Purchase stock, billNumber: $billNumber');
 
-        if (_selectedPurchaseType == 'Cash' && amountReceived > 0) {
-          // For cash payments, add Credit for payment
+        if (amountReceived > 0) {
+          // For any payment (Cash or Credit with partial payment), add Credit for payment to store ledger
           await _ledgerCubit.addTransaction(
             ledgerId: storeLedgerId,
             amount: amountReceived,
             type: 'Credit',
             billNumber: billNumber,
-            purpose: 'Cash payment for purchased stock',
+            purpose: 'Payment for purchased stock',
             typeOfPurpose: 'Cash',
             remarks: 'Purchase order ${purchaseOrder.id}',
             userType: UserType.Store,
           );
-          print('DEBUG: Added Credit transaction to store ledger: $amountReceived, purpose: Cash payment for purchased stock, billNumber: $billNumber');
+          print(
+              'DEBUG: Added Credit transaction to store ledger: $amountReceived, purpose: Payment for purchased stock, billNumber: $billNumber');
         }
 
         // Verify ledger balance for debugging
-        if (_selectedPurchaseType == 'Cash' && amountReceived >= finalAmount) {
-          print('DEBUG: Cash payment fully paid, expected supplier ledger balance: 0');
-          print('DEBUG: Cash payment fully paid, expected store ledger balance: 0');
-        } else if (_selectedPurchaseType == 'Cash' && amountReceived > 0) {
-          print('DEBUG: Partial cash payment, expected supplier ledger balance: ${finalAmount - amountReceived}');
-          print('DEBUG: Partial cash payment, expected store ledger balance: ${finalAmount - amountReceived}');
-        } else if (_selectedPurchaseType == 'Credit') {
-          print('DEBUG: Credit payment, expected supplier ledger balance: $finalAmount');
-          print('DEBUG: Credit payment, expected store ledger balance: $finalAmount');
+        if (amountReceived >= finalAmount) {
+          print('DEBUG: Full payment, expected supplier ledger balance: 0');
+          print('DEBUG: Full payment, expected store ledger balance: 0');
+        } else if (amountReceived > 0) {
+          print(
+              'DEBUG: Partial payment, expected supplier ledger balance: ${finalAmount -
+                  amountReceived}');
+          print(
+              'DEBUG: Partial payment, expected store ledger balance: ${finalAmount -
+                  amountReceived}');
+        } else {
+          print(
+              'DEBUG: No payment, expected supplier ledger balance: $finalAmount');
+          print(
+              'DEBUG: No payment, expected store ledger balance: $finalAmount');
         }
 
         setState(() => _isStockAdded = true);
@@ -1174,37 +1434,41 @@ class _AddStockPageState extends State<AddStockPage> {
         // Show success dialog
         await showDialog(
           context: context,
-          builder: (dialogContext) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            title: const Text(
-              'Success',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primary,
-              ),
-            ),
-            content: Text(
-              _useBatchMode
-                  ? 'Stock batch added successfully'
-                  : 'Stock added successfully',
-              style: const TextStyle(fontSize: 16, color: AppColors.textSecondary),
-            ),
-            actions: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(dialogContext).pop();
-                  sl<Coordinator>().navigateBack(isUpdated: true);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          builder: (dialogContext) =>
+              AlertDialog(
+                shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                title: const Text(
+                  'Success',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                  ),
                 ),
-                child: const Text('OK'),
+                content: Text(
+                  _useBatchMode
+                      ? 'Stock batch added successfully'
+                      : 'Stock added successfully',
+                  style:
+                  const TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                ),
+                actions: [
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop();
+                      sl<Coordinator>().navigateBack(isUpdated: true);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: const Text('OK'),
+                  ),
+                ],
               ),
-            ],
-          ),
         );
       } catch (e) {
         print('DEBUG: Error in _saveStock: $e');
@@ -1222,6 +1486,7 @@ class _AddStockPageState extends State<AddStockPage> {
       );
     }
   }
+
   Widget _buildStockEntries() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1242,7 +1507,10 @@ class _AddStockPageState extends State<AddStockPage> {
             ),
           )
         else
-          ..._stockEntries.asMap().entries.map((entry) {
+          ..._stockEntries
+              .asMap()
+              .entries
+              .map((entry) {
             final index = entry.key;
             final item = entry.value;
             final product = item['product'] as Product;
@@ -1251,7 +1519,8 @@ class _AddStockPageState extends State<AddStockPage> {
             final taxAmount = item['taxAmount'] as double;
             return Card(
               elevation: 3,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Padding(
                 padding: const EdgeInsets.all(12),
@@ -1276,11 +1545,15 @@ class _AddStockPageState extends State<AddStockPage> {
                               const SizedBox(height: 8),
                               Text(
                                 'Price: ₹${product.price.toStringAsFixed(2)}',
-                                style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                                style: const TextStyle(
+                                    fontSize: 14,
+                                    color: AppColors.textSecondary),
                               ),
                               Text(
                                 'Tax Rate: ${product.tax.toStringAsFixed(0)}%',
-                                style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                                style: const TextStyle(
+                                    fontSize: 14,
+                                    color: AppColors.textSecondary),
                               ),
                             ],
                           ),
@@ -1292,7 +1565,9 @@ class _AddStockPageState extends State<AddStockPage> {
                               decoration: BoxDecoration(
                                 color: AppColors.white,
                                 borderRadius: BorderRadius.circular(24),
-                                border: Border.all(color: AppColors.textSecondary.withOpacity(0.3)),
+                                border: Border.all(
+                                    color: AppColors.textSecondary
+                                        .withOpacity(0.3)),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -1300,10 +1575,14 @@ class _AddStockPageState extends State<AddStockPage> {
                                   IconButton(
                                     icon: Icon(
                                       Icons.remove,
-                                      color: quantity > 0 ? AppColors.red : AppColors.textSecondary,
+                                      color: quantity > 0
+                                          ? AppColors.red
+                                          : AppColors.textSecondary,
                                       size: 20,
                                     ),
-                                    onPressed: () => _updateStockEntryQuantity(product.id, -1),
+                                    onPressed: () =>
+                                        _updateStockEntryQuantity(
+                                            product.id, -1),
                                   ),
                                   SizedBox(
                                     width: 48,
@@ -1318,8 +1597,11 @@ class _AddStockPageState extends State<AddStockPage> {
                                     ),
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.add, color: AppColors.green, size: 20),
-                                    onPressed: () => _updateStockEntryQuantity(product.id, 1),
+                                    icon: const Icon(Icons.add,
+                                        color: AppColors.green, size: 20),
+                                    onPressed: () =>
+                                        _updateStockEntryQuantity(
+                                            product.id, 1),
                                   ),
                                 ],
                               ),
@@ -1328,15 +1610,23 @@ class _AddStockPageState extends State<AddStockPage> {
                             Row(
                               children: [
                                 ElevatedButton(
-                                  onPressed: () => _showQuantityInputDialog(product.id, initialQuantity: quantity),
+                                  onPressed: () =>
+                                      _showQuantityInputDialog(
+                                          product.id,
+                                          initialQuantity: quantity),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.primary,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8)),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
                                   ),
                                   child: const Text(
                                     'Enter Manual Qty',
-                                    style: TextStyle(color: AppColors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                                    style: TextStyle(
+                                        color: AppColors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -1344,12 +1634,17 @@ class _AddStockPageState extends State<AddStockPage> {
                                   onPressed: () => _clearStockEntry(product.id),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.red,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8)),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
                                   ),
                                   child: const Text(
                                     'Clear',
-                                    style: TextStyle(color: AppColors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                                    style: TextStyle(
+                                        color: AppColors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600),
                                   ),
                                 ),
                               ],
@@ -1362,13 +1657,18 @@ class _AddStockPageState extends State<AddStockPage> {
                       const SizedBox(height: 12),
                       Container(
                         decoration: BoxDecoration(
-                          border: Border.all(color: AppColors.textSecondary.withOpacity(0.3)),
+                          border: Border.all(
+                              color: AppColors.textSecondary.withOpacity(0.3)),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Table(
                           border: TableBorder(
-                            verticalInside: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
-                            horizontalInside: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
+                            verticalInside: BorderSide(
+                                color:
+                                AppColors.textSecondary.withOpacity(0.3)),
+                            horizontalInside: BorderSide(
+                                color:
+                                AppColors.textSecondary.withOpacity(0.3)),
                           ),
                           columnWidths: const {
                             0: FlexColumnWidth(3),
@@ -1378,18 +1678,26 @@ class _AddStockPageState extends State<AddStockPage> {
                             TableRow(
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 12),
                                   child: Text(
-                                    'Subtotal (₹${product.price.toStringAsFixed(2)} x $quantity)',
-                                    style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                                    'Subtotal (₹${product.price.toStringAsFixed(
+                                        2)} x $quantity)',
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        color: AppColors.textSecondary),
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 12),
                                   child: Text(
                                     '₹${subtotal.toStringAsFixed(2)}',
                                     textAlign: TextAlign.right,
-                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textPrimary),
                                   ),
                                 ),
                               ],
@@ -1397,18 +1705,24 @@ class _AddStockPageState extends State<AddStockPage> {
                             TableRow(
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 12),
                                   child: Text(
                                     'Tax (${product.tax.toStringAsFixed(0)}%)',
-                                    style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        color: AppColors.textSecondary),
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 12),
                                   child: Text(
                                     '₹${taxAmount.toStringAsFixed(2)}',
                                     textAlign: TextAlign.right,
-                                    style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        color: AppColors.textSecondary),
                                   ),
                                 ),
                               ],
@@ -1423,18 +1737,27 @@ class _AddStockPageState extends State<AddStockPage> {
                               ),
                               children: [
                                 const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 12),
                                   child: Text(
                                     'Total',
-                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.textPrimary),
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 12),
                                   child: Text(
-                                    '₹${(subtotal + taxAmount).toStringAsFixed(2)}',
+                                    '₹${(subtotal + taxAmount).toStringAsFixed(
+                                        2)}',
                                     textAlign: TextAlign.right,
-                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.textPrimary),
                                   ),
                                 ),
                               ],
@@ -1481,7 +1804,9 @@ class _AddStockPageState extends State<AddStockPage> {
                           _isStockAdded = false;
                         });
                       },
-                      tooltip: _useBatchMode ? 'Switch to Single Mode' : 'Switch to Batch Mode',
+                      tooltip: _useBatchMode
+                          ? 'Switch to Single Mode'
+                          : 'Switch to Batch Mode',
                     ),
                     if (_stockEntries.isNotEmpty)
                       Positioned(
@@ -1493,7 +1818,8 @@ class _AddStockPageState extends State<AddStockPage> {
                             color: Colors.red,
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                          constraints:
+                          const BoxConstraints(minWidth: 16, minHeight: 16),
                           child: Text(
                             '${_stockEntries.length}',
                             style: const TextStyle(
@@ -1514,14 +1840,23 @@ class _AddStockPageState extends State<AddStockPage> {
         body: _isLoading
             ? const CustomLoadingDialog(message: 'Saving...')
             : Container(
-          height: MediaQuery.of(context).size.height,
+          height: MediaQuery
+              .of(context)
+              .size
+              .height,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Theme.of(context).primaryColor.withOpacity(0.1),
-                Theme.of(context).primaryColor.withOpacity(0.3),
+                Theme
+                    .of(context)
+                    .primaryColor
+                    .withOpacity(0.1),
+                Theme
+                    .of(context)
+                    .primaryColor
+                    .withOpacity(0.3),
               ],
             ),
           ),
@@ -1531,7 +1866,8 @@ class _AddStockPageState extends State<AddStockPage> {
                 padding: const EdgeInsets.all(16.0),
                 child: Card(
                   elevation: 4,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Form(
@@ -1546,32 +1882,46 @@ class _AddStockPageState extends State<AddStockPage> {
                                     : 'Stock added successfully'),
                               ),
                             );
-                            sl<Coordinator>().navigateBack(isUpdated: true);
+                            sl<Coordinator>()
+                                .navigateBack(isUpdated: true);
                           } else if (state is StockError) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(state.error), backgroundColor: AppColors.red),
+                              SnackBar(
+                                  content: Text(state.error),
+                                  backgroundColor: AppColors.red),
                             );
                             setState(() => _isStockAdded = false);
                           }
                         },
                         builder: (context, state) {
                           if (state is StockLoading) {
-                            return const Center(child: CircularProgressIndicator());
+                            return const Center(
+                                child: CircularProgressIndicator());
                           } else if (state is StockError) {
                             return Center(
                               child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisAlignment:
+                                MainAxisAlignment.center,
                                 children: [
-                                  Text('Error: ${state.error}', style: const TextStyle(color: Colors.red)),
+                                  Text('Error: ${state.error}',
+                                      style: const TextStyle(
+                                          color: Colors.red)),
                                   const SizedBox(height: 16),
                                   ElevatedButton(
-                                    onPressed: () => _stockCubit.fetchStock(''),
+                                    onPressed: () =>
+                                        _stockCubit.fetchStock(''),
                                     child: const Text('Retry'),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Theme.of(context).primaryColor,
+                                      backgroundColor:
+                                      Theme
+                                          .of(context)
+                                          .primaryColor,
                                       foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(vertical: 16),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 16),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                          BorderRadius.circular(8)),
                                     ),
                                   ),
                                 ],
@@ -1579,25 +1929,32 @@ class _AddStockPageState extends State<AddStockPage> {
                             );
                           }
 
-                          final stores = (state is StockLoaded) ? state.stores : [];
+                          final stores =
+                          (state is StockLoaded) ? state.stores : [];
 
                           return Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            crossAxisAlignment:
+                            CrossAxisAlignment.stretch,
                             children: [
                               // Supplier Selection
                               Card(
                                 elevation: 4,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                    BorderRadius.circular(12)),
                                 child: InkWell(
                                   onTap: _showSupplierSelectionDialog,
                                   child: Padding(
                                     padding: const EdgeInsets.all(12.0),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          _selectedSupplier?.name ?? 'Select Supplier',
-                                          style: const TextStyle(fontSize: 16),
+                                          _selectedSupplier?.name ??
+                                              'Select Supplier',
+                                          style: const TextStyle(
+                                              fontSize: 16),
                                         ),
                                         const Icon(Icons.arrow_drop_down),
                                       ],
@@ -1612,23 +1969,36 @@ class _AddStockPageState extends State<AddStockPage> {
                                 child: DropdownButtonFormField<String>(
                                   decoration: InputDecoration(
                                     labelText: 'Store',
-                                    labelStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+                                    labelStyle: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87),
                                     border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                                        borderRadius:
+                                        BorderRadius.circular(8),
+                                        borderSide: BorderSide.none),
                                     filled: true,
                                     fillColor: Colors.grey[50],
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                                    errorStyle: const TextStyle(color: Colors.red),
+                                    contentPadding:
+                                    const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 12),
+                                    errorStyle: const TextStyle(
+                                        color: Colors.red),
                                   ),
                                   value: _selectedStoreId,
                                   items: stores
-                                      .map((store) => DropdownMenuItem<String>(
-                                    value: store.storeId,
-                                    child: Text(store.name),
-                                  ))
+                                      .map((store) =>
+                                      DropdownMenuItem<String>(
+                                        value: store.storeId,
+                                        child: Text(store.name),
+                                      ))
                                       .toList(),
-                                  onChanged: (value) => setState(() => _selectedStoreId = value),
-                                  validator: (value) => value == null ? 'Please select a store' : null,
+                                  onChanged: (value) =>
+                                      setState(
+                                              () => _selectedStoreId = value),
+                                  validator: (value) =>
+                                  value == null
+                                      ? 'Please select a store'
+                                      : null,
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -1638,21 +2008,37 @@ class _AddStockPageState extends State<AddStockPage> {
                                 child: DropdownButtonFormField<String>(
                                   decoration: InputDecoration(
                                     labelText: 'Purchase Type',
-                                    labelStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+                                    labelStyle: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87),
                                     border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                                        borderRadius:
+                                        BorderRadius.circular(8),
+                                        borderSide: BorderSide.none),
                                     filled: true,
                                     fillColor: Colors.grey[50],
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                                    errorStyle: const TextStyle(color: Colors.red),
+                                    contentPadding:
+                                    const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 12),
+                                    errorStyle: const TextStyle(
+                                        color: Colors.red),
                                   ),
                                   value: _selectedPurchaseType,
                                   items: const [
-                                    DropdownMenuItem(value: 'Cash', child: Text('Cash')),
-                                    DropdownMenuItem(value: 'Credit', child: Text('Credit')),
+                                    DropdownMenuItem(
+                                        value: 'Cash',
+                                        child: Text('Cash')),
+                                    DropdownMenuItem(
+                                        value: 'Credit',
+                                        child: Text('Credit')),
                                   ],
-                                  onChanged: (value) => setState(() => _selectedPurchaseType = value),
-                                  validator: (value) => value == null ? 'Please select a purchase type' : null,
+                                  onChanged: (value) =>
+                                      setState(() =>
+                                      _selectedPurchaseType = value),
+                                  validator: (value) =>
+                                  value == null
+                                      ? 'Please select a purchase type'
+                                      : null,
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -1660,15 +2046,20 @@ class _AddStockPageState extends State<AddStockPage> {
                                 // Add Product Button
                                 Card(
                                   elevation: 4,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                      BorderRadius.circular(12)),
                                   child: InkWell(
-                                    onTap: () => _showProductSelectionDialog(),
+                                    onTap: () =>
+                                        _showProductSelectionDialog(),
                                     child: Container(
                                       padding: const EdgeInsets.all(12.0),
                                       child: const Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                        MainAxisAlignment.center,
                                         children: [
-                                          Icon(Icons.inventory, color: AppColors.primary),
+                                          Icon(Icons.inventory,
+                                              color: AppColors.primary),
                                           SizedBox(width: 8),
                                           Text(
                                             'Add Products',
@@ -1689,120 +2080,190 @@ class _AddStockPageState extends State<AddStockPage> {
                                 const SizedBox(height: 24),
                                 // Save Button for Batch Mode
                                 ElevatedButton(
-                                  onPressed: _stockEntries.isEmpty || _selectedStoreId == null || _selectedSupplier == null
+                                  onPressed: _stockEntries.isEmpty ||
+                                      _selectedStoreId == null ||
+                                      _selectedSupplier == null
                                       ? null
                                       : () => _saveStock(),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Theme.of(context).primaryColor,
+                                    backgroundColor:
+                                    Theme
+                                        .of(context)
+                                        .primaryColor,
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                    textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                        BorderRadius.circular(8)),
+                                    textStyle: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                   child: const Text('Save All Stock'),
                                 ),
-                              ] else ...[
-                                // Single Item Form
-                                BlocBuilder<AdminProductCubit, ProductState>(
-                                  bloc: _productCubit,
-                                  builder: (context, productState) {
-                                    final products = productState is ProductLoaded ? productState.products : [];
-                                    return Padding(
-                                      padding: const EdgeInsets.all(12.0),
-                                      child: DropdownButtonFormField<String>(
-                                        decoration: InputDecoration(
-                                          labelText: 'Product',
-                                          labelStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
-                                          border: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-                                          filled: true,
-                                          fillColor: Colors.grey[50],
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                                          errorStyle: const TextStyle(color: Colors.red),
-                                        ),
-                                        value: _selectedProductId,
-                                        items: products
-                                            .map((product) => DropdownMenuItem<String>(
-                                          value: product.id,
-                                          child: Text(product.name),
-                                        ))
-                                            .toList(),
-                                        onChanged: (value) => setState(() => _selectedProductId = value),
-                                        validator: (value) => value == null ? 'Please select a product' : null,
-                                      ),
-                                    );
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                Padding(
-                                  padding: const EdgeInsets.all(12.0),
-                                  child: TextFormField(
-                                    decoration: InputDecoration(
-                                      labelText: 'Quantity',
-                                      labelStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
-                                      border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-                                      filled: true,
-                                      fillColor: Colors.grey[50],
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                                      errorStyle: const TextStyle(color: Colors.red),
-                                    ),
-                                    keyboardType: TextInputType.number,
-                                    onChanged: (value) => setState(() => _quantity = int.tryParse(value) ?? 0),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Please enter quantity';
-                                      }
-                                      if (int.tryParse(value) == null || int.parse(value) <= 0) {
-                                        return 'Please enter a valid quantity';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    if (_formKey.currentState!.validate() && _selectedSupplier != null) {
-                                      final products = _productCubit.state is ProductLoaded
-                                          ? (_productCubit.state as ProductLoaded).products
+                              ] else
+                                ...[
+                                  // Single Item Form
+                                  BlocBuilder<AdminProductCubit,
+                                      ProductState>(
+                                    bloc: _productCubit,
+                                    builder: (context, productState) {
+                                      final products =
+                                      productState is ProductLoaded
+                                          ? productState.products
                                           : [];
-                                      final selectedProduct = products.firstWhere(
-                                            (product) => product.id == _selectedProductId,
-                                        orElse: () => Product(
-                                          id: _selectedProductId ?? '',
-                                          name: '',
-                                          price: 0.0,
-                                          stock: 0,
-                                          category: '',
-                                          categoryId: '',
-                                          subcategoryId: '',
-                                          subcategoryName: '',
-                                          tax: 0.0,
+                                      return Padding(
+                                        padding: const EdgeInsets.all(12.0),
+                                        child:
+                                        DropdownButtonFormField<String>(
+                                          decoration: InputDecoration(
+                                            labelText: 'Product',
+                                            labelStyle: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black87),
+                                            border: OutlineInputBorder(
+                                                borderRadius:
+                                                BorderRadius.circular(
+                                                    8),
+                                                borderSide:
+                                                BorderSide.none),
+                                            filled: true,
+                                            fillColor: Colors.grey[50],
+                                            contentPadding:
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 12,
+                                                vertical: 12),
+                                            errorStyle: const TextStyle(
+                                                color: Colors.red),
+                                          ),
+                                          value: _selectedProductId,
+                                          items: products
+                                              .map((product) =>
+                                              DropdownMenuItem<String>(
+                                                value: product.id,
+                                                child:
+                                                Text(product.name),
+                                              ))
+                                              .toList(),
+                                          onChanged: (value) =>
+                                              setState(
+                                                      () =>
+                                                  _selectedProductId =
+                                                      value),
+                                          validator: (value) =>
+                                          value ==
+                                              null
+                                              ? 'Please select a product'
+                                              : null,
                                         ),
                                       );
-                                      _stockEntries = [
-                                        {
-                                          'productId': selectedProduct.id,
-                                          'quantity': _quantity,
-                                          'product': selectedProduct,
-                                          'taxRate': selectedProduct.tax,
-                                          'taxAmount': selectedProduct.price * _quantity * (selectedProduct.tax / 100),
-                                        }
-                                      ];
-                                      _saveStock();
-                                    }
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Theme.of(context).primaryColor,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                    textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                    },
                                   ),
-                                  child: const Text(AppLabels.saveButtonText),
-                                ),
-                              ],
+                                  const SizedBox(height: 16),
+                                  Padding(
+                                    padding: const EdgeInsets.all(12.0),
+                                    child: TextFormField(
+                                      decoration: InputDecoration(
+                                        labelText: 'Quantity',
+                                        labelStyle: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87),
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                            BorderRadius.circular(8),
+                                            borderSide: BorderSide.none),
+                                        filled: true,
+                                        fillColor: Colors.grey[50],
+                                        contentPadding:
+                                        const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 12),
+                                        errorStyle: const TextStyle(
+                                            color: Colors.red),
+                                      ),
+                                      keyboardType: TextInputType.number,
+                                      onChanged: (value) =>
+                                          setState(() =>
+                                          _quantity =
+                                              int.tryParse(value) ?? 0),
+                                      validator: (value) {
+                                        if (value == null ||
+                                            value.isEmpty) {
+                                          return 'Please enter quantity';
+                                        }
+                                        if (int.tryParse(value) == null ||
+                                            int.parse(value) <= 0) {
+                                          return 'Please enter a valid quantity';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      if (_formKey.currentState!
+                                          .validate() &&
+                                          _selectedSupplier != null) {
+                                        final products = _productCubit.state
+                                        is ProductLoaded
+                                            ? (_productCubit.state
+                                        as ProductLoaded)
+                                            .products
+                                            : [];
+                                        final selectedProduct =
+                                        products.firstWhere(
+                                              (product) =>
+                                          product.id ==
+                                              _selectedProductId,
+                                          orElse: () =>
+                                              Product(
+                                                id: _selectedProductId ?? '',
+                                                name: '',
+                                                price: 0.0,
+                                                stock: 0,
+                                                category: '',
+                                                categoryId: '',
+                                                subcategoryId: '',
+                                                subcategoryName: '',
+                                                tax: 0.0,
+                                              ),
+                                        );
+                                        _stockEntries = [
+                                          {
+                                            'productId': selectedProduct.id,
+                                            'quantity': _quantity,
+                                            'product': selectedProduct,
+                                            'taxRate': selectedProduct.tax,
+                                            'taxAmount': selectedProduct
+                                                .price *
+                                                _quantity *
+                                                (selectedProduct.tax / 100),
+                                          }
+                                        ];
+                                        _saveStock();
+                                      }
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor:
+                                      Theme
+                                          .of(context)
+                                          .primaryColor,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 16),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                          BorderRadius.circular(8)),
+                                      textStyle: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    child: const Text(
+                                        AppLabels.saveButtonText),
+                                  ),
+                                ],
                             ],
                           );
                         },

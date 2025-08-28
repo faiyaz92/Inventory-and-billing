@@ -229,8 +229,8 @@ class HomePage extends StatelessWidget {
       case Role.COMPANY_ACCOUNTANT:
         gridItems.addAll([
           _buildGridItem(
-            icon: Icons.dashboard,
-            label: 'Statics',
+            icon: Icons.bar_chart, // Changed from dashboard
+            label: 'Statistics', // Corrected typo from "Statics"
             color: Colors.blueAccent,
             onTap: () {
               sl<Coordinator>().navigateToDashboardStaticsPage();
@@ -247,7 +247,7 @@ class HomePage extends StatelessWidget {
             isWeb: isWeb,
           ),
           _buildGridItem(
-            icon: Icons.shopping_cart,
+            icon: Icons.point_of_sale, // Changed from shopping_cart
             label: 'Sales',
             color: Colors.pink,
             onTap: () {
@@ -274,7 +274,7 @@ class HomePage extends StatelessWidget {
             isWeb: isWeb,
           ),
           _buildGridItem(
-            icon: Icons.money,
+            icon: Icons.money_off, // Changed from money
             label: 'Add Expenses',
             color: Colors.orangeAccent,
             onTap: () {
@@ -284,7 +284,7 @@ class HomePage extends StatelessWidget {
             isWeb: isWeb,
           ),
           _buildGridItem(
-            icon: Icons.money,
+            icon: Icons.payments, // Changed from money
             label: 'Add Reimbursement',
             color: Colors.orangeAccent,
             onTap: () {
@@ -302,33 +302,7 @@ class HomePage extends StatelessWidget {
             },
             isWeb: isWeb,
           ),
-          _buildGridItem(
-            icon: Icons.account_balance_wallet,
-            label: 'Quick Receive',
-            color: Colors.green,
-            onTap: () {
-              sl<Coordinator>().navigateToQuickTransactionPage('receive');
-            },
-            isWeb: isWeb,
-          ),
-          _buildGridItem(
-            icon: Icons.payment,
-            label: 'Quick Pay',
-            color: Colors.red,
-            onTap: () {
-              sl<Coordinator>().navigateToQuickTransactionPage('pay');
-            },
-            isWeb: isWeb,
-          ),
-          _buildGridItem(
-            icon: Icons.money,
-            label: 'My Account',
-            color: Colors.orangeAccent,
-            onTap: () {
-              sl<Coordinator>().navigateToUserLedgerPage();
-            },
-            isWeb: isWeb,
-          ),
+
           _buildGridItem(
             icon: Icons.admin_panel_settings_outlined,
             label: 'Company Admin',
@@ -406,7 +380,7 @@ class HomePage extends StatelessWidget {
             isWeb: isWeb,
           ),
           _buildGridItem(
-            icon: Icons.event_available_outlined,
+            icon: Icons.event_note, // Changed from event_available_outlined
             label: 'Store Attendance',
             color: Colors.pink,
             onTap: () {
@@ -451,7 +425,7 @@ class HomePage extends StatelessWidget {
             isWeb: isWeb,
           ),
           _buildGridItem(
-            icon: Icons.shopping_cart_outlined,
+            icon: Icons.add_shopping_cart, // Changed from shopping_cart_outlined
             label: 'Cart Management',
             color: Colors.pink,
             onTap: () {
@@ -464,7 +438,7 @@ class HomePage extends StatelessWidget {
       case Role.SALES_MAN:
         gridItems.addAll([
           _buildGridItem(
-            icon: Icons.book,
+            icon: Icons.note_add, // Changed from book
             label: 'Take Purchase Order',
             color: Colors.blueAccent,
             onTap: () {
@@ -482,7 +456,7 @@ class HomePage extends StatelessWidget {
             isWeb: isWeb,
           ),
           _buildGridItem(
-            icon: Icons.dashboard,
+            icon: Icons.list, // Changed from dashboard
             label: 'Orders List',
             color: Colors.orange,
             onTap: () {
@@ -500,14 +474,16 @@ class HomePage extends StatelessWidget {
             isWeb: isWeb,
           ),
           _buildGridItem(
-            icon: Icons.receipt_long,
+            icon: Icons.inventory, // Changed from receipt_long
             label: 'My Stock',
             color: Colors.cyan,
-            onTap: () => sl<Coordinator>().navigateToStoreDetailsPage(''),
+            onTap: () {
+              sl<Coordinator>().navigateToStoreDetailsPage('');
+            },
             isWeb: isWeb,
           ),
           _buildGridItem(
-            icon: Icons.money,
+            icon: Icons.money_off, // Changed from money
             label: 'Add Expenses',
             color: Colors.orangeAccent,
             onTap: () {
@@ -517,7 +493,7 @@ class HomePage extends StatelessWidget {
             isWeb: isWeb,
           ),
           _buildGridItem(
-            icon: Icons.account_balance_wallet,
+            icon: Icons.attach_money, // Changed from account_balance_wallet
             label: 'Quick Receive',
             color: Colors.green,
             onTap: () {
@@ -535,7 +511,7 @@ class HomePage extends StatelessWidget {
             isWeb: isWeb,
           ),
           _buildGridItem(
-            icon: Icons.money,
+            icon: Icons.account_circle, // Changed from money
             label: 'My Account',
             color: Colors.orangeAccent,
             onTap: () {
@@ -549,40 +525,40 @@ class HomePage extends StatelessWidget {
       case Role.STORE_ACCOUNTANT:
       case Role.STORE_MANAGER:
       case Role.USER:
-      // Only common items will be added below
+      // Common items for all roles
         break;
     }
 
     // Add common grid items for all roles
-    // gridItems.addAll([
-    //   _buildGridItem(
-    //     icon: Icons.account_balance_wallet,
-    //     label: 'Quick Receive',
-    //     color: Colors.green,
-    //     onTap: () {
-    //       sl<Coordinator>().navigateToQuickTransactionPage('receive');
-    //     },
-    //     isWeb: isWeb,
-    //   ),
-    //   _buildGridItem(
-    //     icon: Icons.payment,
-    //     label: 'Quick Pay',
-    //     color: Colors.red,
-    //     onTap: () {
-    //       sl<Coordinator>().navigateToQuickTransactionPage('pay');
-    //     },
-    //     isWeb: isWeb,
-    //   ),
-    //   _buildGridItem(
-    //     icon: Icons.money,
-    //     label: 'My Account',
-    //     color: Colors.orangeAccent,
-    //     onTap: () {
-    //       sl<Coordinator>().navigateToUserLedgerPage();
-    //     },
-    //     isWeb: isWeb,
-    //   ),
-    // ]);
+    gridItems.addAll([
+      _buildGridItem(
+        icon: Icons.attach_money, // Changed from account_balance_wallet
+        label: 'Quick Receive',
+        color: Colors.green,
+        onTap: () {
+          sl<Coordinator>().navigateToQuickTransactionPage('receive');
+        },
+        isWeb: isWeb,
+      ),
+      _buildGridItem(
+        icon: Icons.payment,
+        label: 'Quick Pay',
+        color: Colors.red,
+        onTap: () {
+          sl<Coordinator>().navigateToQuickTransactionPage('pay');
+        },
+        isWeb: isWeb,
+      ),
+      _buildGridItem(
+        icon: Icons.account_circle, // Changed from money
+        label: 'My Account',
+        color: Colors.orangeAccent,
+        onTap: () {
+          sl<Coordinator>().navigateToUserLedgerPage();
+        },
+        isWeb: isWeb,
+      ),
+    ]);
 
     return gridItems;
   }

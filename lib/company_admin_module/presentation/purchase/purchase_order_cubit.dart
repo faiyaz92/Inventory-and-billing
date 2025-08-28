@@ -9,7 +9,6 @@ import 'package:requirment_gathering_app/company_admin_module/service/store_serv
 import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
-import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 
 abstract class AdminPurchaseState {}
 
@@ -221,19 +220,19 @@ class AdminPurchaseCubit extends Cubit<AdminPurchaseState> {
       },
       {
         'label': 'Total Amount',
-        'value': '₹${totalAmount.toStringAsFixed(2)}',
+        'value': totalAmount.toStringAsFixed(2),
         'color': AppColors.textPrimary,
         'highlight': true
       },
       {
         'label': 'Cash Purchases',
-        'value': '₹${cashPurchases.toStringAsFixed(2)}',
+        'value': cashPurchases.toStringAsFixed(2),
         'color': Colors.green,
         'highlight': true
       },
       {
         'label': 'Credit Purchases',
-        'value': '₹${creditPurchases.toStringAsFixed(2)}',
+        'value': creditPurchases.toStringAsFixed(2),
         'color': Colors.blue,
         'highlight': true
       },
@@ -257,13 +256,13 @@ class AdminPurchaseCubit extends Cubit<AdminPurchaseState> {
       },
       {
         'label': 'Total Paid Amount',
-        'value': '₹${totalPaidAmount.toStringAsFixed(2)}',
+        'value': totalPaidAmount.toStringAsFixed(2),
         'color': Colors.green,
         'highlight': true
       },
       {
         'label': 'Total Not Paid Amount',
-        'value': '₹${totalNotPaidAmount.toStringAsFixed(2)}',
+        'value': totalNotPaidAmount.toStringAsFixed(2),
         'color': Colors.red,
         'highlight': true
       },

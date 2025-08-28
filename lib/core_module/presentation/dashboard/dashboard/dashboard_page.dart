@@ -38,6 +38,7 @@ class _DashboardPageState extends State<DashboardPage> {
         child: Scaffold(
           appBar: CustomAppBar(
             title: "Dashboard",
+              automaticallyImplyLeading:false,
             actions: [
               IconButton(
                 icon: const Icon(Icons.logout),

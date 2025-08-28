@@ -32,6 +32,8 @@ class TransactionCubit extends Cubit<TransactionState> {
     String? toStoreId,
     String? userId,
     String? customerId,
+    DateTime? startDate,
+    DateTime? endDate,
     required int page,
     required int pageSize,
   }) async {
@@ -46,6 +48,8 @@ class TransactionCubit extends Cubit<TransactionState> {
         toStoreId: toStoreId,
         userId: userId,
         customerId: customerId,
+        startDate: startDate,
+        endDate: endDate,
         page: page,
         pageSize: pageSize,
       );

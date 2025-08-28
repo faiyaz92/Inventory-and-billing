@@ -162,6 +162,14 @@ class InventoryDashboardPage extends StatelessWidget {
             () => sl<Coordinator>().navigateToAddStockPage(),
         isWeb,
       ),
+      _buildDashboardCard(
+        context,
+        'Purchase Invoices',
+        Icons.receipt_long,
+        Colors.cyan,
+            () => sl<Coordinator>().navigateToPurchaseInvoicePanelPage(),
+        isWeb,
+      ),
     ];
   }
   Widget _buildDashboardCard(

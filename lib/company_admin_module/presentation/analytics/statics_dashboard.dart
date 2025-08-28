@@ -2,11 +2,15 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:requirment_gathering_app/company_admin_module/presentation/accounts/invoice_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/over_all_stock_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/purchase/purchase_order_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/stock_service.dart';
+import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
+import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/custom_loading_dialog.dart';
@@ -31,7 +35,8 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
   void initState() {
     _adminInvoiceCubit = sl<AdminInvoiceCubit>();
     _adminPurchaseCubit = sl<AdminPurchaseCubit>();
-    _overallStockCubit = OverallStockCubit(stockService: sl<StockService>())..loadOverallStock();
+    _overallStockCubit = OverallStockCubit(stockService: sl<StockService>())
+      ..loadOverallStock();
     _applyQuickFilter(_selectedFilter);
     super.initState();
   }
@@ -138,8 +143,8 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
                     filter['label'] as String,
                     style: TextStyle(
                       color: isSelected ? Colors.white : AppColors.textPrimary,
-                      fontWeight:
-                      isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight
+                          .normal,
                     ),
                   ),
                   selected: isSelected,
@@ -148,17 +153,15 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                     side: BorderSide(
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.textSecondary.withOpacity(0.5),
+                      color: isSelected ? AppColors.primary : AppColors.secondary,
+                      ),
                     ),
-                  ),
-                  onSelected: (selected) {
-                    if (selected) {
-                      _applyQuickFilter(filter['value'] as String);
-                    }
-                  },
-                );
+                    onSelected: (selected) {
+                      if (selected) {
+                        _applyQuickFilter(filter['value'] as String);
+                      }
+                    },
+                  );
               }).toList(),
             ),
           ],
@@ -183,8 +186,14 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Theme.of(context).primaryColor.withOpacity(0.1),
-                Theme.of(context).primaryColor.withOpacity(0.3),
+                Theme
+                    .of(context)
+                    .primaryColor
+                    .withOpacity(0.1),
+                Theme
+                    .of(context)
+                    .primaryColor
+                    .withOpacity(0.3),
               ],
             ),
           ),
@@ -222,8 +231,8 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
     );
   }
 
-  Widget _buildDateRangeButton(
-      BuildContext context, AdminInvoiceListFetchSuccess state) {
+  Widget _buildDateRangeButton(BuildContext context,
+      AdminInvoiceListFetchSuccess state) {
     return Row(
       children: [
         Expanded(
@@ -268,14 +277,15 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
     );
   }
 
-  Widget _buildStatsCard(
-      BuildContext context, AdminInvoiceListFetchSuccess invoiceState) {
-    final crossAxisCount = kIsWeb ? 7 : 4;
+  Widget _buildStatsCard(BuildContext context,
+      AdminInvoiceListFetchSuccess invoiceState) {
+    const crossAxisCount = kIsWeb ? 7 : 2;
     return BlocBuilder<AdminPurchaseCubit, AdminPurchaseState>(
       builder: (context, purchaseState) {
         List<Map<String, dynamic>> purchaseStatistics = [];
         if (purchaseState is AdminPurchaseListFetchSuccess) {
           purchaseStatistics = purchaseState.statistics;
+          print('Purchase Statistics: $purchaseStatistics');
         }
         return BlocBuilder<OverallStockCubit, OverallStockState>(
           builder: (context, stockState) {
@@ -294,13 +304,52 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Overall Stock Value Section
-                    const Text(
-                      'Stock Value',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Stock Value',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () async {
+                            final pdf = await _generateStatsPdf(
+                              invoiceState,
+                              purchaseState is AdminPurchaseListFetchSuccess
+                                  ? purchaseState
+                                  : null,
+                              stockState is OverallStockSuccess
+                                  ? stockState
+                                  : null,
+                              section: 'stock',
+                            );
+                            sl<Coordinator>().navigateToBillPdfPage(
+                              pdf: pdf,
+                              billNumber: 'Stock_Stats_${DateTime
+                                  .now()
+                                  .millisecondsSinceEpoch}',
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            minimumSize: const Size(40, 40),
+                          ),
+                          child: const Text(
+                            'Export as PDF',
+                            style: TextStyle(
+                                fontSize: 12, color: AppColors.white),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 16),
                     GridView.builder(
@@ -346,7 +395,7 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '₹${totalStockValue.toStringAsFixed(2)}',
+                                '${totalStockValue.toStringAsFixed(2)}',
                                 style: TextStyle(
                                   fontSize: kIsWeb ? 16 : 14,
                                   color: AppColors.primary,
@@ -373,7 +422,24 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
                           ),
                         ),
                         ElevatedButton(
-                          onPressed: () => _showStatsDialog(context, invoiceState, null),
+                          onPressed: () async {
+                            final pdf = await _generateStatsPdf(
+                              invoiceState,
+                              purchaseState is AdminPurchaseListFetchSuccess
+                                  ? purchaseState
+                                  : null,
+                              stockState is OverallStockSuccess
+                                  ? stockState
+                                  : null,
+                              section: 'sales',
+                            );
+                            sl<Coordinator>().navigateToBillPdfPage(
+                              pdf: pdf,
+                              billNumber: 'Sales_Stats_${DateTime
+                                  .now()
+                                  .millisecondsSinceEpoch}',
+                            );
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
                             shape: RoundedRectangleBorder(
@@ -384,8 +450,9 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
                             minimumSize: const Size(40, 40),
                           ),
                           child: const Text(
-                            'View Sales',
-                            style: TextStyle(fontSize: 12, color: AppColors.white),
+                            'Export as PDF',
+                            style: TextStyle(
+                                fontSize: 12, color: AppColors.white),
                           ),
                         ),
                       ],
@@ -403,7 +470,8 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
                       itemCount: invoiceState.statistics.length,
                       itemBuilder: (context, index) {
                         final stat = invoiceState.statistics[index];
-                        final prevStat = invoiceState.previousStatistics.firstWhere(
+                        final prevStat = invoiceState.previousStatistics
+                            .firstWhere(
                               (p) => p['label'] == stat['label'],
                           orElse: () => <String, dynamic>{},
                         );
@@ -412,10 +480,11 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
                         IconData trendIcon = Icons.arrow_forward;
                         String trendText = '0%';
                         if (prevStat.isNotEmpty) {
-                          final currentValue = stat['rawValue'] as num;
-                          final prevValue = prevStat['rawValue'] as num;
+                          final currentValue = stat['rawValue'] as num? ?? 0;
+                          final prevValue = prevStat['rawValue'] as num? ?? 0;
                           if (prevValue != 0) {
-                            change = (currentValue - prevValue) / prevValue * 100;
+                            change =
+                                (currentValue - prevValue) / prevValue * 100;
                           } else {
                             change = currentValue > 0 ? double.infinity : 0;
                           }
@@ -433,10 +502,26 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
                               ? '+∞%'
                               : '${change.abs().toStringAsFixed(1)}%';
                         }
+                        num totalAmount = invoiceState.statistics.firstWhere(
+                              (s) => s['label'] == 'Total Amount',
+                          orElse: () => {'rawValue': 0},
+                        )['rawValue'] as num;
+                        String valueText = stat['value']?.toString() ?? 'N/A';
+                        if (totalAmount > 0 && [
+                          'Cash Sales',
+                          'Credit Sales',
+                          'Total Collected Amount',
+                          'Pending Collection Amount'
+                        ].contains(stat['label']) && stat['rawValue'] != null) {
+                          double perc = ((stat['rawValue'] as num) /
+                              totalAmount) * 100;
+                          valueText += ' (${perc.toStringAsFixed(1)}%)';
+                        }
                         return Container(
                           decoration: BoxDecoration(
                             color: stat['highlight'] == true
-                                ? (stat['color'] as Color).withOpacity(0.1)
+                                ? (stat['color'] as Color?)?.withOpacity(0.1) ??
+                                Colors.transparent
                                 : Colors.transparent,
                             border: Border.all(
                               color: AppColors.textSecondary.withOpacity(0.5),
@@ -449,13 +534,15 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
-                                _getIconForStat(stat['label']),
-                                color: stat['color'],
+                                _getIconForStat(
+                                    stat['label']?.toString() ?? 'Unknown'),
+                                color: stat['color'] as Color? ??
+                                    AppColors.primary,
                                 size: kIsWeb ? 28 : 24,
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                stat['label'],
+                                stat['label']?.toString() ?? 'Unknown',
                                 style: TextStyle(
                                   fontSize: kIsWeb ? 16 : 14,
                                   color: AppColors.textSecondary,
@@ -467,10 +554,11 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                stat['value'],
+                                valueText,
                                 style: TextStyle(
                                   fontSize: kIsWeb ? 16 : 14,
-                                  color: stat['color'],
+                                  color: stat['color'] as Color? ??
+                                      AppColors.primary,
                                   fontWeight: FontWeight.bold,
                                 ),
                                 textAlign: TextAlign.center,
@@ -514,7 +602,24 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
                           ),
                         ),
                         ElevatedButton(
-                          onPressed: () => _showStatsDialog(context, null, purchaseState as AdminPurchaseListFetchSuccess?),
+                          onPressed: () async {
+                            final pdf = await _generateStatsPdf(
+                              invoiceState,
+                              purchaseState is AdminPurchaseListFetchSuccess
+                                  ? purchaseState
+                                  : null,
+                              stockState is OverallStockSuccess
+                                  ? stockState
+                                  : null,
+                              section: 'purchase',
+                            );
+                            sl<Coordinator>().navigateToBillPdfPage(
+                              pdf: pdf,
+                              billNumber: 'Purchase_Stats_${DateTime
+                                  .now()
+                                  .millisecondsSinceEpoch}',
+                            );
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
                             shape: RoundedRectangleBorder(
@@ -525,8 +630,9 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
                             minimumSize: const Size(40, 40),
                           ),
                           child: const Text(
-                            'View Purchases',
-                            style: TextStyle(fontSize: 12, color: AppColors.white),
+                            'Export as PDF',
+                            style: TextStyle(
+                                fontSize: 12, color: AppColors.white),
                           ),
                         ),
                       ],
@@ -544,10 +650,28 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
                       itemCount: purchaseStatistics.length,
                       itemBuilder: (context, index) {
                         final stat = purchaseStatistics[index];
+                        num totalAmount = purchaseStatistics.firstWhere(
+                              (s) => s['label'] == 'Total Amount',
+                          orElse: () => {'rawValue': 0},
+                        )['rawValue'] as num? ?? 0;
+                        String valueText = stat['value']?.toString() ?? 'N/A';
+                        if (totalAmount > 0 &&
+                            stat['rawValue'] != null &&
+                            [
+                              'Cash Purchases',
+                              'Credit Purchases',
+                              'Total Paid Amount',
+                              'Total Not Paid Amount'
+                            ].contains(stat['label'] ?? '')) {
+                          double perc = ((stat['rawValue'] as num) /
+                              totalAmount) * 100;
+                          valueText += ' (${perc.toStringAsFixed(1)}%)';
+                        }
                         return Container(
                           decoration: BoxDecoration(
                             color: stat['highlight'] == true
-                                ? (stat['color'] as Color).withOpacity(0.1)
+                                ? (stat['color'] as Color?)?.withOpacity(0.1) ??
+                                Colors.transparent
                                 : Colors.transparent,
                             border: Border.all(
                               color: AppColors.textSecondary.withOpacity(0.5),
@@ -560,13 +684,15 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
-                                _getIconForPurchaseStat(stat['label']),
-                                color: stat['color'],
+                                _getIconForPurchaseStat(
+                                    stat['label']?.toString() ?? 'Unknown'),
+                                color: stat['color'] as Color? ??
+                                    AppColors.primary,
                                 size: kIsWeb ? 28 : 24,
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                stat['label'],
+                                stat['label']?.toString() ?? 'Unknown',
                                 style: TextStyle(
                                   fontSize: kIsWeb ? 16 : 14,
                                   color: AppColors.textSecondary,
@@ -578,10 +704,11 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                stat['value'],
+                                valueText,
                                 style: TextStyle(
                                   fontSize: kIsWeb ? 16 : 14,
-                                  color: stat['color'],
+                                  color: stat['color'] as Color? ??
+                                      AppColors.primary,
                                   fontWeight: FontWeight.bold,
                                 ),
                                 textAlign: TextAlign.center,
@@ -591,6 +718,35 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
                         );
                       },
                     ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final pdf = await _generateStatsPdf(
+                          invoiceState,
+                          purchaseState is AdminPurchaseListFetchSuccess
+                              ? purchaseState
+                              : null,
+                          stockState is OverallStockSuccess ? stockState : null,
+                        );
+                        sl<Coordinator>().navigateToBillPdfPage(
+                          pdf: pdf,
+                          billNumber: 'Dashboard_Stats_${DateTime
+                              .now()
+                              .millisecondsSinceEpoch}',
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12,horizontal: 8),
+                      ),
+                      child: const Text(
+                        'Export All as PDF',
+                        style: TextStyle(color: AppColors.white, fontSize: 14),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -599,6 +755,363 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
         );
       },
     );
+  }
+
+  Future<pw.Document> _generateStatsPdf(
+      AdminInvoiceListFetchSuccess invoiceState,
+      AdminPurchaseListFetchSuccess? purchaseState,
+      OverallStockSuccess? stockState, {
+        String? section,
+      }) async {
+    final pdf = pw.Document();
+    final accountRepository = sl<AccountRepository>();
+
+    String companyName = 'Abc Pvt. Ltd.';
+    String issuerName = 'Unknown Issuer';
+    try {
+      final userInfo = await accountRepository.getUserInfo();
+      companyName = userInfo?.companyId ?? companyName;
+      issuerName = userInfo?.name ?? userInfo?.userName ?? issuerName;
+    } catch (e) {
+      print('Error fetching company or issuer name: $e');
+    }
+
+    final primaryColor = PdfColor.fromInt(AppColors.primary.value);
+    final textSecondaryColor = PdfColor.fromInt(AppColors.textSecondary.value);
+    const greyColor = PdfColors.grey300;
+
+    final regularFont = pw.Font.times();
+    final boldFont = pw.Font.timesBold();
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(40),
+        header: (context) =>
+            pw.Container(
+              padding: const pw.EdgeInsets.only(bottom: 12),
+              decoration: pw.BoxDecoration(
+                border: pw.Border(
+                    bottom: pw.BorderSide(width: 3, color: primaryColor)),
+              ),
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(
+                        companyName,
+                        style: pw.TextStyle(
+                            font: boldFont, fontSize: 22, color: primaryColor),
+                      ),
+                      pw.SizedBox(height: 4),
+                      pw.Text(
+                        '123 Business Street, City, Country',
+                        style: pw.TextStyle(font: regularFont,
+                            fontSize: 12,
+                            color: textSecondaryColor),
+                      ),
+                    ],
+                  ),
+                  pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.end,
+                    children: [
+                      pw.Text(
+                        section == null ? 'DASHBOARD STATISTICS' : '${section
+                            .toUpperCase()} STATISTICS',
+                        style: pw.TextStyle(
+                            font: boldFont, fontSize: 28, color: primaryColor),
+                      ),
+                      pw.SizedBox(height: 4),
+                      pw.Text(
+                        'Date: ${DateTime.now().toString().substring(0, 10)}',
+                        style: pw.TextStyle(font: regularFont, fontSize: 14),
+                      ),
+                      pw.Text(
+                        'Issuer: $issuerName',
+                        style: pw.TextStyle(font: regularFont, fontSize: 14),
+                      ),
+                      pw.Text(
+                        'Period: ${invoiceState.startDate?.toString().substring(
+                            0, 10) ?? 'N/A'} to ${invoiceState.endDate
+                            ?.toString().substring(0, 10) ?? 'N/A'}',
+                        style: pw.TextStyle(font: regularFont, fontSize: 14),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+        build: (context) {
+          final List<pw.Widget> content = [];
+
+          if (section == null || section == 'stock') {
+            content.addAll([
+              pw.SizedBox(height: 24),
+              pw.Text(
+                'Stock Value',
+                style: pw.TextStyle(font: boldFont, fontSize: 18),
+              ),
+              pw.SizedBox(height: 12),
+              pw.Table(
+                border: pw.TableBorder.all(color: greyColor, width: 1),
+                columnWidths: {
+                  0: const pw.FlexColumnWidth(6),
+                  1: const pw.FlexColumnWidth(2),
+                },
+                children: [
+                  pw.TableRow(
+                    decoration: const pw.BoxDecoration(
+                        color: PdfColors.grey100),
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(10),
+                        child: pw.Text('Label',
+                            style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(10),
+                        child: pw.Text('Value ', // Added  for clarity
+                            style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                      ),
+                    ],
+                  ),
+                  if (stockState != null)
+                    pw.TableRow(
+                      children: [
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(10),
+                          child: pw.Text(
+                              'Total Stock Value', style: pw.TextStyle(
+                              font: regularFont, fontSize: 12)),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(10),
+                          child: pw.Text(
+                            '${stockState.totalStockValue.toStringAsFixed(2)}', // Replaced ₹ with 
+                            style: pw.TextStyle(font: regularFont,
+                                fontSize: 12),
+                            textAlign: pw.TextAlign.right,
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ]);
+          }
+
+          if (section == null || section == 'sales') {
+            content.addAll([
+              pw.SizedBox(height: 24),
+              pw.Text(
+                'Sales Statistics',
+                style: pw.TextStyle(font: boldFont, fontSize: 18),
+              ),
+              pw.SizedBox(height: 12),
+              pw.Table(
+                border: pw.TableBorder.all(color: greyColor, width: 1),
+                columnWidths: {
+                  0: const pw.FlexColumnWidth(6),
+                  1: const pw.FlexColumnWidth(2),
+                  2: const pw.FlexColumnWidth(2),
+                },
+                children: [
+                  pw.TableRow(
+                    decoration: const pw.BoxDecoration(
+                        color: PdfColors.grey100),
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(10),
+                        child: pw.Text('Label',
+                            style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(10),
+                        child: pw.Text('Value', // Added  for clarity
+                            style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(10),
+                        child: pw.Text('Change',
+                            style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                      ),
+                    ],
+                  ),
+                  ...invoiceState.statistics
+                      .asMap()
+                      .entries
+                      .map((entry) {
+                    final stat = entry.value;
+                    final prevStat = invoiceState.previousStatistics.firstWhere(
+                          (p) => p['label'] == stat['label'],
+                      orElse: () => <String, dynamic>{},
+                    );
+                    num change = 0;
+                    String trendText = '- 0%';
+                    if (prevStat.isNotEmpty) {
+                      final currentValue = stat['rawValue'] as num? ?? 0;
+                      final prevValue = prevStat['rawValue'] as num? ?? 0;
+                      if (prevValue != 0) {
+                        change = (currentValue - prevValue) / prevValue * 100;
+                      } else {
+                        change = currentValue > 0 ? double.infinity : 0;
+                      }
+                      trendText = change.isInfinite
+                          ? '↑ ∞%'
+                          : change > 0
+                          ? '↑ ${change.abs().toStringAsFixed(1)}%'
+                          : change < 0
+                          ? '↓ ${change.abs().toStringAsFixed(1)}%'
+                          : '- 0%';
+                    }
+                    num totalAmount = invoiceState.statistics.firstWhere(
+                          (s) => s['label'] == 'Total Amount',
+                      orElse: () => {'rawValue': 0},
+                    )['rawValue'] as num? ?? 0;
+                    String valueText = stat['value']?.toString() ?? 'N/A';
+                    if (totalAmount > 0 && [
+                      'Cash Sales',
+                      'Credit Sales',
+                      'Total Collected Amount',
+                      'Pending Collection Amount'
+                    ].contains(stat['label'] ?? '') &&
+                        stat['rawValue'] != null) {
+                      double perc = ((stat['rawValue'] as num) / totalAmount) *
+                          100;
+                      valueText = '${stat['rawValue'].toStringAsFixed(2)} (${perc.toStringAsFixed(1)}%)'; // Added 
+                    }
+                    return pw.TableRow(
+                      children: [
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(10),
+                          child: pw.Text(stat['label']?.toString() ?? 'Unknown',
+                              style: pw.TextStyle(
+                                  font: regularFont, fontSize: 12)),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(10),
+                          child: pw.Text(
+                            valueText,
+                            style: pw.TextStyle(
+                                font: regularFont, fontSize: 12),
+                            textAlign: pw.TextAlign.right,
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(10),
+                          child: pw.Text(
+                            trendText,
+                            style: pw.TextStyle(
+                                font: regularFont, fontSize: 12),
+                            textAlign: pw.TextAlign.right,
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
+                ],
+              ),
+            ]);
+          }
+
+          if (section == null || section == 'purchase') {
+            content.addAll([
+              pw.SizedBox(height: 24),
+              pw.Text(
+                'Purchase Statistics',
+                style: pw.TextStyle(font: boldFont, fontSize: 18),
+              ),
+              pw.SizedBox(height: 12),
+              pw.Table(
+                border: pw.TableBorder.all(color: greyColor, width: 1),
+                columnWidths: {
+                  0: const pw.FlexColumnWidth(6),
+                  1: const pw.FlexColumnWidth(2),
+                },
+                children: [
+                  pw.TableRow(
+                    decoration: const pw.BoxDecoration(
+                        color: PdfColors.grey100),
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(10),
+                        child: pw.Text('Label',
+                            style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(10),
+                        child: pw.Text('Value', // Added  for clarity
+                            style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                      ),
+                    ],
+                  ),
+                  if (purchaseState != null)
+                    ...purchaseState.statistics
+                        .asMap()
+                        .entries
+                        .map((entry) {
+                      final stat = entry.value;
+                      num totalAmount = purchaseState.statistics.firstWhere(
+                            (s) => s['label'] == 'Total Amount',
+                        orElse: () => {'rawValue': 0},
+                      )['rawValue'] as num? ?? 0;
+                      String valueText = stat['value']?.toString() ?? 'N/A';
+                      if (totalAmount > 0 && [
+                        'Cash Purchases',
+                        'Credit Purchases',
+                        'Total Paid Amount',
+                        'Total Not Paid Amount'
+                      ].contains(stat['label'] ?? '') &&
+                          stat['rawValue'] != null) {
+                        double perc = ((stat['rawValue'] as num) /
+                            totalAmount) * 100;
+                        valueText = '${stat['rawValue'].toStringAsFixed(2)}  (${perc.toStringAsFixed(1)}%)'; // Added 
+                      }
+                      return pw.TableRow(
+                        children: [
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(10),
+                            child: pw.Text(
+                                stat['label']?.toString() ?? 'Unknown',
+                                style: pw.TextStyle(
+                                    font: regularFont, fontSize: 12)),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(10),
+                            child: pw.Text(
+                              valueText,
+                              style: pw.TextStyle(
+                                  font: regularFont, fontSize: 12),
+                              textAlign: pw.TextAlign.right,
+                            ),
+                          ),
+                        ],
+                      );
+                    }),
+                ],
+              ),
+            ]);
+          }
+
+          return content;
+        },
+        footer: (context) =>
+            pw.Container(
+              alignment: pw.Alignment.center,
+              padding: const pw.EdgeInsets.only(top: 12),
+              child: pw.Text(
+                'Generated by $companyName | Page ${context
+                    .pageNumber} of ${context.pagesCount}',
+                style: pw.TextStyle(
+                    font: regularFont, fontSize: 10, color: textSecondaryColor),
+              ),
+            ),
+      ),
+    );
+
+    return pdf;
   }
 
   IconData _getIconForStat(String label) {
@@ -655,333 +1168,5 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
       default:
         return Icons.info;
     }
-  }
-
-  void _showStatsDialog(
-      BuildContext context,
-      AdminInvoiceListFetchSuccess? invoiceState,
-      AdminPurchaseListFetchSuccess? purchaseState) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Stock Value Section
-              BlocBuilder<OverallStockCubit, OverallStockState>(
-                builder: (context, stockState) {
-                  double totalStockValue = 0.0;
-                  if (stockState is OverallStockSuccess) {
-                    totalStockValue = stockState.totalStockValue;
-                  }
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Stock Value',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: AppColors.textSecondary.withOpacity(0.5),
-                            width: 1,
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Table(
-                          border: TableBorder(
-                            verticalInside: BorderSide(
-                              color: AppColors.textSecondary.withOpacity(0.5),
-                              width: 1,
-                            ),
-                            horizontalInside: BorderSide(
-                              color: AppColors.textSecondary.withOpacity(0.5),
-                              width: 1,
-                            ),
-                          ),
-                          columnWidths: const {
-                            0: FlexColumnWidth(6),
-                            1: FlexColumnWidth(2),
-                          },
-                          children: [
-                            _buildTableRow(
-                              'Total Stock Value',
-                              '₹${totalStockValue.toStringAsFixed(2)}',
-                              '',
-                              valueColor: AppColors.primary,
-                              valueWeight: FontWeight.bold,
-                              backgroundColor: AppColors.primary.withOpacity(0.1),
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(12),
-                                topRight: Radius.circular(12),
-                                bottomLeft: Radius.circular(12),
-                                bottomRight: Radius.circular(12),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-                  );
-                },
-              ),
-              // Sales Statistics Section
-              if (invoiceState != null) ...[
-                const Text(
-                  'Sales Statistics',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: AppColors.textSecondary.withOpacity(0.5),
-                      width: 1,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Table(
-                    border: TableBorder(
-                      verticalInside: BorderSide(
-                        color: AppColors.textSecondary.withOpacity(0.5),
-                        width: 1,
-                      ),
-                      horizontalInside: BorderSide(
-                        color: AppColors.textSecondary.withOpacity(0.5),
-                        width: 1,
-                      ),
-                    ),
-                    columnWidths: const {
-                      0: FlexColumnWidth(6),
-                      1: FlexColumnWidth(2),
-                      2: FlexColumnWidth(2),
-                    },
-                    children: invoiceState.statistics.asMap().entries.map((entry) {
-                      final stat = entry.value;
-                      final prevStat = invoiceState.previousStatistics.firstWhere(
-                            (p) => p['label'] == stat['label'],
-                        orElse: () => <String, dynamic>{},
-                      );
-                      num change = 0;
-                      Color trendColor = Colors.grey;
-                      String trendText = '- 0%';
-                      if (prevStat.isNotEmpty) {
-                        final currentValue = stat['rawValue'] as num;
-                        final prevValue = prevStat['rawValue'] as num;
-                        if (prevValue != 0) {
-                          change = (currentValue - prevValue) / prevValue * 100;
-                        } else {
-                          change = currentValue > 0 ? double.infinity : 0;
-                        }
-                        if (change > 0) {
-                          trendColor = Colors.green;
-                          trendText = '↑ ${change.isInfinite ? '∞' : change.abs().toStringAsFixed(1)}%';
-                        } else if (change < 0) {
-                          trendColor = Colors.red;
-                          trendText = '↓ ${change.abs().toStringAsFixed(1)}%';
-                        } else {
-                          trendColor = Colors.grey;
-                          trendText = '- 0%';
-                        }
-                      }
-                      final isLast = entry.key == invoiceState.statistics.length - 1;
-                      final isFirst = entry.key == 0;
-                      return _buildTableRow(
-                        stat['label'],
-                        stat['value'],
-                        trendText,
-                        valueColor: stat['color'],
-                        trendColor: trendColor,
-                        valueWeight:
-                        stat['highlight'] == true ? FontWeight.bold : null,
-                        backgroundColor: stat['highlight'] == true
-                            ? (stat['color'] as Color).withOpacity(0.1)
-                            : null,
-                        borderRadius: isFirst
-                            ? const BorderRadius.only(
-                          topLeft: Radius.circular(12),
-                          topRight: Radius.circular(12),
-                        )
-                            : isLast
-                            ? const BorderRadius.only(
-                          bottomLeft: Radius.circular(12),
-                          bottomRight: Radius.circular(12),
-                        )
-                            : null,
-                      );
-                    }).toList(),
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
-              // Purchase Statistics Section
-              if (purchaseState != null) ...[
-                const Text(
-                  'Purchase Statistics',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: AppColors.textSecondary.withOpacity(0.5),
-                      width: 1,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Table(
-                    border: TableBorder(
-                      verticalInside: BorderSide(
-                        color: AppColors.textSecondary.withOpacity(0.5),
-                        width: 1,
-                      ),
-                      horizontalInside: BorderSide(
-                        color: AppColors.textSecondary.withOpacity(0.5),
-                        width: 1,
-                      ),
-                    ),
-                    columnWidths: const {
-                      0: FlexColumnWidth(6),
-                      1: FlexColumnWidth(2),
-                    },
-                    children: purchaseState.statistics.asMap().entries.map((entry) {
-                      final stat = entry.value;
-                      final isLast = entry.key == purchaseState.statistics.length - 1;
-                      final isFirst = entry.key == 0;
-                      return _buildTableRow(
-                        stat['label'],
-                        stat['value'],
-                        '',
-                        valueColor: stat['color'],
-                        valueWeight:
-                        stat['highlight'] == true ? FontWeight.bold : null,
-                        backgroundColor: stat['highlight'] == true
-                            ? (stat['color'] as Color).withOpacity(0.1)
-                            : null,
-                        borderRadius: isFirst
-                            ? const BorderRadius.only(
-                          topLeft: Radius.circular(12),
-                          topRight: Radius.circular(12),
-                        )
-                            : isLast
-                            ? const BorderRadius.only(
-                          bottomLeft: Radius.circular(12),
-                          bottomRight: Radius.circular(12),
-                        )
-                            : null,
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.center,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
-                  ),
-                  child: const Text(
-                    'Close',
-                    style: TextStyle(color: AppColors.white, fontSize: 14),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  TableRow _buildTableRow(
-      String label,
-      String value,
-      String trend, {
-        FontWeight? valueWeight,
-        Color? valueColor = AppColors.textSecondary,
-        Color? trendColor = AppColors.textSecondary,
-        Color? backgroundColor,
-        BorderRadius? borderRadius,
-      }) {
-    return TableRow(
-      decoration: backgroundColor != null || borderRadius != null
-          ? BoxDecoration(
-        color: backgroundColor,
-        borderRadius: borderRadius,
-      )
-          : null,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: 14,
-                color: valueColor,
-                fontWeight: valueWeight,
-              ),
-            ),
-          ),
-        ),
-        if (trend.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                trend,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: trendColor,
-                  fontWeight: valueWeight,
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
   }
 }

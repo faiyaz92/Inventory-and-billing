@@ -198,21 +198,21 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
       {
         'label': 'Total Amount',
         'rawValue': totalAmount,
-        'value': '₹${totalAmount.toStringAsFixed(2)}',
+        'value': totalAmount.toStringAsFixed(2),
         'color': AppColors.textPrimary,
         'highlight': true
       },
       {
         'label': 'Cash Sales',
         'rawValue': cashSales,
-        'value': '₹${cashSales.toStringAsFixed(2)}',
+        'value': cashSales.toStringAsFixed(2),
         'color': Colors.green,
         'highlight': true
       },
       {
         'label': 'Credit Sales',
         'rawValue': creditSales,
-        'value': '₹${creditSales.toStringAsFixed(2)}',
+        'value': creditSales.toStringAsFixed(2),
         'color': Colors.blue,
         'highlight': true
       },
@@ -247,14 +247,14 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
       {
         'label': 'Total Collected Amount',
         'rawValue': totalCollectedAmount,
-        'value': '₹${totalCollectedAmount.toStringAsFixed(2)}',
+        'value': totalCollectedAmount.toStringAsFixed(2),
         'color': Colors.green,
         'highlight': true
       },
       {
         'label': 'Pending Collection Amount',
         'rawValue': totalPendingAmount,
-        'value': '₹${totalPendingAmount.toStringAsFixed(2)}',
+        'value': totalPendingAmount.toStringAsFixed(2),
         'color': Colors.red,
         'highlight': true
       },
