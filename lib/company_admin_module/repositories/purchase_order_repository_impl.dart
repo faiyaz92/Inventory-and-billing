@@ -1,4 +1,3 @@
-// New Repository: PurchaseOrderRepositoryImpl.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/purchase/admin_purchase_order_dto.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/i_purchase_order_repository.dart';
@@ -35,19 +34,79 @@ class PurchaseOrderRepositoryImpl implements IPurchaseOrderRepository {
   }
 
   @override
-  Future<List<AdminPurchaseOrderDto>> getAllPurchaseOrders(String companyId, String? storeId) async {
+  Future<List<AdminPurchaseOrderDto>> getAllPurchaseOrders(
+      String companyId,
+      String? storeId, {
+        DateTime? startDate,
+        DateTime? endDate,
+        String? purchaseType,
+        String? paymentStatus,
+        String? invoiceLastUpdatedBy,
+        String? supplierId,
+        double? minTotalAmount,
+        double? maxTotalAmount,
+        String? searchQuery,
+      }) async {
     try {
       final ref = firestorePathProvider.getPurchaseOrdersCollectionRef(companyId);
-      QuerySnapshot snapshot;
+      Query<Map<String, dynamic>> query = ref as Query<Map<String, dynamic>>;
 
-      if (storeId == null) {
-        snapshot = await ref.get();
-      } else {
-        snapshot = await ref.where('storeId', isEqualTo: storeId).get();
+      // Apply storeId filter if provided
+      if (storeId != null && storeId.isNotEmpty) {
+        query = query.where('storeId', isEqualTo: storeId);
       }
 
+      // Apply supplierId filter if provided
+      if (supplierId != null && supplierId.isNotEmpty) {
+        query = query.where('supplierId', isEqualTo: supplierId);
+      }
+
+      // Apply purchaseType filter if provided
+      if (purchaseType != null && purchaseType.isNotEmpty) {
+        query = query.where('purchaseType', isEqualTo: purchaseType);
+      }
+
+      // Apply paymentStatus filter if provided
+      if (paymentStatus != null && paymentStatus.isNotEmpty) {
+        query = query.where('paymentStatus', isEqualTo: paymentStatus);
+      }
+
+      // Apply invoiceLastUpdatedBy filter if provided
+      if (invoiceLastUpdatedBy != null && invoiceLastUpdatedBy.isNotEmpty) {
+        query = query.where('invoiceLastUpdatedBy', isEqualTo: invoiceLastUpdatedBy);
+      }
+
+      // Apply totalAmount range filter if provided
+      if (minTotalAmount != null) {
+        query = query.where('totalAmount', isGreaterThanOrEqualTo: minTotalAmount);
+      }
+      if (maxTotalAmount != null) {
+        query = query.where('totalAmount', isLessThanOrEqualTo: maxTotalAmount);
+      }
+
+      // Apply date range filter on invoiceGeneratedDate or orderDate
+      if (startDate != null) {
+        query = query.where('invoiceGeneratedDate', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate));
+      }
+      if (endDate != null) {
+        // Add one day to endDate to include the entire end date
+        final endDatePlusOne = endDate.add(const Duration(days: 1));
+        query = query.where('invoiceGeneratedDate', isLessThan: Timestamp.fromDate(endDatePlusOne));
+      }
+
+      // Apply searchQuery filter on orderId if provided
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        // Firestore doesn't support partial text search natively, so we assume exact match or prefix match
+        // If partial match is needed, consider storing a lowercase search field or using a third-party solution
+        query = query.where('id', isEqualTo: searchQuery);
+      }
+
+      // Execute the query
+      final snapshot = await query.get();
+
+      // Map the results to AdminPurchaseOrderDto
       return snapshot.docs
-          .map((doc) => AdminPurchaseOrderDto.fromFirestore(doc.data() as Map<String, dynamic>))
+          .map((doc) => AdminPurchaseOrderDto.fromFirestore(doc.data()))
           .toList();
     } catch (e) {
       throw Exception('Failed to fetch purchase orders: $e');

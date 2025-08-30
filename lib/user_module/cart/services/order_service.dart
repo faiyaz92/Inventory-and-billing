@@ -30,11 +30,38 @@ class OrderService implements IOrderService {
   }
 
   @override
-  Future<List<Order>> getAllOrders() async {
+  Future<List<Order>> getAllOrders({
+    String? storeId,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? status,
+    DateTime? expectedDeliveryStartDate,
+    DateTime? expectedDeliveryEndDate,
+    String? orderTakenBy,
+    String? orderDeliveredBy,
+    DateTime? actualDeliveryStartDate,
+    DateTime? actualDeliveryEndDate,
+    String? userId,
+    double? minTotalAmount,
+    double? maxTotalAmount,
+  }) async {
     final userInfo = await accountRepository.getUserInfo();
     final orderDtos = await orderRepository.getAllOrders(
-        userInfo?.companyId ?? '',
-        userInfo?.role == Role.COMPANY_ADMIN ? null : userInfo?.storeId);
+      companyId: userInfo?.companyId ?? '',
+      storeId: userInfo?.role == Role.COMPANY_ADMIN ? storeId : userInfo?.storeId,
+      startDate: startDate,
+      endDate: endDate,
+      status: status,
+      expectedDeliveryStartDate: expectedDeliveryStartDate,
+      expectedDeliveryEndDate: expectedDeliveryEndDate,
+      orderTakenBy: orderTakenBy,
+      orderDeliveredBy: orderDeliveredBy,
+      actualDeliveryStartDate: actualDeliveryStartDate,
+      actualDeliveryEndDate: actualDeliveryEndDate,
+      userId: userId,
+      minTotalAmount: minTotalAmount,
+      maxTotalAmount: maxTotalAmount,
+    );
     return orderDtos.map((dto) => Order.fromDto(dto)).toList();
   }
 
@@ -70,16 +97,22 @@ class OrderService implements IOrderService {
   @override
   Future<void> setOrderDeliveredBy(String orderId, String? deliveredBy) async {
     final userInfo = await accountRepository.getUserInfo();
-    await orderRepository.setOrderDeliveredBy(userInfo?.companyId ?? '',
-        orderId, deliveredBy ?? userInfo?.userId, userInfo?.userId);
+    await orderRepository.setOrderDeliveredBy(
+        userInfo?.companyId ?? '',
+        orderId,
+        deliveredBy ?? userInfo?.userId,
+        userInfo?.userId);
   }
 
   @override
   Future<void> setResponsibleForDelivery(
       String orderId, String responsibleForDelivery) async {
     final userInfo = await accountRepository.getUserInfo();
-    await orderRepository.setResponsibleForDelivery(userInfo?.companyId ?? '',
-        orderId, responsibleForDelivery, userInfo?.userId);
+    await orderRepository.setResponsibleForDelivery(
+        userInfo?.companyId ?? '',
+        orderId,
+        responsibleForDelivery,
+        userInfo?.userId);
   }
 
   @override
@@ -105,11 +138,30 @@ class OrderService implements IOrderService {
   }
 
   @override
-  Future<List<Order>> getAllInvoices() async {
+  Future<List<Order>> getAllInvoices({
+    String? storeId,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? invoiceType,
+    String? paymentStatus,
+    String? invoiceLastUpdatedBy,
+    String? userId,
+    double? minTotalAmount,
+    double? maxTotalAmount,
+  }) async {
     final userInfo = await accountRepository.getUserInfo();
     final orderDtos = await orderRepository.getAllInvoices(
-        userInfo?.companyId ?? '',
-        userInfo?.role == Role.COMPANY_ADMIN ? null : userInfo?.storeId);
+      companyId: userInfo?.companyId ?? '',
+      storeId: userInfo?.role == Role.COMPANY_ADMIN ? storeId : userInfo?.storeId,
+      startDate: startDate,
+      endDate: endDate,
+      invoiceType: invoiceType,
+      paymentStatus: paymentStatus,
+      invoiceLastUpdatedBy: invoiceLastUpdatedBy,
+      userId: userId,
+      minTotalAmount: minTotalAmount,
+      maxTotalAmount: maxTotalAmount,
+    );
     return orderDtos.map((dto) => Order.fromDto(dto)).toList();
   }
 

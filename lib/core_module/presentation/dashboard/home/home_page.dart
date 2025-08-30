@@ -1,4 +1,5 @@
 import 'package:auto_route/annotations.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_page.dart';
@@ -17,11 +18,6 @@ class HomePage extends StatelessWidget {
     final DateTime demoExpirationDate = DateTime(2025, 10, 10);
     final bool isDemoExpired = DateTime.now().isAfter(demoExpirationDate);
 
-    // Determine screen size for responsive design
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final bool isWeb =
-        screenWidth > 600; // Consider web for screens wider than 600px
-
     return BlocProvider(
       create: (context) => sl<HomeCubit>()..fetchUserInfo(),
       child: BlocBuilder<HomeCubit, HomeState>(
@@ -36,44 +32,44 @@ class HomePage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   color: Colors.white,
-                  margin: EdgeInsets.all(isWeb ? 32.0 : 16.0),
+                  margin: const EdgeInsets.all(kIsWeb ? 32.0 : 16.0),
                   child: Padding(
-                    padding: EdgeInsets.all(isWeb ? 32.0 : 24.0),
+                    padding: const EdgeInsets.all(kIsWeb ? 32.0 : 24.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
                           Icons.lock_outline,
-                          size: isWeb ? 64 : 48,
+                          size: kIsWeb ? 64 : 48,
                           color: Theme.of(context).primaryColor,
                         ),
-                        SizedBox(height: isWeb ? 24 : 16),
-                        Text(
+                        const SizedBox(height: kIsWeb ? 24 : 16),
+                        const Text(
                           'Your free demo period has ended.',
                           style: TextStyle(
-                            fontSize: isWeb ? 24 : 20,
+                            fontSize: kIsWeb ? 24 : 20,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        SizedBox(height: isWeb ? 12 : 8),
-                        Text(
+                        const SizedBox(height: kIsWeb ? 12 : 8),
+                        const Text(
                           'Please purchase a subscription to continue using the app.',
                           style: TextStyle(
-                            fontSize: isWeb ? 18 : 16,
+                            fontSize: kIsWeb ? 18 : 16,
                             color: Colors.black54,
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        SizedBox(height: isWeb ? 32 : 24),
+                        const SizedBox(height: kIsWeb ? 32 : 24),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Theme.of(context).primaryColor,
                             foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: isWeb ? 32.0 : 24.0,
-                              vertical: isWeb ? 16.0 : 12.0,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: kIsWeb ? 32.0 : 24.0,
+                              vertical: kIsWeb ? 16.0 : 12.0,
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),
@@ -87,9 +83,9 @@ class HomePage extends StatelessWidget {
                               ),
                             );
                           },
-                          child: Text(
+                          child: const Text(
                             'Purchase Now',
-                            style: TextStyle(fontSize: isWeb ? 18 : 16),
+                            style: TextStyle(fontSize: kIsWeb ? 18 : 16),
                           ),
                         ),
                       ],
@@ -115,7 +111,6 @@ class HomePage extends StatelessWidget {
             final List<Widget> gridItems = _buildGridItemsForRole(
               context: context,
               role: state.role,
-              isWeb: isWeb,
             );
 
             return Scaffold(
@@ -132,39 +127,38 @@ class HomePage extends StatelessWidget {
                 ),
                 child: SafeArea(
                   child: Padding(
-                    padding: EdgeInsets.all(isWeb ? 24.0 : 16.0),
+                    padding: const EdgeInsets.all(kIsWeb ? 24.0 : 16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          width: double.infinity,
-                          child: Card(
-                            elevation: 8,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            color: Colors.white,
-                            child: Padding(
-                              padding: EdgeInsets.all(isWeb ? 24.0 : 16.0),
-                              child: Text(
-                                "Welcome, ${state.userName}",
-                                style: TextStyle(
-                                  fontSize: isWeb ? 28 : 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).primaryColor,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: isWeb ? 32 : 24),
+                        // SizedBox(
+                        //   width: double.infinity,
+                        //   child: Card(
+                        //     elevation: 8,
+                        //     shape: RoundedRectangleBorder(
+                        //       borderRadius: BorderRadius.circular(16),
+                        //     ),
+                        //     color: Colors.white,
+                        //     child: Padding(
+                        //       padding: const EdgeInsets.all(kIsWeb ? 24.0 : 16.0),
+                        //       child: Text(
+                        //         "Welcome, ${state.userName}",
+                        //         style: TextStyle(
+                        //           fontSize: kIsWeb ? 28 : 24,
+                        //           fontWeight: FontWeight.bold,
+                        //           color: Theme.of(context).primaryColor,
+                        //         ),
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
+                        // const SizedBox(height: kIsWeb ? 32 : 24),
                         Expanded(
                           child: GridView.count(
-                            crossAxisCount: isWeb ? 4 : 3,
-                            // More columns on web
-                            crossAxisSpacing: isWeb ? 16 : 12,
-                            mainAxisSpacing: isWeb ? 16 : 12,
-                            childAspectRatio: isWeb ? 1.2 : 1.0,
+                            crossAxisCount: kIsWeb ? 7 : 3,
+                            crossAxisSpacing: kIsWeb ? 16 : 12,
+                            mainAxisSpacing: kIsWeb ? 16 : 12,
+                            childAspectRatio: kIsWeb ? 1.0 : 1.0,
                             children: gridItems,
                           ),
                         ),
@@ -179,8 +173,8 @@ class HomePage extends StatelessWidget {
               body: Center(
                 child: Text(
                   "Error: ${state.message}",
-                  style: TextStyle(
-                    fontSize: isWeb ? 18 : 16,
+                  style: const TextStyle(
+                    fontSize: kIsWeb ? 18 : 16,
                     color: Colors.red,
                   ),
                 ),
@@ -193,11 +187,9 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // File: core_module/presentation/dashboard/home/home_page.dart
   List<Widget> _buildGridItemsForRole({
     required BuildContext context,
     required Role role,
-    required bool isWeb,
   }) {
     final List<Widget> gridItems = [];
 
@@ -212,7 +204,6 @@ class HomePage extends StatelessWidget {
             onTap: () {
               sl<Coordinator>().navigateToSuperAdminPage();
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
             icon: Icons.add_business_outlined,
@@ -221,7 +212,6 @@ class HomePage extends StatelessWidget {
             onTap: () {
               sl<Coordinator>().navigateToAddCompanyPage();
             },
-            isWeb: isWeb,
           ),
         ]);
         break;
@@ -229,13 +219,12 @@ class HomePage extends StatelessWidget {
       case Role.COMPANY_ACCOUNTANT:
         gridItems.addAll([
           _buildGridItem(
-            icon: Icons.bar_chart, // Changed from dashboard
-            label: 'Statistics', // Corrected typo from "Statics"
+            icon: Icons.bar_chart,
+            label: 'Statistics',
             color: Colors.blueAccent,
             onTap: () {
               sl<Coordinator>().navigateToDashboardStaticsPage();
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
             icon: Icons.inventory_2_outlined,
@@ -244,16 +233,14 @@ class HomePage extends StatelessWidget {
             onTap: () {
               sl<Coordinator>().navigateToProductManagementPage();
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
-            icon: Icons.point_of_sale, // Changed from shopping_cart
+            icon: Icons.point_of_sale,
             label: 'Sales',
             color: Colors.pink,
             onTap: () {
               sl<Coordinator>().navigateToCartDashboard();
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
             icon: Icons.warehouse_outlined,
@@ -262,7 +249,6 @@ class HomePage extends StatelessWidget {
             onTap: () {
               sl<Coordinator>().navigateToInventoryDashBoard();
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
             icon: Icons.account_balance_wallet,
@@ -271,27 +257,24 @@ class HomePage extends StatelessWidget {
             onTap: () {
               sl<Coordinator>().navigateToAccountsDashboard();
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
-            icon: Icons.money_off, // Changed from money
+            icon: Icons.money_off,
             label: 'Add Expenses',
             color: Colors.orangeAccent,
             onTap: () {
               sl<Coordinator>().navigateToUserLedgerPage(
                   transactionType: TransactionType.Expense);
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
-            icon: Icons.payments, // Changed from money
+            icon: Icons.payments,
             label: 'Add Reimbursement',
             color: Colors.orangeAccent,
             onTap: () {
               sl<Coordinator>().navigateToUserLedgerPage(
                   transactionType: TransactionType.Reimbursement);
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
             icon: Icons.analytics_outlined,
@@ -300,9 +283,7 @@ class HomePage extends StatelessWidget {
             onTap: () {
               sl<Coordinator>().navigateToAnalyticsPage();
             },
-            isWeb: isWeb,
           ),
-
           _buildGridItem(
             icon: Icons.admin_panel_settings_outlined,
             label: 'Company Admin',
@@ -310,7 +291,6 @@ class HomePage extends StatelessWidget {
             onTap: () {
               sl<Coordinator>().navigateToCompanyAdminPage();
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
             icon: Icons.add_task,
@@ -319,7 +299,6 @@ class HomePage extends StatelessWidget {
             onTap: () {
               sl<Coordinator>().navigateToAddTaskPage();
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
             icon: Icons.task_alt,
@@ -328,7 +307,6 @@ class HomePage extends StatelessWidget {
             onTap: () {
               sl<Coordinator>().navigateToTaskListPage();
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
             icon: Icons.settings_outlined,
@@ -337,7 +315,6 @@ class HomePage extends StatelessWidget {
             onTap: () {
               sl<Coordinator>().navigateToCompanySettingsPage();
             },
-            isWeb: isWeb,
           ),
         ]);
         break;
@@ -350,7 +327,6 @@ class HomePage extends StatelessWidget {
             onTap: () {
               sl<Coordinator>().navigateToStoreDetailsPage('');
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
             icon: Icons.store_mall_directory_outlined,
@@ -359,7 +335,6 @@ class HomePage extends StatelessWidget {
             onTap: () {
               sl<Coordinator>().navigateToStoresListPage();
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
             icon: Icons.inventory_outlined,
@@ -368,7 +343,6 @@ class HomePage extends StatelessWidget {
             onTap: () {
               sl<Coordinator>().navigateToStockListPage();
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
             icon: Icons.storage_outlined,
@@ -377,16 +351,14 @@ class HomePage extends StatelessWidget {
             onTap: () {
               sl<Coordinator>().navigateToOverAllStockPage();
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
-            icon: Icons.event_note, // Changed from event_available_outlined
+            icon: Icons.event_note,
             label: 'Store Attendance',
             color: Colors.pink,
             onTap: () {
               sl<Coordinator>().navigateToAttendancePage();
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
             icon: Icons.add_task,
@@ -395,7 +367,6 @@ class HomePage extends StatelessWidget {
             onTap: () {
               sl<Coordinator>().navigateToAddTaskPage();
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
             icon: Icons.task_alt,
@@ -404,7 +375,6 @@ class HomePage extends StatelessWidget {
             onTap: () {
               sl<Coordinator>().navigateToTaskListPage();
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
             icon: Icons.person_add_alt_1_outlined,
@@ -413,7 +383,6 @@ class HomePage extends StatelessWidget {
             onTap: () {
               sl<Coordinator>().navigateToAddUserPage();
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
             icon: Icons.receipt_long_outlined,
@@ -422,29 +391,26 @@ class HomePage extends StatelessWidget {
             onTap: () {
               sl<Coordinator>().navigateToBillingPage();
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
-            icon: Icons.add_shopping_cart, // Changed from shopping_cart_outlined
+            icon: Icons.add_shopping_cart,
             label: 'Cart Management',
             color: Colors.pink,
             onTap: () {
               sl<Coordinator>().navigateToCartDashboard();
             },
-            isWeb: isWeb,
           ),
         ]);
         break;
       case Role.SALES_MAN:
         gridItems.addAll([
           _buildGridItem(
-            icon: Icons.note_add, // Changed from book
+            icon: Icons.note_add,
             label: 'Take Purchase Order',
             color: Colors.blueAccent,
             onTap: () {
               sl<Coordinator>().navigateToSalesManOrderPage();
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
             icon: Icons.receipt,
@@ -453,16 +419,14 @@ class HomePage extends StatelessWidget {
             onTap: () {
               sl<Coordinator>().navigateToBillingPage();
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
-            icon: Icons.list, // Changed from dashboard
+            icon: Icons.list,
             label: 'Orders List',
             color: Colors.orange,
             onTap: () {
               sl<Coordinator>().navigateToAdminPanelPage();
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
             icon: Icons.receipt_long,
@@ -471,35 +435,31 @@ class HomePage extends StatelessWidget {
             onTap: () {
               sl<Coordinator>().navigateToInvoiceListPage();
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
-            icon: Icons.inventory, // Changed from receipt_long
+            icon: Icons.inventory,
             label: 'My Stock',
             color: Colors.cyan,
             onTap: () {
               sl<Coordinator>().navigateToStoreDetailsPage('');
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
-            icon: Icons.money_off, // Changed from money
+            icon: Icons.money_off,
             label: 'Add Expenses',
             color: Colors.orangeAccent,
             onTap: () {
               sl<Coordinator>().navigateToUserLedgerPage(
                   transactionType: TransactionType.Expense);
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
-            icon: Icons.attach_money, // Changed from account_balance_wallet
+            icon: Icons.attach_money,
             label: 'Quick Receive',
             color: Colors.green,
             onTap: () {
               sl<Coordinator>().navigateToQuickTransactionPage('receive');
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
             icon: Icons.payment,
@@ -508,16 +468,14 @@ class HomePage extends StatelessWidget {
             onTap: () {
               sl<Coordinator>().navigateToQuickTransactionPage('pay');
             },
-            isWeb: isWeb,
           ),
           _buildGridItem(
-            icon: Icons.account_circle, // Changed from money
+            icon: Icons.account_circle,
             label: 'My Account',
             color: Colors.orangeAccent,
             onTap: () {
               sl<Coordinator>().navigateToUserLedgerPage();
             },
-            isWeb: isWeb,
           ),
         ]);
         break;
@@ -532,13 +490,12 @@ class HomePage extends StatelessWidget {
     // Add common grid items for all roles
     gridItems.addAll([
       _buildGridItem(
-        icon: Icons.attach_money, // Changed from account_balance_wallet
+        icon: Icons.attach_money,
         label: 'Quick Receive',
         color: Colors.green,
         onTap: () {
           sl<Coordinator>().navigateToQuickTransactionPage('receive');
         },
-        isWeb: isWeb,
       ),
       _buildGridItem(
         icon: Icons.payment,
@@ -547,16 +504,14 @@ class HomePage extends StatelessWidget {
         onTap: () {
           sl<Coordinator>().navigateToQuickTransactionPage('pay');
         },
-        isWeb: isWeb,
       ),
       _buildGridItem(
-        icon: Icons.account_circle, // Changed from money
+        icon: Icons.account_circle,
         label: 'My Account',
         color: Colors.orangeAccent,
         onTap: () {
           sl<Coordinator>().navigateToUserLedgerPage();
         },
-        isWeb: isWeb,
       ),
     ]);
 
@@ -568,31 +523,30 @@ class HomePage extends StatelessWidget {
     required String label,
     required VoidCallback onTap,
     required Color color,
-    required bool isWeb,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Card(
+        elevation: 4,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(8),
         ),
-        elevation: 8,
-        color: Colors.white,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+        color: Colors.grey[50], // Offwhite background
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 icon,
-                size: isWeb ? 48 : 36,
+                size: kIsWeb ? 28 : 36,
                 color: color,
               ),
-              SizedBox(height: isWeb ? 12 : 8),
+              const SizedBox(height: kIsWeb ? 12 : 8),
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: isWeb ? 16 : 14,
+                style: const TextStyle(
+                  fontSize: kIsWeb ? 16 : 14,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),

@@ -33,8 +33,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     return Scaffold(
       appBar: const CustomAppBar(
         title: "Reset Password",
-        centerTitle: true,
-
       ),
       body: Container(
         decoration: BoxDecoration(

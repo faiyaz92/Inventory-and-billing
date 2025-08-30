@@ -7,6 +7,8 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/produ
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
+import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
+import 'package:requirment_gathering_app/core_module/utils/custom_loading_dialog.dart';
 
 @RoutePage()
 class AddEditProductPage extends StatefulWidget {
@@ -23,6 +25,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _taxController = TextEditingController();
+  bool _isSaving = false; // Track saving state
 
   late AdminProductCubit _cubit;
 
@@ -43,26 +46,52 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
   }
 
   Future<void> _saveProduct() async {
-    if (_formKey.currentState!.validate()) {
-      final product = Product(
-        id: widget.product?.id ?? '',
-        name: _nameController.text,
-        price: double.parse(_priceController.text),
-        category: _cubit.selectedCategoryName ?? '',
-        categoryId: _cubit.selectedCategoryId ?? '',
-        subcategoryId: _cubit.selectedSubcategoryId ?? '',
-        subcategoryName: _cubit.selectedSubcategoryName ?? '',
-        tax: double.parse(_taxController.text),
-        stock: 0, // Default value since stock is not in UI
+    if (_formKey.currentState!.validate() && !_isSaving) {
+      setState(() => _isSaving = true); // Disable save button
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const CustomLoadingDialog(message: 'Wait...'),
       );
 
-      if (widget.product == null) {
-        await _cubit.addProduct(product);
-      } else {
-        await _cubit.updateProduct(product);
-      }
+      try {
+        final product = Product(
+          id: widget.product?.id ?? '',
+          name: _nameController.text,
+          price: double.parse(_priceController.text),
+          category: _cubit.selectedCategoryName ?? '',
+          categoryId: _cubit.selectedCategoryId ?? '',
+          subcategoryId: _cubit.selectedSubcategoryId ?? '',
+          subcategoryName: _cubit.selectedSubcategoryName ?? '',
+          tax: double.parse(_taxController.text),
+          stock: 0, // Default value since stock is not in UI
+        );
 
-      sl<Coordinator>().navigateBack(isUpdated: true);
+        if (widget.product == null) {
+          await _cubit.addProduct(product);
+          // Clear form for adding another product
+          _nameController.clear();
+          _priceController.clear();
+          _taxController.clear();
+          _cubit.resetSelections(); // Reset category and subcategory
+        } else {
+          await _cubit.updateProduct(product);
+          // Navigate back only for edit mode
+          sl<Coordinator>().navigateBack(isUpdated: true);
+        }
+
+        Navigator.of(context).pop(); // Close loading dialog
+      } catch (e) {
+        Navigator.of(context).pop(); // Close loading dialog on error
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving product: $e'),
+            backgroundColor: AppColors.red,
+          ),
+        );
+      } finally {
+        setState(() => _isSaving = false); // Re-enable save button
+      }
     }
   }
 
@@ -310,10 +339,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                                         _cubit.selectSubcategory(value);
                                       }
                                     },
-                                    validator: (value) =>
-                                    value == null || value.isEmpty
-                                        ? 'Select a subcategory'
-                                        : null,
+                                    validator: null, // Subcategory is optional
                                   ),
                                 );
                               }
@@ -323,7 +349,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                           const SizedBox(height: 24),
                           // Save Button
                           ElevatedButton(
-                            onPressed: _saveProduct,
+                            onPressed: _isSaving ? null : _saveProduct,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Theme.of(context).primaryColor,
                               foregroundColor: Colors.white,

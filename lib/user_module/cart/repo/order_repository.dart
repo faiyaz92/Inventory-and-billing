@@ -5,7 +5,22 @@ import 'package:requirment_gathering_app/user_module/cart/data/order_dto.dart';
 abstract class IOrderRepository {
   Future<void> addOrder(String companyId, OrderDto order);
   Future<List<OrderDto>> getOrdersByUser(String companyId, String userId);
-  Future<List<OrderDto>> getAllOrders(String companyId, String? storeId);
+  Future<List<OrderDto>> getAllOrders({
+    required String companyId,
+    String? storeId,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? status,
+    DateTime? expectedDeliveryStartDate,
+    DateTime? expectedDeliveryEndDate,
+    String? orderTakenBy,
+    String? orderDeliveredBy,
+    DateTime? actualDeliveryStartDate,
+    DateTime? actualDeliveryEndDate,
+    String? userId,
+    double? minTotalAmount,
+    double? maxTotalAmount,
+  });
   Future<void> updateOrderStatus(
       String companyId, String orderId, String status, String? lastUpdatedBy);
   Future<void> setExpectedDeliveryDate(
@@ -20,7 +35,18 @@ abstract class IOrderRepository {
   Future<void> updateOrder(String companyId, OrderDto order);
   Future<void> addInvoice(String companyId, OrderDto order);
   Future<List<OrderDto>> getInvoicesByUser(String companyId, String userId);
-  Future<List<OrderDto>> getAllInvoices(String companyId, String? storeId);
+  Future<List<OrderDto>> getAllInvoices({
+    required String companyId,
+    String? storeId,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? invoiceType,
+    String? paymentStatus,
+    String? invoiceLastUpdatedBy,
+    String? userId,
+    double? minTotalAmount,
+    double? maxTotalAmount,
+  });
   Future<OrderDto> getInvoiceById(String companyId, String invoiceId);
   Future<void> updateInvoice(String companyId, OrderDto order);
   Future<void> setInvoiceGeneratedDate(
@@ -62,16 +88,68 @@ class OrderRepositoryImpl implements IOrderRepository {
   }
 
   @override
-  Future<List<OrderDto>> getAllOrders(String companyId, String? storeId) async {
+  Future<List<OrderDto>> getAllOrders({
+    required String companyId,
+    String? storeId,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? status,
+    DateTime? expectedDeliveryStartDate,
+    DateTime? expectedDeliveryEndDate,
+    String? orderTakenBy,
+    String? orderDeliveredBy,
+    DateTime? actualDeliveryStartDate,
+    DateTime? actualDeliveryEndDate,
+    String? userId,
+    double? minTotalAmount,
+    double? maxTotalAmount,
+  }) async {
     try {
-      final ref = firestorePathProvider.getOrdersCollectionRef(companyId);
-      QuerySnapshot snapshot;
+      Query<Object?> ref = firestorePathProvider.getOrdersCollectionRef(companyId);
 
-      if (storeId == null) {
-        snapshot = await ref.get();
-      } else {
-        snapshot = await ref.where('storeId', isEqualTo: storeId).get();
+      if (storeId != null) {
+        ref = ref.where('storeId', isEqualTo: storeId);
       }
+      if (startDate != null) {
+        ref = ref.where('orderDate', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate));
+      }
+      if (endDate != null) {
+        ref = ref.where('orderDate', isLessThanOrEqualTo: Timestamp.fromDate(endDate.add(const Duration(days: 1))));
+      }
+      if (status != null) {
+        ref = ref.where('status', isEqualTo: status);
+      }
+      if (expectedDeliveryStartDate != null) {
+        ref = ref.where('expectedDeliveryDate', isGreaterThanOrEqualTo: Timestamp.fromDate(expectedDeliveryStartDate));
+      }
+      if (expectedDeliveryEndDate != null) {
+        ref = ref.where('expectedDeliveryDate', isLessThanOrEqualTo: Timestamp.fromDate(expectedDeliveryEndDate.add(const Duration(days: 1))));
+      }
+      if (orderTakenBy != null) {
+        ref = ref.where('orderTakenBy', isEqualTo: orderTakenBy);
+      }
+      if (orderDeliveredBy != null) {
+        ref = ref.where('orderDeliveredBy', isEqualTo: orderDeliveredBy);
+      }
+      if (actualDeliveryStartDate != null) {
+        ref = ref.where('orderDeliveryDate', isGreaterThanOrEqualTo: Timestamp.fromDate(actualDeliveryStartDate));
+      }
+      if (actualDeliveryEndDate != null) {
+        ref = ref.where('orderDeliveryDate', isLessThanOrEqualTo: Timestamp.fromDate(actualDeliveryEndDate.add(const Duration(days: 1))));
+      }
+      if (userId != null) {
+        ref = ref.where('userId', isEqualTo: userId);
+      }
+      if (minTotalAmount != null) {
+        ref = ref.where('totalAmount', isGreaterThanOrEqualTo: minTotalAmount);
+      }
+      if (maxTotalAmount != null) {
+        ref = ref.where('totalAmount', isLessThanOrEqualTo: maxTotalAmount);
+      }
+
+      ref = ref.orderBy('orderDate', descending: true);
+
+      final snapshot = await ref.get();
 
       return snapshot.docs
           .map((doc) => OrderDto.fromFirestore(doc.data() as Map<String, dynamic>))
@@ -199,16 +277,52 @@ class OrderRepositoryImpl implements IOrderRepository {
   }
 
   @override
-  Future<List<OrderDto>> getAllInvoices(String companyId, String? storeId) async {
+  Future<List<OrderDto>> getAllInvoices({
+    required String companyId,
+    String? storeId,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? invoiceType,
+    String? paymentStatus,
+    String? invoiceLastUpdatedBy,
+    String? userId,
+    double? minTotalAmount,
+    double? maxTotalAmount,
+  }) async {
     try {
-      final ref = firestorePathProvider.getInvoicesCollectionRef(companyId);
-      QuerySnapshot snapshot;
+      Query<Object?> ref = firestorePathProvider.getInvoicesCollectionRef(companyId);
 
-      if (storeId == null) {
-        snapshot = await ref.get();
-      } else {
-        snapshot = await ref.where('storeId', isEqualTo: storeId).get();
+      if (storeId != null) {
+        ref = ref.where('storeId', isEqualTo: storeId);
       }
+      if (startDate != null) {
+        ref = ref.where('invoiceGeneratedDate', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate));
+      }
+      if (endDate != null) {
+        ref = ref.where('invoiceGeneratedDate', isLessThanOrEqualTo: Timestamp.fromDate(endDate.add(const Duration(days: 1))));
+      }
+      if (invoiceType != null) {
+        ref = ref.where('invoiceType', isEqualTo: invoiceType);
+      }
+      if (paymentStatus != null) {
+        ref = ref.where('paymentStatus', isEqualTo: paymentStatus);
+      }
+      if (invoiceLastUpdatedBy != null) {
+        ref = ref.where('invoiceLastUpdatedBy', isEqualTo: invoiceLastUpdatedBy);
+      }
+      if (userId != null) {
+        ref = ref.where('userId', isEqualTo: userId);
+      }
+      if (minTotalAmount != null) {
+        ref = ref.where('totalAmount', isGreaterThanOrEqualTo: minTotalAmount);
+      }
+      if (maxTotalAmount != null) {
+        ref = ref.where('totalAmount', isLessThanOrEqualTo: maxTotalAmount);
+      }
+
+      ref = ref.orderBy('invoiceGeneratedDate', descending: true);
+
+      final snapshot = await ref.get();
 
       return snapshot.docs
           .map((doc) => OrderDto.fromFirestore(doc.data() as Map<String, dynamic>))

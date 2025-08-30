@@ -1,58 +1,92 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/home_cubit.dart';
+import 'package:requirment_gathering_app/core_module/services/user_service.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/text_styles.dart';
+import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
-  final bool centerTitle;
   final bool automaticallyImplyLeading;
   final List<Widget>? actions;
-  final VoidCallback? onBackPressed; // New optional callback for back press
+  final VoidCallback? onBackPressed;
 
   const CustomAppBar({
     Key? key,
     required this.title,
-    this.centerTitle = true,
     this.automaticallyImplyLeading = true,
     this.actions,
-    this.onBackPressed, // Add to constructor
+    this.onBackPressed,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
-      automaticallyImplyLeading: automaticallyImplyLeading,
-      centerTitle: centerTitle,
-      title: Text(
-        title,
-        style: defaultTextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: AppColors.appBarTitleColor,
-        ),
-      ),
-      iconTheme: const IconThemeData(color: AppColors.appBarIconColor),
-      flexibleSpace: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              AppColors.appBarStartColor,
-              AppColors.appBarMiddleColor,
-              AppColors.appBarEndColor,
+    final bool isWeb = MediaQuery.of(context).size.width > 600;
+
+    return BlocProvider(
+      create: (context) => sl<HomeCubit>()..fetchUserInfo(),
+      child: BlocBuilder<HomeCubit, HomeState>(
+        builder: (context, state) {
+          String userName = '';
+          if (state is HomeLoaded) {
+            userName = state.userName;
+          }
+
+          return AppBar(
+            automaticallyImplyLeading: automaticallyImplyLeading,
+            centerTitle: true, // Always center the title
+            title: Text(
+              title,
+              style: defaultTextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: AppColors.appBarTitleColor,
+              ),
+            ),
+            iconTheme: const IconThemeData(color: AppColors.appBarIconColor),
+            flexibleSpace: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.appBarStartColor,
+                    AppColors.appBarMiddleColor,
+                    AppColors.appBarEndColor,
+                  ],
+                  stops: [0.0, 0.8, 1.0],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+            actions: [
+              if (userName.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: Center(
+                    child: Text(
+                      'Welcome, $userName',
+                      style: defaultTextStyle(
+                        fontSize: isWeb ? 16 : 14, // Smaller on mobile, regular on web
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.appBarTitleColor.withOpacity(0.7),
+                      ),
+                    ),
+                  ),
+                ),
+              if (actions != null) ...actions!,
             ],
-            stops: [0.0, 0.8, 1.0],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
+            leading: automaticallyImplyLeading
+                ? IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
+            )
+                : null,
+          );
+        },
       ),
-      actions: actions,
-      leading: automaticallyImplyLeading
-          ? IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
-      )
-          : null,
     );
   }
 

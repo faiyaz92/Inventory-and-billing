@@ -242,4 +242,13 @@ class AdminProductCubit extends Cubit<ProductState> {
       emit(ProductError(message: 'Failed to load products: $e'));
     }
   }
+
+  void resetSelections() {
+    selectedCategoryId = null;
+    selectedCategoryName = null;
+    selectedSubcategoryId = null;
+    selectedSubcategoryName = null;
+    subcategoryList = []; // Clear subcategory list to ensure dropdown is empty
+    emit(CategoriesLoaded(categories: categoryList, selectedCategory: null));
+  }
 }

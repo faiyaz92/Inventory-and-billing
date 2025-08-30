@@ -349,72 +349,27 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
   }) async {
     emit(AdminOrderListFetchLoading());
     try {
-      final orders = await orderService.getAllOrders();
+      final orders = await orderService.getAllOrders(
+        storeId: storeId,
+        startDate: startDate,
+        endDate: endDate,
+        status: status,
+        expectedDeliveryStartDate: expectedDeliveryStartDate,
+        expectedDeliveryEndDate: expectedDeliveryEndDate,
+        orderTakenBy: orderTakenBy,
+        orderDeliveredBy: orderDeliveredBy,
+        actualDeliveryStartDate: actualDeliveryStartDate,
+        actualDeliveryEndDate: actualDeliveryEndDate,
+        userId: userId,
+        minTotalAmount: minTotalAmount,
+        maxTotalAmount: maxTotalAmount,
+      );
       _allOrders = orders;
       final users = await employeeServices.getUsersFromTenantCompany(storeId: storeId);
       final stores = await storeService.getStores();
 
-      orders.sort((a, b) => b.orderDate.compareTo(a.orderDate));
+      // Apply search query locally if needed
       List<Order> filteredOrders = orders;
-
-      if (startDate != null && endDate != null) {
-        filteredOrders = filteredOrders.where((order) {
-          return order.orderDate.isAfter(startDate) &&
-              order.orderDate.isBefore(endDate.add(const Duration(days: 1)));
-        }).toList();
-      }
-
-      if (status != null) {
-        filteredOrders = filteredOrders
-            .where((order) => order.status.toLowerCase() == status.toLowerCase())
-            .toList();
-      }
-
-      if (expectedDeliveryStartDate != null && expectedDeliveryEndDate != null) {
-        filteredOrders = filteredOrders.where((order) {
-          if (order.expectedDeliveryDate == null) return false;
-          return order.expectedDeliveryDate!.isAfter(
-              expectedDeliveryStartDate.subtract(const Duration(days: 1))) &&
-              order.expectedDeliveryDate!.isBefore(
-                  expectedDeliveryEndDate.add(const Duration(days: 1)));
-        }).toList();
-      }
-
-      if (orderTakenBy != null) {
-        filteredOrders = filteredOrders
-            .where((order) => order.orderTakenBy == orderTakenBy)
-            .toList();
-      }
-
-      if (orderDeliveredBy != null) {
-        filteredOrders = filteredOrders
-            .where((order) => order.orderDeliveredBy == orderDeliveredBy)
-            .toList();
-      }
-
-      if (storeId != null) {
-        filteredOrders = filteredOrders.where((order) => order.storeId == storeId).toList();
-      }
-
-      if (actualDeliveryStartDate != null && actualDeliveryEndDate != null) {
-        filteredOrders = filteredOrders.where((order) {
-          if (order.orderDeliveryDate == null) return false;
-          return order.orderDeliveryDate!.isAfter(
-              actualDeliveryStartDate.subtract(const Duration(days: 1))) &&
-              order.orderDeliveryDate!.isBefore(
-                  actualDeliveryEndDate.add(const Duration(days: 1)));
-        }).toList();
-      }
-
-      if (userId != null) {
-        filteredOrders = filteredOrders.where((order) => order.userId == userId).toList();
-      }
-
-      if (minTotalAmount != null && maxTotalAmount != null) {
-        filteredOrders = filteredOrders.where((order) =>
-        order.totalAmount >= minTotalAmount && order.totalAmount <= maxTotalAmount).toList();
-      }
-
       if (_searchQuery.isNotEmpty) {
         filteredOrders = filteredOrders
             .where((order) => order.id.toLowerCase().contains(_searchQuery.toLowerCase()))
@@ -464,65 +419,6 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
         filteredOrders = filteredOrders
             .where((order) => order.id.toLowerCase().contains(_searchQuery.toLowerCase()))
             .toList();
-      }
-
-      if (currentState.startDate != null && currentState.endDate != null) {
-        filteredOrders = filteredOrders.where((order) {
-          return order.orderDate.isAfter(currentState.startDate!) &&
-              order.orderDate.isBefore(currentState.endDate!.add(const Duration(days: 1)));
-        }).toList();
-      }
-
-      if (currentState.status != null) {
-        filteredOrders = filteredOrders
-            .where((order) => order.status.toLowerCase() == currentState.status!.toLowerCase())
-            .toList();
-      }
-
-      if (currentState.expectedDeliveryStartDate != null && currentState.expectedDeliveryEndDate != null) {
-        filteredOrders = filteredOrders.where((order) {
-          if (order.expectedDeliveryDate == null) return false;
-          return order.expectedDeliveryDate!.isAfter(
-              currentState.expectedDeliveryStartDate!.subtract(const Duration(days: 1))) &&
-              order.expectedDeliveryDate!.isBefore(
-                  currentState.expectedDeliveryEndDate!.add(const Duration(days: 1)));
-        }).toList();
-      }
-
-      if (currentState.orderTakenBy != null) {
-        filteredOrders = filteredOrders
-            .where((order) => order.orderTakenBy == currentState.orderTakenBy)
-            .toList();
-      }
-
-      if (currentState.orderDeliveredBy != null) {
-        filteredOrders = filteredOrders
-            .where((order) => order.orderDeliveredBy == currentState.orderDeliveredBy)
-            .toList();
-      }
-
-      if (currentState.storeId != null) {
-        filteredOrders = filteredOrders.where((order) => order.storeId == currentState.storeId).toList();
-      }
-
-      if (currentState.actualDeliveryStartDate != null && currentState.actualDeliveryEndDate != null) {
-        filteredOrders = filteredOrders.where((order) {
-          if (order.orderDeliveryDate == null) return false;
-          return order.orderDeliveryDate!.isAfter(
-              currentState.actualDeliveryStartDate!.subtract(const Duration(days: 1))) &&
-              order.orderDeliveryDate!.isBefore(
-                  currentState.actualDeliveryEndDate!.add(const Duration(days: 1)));
-        }).toList();
-      }
-
-      if (currentState.userId != null) {
-        filteredOrders = filteredOrders.where((order) => order.userId == currentState.userId).toList();
-      }
-
-      if (currentState.minTotalAmount != null && currentState.maxTotalAmount != null) {
-        filteredOrders = filteredOrders.where((order) =>
-        order.totalAmount >= currentState.minTotalAmount! &&
-            order.totalAmount <= currentState.maxTotalAmount!).toList();
       }
 
       final showTodayStats = _shouldShowTodayStats(currentState.startDate, currentState.endDate);
@@ -724,3 +620,67 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
     }
   }
 }
+//this need to be indexed
+/*
+*
+* {
+  "indexes": [
+    {
+      "collectionGroup": "orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "storeId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "orderDate",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "orderDate",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "storeId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "totalAmount",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "storeId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "expectedDeliveryDate",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ]
+}
+* */

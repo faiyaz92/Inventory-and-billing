@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -109,7 +108,6 @@ class AdminPurchaseCubit extends Cubit<AdminPurchaseState> {
   static final _dateFormatter = DateFormat('MMM dd, yyyy');
   static final _fullDateFormatter = DateFormat('yyyy-MM-dd HH:mm');
   String _searchQuery = '';
-  List<AdminPurchaseOrder> _allPurchaseOrders = [];
 
   AdminPurchaseCubit({
     required this.purchaseOrderService,
@@ -316,73 +314,29 @@ class AdminPurchaseCubit extends Cubit<AdminPurchaseState> {
   }) async {
     emit(AdminPurchaseListFetchLoading());
     try {
-      final purchaseOrders = await purchaseOrderService.getAllPurchaseOrders();
-      _allPurchaseOrders = purchaseOrders;
+      final purchaseOrders = await purchaseOrderService.getAllPurchaseOrders(
+        storeId: storeId,
+        startDate: startDate,
+        endDate: endDate,
+        purchaseType: purchaseType,
+        paymentStatus: paymentStatus,
+        invoiceLastUpdatedBy: invoiceLastUpdatedBy,
+        supplierId: supplierId,
+        minTotalAmount: minTotalAmount,
+        maxTotalAmount: maxTotalAmount,
+        searchQuery: _searchQuery.isNotEmpty ? _searchQuery : null,
+      );
       final users =
       await userServices.getUsersFromTenantCompany(storeId: storeId);
       final stores = await storeService.getStores();
 
+      // Sort purchase orders by date (descending)
       purchaseOrders.sort((a, b) => (b.invoiceGeneratedDate ?? b.orderDate)
           .compareTo(a.invoiceGeneratedDate ?? a.orderDate));
-      List<AdminPurchaseOrder> filteredPurchaseOrders = purchaseOrders;
-
-      if (startDate != null && endDate != null) {
-        filteredPurchaseOrders = filteredPurchaseOrders.where((order) {
-          final date = order.invoiceGeneratedDate ?? order.orderDate;
-          return date.isAfter(startDate) &&
-              date.isBefore(endDate.add(const Duration(days: 1)));
-        }).toList();
-      }
-
-      if (purchaseType != null) {
-        filteredPurchaseOrders = filteredPurchaseOrders
-            .where((order) => order.purchaseType == purchaseType)
-            .toList();
-      }
-
-      if (paymentStatus != null) {
-        filteredPurchaseOrders = filteredPurchaseOrders
-            .where((order) => order.paymentStatus == paymentStatus)
-            .toList();
-      }
-
-      if (invoiceLastUpdatedBy != null) {
-        filteredPurchaseOrders = filteredPurchaseOrders
-            .where(
-                (order) => order.invoiceLastUpdatedBy == invoiceLastUpdatedBy)
-            .toList();
-      }
-
-      if (storeId != null) {
-        filteredPurchaseOrders = filteredPurchaseOrders
-            .where((order) => order.storeId == storeId)
-            .toList();
-      }
-
-      if (supplierId != null) {
-        filteredPurchaseOrders = filteredPurchaseOrders
-            .where((order) => order.supplierId == supplierId)
-            .toList();
-      }
-
-      if (minTotalAmount != null && maxTotalAmount != null) {
-        filteredPurchaseOrders = filteredPurchaseOrders
-            .where((order) =>
-        order.totalAmount >= minTotalAmount &&
-            order.totalAmount <= maxTotalAmount)
-            .toList();
-      }
-
-      if (_searchQuery.isNotEmpty) {
-        filteredPurchaseOrders = filteredPurchaseOrders
-            .where((order) =>
-            order.id.toLowerCase().contains(_searchQuery.toLowerCase()))
-            .toList();
-      }
 
       final showTodayStats = _shouldShowTodayStats(startDate, endDate);
       emit(AdminPurchaseListFetchSuccess(
-        purchaseOrders: filteredPurchaseOrders,
+        purchaseOrders: purchaseOrders,
         users: users,
         stores: stores,
         startDate: startDate,
@@ -394,10 +348,9 @@ class AdminPurchaseCubit extends Cubit<AdminPurchaseState> {
         supplierId: supplierId,
         minTotalAmount: minTotalAmount,
         maxTotalAmount: maxTotalAmount,
-        groupedPurchaseOrders:
-        _groupPurchaseOrdersByDate(filteredPurchaseOrders),
+        groupedPurchaseOrders: _groupPurchaseOrdersByDate(purchaseOrders),
         dateRangeLabel: _formatDateRange(startDate, endDate),
-        statistics: _computeStatistics(filteredPurchaseOrders, showTodayStats),
+        statistics: _computeStatistics(purchaseOrders, showTodayStats),
         showTodayStats: showTodayStats,
       ));
     } catch (e) {
@@ -410,69 +363,8 @@ class AdminPurchaseCubit extends Cubit<AdminPurchaseState> {
     _searchQuery = query;
     if (state is AdminPurchaseListFetchSuccess) {
       final currentState = state as AdminPurchaseListFetchSuccess;
-      List<AdminPurchaseOrder> filteredPurchaseOrders = _allPurchaseOrders;
-
-      if (_searchQuery.isNotEmpty) {
-        filteredPurchaseOrders = filteredPurchaseOrders
-            .where((order) =>
-            order.id.toLowerCase().contains(_searchQuery.toLowerCase()))
-            .toList();
-      }
-
-      if (currentState.startDate != null && currentState.endDate != null) {
-        filteredPurchaseOrders = filteredPurchaseOrders.where((order) {
-          final date = order.invoiceGeneratedDate ?? order.orderDate;
-          return date.isAfter(currentState.startDate!) &&
-              date.isBefore(currentState.endDate!.add(const Duration(days: 1)));
-        }).toList();
-      }
-
-      if (currentState.purchaseType != null) {
-        filteredPurchaseOrders = filteredPurchaseOrders
-            .where((order) => order.purchaseType == currentState.purchaseType)
-            .toList();
-      }
-
-      if (currentState.paymentStatus != null) {
-        filteredPurchaseOrders = filteredPurchaseOrders
-            .where((order) => order.paymentStatus == currentState.paymentStatus)
-            .toList();
-      }
-
-      if (currentState.invoiceLastUpdatedBy != null) {
-        filteredPurchaseOrders = filteredPurchaseOrders
-            .where((order) =>
-        order.invoiceLastUpdatedBy == currentState.invoiceLastUpdatedBy)
-            .toList();
-      }
-
-      if (currentState.storeId != null) {
-        filteredPurchaseOrders = filteredPurchaseOrders
-            .where((order) => order.storeId == currentState.storeId)
-            .toList();
-      }
-
-      if (currentState.supplierId != null) {
-        filteredPurchaseOrders = filteredPurchaseOrders
-            .where((order) => order.supplierId == currentState.supplierId)
-            .toList();
-      }
-
-      if (currentState.minTotalAmount != null &&
-          currentState.maxTotalAmount != null) {
-        filteredPurchaseOrders = filteredPurchaseOrders
-            .where((order) =>
-        order.totalAmount >= currentState.minTotalAmount! &&
-            order.totalAmount <= currentState.maxTotalAmount!)
-            .toList();
-      }
-
-      final showTodayStats =
-      _shouldShowTodayStats(currentState.startDate, currentState.endDate);
-      emit(AdminPurchaseListFetchSuccess(
-        purchaseOrders: filteredPurchaseOrders,
-        users: currentState.users,
-        stores: currentState.stores,
+      // Trigger fetchPurchaseOrders with the updated search query
+      fetchPurchaseOrders(
         startDate: currentState.startDate,
         endDate: currentState.endDate,
         purchaseType: currentState.purchaseType,
@@ -482,13 +374,7 @@ class AdminPurchaseCubit extends Cubit<AdminPurchaseState> {
         supplierId: currentState.supplierId,
         minTotalAmount: currentState.minTotalAmount,
         maxTotalAmount: currentState.maxTotalAmount,
-        groupedPurchaseOrders:
-        _groupPurchaseOrdersByDate(filteredPurchaseOrders),
-        dateRangeLabel:
-        _formatDateRange(currentState.startDate, currentState.endDate),
-        statistics: _computeStatistics(filteredPurchaseOrders, showTodayStats),
-        showTodayStats: showTodayStats,
-      ));
+      );
     }
   }
 

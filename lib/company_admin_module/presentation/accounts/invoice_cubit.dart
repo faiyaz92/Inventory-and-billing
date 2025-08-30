@@ -311,59 +311,22 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
   }) async {
     emit(AdminInvoiceListFetchLoading());
     try {
-      final invoices = await orderService.getAllInvoices();
+      final invoices = await orderService.getAllInvoices(
+        storeId: storeId,
+        startDate: startDate,
+        endDate: endDate,
+        invoiceType: invoiceType,
+        paymentStatus: paymentStatus,
+        invoiceLastUpdatedBy: invoiceLastUpdatedBy,
+        userId: userId,
+        minTotalAmount: minTotalAmount,
+        maxTotalAmount: maxTotalAmount,
+      );
       _allInvoices = invoices;
       final users = await employeeServices.getUsersFromTenantCompany(storeId: storeId);
       final stores = await storeService.getStores();
 
-      invoices.sort((a, b) => (b.invoiceGeneratedDate ?? b.orderDate)
-          .compareTo(a.invoiceGeneratedDate ?? a.orderDate));
       List<Order> filteredInvoices = invoices;
-
-      if (startDate != null && endDate != null) {
-        filteredInvoices = filteredInvoices.where((invoice) {
-          final date = invoice.invoiceGeneratedDate ?? invoice.orderDate;
-          return date.isAfter(startDate) &&
-              date.isBefore(endDate.add(const Duration(days: 1)));
-        }).toList();
-      }
-
-      if (invoiceType != null) {
-        filteredInvoices = filteredInvoices
-            .where((invoice) => invoice.invoiceType == invoiceType)
-            .toList();
-      }
-
-      if (paymentStatus != null) {
-        filteredInvoices = filteredInvoices
-            .where((invoice) => invoice.paymentStatus == paymentStatus)
-            .toList();
-      }
-
-      if (invoiceLastUpdatedBy != null) {
-        filteredInvoices = filteredInvoices
-            .where((invoice) => invoice.invoiceLastUpdatedBy == invoiceLastUpdatedBy)
-            .toList();
-      }
-
-      if (storeId != null) {
-        filteredInvoices = filteredInvoices
-            .where((invoice) => invoice.storeId == storeId)
-            .toList();
-      }
-
-      if (userId != null) {
-        filteredInvoices = filteredInvoices
-            .where((invoice) => invoice.userId == userId)
-            .toList();
-      }
-
-      if (minTotalAmount != null && maxTotalAmount != null) {
-        filteredInvoices = filteredInvoices.where((invoice) =>
-        invoice.totalAmount >= minTotalAmount &&
-            invoice.totalAmount <= maxTotalAmount).toList();
-      }
-
       if (_searchQuery.isNotEmpty) {
         filteredInvoices = filteredInvoices
             .where((invoice) => invoice.id.toLowerCase().contains(_searchQuery.toLowerCase()))
@@ -375,55 +338,18 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
         final delta = endDate.difference(startDate).inDays + 1;
         final prevEnd = startDate.subtract(const Duration(days: 1));
         final prevStart = prevEnd.subtract(Duration(days: delta - 1));
-        List<Order> previousFiltered = invoices.where((invoice) {
-          final date = invoice.invoiceGeneratedDate ?? invoice.orderDate;
-          return date.isAfter(prevStart) &&
-              date.isBefore(prevEnd.add(const Duration(days: 1)));
-        }).toList();
-
-        if (invoiceType != null) {
-          previousFiltered = previousFiltered
-              .where((invoice) => invoice.invoiceType == invoiceType)
-              .toList();
-        }
-
-        if (paymentStatus != null) {
-          previousFiltered = previousFiltered
-              .where((invoice) => invoice.paymentStatus == paymentStatus)
-              .toList();
-        }
-
-        if (invoiceLastUpdatedBy != null) {
-          previousFiltered = previousFiltered
-              .where((invoice) => invoice.invoiceLastUpdatedBy == invoiceLastUpdatedBy)
-              .toList();
-        }
-
-        if (storeId != null) {
-          previousFiltered = previousFiltered
-              .where((invoice) => invoice.storeId == storeId)
-              .toList();
-        }
-
-        if (userId != null) {
-          previousFiltered = previousFiltered
-              .where((invoice) => invoice.userId == userId)
-              .toList();
-        }
-
-        if (minTotalAmount != null && maxTotalAmount != null) {
-          previousFiltered = previousFiltered.where((invoice) =>
-          invoice.totalAmount >= minTotalAmount &&
-              invoice.totalAmount <= maxTotalAmount).toList();
-        }
-
-        if (_searchQuery.isNotEmpty) {
-          previousFiltered = previousFiltered
-              .where((invoice) => invoice.id.toLowerCase().contains(_searchQuery.toLowerCase()))
-              .toList();
-        }
-
-        previousStatistics = _computeStatistics(previousFiltered, false);
+        final previousInvoices = await orderService.getAllInvoices(
+          storeId: storeId,
+          startDate: prevStart,
+          endDate: prevEnd,
+          invoiceType: invoiceType,
+          paymentStatus: paymentStatus,
+          invoiceLastUpdatedBy: invoiceLastUpdatedBy,
+          userId: userId,
+          minTotalAmount: minTotalAmount,
+          maxTotalAmount: maxTotalAmount,
+        );
+        previousStatistics = _computeStatistics(previousInvoices, false);
       }
 
       final showTodayStats = _shouldShowTodayStats(startDate, endDate);
@@ -463,106 +389,6 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
             .toList();
       }
 
-      if (currentState.startDate != null && currentState.endDate != null) {
-        filteredInvoices = filteredInvoices.where((invoice) {
-          final date = invoice.invoiceGeneratedDate ?? invoice.orderDate;
-          return date.isAfter(currentState.startDate!) &&
-              date.isBefore(currentState.endDate!.add(const Duration(days: 1)));
-        }).toList();
-      }
-
-      if (currentState.invoiceType != null) {
-        filteredInvoices = filteredInvoices
-            .where((invoice) => invoice.invoiceType == currentState.invoiceType)
-            .toList();
-      }
-
-      if (currentState.paymentStatus != null) {
-        filteredInvoices = filteredInvoices
-            .where((invoice) => invoice.paymentStatus == currentState.paymentStatus)
-            .toList();
-      }
-
-      if (currentState.invoiceLastUpdatedBy != null) {
-        filteredInvoices = filteredInvoices
-            .where((invoice) => invoice.invoiceLastUpdatedBy == currentState.invoiceLastUpdatedBy)
-            .toList();
-      }
-
-      if (currentState.storeId != null) {
-        filteredInvoices = filteredInvoices
-            .where((invoice) => invoice.storeId == currentState.storeId)
-            .toList();
-      }
-
-      if (currentState.userId != null) {
-        filteredInvoices = filteredInvoices
-            .where((invoice) => invoice.userId == currentState.userId)
-            .toList();
-      }
-
-      if (currentState.minTotalAmount != null && currentState.maxTotalAmount != null) {
-        filteredInvoices = filteredInvoices.where((invoice) =>
-        invoice.totalAmount >= currentState.minTotalAmount! &&
-            invoice.totalAmount <= currentState.maxTotalAmount!).toList();
-      }
-
-      List<Map<String, dynamic>> previousStatistics = [];
-      if (currentState.previousStatistics.isNotEmpty && currentState.startDate != null && currentState.endDate != null) {
-        final delta = currentState.endDate!.difference(currentState.startDate!).inDays + 1;
-        final prevEnd = currentState.startDate!.subtract(const Duration(days: 1));
-        final prevStart = prevEnd.subtract(Duration(days: delta - 1));
-        List<Order> previousFiltered = _allInvoices.where((invoice) {
-          final date = invoice.invoiceGeneratedDate ?? invoice.orderDate;
-          return date.isAfter(prevStart) &&
-              date.isBefore(prevEnd.add(const Duration(days: 1)));
-        }).toList();
-
-        if (currentState.invoiceType != null) {
-          previousFiltered = previousFiltered
-              .where((invoice) => invoice.invoiceType == currentState.invoiceType)
-              .toList();
-        }
-
-        if (currentState.paymentStatus != null) {
-          previousFiltered = previousFiltered
-              .where((invoice) => invoice.paymentStatus == currentState.paymentStatus)
-              .toList();
-        }
-
-        if (currentState.invoiceLastUpdatedBy != null) {
-          previousFiltered = previousFiltered
-              .where((invoice) => invoice.invoiceLastUpdatedBy == currentState.invoiceLastUpdatedBy)
-              .toList();
-        }
-
-        if (currentState.storeId != null) {
-          previousFiltered = previousFiltered
-              .where((invoice) => invoice.storeId == currentState.storeId)
-              .toList();
-        }
-
-        if (currentState.userId != null) {
-          previousFiltered = previousFiltered
-              .where((invoice) => invoice.userId == currentState.userId)
-              .toList();
-        }
-
-        if (currentState.minTotalAmount != null && currentState.maxTotalAmount != null) {
-          previousFiltered = previousFiltered.where((invoice) =>
-          invoice.totalAmount >= currentState.minTotalAmount! &&
-              invoice.totalAmount <= currentState.maxTotalAmount!).toList();
-        }
-
-        if (_searchQuery.isNotEmpty) {
-          previousFiltered = previousFiltered
-              .where((invoice) => invoice.id.toLowerCase().contains(_searchQuery.toLowerCase()))
-              .toList();
-        }
-
-        previousStatistics = _computeStatistics(previousFiltered, false);
-      }
-
       final showTodayStats = _shouldShowTodayStats(currentState.startDate, currentState.endDate);
       emit(AdminInvoiceListFetchSuccess(
         invoices: filteredInvoices,
@@ -580,7 +406,7 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
         groupedInvoices: _groupInvoicesByDate(filteredInvoices),
         dateRangeLabel: _formatDateRange(currentState.startDate, currentState.endDate),
         statistics: _computeStatistics(filteredInvoices, showTodayStats),
-        previousStatistics: previousStatistics,
+        previousStatistics: currentState.previousStatistics,
         showTodayStats: showTodayStats,
       ));
     }
@@ -608,3 +434,120 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
     }
   }
 }
+//indexcies
+/*{
+  "indexes": [
+    {
+      "collectionGroup": "orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "storeId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "orderDate",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "orderDate",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "storeId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "totalAmount",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "storeId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "expectedDeliveryDate",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "invoices",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "storeId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "invoiceGeneratedDate",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "invoices",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "invoiceType",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "invoiceGeneratedDate",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "invoices",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "paymentStatus",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "invoiceGeneratedDate",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "invoices",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "storeId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "totalAmount",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ]
+}*/

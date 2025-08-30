@@ -1,4 +1,3 @@
-// New Service: PurchaseOrderService.dart
 import 'package:requirment_gathering_app/company_admin_module/data/purchase/admin_purchase_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/purchase/admin_purchase_order_dto.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/i_purchase_order_repository.dart';
@@ -31,11 +30,32 @@ class PurchaseOrderService implements IPurchaseOrderService {
   }
 
   @override
-  Future<List<AdminPurchaseOrder>> getAllPurchaseOrders() async {
+  Future<List<AdminPurchaseOrder>> getAllPurchaseOrders({
+    String? storeId,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? purchaseType,
+    String? paymentStatus,
+    String? invoiceLastUpdatedBy,
+    String? supplierId,
+    double? minTotalAmount,
+    double? maxTotalAmount,
+    String? searchQuery,
+  }) async {
     final userInfo = await accountRepository.getUserInfo();
     final orderDtos = await purchaseOrderRepository.getAllPurchaseOrders(
-        userInfo?.companyId ?? '',
-        userInfo?.role == Role.COMPANY_ADMIN ? null : userInfo?.storeId);
+      userInfo?.companyId ?? '',
+      userInfo?.role == Role.COMPANY_ADMIN ? null : userInfo?.storeId,
+      startDate: startDate,
+      endDate: endDate,
+      purchaseType: purchaseType,
+      paymentStatus: paymentStatus,
+      invoiceLastUpdatedBy: invoiceLastUpdatedBy,
+      supplierId: supplierId,
+      minTotalAmount: minTotalAmount,
+      maxTotalAmount: maxTotalAmount,
+      searchQuery: searchQuery,
+    );
     return orderDtos.map((dto) => AdminPurchaseOrder.fromFirestore(dto.toFirestore())).toList();
   }
 
