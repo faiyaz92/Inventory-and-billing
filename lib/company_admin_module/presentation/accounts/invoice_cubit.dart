@@ -329,7 +329,7 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
       List<Order> filteredInvoices = invoices;
       if (_searchQuery.isNotEmpty) {
         filteredInvoices = filteredInvoices
-            .where((invoice) => invoice.id.toLowerCase().contains(_searchQuery.toLowerCase()))
+            .where((invoice) => (invoice.billNumber??'').toLowerCase().contains(_searchQuery.toLowerCase()))
             .toList();
       }
 
@@ -385,7 +385,7 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
 
       if (_searchQuery.isNotEmpty) {
         filteredInvoices = filteredInvoices
-            .where((invoice) => invoice.id.toLowerCase().contains(_searchQuery.toLowerCase()))
+            .where((invoice) => (invoice.billNumber??'').toLowerCase().contains(_searchQuery.toLowerCase()))
             .toList();
       }
 

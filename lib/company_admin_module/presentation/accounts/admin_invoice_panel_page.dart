@@ -1053,7 +1053,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Invoice #${invoice.id}',
+                        'Invoice #${invoice.billNumber}',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -1438,7 +1438,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
       billNumber: invoice.billNumber,
       purpose: 'Payment',
       typeOfPurpose: 'Cash',
-      remarks: 'Payment received for invoice ${invoice.id}',
+      remarks: 'Payment received for invoice ${invoice.billNumber}',
       userType: UserType.Customer,
     );
 
@@ -1449,13 +1449,13 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
       billNumber: invoice.billNumber,
       purpose: 'Cash Received',
       typeOfPurpose: 'Cash',
-      remarks: 'Cash received from customer for invoice ${invoice.id}',
+      remarks: 'Cash received from customer for invoice ${invoice.billNumber}',
       userType: userInfo?.userType ?? UserType.Employee,
     );
 
     final receiptPdf = await _generateReceiptPdf(updatedOrder, amount);
 
-    await sl<Coordinator>().navigateToBillPdfPage(pdf: receiptPdf, billNumber: invoice.id);
+    await sl<Coordinator>().navigateToBillPdfPage(pdf: receiptPdf, billNumber: invoice.billNumber??'');
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Payment received successfully')),
@@ -1465,7 +1465,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
       startDate: startDate,
       endDate: endDate,
     );
-  }  Future<pw.Document> _generateReceiptPdf(Order order, double amount) async {
+  }
+  Future<pw.Document> _generateReceiptPdf(Order order, double amount) async {
     final pdf = pw.Document();
     final accountRepository = sl<AccountRepository>();
 
@@ -1494,7 +1495,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
           padding: const pw.EdgeInsets.only(bottom: 12),
           decoration: pw.BoxDecoration(
             border:
-                pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
+            pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
           ),
           child: pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -1527,11 +1528,11 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                   ),
                   pw.SizedBox(height: 4),
                   pw.Text(
-                    'Invoice #: ${order.id}',
+                    'Order ID: ${order.id}',
                     style: pw.TextStyle(font: regularFont, fontSize: 14),
                   ),
                   pw.Text(
-                    'Bill #: ${order.billNumber ?? 'N/A'}',
+                    'Invoice Number: ${order.billNumber ?? 'N/A'}',
                     style: pw.TextStyle(font: regularFont, fontSize: 14),
                   ),
                   pw.Text(
@@ -1558,7 +1559,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
           pw.Text(
             order.userName ?? 'Unknown Customer',
             style:
-                pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
+            pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
           ),
           pw.SizedBox(height: 24),
           pw.Text(
@@ -1597,7 +1598,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
                     child: pw.Text(
-                      'Payment for Invoice #${order.id}',
+                      'Payment for Invoice #${order.billNumber}',
                       style: pw.TextStyle(font: regularFont, fontSize: 12),
                     ),
                   ),

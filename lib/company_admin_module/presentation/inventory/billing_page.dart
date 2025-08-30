@@ -270,6 +270,9 @@ class _BillingPageState extends State<BillingPage> {
     final TextEditingController discountController = TextEditingController(
       text: additionalDiscount.toStringAsFixed(2),
     );
+    final TextEditingController initialPaymentController = TextEditingController(
+      text: _initialPayment?.toStringAsFixed(2) ?? '0.00',
+    );
 
     return await showModalBottomSheet<bool>(
       context: context,
@@ -280,504 +283,505 @@ class _BillingPageState extends State<BillingPage> {
       backgroundColor: AppColors.white,
       builder: (dialogContext) {
         return StatefulBuilder(
-          builder: (context, setState) => Padding(
-            padding: const EdgeInsets.all(20),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            builder: (context, setState) => Padding(
+          padding: const EdgeInsets.all(20),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      widget.orderId == null
+                          ? 'Order Summary'
+                          : 'Review Bill',
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.close,
+                        color: AppColors.textSecondary,
+                        size: 24,
+                      ),
+                      onPressed: () =>
+                          Navigator.pop(dialogContext, false),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Order Details',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                        color: AppColors.textSecondary.withOpacity(0.3)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Table(
+                    border: TableBorder(
+                      verticalInside: BorderSide(
+                          color:
+                          AppColors.textSecondary.withOpacity(0.3)),
+                      horizontalInside: BorderSide(
+                          color:
+                          AppColors.textSecondary.withOpacity(0.3)),
+                    ),
+                    columnWidths: const {
+                      0: FlexColumnWidth(3),
+                      1: FlexColumnWidth(1),
+                      2: FlexColumnWidth(1),
+                      3: FlexColumnWidth(1),
+                      4: FlexColumnWidth(1),
+                      5: FlexColumnWidth(1),
+                    },
                     children: [
-                      Text(
-                        widget.orderId == null
-                            ? 'Order Summary'
-                            : 'Review Bill',
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                      TableRow(
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.05),
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.close,
-                          color: AppColors.textSecondary,
-                          size: 24,
-                        ),
-                        onPressed: () =>
-                            Navigator.pop(dialogContext, false),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Order Details',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          color: AppColors.textSecondary.withOpacity(0.3)),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Table(
-                      border: TableBorder(
-                        verticalInside: BorderSide(
-                            color:
-                            AppColors.textSecondary.withOpacity(0.3)),
-                        horizontalInside: BorderSide(
-                            color:
-                            AppColors.textSecondary.withOpacity(0.3)),
-                      ),
-                      columnWidths: const {
-                        0: FlexColumnWidth(3),
-                        1: FlexColumnWidth(1),
-                        2: FlexColumnWidth(1),
-                        3: FlexColumnWidth(1),
-                        4: FlexColumnWidth(1),
-                        5: FlexColumnWidth(1),
-                      },
-                      children: [
-                        TableRow(
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.05),
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            child: Text(
+                              'Product',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
                           ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            child: Text(
+                              'Qty',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            child: Text(
+                              'Subtotal',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            child: Text(
+                              'Tax',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            child: Text(
+                              'Discount',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            child: Text(
+                              'Total',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      ...order.items.asMap().entries.map((entry) {
+                        final int index = entry.key;
+                        final item = entry.value;
+                        return TableRow(
                           children: [
-                            const Padding(
-                              padding: EdgeInsets.symmetric(
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
                                   vertical: 8, horizontal: 12),
                               child: Text(
-                                'Product',
-                                style: TextStyle(
+                                item.productName,
+                                style: const TextStyle(
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w700,
                                   color: AppColors.textPrimary,
                                 ),
                               ),
                             ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
                                   vertical: 8, horizontal: 12),
                               child: Text(
-                                'Qty',
-                                style: TextStyle(
+                                '${item.quantity}',
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w700,
                                   color: AppColors.textPrimary,
                                 ),
                               ),
                             ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
                                   vertical: 8, horizontal: 12),
                               child: Text(
-                                'Subtotal',
-                                style: TextStyle(
+                                '₹${(item.price * item.quantity).toStringAsFixed(2)}',
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w700,
                                   color: AppColors.textPrimary,
                                 ),
                               ),
                             ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
                                   vertical: 8, horizontal: 12),
                               child: Text(
-                                'Tax',
-                                style: TextStyle(
+                                '₹${item.taxAmount.toStringAsFixed(2)}',
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                             ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
                                   vertical: 8, horizontal: 12),
-                              child: Text(
-                                'Discount',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
+                              child: TextFormField(
+                                initialValue: itemDiscounts[index].toStringAsFixed(2),
+                                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                                textAlign: TextAlign.right,
+                                decoration: const InputDecoration(
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.zero,
+                                  isDense: true,
                                 ),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.textSecondary,
+                                ),
+                                onChanged: (value) {
+                                  final disc = double.tryParse(value) ?? 0.0;
+                                  itemDiscounts[index] = disc;
+                                  setState(() {});
+                                },
                               ),
                             ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
                                   vertical: 8, horizontal: 12),
                               child: Text(
-                                'Total',
-                                style: TextStyle(
+                                '₹${((item.price * item.quantity) + item.taxAmount - itemDiscounts[index]).toStringAsFixed(2)}',
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                   color: AppColors.textPrimary,
                                 ),
                               ),
                             ),
                           ],
-                        ),
-                        ...order.items.asMap().entries.map((entry) {
-                          final int index = entry.key;
-                          final item = entry.value;
-                          return TableRow(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 8, horizontal: 12),
-                                child: Text(
-                                  item.productName,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 8, horizontal: 12),
-                                child: Text(
-                                  '${item.quantity}',
-                                  textAlign: TextAlign.right,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 8, horizontal: 12),
-                                child: Text(
-                                  '₹${(item.price * item.quantity).toStringAsFixed(2)}',
-                                  textAlign: TextAlign.right,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 8, horizontal: 12),
-                                child: Text(
-                                  '₹${item.taxAmount.toStringAsFixed(2)}',
-                                  textAlign: TextAlign.right,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 8, horizontal: 12),
-                                child: TextFormField(
-                                  initialValue: itemDiscounts[index].toStringAsFixed(2),
-                                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                                  textAlign: TextAlign.right,
-                                  decoration: const InputDecoration(
-                                    border: InputBorder.none,
-                                    contentPadding: EdgeInsets.zero,
-                                    isDense: true,
-                                  ),
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                  onChanged: (value) {
-                                    final disc = double.tryParse(value) ?? 0.0;
-                                    itemDiscounts[index] = disc;
-                                    setState(() {});
-                                  },
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 8, horizontal: 12),
-                                child: Text(
-                                  '₹${((item.price * item.quantity) + item.taxAmount - itemDiscounts[index]).toStringAsFixed(2)}',
-                                  textAlign: TextAlign.right,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        }),
-                      ],
-                    ),
+                        );
+                      }),
+                    ],
                   ),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: discountController,
+                  decoration: InputDecoration(
+                    labelText: 'Additional Discount (₹)',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) {
+                    additionalDiscount = double.tryParse(value) ?? 0.0;
+                    setState(() {});
+                  },
+                ),
+                if (_selectedBillType == 'Credit') ...[
                   const SizedBox(height: 20),
-                  TextField(
-                    controller: discountController,
+                  TextFormField(
+                    controller: initialPaymentController,
                     decoration: InputDecoration(
-                      labelText: 'Additional Discount (₹)',
+                      labelText: 'Initial Payment (₹)',
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8)),
                       filled: true,
                       fillColor: Colors.grey[100],
+                      errorText: double.tryParse(initialPaymentController.text) != null &&
+                          double.parse(initialPaymentController.text) >
+                              (total -
+                                  itemDiscounts.fold<double>(
+                                      0.0, (sum, disc) => sum + disc) -
+                                  additionalDiscount)
+                          ? 'Initial payment cannot exceed final total'
+                          : null,
                     ),
-                    keyboardType: TextInputType.number,
+                    keyboardType:
+                    TextInputType.numberWithOptions(decimal: true),
                     onChanged: (value) {
-                      additionalDiscount = double.tryParse(value) ?? 0.0;
-                      setState(() {});
+                      setState(() {
+                        _initialPayment = double.tryParse(value) ?? 0.0;
+                      });
                     },
                   ),
-                  const SizedBox(height: 20),
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          color: AppColors.textSecondary.withOpacity(0.3)),
-                      borderRadius: BorderRadius.circular(12),
+                ],
+                const SizedBox(height: 20),
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                        color: AppColors.textSecondary.withOpacity(0.3)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Table(
+                    border: TableBorder(
+                      verticalInside: BorderSide(
+                          color:
+                          AppColors.textSecondary.withOpacity(0.3)),
+                      horizontalInside: BorderSide(
+                          color:
+                          AppColors.textSecondary.withOpacity(0.3)),
                     ),
-                    child: Table(
-                      border: TableBorder(
-                        verticalInside: BorderSide(
-                            color:
-                            AppColors.textSecondary.withOpacity(0.3)),
-                        horizontalInside: BorderSide(
-                            color:
-                            AppColors.textSecondary.withOpacity(0.3)),
-                      ),
-                      columnWidths: const {
-                        0: FlexColumnWidth(3),
-                        1: FlexColumnWidth(2),
-                      },
-                      children: [
-                        TableRow(
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 16),
-                              child: Text(
-                                'Subtotal (All Items)',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
-                                ),
+                    columnWidths: const {
+                      0: FlexColumnWidth(3),
+                      1: FlexColumnWidth(2),
+                    },
+                    children: [
+                      TableRow(
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 16),
+                            child: Text(
+                              'Subtotal (All Items)',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
                               ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 16),
-                              child: Text(
-                                '₹${subtotal.toStringAsFixed(2)}',
-                                textAlign: TextAlign.right,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        TableRow(
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 16),
-                              child: Text(
-                                'Total Tax',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 16),
-                              child: Text(
-                                '₹${totalTax.toStringAsFixed(2)}',
-                                textAlign: TextAlign.right,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        TableRow(
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 16),
-                              child: Text(
-                                'Total',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 16),
-                              child: Text(
-                                '₹${total.toStringAsFixed(2)}',
-                                textAlign: TextAlign.right,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        TableRow(
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 16),
-                              child: Text(
-                                'Item Discounts',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 16),
-                              child: Text(
-                                '₹${itemDiscounts.fold<double>(0.0, (sum, disc) => sum + disc).toStringAsFixed(2)}',
-                                textAlign: TextAlign.right,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        TableRow(
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 16),
-                              child: Text(
-                                'Additional Discount',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 16),
-                              child: Text(
-                                '₹${additionalDiscount.toStringAsFixed(2)}',
-                                textAlign: TextAlign.right,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        TableRow(
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.05),
-                            borderRadius: const BorderRadius.only(
-                              bottomLeft: Radius.circular(12),
-                              bottomRight: Radius.circular(12),
                             ),
                           ),
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 16),
-                              child: Text(
-                                'Final Total',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
-                                ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 16),
+                            child: Text(
+                              '₹${subtotal.toStringAsFixed(2)}',
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 16),
-                              child: Text(
-                                '₹${(total - itemDiscounts.fold<double>(0.0, (sum, disc) => sum + disc) - additionalDiscount).toStringAsFixed(2)}',
-                                textAlign: TextAlign.right,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
-                                ),
+                          ),
+                        ],
+                      ),
+                      TableRow(
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 16),
+                            child: Text(
+                              'Total Tax',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: AppColors.textSecondary,
                               ),
                             ),
-                          ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 16),
+                            child: Text(
+                              '₹${totalTax.toStringAsFixed(2)}',
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      TableRow(
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 16),
+                            child: Text(
+                              'Total',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 16),
+                            child: Text(
+                              '₹${total.toStringAsFixed(2)}',
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      TableRow(
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 16),
+                            child: Text(
+                              'Item Discounts',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 16),
+                            child: Text(
+                              '₹${itemDiscounts.fold<double>(0.0, (sum, disc) => sum + disc).toStringAsFixed(2)}',
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      TableRow(
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 16),
+                            child: Text(
+                              'Additional Discount',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 16),
+                            child: Text(
+                              '₹${additionalDiscount.toStringAsFixed(2)}',
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      TableRow(
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.05),
+                          borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(12),
+                            bottomRight: Radius.circular(12),
+                          ),
                         ),
-                      ],
-                    ),
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 16),
+                            child: Text(
+                              'Final Total',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 16),
+                            child: Text(
+                              '₹${(total - itemDiscounts.fold<double>(0.0, (sum, disc) => sum + disc) - additionalDiscount).toStringAsFixed(2)}',
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        final sumItemDisc = itemDiscounts.fold<double>(0.0, (sum, disc) => sum + disc);
-                        // Validate item discounts
-                        for (int i = 0; i < order.items.length; i++) {
-                          final item = order.items[i];
-                          final itemTotal = item.price * item.quantity + item.taxAmount;
-                          if (itemDiscounts[i] < 0) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Item discount cannot be negative',
-                                  style: TextStyle(color: AppColors.white),
-                                ),
-                                backgroundColor: AppColors.red,
-                                behavior: SnackBarBehavior.floating,
-                                margin: EdgeInsets.all(16),
-                              ),
-                            );
-                            return;
-                          }
-                          if (itemDiscounts[i] > itemTotal) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Discount for ${item.productName} cannot exceed item total',
-                                  style: TextStyle(color: AppColors.white),
-                                ),
-                                backgroundColor: AppColors.red,
-                                behavior: SnackBarBehavior.floating,
-                                margin: EdgeInsets.all(16),
-                              ),
-                            );
-                            return;
-                          }
-                        }
-                        // Validate additional discount
-                        if (additionalDiscount < 0) {
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final sumItemDisc = itemDiscounts.fold<double>(0.0, (sum, disc) => sum + disc);
+                      final finalTotal = total - sumItemDisc - additionalDiscount;
+                      final initialPayment = double.tryParse(initialPaymentController.text) ?? 0.0;
+
+                      // Validate item discounts
+                      for (int i = 0; i < order.items.length; i++) {
+                        final item = order.items[i];
+                        final itemTotal = item.price * item.quantity + item.taxAmount;
+                        if (itemDiscounts[i] < 0) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text(
-                                'Invalid additional discount',
+                                'Item discount cannot be negative',
                                 style: TextStyle(color: AppColors.white),
                               ),
                               backgroundColor: AppColors.red,
@@ -787,12 +791,11 @@ class _BillingPageState extends State<BillingPage> {
                           );
                           return;
                         }
-                        final totalAfterItemDisc = total - sumItemDisc;
-                        if (additionalDiscount > totalAfterItemDisc) {
+                        if (itemDiscounts[i] > itemTotal) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               content: Text(
-                                'Additional discount cannot exceed total after item discounts',
+                                'Discount for ${item.productName} cannot exceed item total',
                                 style: TextStyle(color: AppColors.white),
                               ),
                               backgroundColor: AppColors.red,
@@ -802,38 +805,227 @@ class _BillingPageState extends State<BillingPage> {
                           );
                           return;
                         }
-                        // Set total discount
-                        this.setState(() {
-                          _discount = sumItemDisc + additionalDiscount;
-                        });
-                        Navigator.pop(dialogContext, true);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      }
+                      // Validate additional discount
+                      if (additionalDiscount < 0) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Invalid additional discount',
+                              style: TextStyle(color: AppColors.white),
+                            ),
+                            backgroundColor: AppColors.red,
+                            behavior: SnackBarBehavior.floating,
+                            margin: EdgeInsets.all(16),
+                          ),
+                        );
+                        return;
+                      }
+                      final totalAfterItemDisc = total - sumItemDisc;
+                      if (additionalDiscount > totalAfterItemDisc) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Additional discount cannot exceed total after item discounts',
+                              style: TextStyle(color: AppColors.white),
+                            ),
+                            backgroundColor: AppColors.red,
+                            behavior: SnackBarBehavior.floating,
+                            margin: EdgeInsets.all(16),
+                          ),
+                        );
+                        return;
+                      }
+                      // Validate initial payment
+                      if (_selectedBillType == 'Credit') {
+                        if (initialPayment < 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Initial payment cannot be negative',
+                                style: TextStyle(color: AppColors.white),
+                              ),
+                              backgroundColor: AppColors.red,
+                              behavior: SnackBarBehavior.floating,
+                              margin: EdgeInsets.all(16),
+                            ),
+                          );
+                          return;
+                        }
+                        if (initialPayment > finalTotal) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Initial payment cannot exceed final total',
+                                style: TextStyle(color: AppColors.white),
+                              ),
+                              backgroundColor: AppColors.red,
+                              behavior: SnackBarBehavior.floating,
+                              margin: EdgeInsets.all(16),
+                            ),
+                          );
+                          return;
+                        }
+                        _initialPayment = initialPayment;
+                      }
+                      // Set total discount
+                      this.setState(() {
+                        _discount = sumItemDisc + additionalDiscount;
+                      });
+                      Navigator.pop(dialogContext, true);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text(
-                        'Confirm',
-                        style: TextStyle(
-                          color: AppColors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: const Text(
+                      'Confirm',
+                      style: TextStyle(
+                        color: AppColors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        );
+        ),);
       },
     ) ??
         false;
   }
+
+  Widget _buildSelectionButtons(
+      List<StockModel> products, List<StoreDto> stores) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildSelectionButton(
+          icon: Icons.person,
+          label: _selectedCustomer?.name ??
+              _selectedCustomer?.userName ??
+              'Select Customer',
+          onPressed: _showCustomerSelectionDialog,
+          hasError: _selectedCustomer == null,
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Expanded(
+              child: _buildSelectionButton(
+                icon: Icons.store,
+                label: _selectedStoreId != null
+                    ? stores
+                    .firstWhere(
+                      (store) => store.storeId == _selectedStoreId,
+                  orElse: () => StoreDto(
+                    name: 'Unknown',
+                    storeId: '',
+                    createdBy: '',
+                    createdAt: DateTime.now(),
+                  ),
+                )
+                    .name
+                    : 'Select Store',
+                onPressed: () => _showStoreSelectionDialog(stores),
+                hasError: _selectedStoreId == null,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildSelectionButton(
+                icon: Icons.inventory,
+                label: 'Add Products',
+                onPressed: () => _showProductSelectionDialog(products),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Card(
+          elevation: 4,
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: DropdownButtonFormField<String>(
+              decoration: InputDecoration(
+                labelText: 'Bill Type',
+                labelStyle: const TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.black87),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none),
+                filled: true,
+                fillColor: Colors.grey[50],
+                contentPadding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              ),
+              value: _selectedBillType,
+              items: ['Cash', 'Credit'].map((type) {
+                return DropdownMenuItem(
+                  value: type,
+                  child: Text(type),
+                );
+              }).toList(),
+              onChanged: _existingBillNumber == null
+                  ? (value) {
+                setState(() {
+                  _selectedBillType = value ?? 'Cash';
+                });
+              }
+                  : null,
+            ),
+          ),
+        ),
+        if (_existingBillNumber != null && _selectedBillType == 'Cash') ...[
+          const SizedBox(height: 8),
+          Card(
+            elevation: 4,
+            shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: DropdownButtonFormField<String>(
+                decoration: InputDecoration(
+                  labelText: 'Return Method',
+                  labelStyle: const TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.black87),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none),
+                  filled: true,
+                  fillColor: Colors.grey[50],
+                  contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
+                value: _selectedReturnMethod,
+                items: ['Cash', 'Credit'].map((method) {
+                  return DropdownMenuItem(
+                    value: method,
+                    child: Text(method),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedReturnMethod = value ?? 'Credit';
+                  });
+                },
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+  double? _initialPayment;
+  final TextEditingController _initialPaymentController = TextEditingController();
 
   Future<void> _generateBill() async {
     if (_cartItems.isEmpty && _existingBillNumber == null) {
@@ -861,6 +1053,29 @@ class _BillingPageState extends State<BillingPage> {
       return;
     }
 
+    // Validate initial payment for Credit bills
+    if (_selectedBillType == 'Credit') {
+      final initialPayment = double.tryParse(_initialPaymentController.text) ?? 0.0;
+      final subtotal = _cartItems.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
+      final totalTax = _cartItems.fold(0.0, (sum, item) => sum + item.taxAmount);
+      final totalAmount = subtotal + totalTax - (_discount ?? 0.0);
+      if (initialPayment < 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Initial payment cannot be negative')),
+        );
+        return;
+      }
+      if (initialPayment > totalAmount) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Initial payment cannot exceed total amount')),
+        );
+        return;
+      }
+      _initialPayment = initialPayment;
+    } else {
+      _initialPayment = 0.0;
+    }
+
     // Initialize discount for fresh orders
     if (_discount == null && widget.orderId == null) {
       setState(() {
@@ -875,10 +1090,8 @@ class _BillingPageState extends State<BillingPage> {
       });
     }
 
-    final double subtotal =
-    _cartItems.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
-    final double totalTax =
-    _cartItems.fold(0.0, (sum, item) => sum + item.taxAmount);
+    final double subtotal = _cartItems.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
+    final double totalTax = _cartItems.fold(0.0, (sum, item) => sum + item.taxAmount);
     final double totalAmount = subtotal + totalTax - (_discount ?? 0.0);
 
     // Get current user ID for invoiceLastUpdatedBy
@@ -914,9 +1127,17 @@ class _BillingPageState extends State<BillingPage> {
           invoiceLastUpdatedBy: userId,
           invoiceGeneratedDate: state.order.invoiceGeneratedDate ?? DateTime.now(),
           invoiceType: _selectedBillType,
-          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid',
-          amountReceived: _selectedBillType == 'Cash' ? totalAmount : 0.0,
-          paymentDetails: state.order.paymentDetails ?? [],
+          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : (_initialPayment! > 0 ? 'Partially Paid' : 'Not Paid'),
+          amountReceived: _selectedBillType == 'Cash' ? totalAmount : _initialPayment,
+          paymentDetails: [
+            if (_initialPayment! > 0)
+              {
+                'date': DateTime.now(),
+                'amount': _initialPayment,
+                'method': 'Cash',
+              },
+            ...(state.order.paymentDetails ?? []),
+          ],
           slipNumber: state.order.slipNumber,
           customerLedgerId: customerLedgerId,
         );
@@ -924,9 +1145,7 @@ class _BillingPageState extends State<BillingPage> {
         tempOrder = Order(
           id: widget.orderId!,
           userId: _selectedCustomer!.userId!,
-          userName: _selectedCustomer!.name ??
-              _selectedCustomer!.userName ??
-              'Unknown',
+          userName: _selectedCustomer!.name ?? _selectedCustomer!.userName ?? 'Unknown',
           items: _cartItems,
           totalAmount: totalAmount,
           status: _selectedStatus,
@@ -939,9 +1158,16 @@ class _BillingPageState extends State<BillingPage> {
           invoiceLastUpdatedBy: userId,
           invoiceGeneratedDate: DateTime.now(),
           invoiceType: _selectedBillType,
-          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid',
-          amountReceived: _selectedBillType == 'Cash' ? totalAmount : 0.0,
-          paymentDetails: [],
+          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : (_initialPayment! > 0 ? 'Partially Paid' : 'Not Paid'),
+          amountReceived: _selectedBillType == 'Cash' ? totalAmount : _initialPayment,
+          paymentDetails: [
+            if (_initialPayment! > 0)
+              {
+                'date': DateTime.now(),
+                'amount': _initialPayment,
+                'method': 'Cash',
+              },
+          ],
           slipNumber: null,
           customerLedgerId: customerLedgerId,
         );
@@ -950,8 +1176,7 @@ class _BillingPageState extends State<BillingPage> {
       tempOrder = Order(
         id: widget.orderId ?? DateTime.now().millisecondsSinceEpoch.toString(),
         userId: _selectedCustomer!.userId!,
-        userName:
-        _selectedCustomer!.name ?? _selectedCustomer!.userName ?? 'Unknown',
+        userName: _selectedCustomer!.name ?? _selectedCustomer!.userName ?? 'Unknown',
         items: _cartItems,
         totalAmount: totalAmount,
         status: _selectedStatus,
@@ -964,9 +1189,16 @@ class _BillingPageState extends State<BillingPage> {
         invoiceLastUpdatedBy: userId,
         invoiceGeneratedDate: DateTime.now(),
         invoiceType: _selectedBillType,
-        paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid',
-        amountReceived: _selectedBillType == 'Cash' ? totalAmount : 0.0,
-        paymentDetails: [],
+        paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : (_initialPayment! > 0 ? 'Partially Paid' : 'Not Paid'),
+        amountReceived: _selectedBillType == 'Cash' ? totalAmount : _initialPayment,
+        paymentDetails: [
+          if (_initialPayment! > 0)
+            {
+              'date': DateTime.now(),
+              'amount': _initialPayment,
+              'method': 'Cash',
+            },
+        ],
         slipNumber: null,
         customerLedgerId: customerLedgerId,
       );
@@ -995,9 +1227,17 @@ class _BillingPageState extends State<BillingPage> {
           invoiceLastUpdatedBy: userId,
           invoiceGeneratedDate: state.order.invoiceGeneratedDate ?? DateTime.now(),
           invoiceType: _selectedBillType,
-          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid',
-          amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : 0.0,
-          paymentDetails: state.order.paymentDetails ?? [],
+          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : (_initialPayment! > 0 ? 'Partially Paid' : 'Not Paid'),
+          amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : _initialPayment,
+          paymentDetails: [
+            if (_initialPayment! > 0)
+              {
+                'date': DateTime.now(),
+                'amount': _initialPayment,
+                'method': 'Cash',
+              },
+            ...(state.order.paymentDetails ?? []),
+          ],
           slipNumber: state.order.slipNumber,
           customerLedgerId: customerLedgerId,
         );
@@ -1005,9 +1245,7 @@ class _BillingPageState extends State<BillingPage> {
         order = Order(
           id: widget.orderId!,
           userId: _selectedCustomer!.userId!,
-          userName: _selectedCustomer!.name ??
-              _selectedCustomer!.userName ??
-              'Unknown',
+          userName: _selectedCustomer!.name ?? _selectedCustomer!.userName ?? 'Unknown',
           items: _cartItems,
           totalAmount: updatedTotalAmount,
           status: _selectedStatus,
@@ -1020,9 +1258,16 @@ class _BillingPageState extends State<BillingPage> {
           invoiceLastUpdatedBy: userId,
           invoiceGeneratedDate: DateTime.now(),
           invoiceType: _selectedBillType,
-          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid',
-          amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : 0.0,
-          paymentDetails: [],
+          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : (_initialPayment! > 0 ? 'Partially Paid' : 'Not Paid'),
+          amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : _initialPayment,
+          paymentDetails: [
+            if (_initialPayment! > 0)
+              {
+                'date': DateTime.now(),
+                'amount': _initialPayment,
+                'method': 'Cash',
+              },
+          ],
           slipNumber: null,
           customerLedgerId: customerLedgerId,
         );
@@ -1031,8 +1276,7 @@ class _BillingPageState extends State<BillingPage> {
       order = Order(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         userId: _selectedCustomer!.userId!,
-        userName:
-        _selectedCustomer!.name ?? _selectedCustomer!.userName ?? 'Unknown',
+        userName: _selectedCustomer!.name ?? _selectedCustomer!.userName ?? 'Unknown',
         items: _cartItems,
         totalAmount: updatedTotalAmount,
         status: _selectedStatus,
@@ -1045,9 +1289,16 @@ class _BillingPageState extends State<BillingPage> {
         invoiceLastUpdatedBy: userId,
         invoiceGeneratedDate: DateTime.now(),
         invoiceType: _selectedBillType,
-        paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : 'Not Paid',
-        amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : 0.0,
-        paymentDetails: [],
+        paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : (_initialPayment! > 0 ? 'Partially Paid' : 'Not Paid'),
+        amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : _initialPayment,
+        paymentDetails: [
+          if (_initialPayment! > 0)
+            {
+              'date': DateTime.now(),
+              'amount': _initialPayment,
+              'method': 'Cash',
+            },
+        ],
         slipNumber: null,
         customerLedgerId: customerLedgerId,
       );
@@ -1057,16 +1308,14 @@ class _BillingPageState extends State<BillingPage> {
     try {
       final orderService = sl<IOrderService>();
       final ledgerCubit = sl<UserLedgerCubit>();
-      final billNumber = _existingBillNumber ??
-          'BILL-${DateTime.now().millisecondsSinceEpoch}';
+      final billNumber = _existingBillNumber ?? 'BILL-${DateTime.now().millisecondsSinceEpoch}';
       final customerLedgerId = _selectedCustomer!.accountLedgerId;
 
       // Validate customer ledger ID
       if (customerLedgerId == null) {
         print('No ledger ID found for customer: ${_selectedCustomer!.name}');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Customer ledger ID not found. Cannot process bill.')),
+          const SnackBar(content: Text('Customer ledger ID not found. Cannot process bill.')),
         );
         setState(() => _isLoading = false);
         return;
@@ -1090,8 +1339,7 @@ class _BillingPageState extends State<BillingPage> {
       if (storeLedgerId == null) {
         print('No ledger ID found for store: ${store.name}');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Store ledger ID not found. Cannot process bill.')),
+          const SnackBar(content: Text('Store ledger ID not found. Cannot process bill.')),
         );
         setState(() => _isLoading = false);
         return;
@@ -1100,14 +1348,14 @@ class _BillingPageState extends State<BillingPage> {
       print('Processing bill: billNumber=$billNumber, cartItems=${_cartItems.length}, totalAmount=$updatedTotalAmount, discount=${_discount ?? 0.0}, store=${store.name}');
 
       // Start PDF generation in parallel
-      final pdfFuture = _generatePdf(order); // Start PDF generation immediately
+      final pdfFuture = _generatePdf(order);
 
       // Check if invoice already exists
       Order? existingInvoice;
       try {
         existingInvoice = await orderService.getInvoiceById(order.id);
       } catch (e) {
-        existingInvoice = null; // Invoice doesn't exist
+        existingInvoice = null;
       }
 
       if (_existingBillNumber == null) {
@@ -1123,9 +1371,7 @@ class _BillingPageState extends State<BillingPage> {
 
         for (var item in _cartItems) {
           final stock = (_stockCubit.state as StockLoaded).stockItems.firstWhere(
-                (stock) =>
-            stock.productId == item.productId &&
-                stock.storeId == _selectedStoreId,
+                (stock) => stock.productId == item.productId && stock.storeId == _selectedStoreId,
             orElse: () => StockModel(
               id: '${item.productId}_$_selectedStoreId',
               productId: item.productId,
@@ -1137,8 +1383,7 @@ class _BillingPageState extends State<BillingPage> {
           print('Validating stock for ${item.productName}: available=${stock.quantity}, required=${item.quantity}, stockId=${stock.id}');
           if (stock.quantity < item.quantity) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                  content: Text('Insufficient stock for ${item.productName}')),
+              SnackBar(content: Text('Insufficient stock for ${item.productName}')),
             );
             setState(() => _isLoading = false);
             return;
@@ -1148,9 +1393,7 @@ class _BillingPageState extends State<BillingPage> {
         // Update stock for new order
         for (var item in _cartItems) {
           final stock = (_stockCubit.state as StockLoaded).stockItems.firstWhere(
-                (stock) =>
-            stock.productId == item.productId &&
-                stock.storeId == _selectedStoreId,
+                (stock) => stock.productId == item.productId && stock.storeId == _selectedStoreId,
             orElse: () => StockModel(
               id: '${item.productId}_$_selectedStoreId',
               productId: item.productId,
@@ -1164,8 +1407,7 @@ class _BillingPageState extends State<BillingPage> {
             stock,
             item.quantity,
             _selectedCustomer!.userId!,
-            remarks:
-            'Bill generated for $_selectedBillType sale (Order: ${order.id})',
+            remarks: 'Bill generated for $_selectedBillType sale (Order: ${order.id})',
           );
         }
 
@@ -1181,10 +1423,11 @@ class _BillingPageState extends State<BillingPage> {
           userType: UserType.Customer,
         );
 
-        if (_selectedBillType == 'Cash') {
+        if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
+          final paymentAmount = _selectedBillType == 'Cash' ? updatedTotalAmount : _initialPayment!;
           await ledgerCubit.addTransaction(
             ledgerId: customerLedgerId,
-            amount: updatedTotalAmount,
+            amount: paymentAmount,
             type: 'Credit',
             billNumber: billNumber,
             purpose: 'Payment',
@@ -1206,10 +1449,11 @@ class _BillingPageState extends State<BillingPage> {
           userType: UserType.Store,
         );
 
-        if (_selectedBillType == 'Cash') {
+        if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
+          final paymentAmount = _selectedBillType == 'Cash' ? updatedTotalAmount : _initialPayment!;
           await ledgerCubit.addTransaction(
             ledgerId: storeLedgerId,
-            amount: updatedTotalAmount,
+            amount: paymentAmount,
             type: 'Debit',
             billNumber: billNumber,
             purpose: 'Cash Received',
@@ -1247,9 +1491,7 @@ class _BillingPageState extends State<BillingPage> {
             if (returnQuantity > 0) {
               final stock = _stockCubit.state is StockLoaded
                   ? (_stockCubit.state as StockLoaded).stockItems.firstWhere(
-                    (stock) =>
-                stock.productId == item.productId &&
-                    stock.storeId == _selectedStoreId,
+                    (stock) => stock.productId == item.productId && stock.storeId == _selectedStoreId,
                 orElse: () => StockModel(
                   id: '${item.productId}_$_selectedStoreId',
                   productId: item.productId,
@@ -1262,9 +1504,7 @@ class _BillingPageState extends State<BillingPage> {
               if (stock == null) {
                 print('Stock not found for ${item.productName}, productId=${item.productId}, storeId=$_selectedStoreId');
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                      content:
-                      Text('Stock data not found for ${item.productName}')),
+                  SnackBar(content: Text('Stock data not found for ${item.productName}')),
                 );
                 setState(() => _isLoading = false);
                 return;
@@ -1285,10 +1525,8 @@ class _BillingPageState extends State<BillingPage> {
           }
           print('Completed return processing, processed ${processedProductIds.length} items');
 
-          final totalOriginalQuantity = originalOrder.items.fold<int>(
-              0, (sum, item) => sum + item.quantity);
-          final totalCurrentQuantity =
-          _cartItems.fold<int>(0, (sum, item) => sum + item.quantity);
+          final totalOriginalQuantity = originalOrder.items.fold<int>(0, (sum, item) => sum + item.quantity);
+          final totalCurrentQuantity = _cartItems.fold<int>(0, (sum, item) => sum + item.quantity);
           if (totalOriginalQuantity > totalCurrentQuantity && returnAmount > 0) {
             await ledgerCubit.addTransaction(
               ledgerId: customerLedgerId,
@@ -1297,8 +1535,7 @@ class _BillingPageState extends State<BillingPage> {
               billNumber: billNumber,
               purpose: 'Return',
               typeOfPurpose: _selectedBillType,
-              remarks:
-              'Return for order ${widget.orderId} (credited ₹${returnAmount.toStringAsFixed(2)} after discount ₹${(_discount ?? 0.0).toStringAsFixed(2)})',
+              remarks: 'Return for order ${widget.orderId} (credited ₹${returnAmount.toStringAsFixed(2)} after discount ₹${(_discount ?? 0.0).toStringAsFixed(2)})',
               userType: UserType.Customer,
             );
             if (_selectedBillType == 'Cash' && _selectedReturnMethod == 'Cash') {
@@ -1309,8 +1546,7 @@ class _BillingPageState extends State<BillingPage> {
                 billNumber: billNumber,
                 purpose: 'Return Payment',
                 typeOfPurpose: 'Cash',
-                remarks:
-                'Cash paid back for return for order ${widget.orderId} (₹${returnAmount.toStringAsFixed(2)})',
+                remarks: 'Cash paid back for return for order ${widget.orderId} (₹${returnAmount.toStringAsFixed(2)})',
                 userType: UserType.Customer,
               );
             }
@@ -1327,10 +1563,11 @@ class _BillingPageState extends State<BillingPage> {
               remarks: 'Bill updated for order ${order.id} with discount ₹${(_discount ?? 0.0).toStringAsFixed(2)}',
               userType: UserType.Customer,
             );
-            if (_selectedBillType == 'Cash') {
+            if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
+              final paymentAmount = _selectedBillType == 'Cash' ? updatedTotalAmount : _initialPayment!;
               await ledgerCubit.addTransaction(
                 ledgerId: customerLedgerId,
-                amount: updatedTotalAmount,
+                amount: paymentAmount,
                 type: 'Credit',
                 billNumber: billNumber,
                 purpose: 'Payment',
@@ -1353,10 +1590,11 @@ class _BillingPageState extends State<BillingPage> {
               userType: UserType.Store,
             );
 
-            if (_selectedBillType == 'Cash') {
+            if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
+              final paymentAmount = _selectedBillType == 'Cash' ? updatedTotalAmount : _initialPayment!;
               await ledgerCubit.addTransaction(
                 ledgerId: storeLedgerId,
-                amount: updatedTotalAmount,
+                amount: paymentAmount,
                 type: 'Debit',
                 billNumber: billNumber,
                 purpose: 'Cash Received',
@@ -1402,14 +1640,11 @@ class _BillingPageState extends State<BillingPage> {
       // Await the PDF generation that was started earlier
       final pdf = await pdfFuture;
 
-      await sl<Coordinator>()
-          .navigateToBillPdfPage(pdf: pdf, billNumber: billNumber);
+      await sl<Coordinator>().navigateToBillPdfPage(pdf: pdf, billNumber: billNumber);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_existingBillNumber == null
-              ? 'Bill generated successfully'
-              : 'Bill updated successfully'),
+          content: Text(_existingBillNumber == null ? 'Bill generated successfully' : 'Bill updated successfully'),
         ),
       );
     } catch (e) {
@@ -1443,10 +1678,9 @@ class _BillingPageState extends State<BillingPage> {
     final regularFont = pw.Font.times();
     final boldFont = pw.Font.timesBold();
 
-    final double subtotal = order.items
-        .fold(0.0, (sum, item) => sum + (item.price * item.quantity));
-    final double totalTax =
-    order.items.fold(0.0, (sum, item) => sum + item.taxAmount);
+    final double subtotal = order.items.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
+    final double totalTax = order.items.fold(0.0, (sum, item) => sum + item.taxAmount);
+    final double outstandingAmount = order.totalAmount - (order.amountReceived ?? 0.0);
 
     pdf.addPage(
       pw.MultiPage(
@@ -1455,8 +1689,7 @@ class _BillingPageState extends State<BillingPage> {
         header: (context) => pw.Container(
           padding: const pw.EdgeInsets.only(bottom: 12),
           decoration: pw.BoxDecoration(
-            border:
-            pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
+            border: pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
           ),
           child: pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -1466,16 +1699,12 @@ class _BillingPageState extends State<BillingPage> {
                 children: [
                   pw.Text(
                     companyName,
-                    style: pw.TextStyle(
-                        font: boldFont, fontSize: 22, color: primaryColor),
+                    style: pw.TextStyle(font: boldFont, fontSize: 22, color: primaryColor),
                   ),
                   pw.SizedBox(height: 4),
                   pw.Text(
                     '123 Business Street, City, Country',
-                    style: pw.TextStyle(
-                        font: regularFont,
-                        fontSize: 12,
-                        color: textSecondaryColor),
+                    style: pw.TextStyle(font: regularFont, fontSize: 12, color: textSecondaryColor),
                   ),
                 ],
               ),
@@ -1484,8 +1713,7 @@ class _BillingPageState extends State<BillingPage> {
                 children: [
                   pw.Text(
                     'INVOICE',
-                    style: pw.TextStyle(
-                        font: boldFont, fontSize: 28, color: primaryColor),
+                    style: pw.TextStyle(font: boldFont, fontSize: 28, color: primaryColor),
                   ),
                   pw.SizedBox(height: 4),
                   pw.Text(
@@ -1513,6 +1741,11 @@ class _BillingPageState extends State<BillingPage> {
                       'Amount Received: ${order.amountReceived!.toStringAsFixed(2)}',
                       style: pw.TextStyle(font: regularFont, fontSize: 14),
                     ),
+                  if (_initialPayment != null && _initialPayment! > 0)
+                    pw.Text(
+                      'Initial Payment: ${_initialPayment!.toStringAsFixed(2)}',
+                      style: pw.TextStyle(font: regularFont, fontSize: 14),
+                    ),
                   if (order.slipNumber != null)
                     pw.Text(
                       'Slip Number: ${order.slipNumber}',
@@ -1537,19 +1770,16 @@ class _BillingPageState extends State<BillingPage> {
           pw.SizedBox(height: 24),
           pw.Text(
             'Bill To:',
-            style: pw.TextStyle(
-                font: boldFont, fontSize: 18, color: PdfColors.black),
+            style: pw.TextStyle(font: boldFont, fontSize: 18, color: PdfColors.black),
           ),
           pw.SizedBox(height: 8),
           pw.Text(
             order.userName ?? 'Unknown Customer',
-            style:
-            pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
+            style: pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
           ),
           pw.Text(
             'Store ID: ${order.storeId ?? 'N/A'}',
-            style: pw.TextStyle(
-                font: regularFont, fontSize: 12, color: textSecondaryColor),
+            style: pw.TextStyle(font: regularFont, fontSize: 12, color: textSecondaryColor),
           ),
           pw.SizedBox(height: 24),
           pw.Text(
@@ -1572,35 +1802,29 @@ class _BillingPageState extends State<BillingPage> {
                 children: [
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Product',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                    child: pw.Text('Product', style: pw.TextStyle(font: boldFont, fontSize: 13)),
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Qty',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                    child: pw.Text('Qty', style: pw.TextStyle(font: boldFont, fontSize: 13)),
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Unit Price',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                    child: pw.Text('Unit Price', style: pw.TextStyle(font: boldFont, fontSize: 13)),
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Tax',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                    child: pw.Text('Tax', style: pw.TextStyle(font: boldFont, fontSize: 13)),
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Total',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                    child: pw.Text('Total', style: pw.TextStyle(font: boldFont, fontSize: 13)),
                   ),
                 ],
               ),
               ...order.items.map((item) => pw.TableRow(
                 decoration: pw.BoxDecoration(
-                  border: pw.Border(
-                      bottom: pw.BorderSide(color: greyColor, width: 0.5)),
+                  border: pw.Border(bottom: pw.BorderSide(color: greyColor, width: 0.5)),
                 ),
                 children: [
                   pw.Padding(
@@ -1638,8 +1862,7 @@ class _BillingPageState extends State<BillingPage> {
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
                     child: pw.Text(
-                      ((item.price * item.quantity) + item.taxAmount)
-                          .toStringAsFixed(2),
+                      ((item.price * item.quantity) + item.taxAmount).toStringAsFixed(2),
                       style: pw.TextStyle(font: regularFont, fontSize: 12),
                       textAlign: pw.TextAlign.right,
                     ),
@@ -1671,43 +1894,35 @@ class _BillingPageState extends State<BillingPage> {
                       children: [
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(10),
-                          child: pw.Text('Date',
-                              style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                          child: pw.Text('Date', style: pw.TextStyle(font: boldFont, fontSize: 13)),
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(10),
-                          child: pw.Text('Amount',
-                              style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                          child: pw.Text('Amount', style: pw.TextStyle(font: boldFont, fontSize: 13)),
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(10),
-                          child: pw.Text('Method',
-                              style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                          child: pw.Text('Method', style: pw.TextStyle(font: boldFont, fontSize: 13)),
                         ),
                       ],
                     ),
                     ...order.paymentDetails!.map((payment) => pw.TableRow(
                       decoration: pw.BoxDecoration(
-                        border: pw.Border(
-                            bottom:
-                            pw.BorderSide(color: greyColor, width: 0.5)),
+                        border: pw.Border(bottom: pw.BorderSide(color: greyColor, width: 0.5)),
                       ),
                       children: [
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(10),
                           child: pw.Text(
-                            payment['date']?.toString().substring(0, 10) ??
-                                'N/A',
-                            style:
-                            pw.TextStyle(font: regularFont, fontSize: 12),
+                            payment['date']?.toString().substring(0, 10) ?? 'N/A',
+                            style: pw.TextStyle(font: regularFont, fontSize: 12),
                           ),
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(10),
                           child: pw.Text(
                             payment['amount']?.toStringAsFixed(2) ?? '0.00',
-                            style:
-                            pw.TextStyle(font: regularFont, fontSize: 12),
+                            style: pw.TextStyle(font: regularFont, fontSize: 12),
                             textAlign: pw.TextAlign.right,
                           ),
                         ),
@@ -1715,8 +1930,7 @@ class _BillingPageState extends State<BillingPage> {
                           padding: const pw.EdgeInsets.all(10),
                           child: pw.Text(
                             payment['method'] ?? 'N/A',
-                            style:
-                            pw.TextStyle(font: regularFont, fontSize: 12),
+                            style: pw.TextStyle(font: regularFont, fontSize: 12),
                           ),
                         ),
                       ],
@@ -1752,11 +1966,26 @@ class _BillingPageState extends State<BillingPage> {
                       'Discount: ${(order.discount ?? 0.0).toStringAsFixed(2)}',
                       style: pw.TextStyle(font: regularFont, fontSize: 14),
                     ),
+                    if (_initialPayment != null && _initialPayment! > 0)
+                      pw.Text(
+                        'Initial Payment: ${_initialPayment!.toStringAsFixed(2)}',
+                        style: pw.TextStyle(font: regularFont, fontSize: 14),
+                      ),
                     pw.SizedBox(height: 8),
                     pw.Text(
                       'Total Amount: ${order.totalAmount.toStringAsFixed(2)}',
-                      style: pw.TextStyle(
-                          font: boldFont, fontSize: 16, color: primaryColor),
+                      style: pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
+                    ),
+                    pw.SizedBox(height: 8),
+                    if (order.amountReceived != null)
+                      pw.Text(
+                        'Amount Paid: ${order.amountReceived!.toStringAsFixed(2)}',
+                        style: pw.TextStyle(font: regularFont, fontSize: 14),
+                      ),
+                    pw.SizedBox(height: 8),
+                    pw.Text(
+                      'Outstanding Amount: ${outstandingAmount.toStringAsFixed(2)}',
+                      style: pw.TextStyle(font: regularFont, fontSize: 14, color: PdfColors.red),
                     ),
                   ],
                 ),
@@ -1769,8 +1998,7 @@ class _BillingPageState extends State<BillingPage> {
           padding: const pw.EdgeInsets.only(top: 12),
           child: pw.Text(
             'Generated by $companyName | Page ${context.pageNumber} of ${context.pagesCount}',
-            style: pw.TextStyle(
-                font: regularFont, fontSize: 10, color: textSecondaryColor),
+            style: pw.TextStyle(font: regularFont, fontSize: 10, color: textSecondaryColor),
           ),
         ),
       ),
@@ -2595,130 +2823,6 @@ class _BillingPageState extends State<BillingPage> {
     );
   }
 
-  Widget _buildSelectionButtons(
-      List<StockModel> products, List<StoreDto> stores) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _buildSelectionButton(
-          icon: Icons.person,
-          label: _selectedCustomer?.name ??
-              _selectedCustomer?.userName ??
-              'Select Customer',
-          onPressed: _showCustomerSelectionDialog,
-          hasError: _selectedCustomer == null,
-        ),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Expanded(
-              child: _buildSelectionButton(
-                icon: Icons.store,
-                label: _selectedStoreId != null
-                    ? stores
-                    .firstWhere(
-                      (store) => store.storeId == _selectedStoreId,
-                  orElse: () => StoreDto(
-                    name: 'Unknown',
-                    storeId: '',
-                    createdBy: '',
-                    createdAt: DateTime.now(),
-                  ),
-                )
-                    .name
-                    : 'Select Store',
-                onPressed: () => _showStoreSelectionDialog(stores),
-                hasError: _selectedStoreId == null,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _buildSelectionButton(
-                icon: Icons.inventory,
-                label: 'Add Products',
-                onPressed: () => _showProductSelectionDialog(products),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Card(
-          elevation: 4,
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: DropdownButtonFormField<String>(
-              decoration: InputDecoration(
-                labelText: 'Bill Type',
-                labelStyle: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.black87),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none),
-                filled: true,
-                fillColor: Colors.grey[50],
-                contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              ),
-              value: _selectedBillType,
-              items: ['Cash', 'Credit'].map((type) {
-                return DropdownMenuItem(
-                  value: type,
-                  child: Text(type),
-                );
-              }).toList(),
-              onChanged: _existingBillNumber == null
-                  ? (value) {
-                setState(() {
-                  _selectedBillType = value ?? 'Cash';
-                });
-              }
-                  : null,
-            ),
-          ),
-        ),
-        if (_existingBillNumber != null && _selectedBillType == 'Cash') ...[
-          const SizedBox(height: 8),
-          Card(
-            elevation: 4,
-            shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: DropdownButtonFormField<String>(
-                decoration: InputDecoration(
-                  labelText: 'Return Method',
-                  labelStyle: const TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.black87),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none),
-                  filled: true,
-                  fillColor: Colors.grey[50],
-                  contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                ),
-                value: _selectedReturnMethod,
-                items: ['Cash', 'Credit'].map((method) {
-                  return DropdownMenuItem(
-                    value: method,
-                    child: Text(method),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedReturnMethod = value ?? 'Credit';
-                  });
-                },
-              ),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
 
   Future<void> _showCustomerSelectionDialog() async {
     final userServices = sl<UserServices>();
