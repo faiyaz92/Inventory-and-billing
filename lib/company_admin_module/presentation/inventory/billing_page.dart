@@ -260,13 +260,11 @@ class _BillingPageState extends State<BillingPage> {
   }
 
   Future<bool> _showReviewDialog(Order order) async {
-    final double subtotal = order.items
-        .fold(0.0, (sum, item) => sum + (item.price * item.quantity));
-    final double totalTax =
-    order.items.fold(0.0, (sum, item) => sum + item.taxAmount);
+    final double subtotal = order.items.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
+    final double totalTax = order.items.fold(0.0, (sum, item) => sum + item.taxAmount);
     final double total = subtotal + totalTax;
-    List<double> itemDiscounts = List.filled(order.items.length, 0.0);
-    double additionalDiscount = (_discount ?? order.discount ?? 0.0);
+    List<double> itemDiscounts = order.items.map((item) => item.discountAmount).toList();
+    double additionalDiscount = _discount ?? order.discount ?? 0.0;
     final TextEditingController discountController = TextEditingController(
       text: additionalDiscount.toStringAsFixed(2),
     );
@@ -283,623 +281,571 @@ class _BillingPageState extends State<BillingPage> {
       backgroundColor: AppColors.white,
       builder: (dialogContext) {
         return StatefulBuilder(
-            builder: (context, setState) => Padding(
-          padding: const EdgeInsets.all(20),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      widget.orderId == null
-                          ? 'Order Summary'
-                          : 'Review Bill',
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+          builder: (context, setState) => Padding(
+            padding: const EdgeInsets.all(20),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        widget.orderId == null ? 'Order Summary' : 'Review Bill',
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.close,
+                          color: AppColors.textSecondary,
+                          size: 24,
+                        ),
+                        onPressed: () => Navigator.pop(dialogContext, false),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Order Details',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
                     ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.close,
-                        color: AppColors.textSecondary,
-                        size: 24,
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.textSecondary.withOpacity(0.3)),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      onPressed: () =>
-                          Navigator.pop(dialogContext, false),
+                      child: Table(
+                        border: TableBorder(
+                          verticalInside: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
+                          horizontalInside: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
+                        ),
+                        columnWidths: const {
+                          0: FlexColumnWidth(3),
+                          1: FlexColumnWidth(1),
+                          2: FlexColumnWidth(1),
+                          3: FlexColumnWidth(1),
+                          4: FlexColumnWidth(1),
+                          5: FlexColumnWidth(1),
+                        },
+                        children: [
+                          TableRow(
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withOpacity(0.05),
+                            ),
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                child: Text(
+                                  'Product',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                child: Text(
+                                  'Qty',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                child: Text(
+                                  'Subtotal',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                child: Text(
+                                  'Tax',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                child: Text(
+                                  'Discount',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                child: Text(
+                                  'Total',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          ...order.items.asMap().entries.map((entry) {
+                            final int index = entry.key;
+                            final item = entry.value;
+                            return TableRow(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                  child: Text(
+                                    item.productName,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                  child: Text(
+                                    '${item.quantity}',
+                                    textAlign: TextAlign.right,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                  child: Text(
+                                    '₹${(item.price * item.quantity).toStringAsFixed(2)}',
+                                    textAlign: TextAlign.right,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                  child: Text(
+                                    '₹${item.taxAmount.toStringAsFixed(2)}',
+                                    textAlign: TextAlign.right,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                  child: TextFormField(
+                                    initialValue: itemDiscounts[index].toStringAsFixed(2),
+                                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                    textAlign: TextAlign.right,
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      contentPadding: EdgeInsets.zero,
+                                      isDense: true,
+                                    ),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                    onChanged: (value) {
+                                      final disc = double.tryParse(value) ?? 0.0;
+                                      setState(() {
+                                        itemDiscounts[index] = disc;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                  child: Text(
+                                    '₹${((item.price * item.quantity) + item.taxAmount - itemDiscounts[index]).toStringAsFixed(2)}',
+                                    textAlign: TextAlign.right,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }),
+                        ],
+                      ),),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: discountController,
+                        decoration: InputDecoration(
+                          labelText: 'Additional Discount (₹)',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                        ),
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        onChanged: (value) {
+                          setState(() {
+                            additionalDiscount = double.tryParse(value) ?? 0.0;
+                          });
+                        },
+                      ),
+                      if (_selectedBillType == 'Credit') ...[
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: initialPaymentController,
+                      decoration: InputDecoration(
+                        labelText: 'Initial Payment (₹)',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        filled: true,
+                        fillColor: Colors.grey[100],
+                        errorText: double.tryParse(initialPaymentController.text) != null &&
+                            double.parse(initialPaymentController.text) >
+                                (total - itemDiscounts.fold(0.0, (sum, disc) => sum + disc) - additionalDiscount)
+                            ? 'Initial payment cannot exceed final total'
+                            : null,
+                      ),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      onChanged: (value) {
+                        setState(() {
+                          _initialPayment = double.tryParse(value) ?? 0.0;
+                        });
+                      },
                     ),
                   ],
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Order Details',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                        color: AppColors.textSecondary.withOpacity(0.3)),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Table(
-                    border: TableBorder(
-                      verticalInside: BorderSide(
-                          color:
-                          AppColors.textSecondary.withOpacity(0.3)),
-                      horizontalInside: BorderSide(
-                          color:
-                          AppColors.textSecondary.withOpacity(0.3)),
+                  const SizedBox(height: 20),
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.textSecondary.withOpacity(0.3)),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    columnWidths: const {
-                      0: FlexColumnWidth(3),
-                      1: FlexColumnWidth(1),
-                      2: FlexColumnWidth(1),
-                      3: FlexColumnWidth(1),
-                      4: FlexColumnWidth(1),
-                      5: FlexColumnWidth(1),
-                    },
-                    children: [
-                      TableRow(
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.05),
-                        ),
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 12),
-                            child: Text(
-                              'Product',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 12),
-                            child: Text(
-                              'Qty',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 12),
-                            child: Text(
-                              'Subtotal',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 12),
-                            child: Text(
-                              'Tax',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 12),
-                            child: Text(
-                              'Discount',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 12),
-                            child: Text(
-                              'Total',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                        ],
+                    child: Table(
+                      border: TableBorder(
+                        verticalInside: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
+                        horizontalInside: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
                       ),
-                      ...order.items.asMap().entries.map((entry) {
-                        final int index = entry.key;
-                        final item = entry.value;
-                        return TableRow(
+                      columnWidths: const {
+                        0: FlexColumnWidth(3),
+                        1: FlexColumnWidth(2),
+                      },
+                      children: [
+                        TableRow(
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 8, horizontal: 12),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                               child: Text(
-                                item.productName,
-                                style: const TextStyle(
-                                  fontSize: 14,
+                                'Subtotal (All Items)',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
                                   color: AppColors.textPrimary,
                                 ),
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 8, horizontal: 12),
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                               child: Text(
-                                '${item.quantity}',
+                                '₹${subtotal.toStringAsFixed(2)}',
                                 textAlign: TextAlign.right,
                                 style: const TextStyle(
-                                  fontSize: 14,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 8, horizontal: 12),
-                              child: Text(
-                                '₹${(item.price * item.quantity).toStringAsFixed(2)}',
-                                textAlign: TextAlign.right,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 8, horizontal: 12),
-                              child: Text(
-                                '₹${item.taxAmount.toStringAsFixed(2)}',
-                                textAlign: TextAlign.right,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 8, horizontal: 12),
-                              child: TextFormField(
-                                initialValue: itemDiscounts[index].toStringAsFixed(2),
-                                keyboardType: TextInputType.numberWithOptions(decimal: true),
-                                textAlign: TextAlign.right,
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.zero,
-                                  isDense: true,
-                                ),
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: AppColors.textSecondary,
-                                ),
-                                onChanged: (value) {
-                                  final disc = double.tryParse(value) ?? 0.0;
-                                  itemDiscounts[index] = disc;
-                                  setState(() {});
-                                },
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 8, horizontal: 12),
-                              child: Text(
-                                '₹${((item.price * item.quantity) + item.taxAmount - itemDiscounts[index]).toStringAsFixed(2)}',
-                                textAlign: TextAlign.right,
-                                style: const TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.textPrimary,
                                 ),
                               ),
                             ),
                           ],
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: discountController,
-                  decoration: InputDecoration(
-                    labelText: 'Additional Discount (₹)',
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8)),
-                    filled: true,
-                    fillColor: Colors.grey[100],
-                  ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (value) {
-                    additionalDiscount = double.tryParse(value) ?? 0.0;
-                    setState(() {});
-                  },
-                ),
-                if (_selectedBillType == 'Credit') ...[
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: initialPaymentController,
-                    decoration: InputDecoration(
-                      labelText: 'Initial Payment (₹)',
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      errorText: double.tryParse(initialPaymentController.text) != null &&
-                          double.parse(initialPaymentController.text) >
-                              (total -
-                                  itemDiscounts.fold<double>(
-                                      0.0, (sum, disc) => sum + disc) -
-                                  additionalDiscount)
-                          ? 'Initial payment cannot exceed final total'
-                          : null,
+                        ),
+                        TableRow(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                              child: Text(
+                                'Total Tax',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                              child: Text(
+                                '₹${totalTax.toStringAsFixed(2)}',
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                              child: Text(
+                                'Total',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                              child: Text(
+                                '₹${total.toStringAsFixed(2)}',
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                              child: Text(
+                                'Item Discounts',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                              child: Text(
+                                '₹${itemDiscounts.fold(0.0, (sum, disc) => sum + disc).toStringAsFixed(2)}',
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                              child: Text(
+                                'Additional Discount',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                              child: Text(
+                                '₹${additionalDiscount.toStringAsFixed(2)}',
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.05),
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft: Radius.circular(12),
+                              bottomRight: Radius.circular(12),
+                            ),
+                          ),
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                              child: Text(
+                                'Final Total',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                              child: Text(
+                                '₹${(total - itemDiscounts.fold(0.0, (sum, disc) => sum + disc) - additionalDiscount).toStringAsFixed(2)}',
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    keyboardType:
-                    TextInputType.numberWithOptions(decimal: true),
-                    onChanged: (value) {
-                      setState(() {
-                        _initialPayment = double.tryParse(value) ?? 0.0;
-                      });
-                    },
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final sumItemDisc = itemDiscounts.fold(0.0, (sum, disc) => sum + disc);
+                        final finalTotal = total - sumItemDisc - additionalDiscount;
+
+                        // Validate item discounts
+                        for (int i = 0; i < order.items.length; i++) {
+                          final item = order.items[i];
+                          final itemTotal = item.price * item.quantity + item.taxAmount;
+                          if (itemDiscounts[i] < 0) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Item discount cannot be negative'),
+                                backgroundColor: AppColors.red,
+                                behavior: SnackBarBehavior.floating,
+                                margin: EdgeInsets.all(16),
+                              ),
+                            );
+                            return;
+                          }
+                          if (itemDiscounts[i] > itemTotal) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Discount for ${item.productName} cannot exceed item total'),
+                                backgroundColor: AppColors.red,
+                                behavior: SnackBarBehavior.floating,
+                                margin: EdgeInsets.all(16),
+                              ),
+                            );
+                            return;
+                          }
+                        }
+                        // Validate additional discount
+                        if (additionalDiscount < 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Invalid additional discount'),
+                              backgroundColor: AppColors.red,
+                              behavior: SnackBarBehavior.floating,
+                              margin: EdgeInsets.all(16),
+                            ),
+                          );
+                          return;
+                        }
+                        final totalAfterItemDisc = total - sumItemDisc;
+                        if (additionalDiscount > totalAfterItemDisc) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Additional discount cannot exceed total after item discounts'),
+                              backgroundColor: AppColors.red,
+                              behavior: SnackBarBehavior.floating,
+                              margin: EdgeInsets.all(16),
+                            ),
+                          );
+                          return;
+                        }
+                        // Validate initial payment
+                        if (_selectedBillType == 'Credit') {
+                          final initialPayment = double.tryParse(initialPaymentController.text) ?? 0.0;
+                          if (initialPayment < 0) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Initial payment cannot be negative'),
+                                backgroundColor: AppColors.red,
+                                behavior: SnackBarBehavior.floating,
+                                margin: EdgeInsets.all(16),
+                              ),
+                            );
+                            return;
+                          }
+                          if (initialPayment > finalTotal) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Initial payment cannot exceed final total'),
+                                backgroundColor: AppColors.red,
+                                behavior: SnackBarBehavior.floating,
+                                margin: EdgeInsets.all(16),
+                              ),
+                            );
+                            return;
+                          }
+                          _initialPayment = initialPayment;
+                        }
+                        // Update cart items with discounts
+                        setState(() {
+                          _cartItems = order.items.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final item = entry.value;
+                            final discount = itemDiscounts[index];
+                            final itemTotal = item.price * item.quantity + item.taxAmount;
+                            final discountPercentage = itemTotal > 0 ? (discount / itemTotal) * 100 : 0.0;
+                            return item.copyWith(
+                              discountAmount: discount,
+                              discountPercentage: discountPercentage,
+                            );
+                          }).toList();
+                          _discount = additionalDiscount; // Store only additional discount
+                        });
+                        Navigator.pop(dialogContext, true);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: const Text(
+                        'Confirm',
+                        style: TextStyle(
+                          color: AppColors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
-                const SizedBox(height: 20),
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                        color: AppColors.textSecondary.withOpacity(0.3)),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Table(
-                    border: TableBorder(
-                      verticalInside: BorderSide(
-                          color:
-                          AppColors.textSecondary.withOpacity(0.3)),
-                      horizontalInside: BorderSide(
-                          color:
-                          AppColors.textSecondary.withOpacity(0.3)),
-                    ),
-                    columnWidths: const {
-                      0: FlexColumnWidth(3),
-                      1: FlexColumnWidth(2),
-                    },
-                    children: [
-                      TableRow(
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 16),
-                            child: Text(
-                              'Subtotal (All Items)',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 16),
-                            child: Text(
-                              '₹${subtotal.toStringAsFixed(2)}',
-                              textAlign: TextAlign.right,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      TableRow(
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 16),
-                            child: Text(
-                              'Total Tax',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 16),
-                            child: Text(
-                              '₹${totalTax.toStringAsFixed(2)}',
-                              textAlign: TextAlign.right,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      TableRow(
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 16),
-                            child: Text(
-                              'Total',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 16),
-                            child: Text(
-                              '₹${total.toStringAsFixed(2)}',
-                              textAlign: TextAlign.right,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      TableRow(
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 16),
-                            child: Text(
-                              'Item Discounts',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 16),
-                            child: Text(
-                              '₹${itemDiscounts.fold<double>(0.0, (sum, disc) => sum + disc).toStringAsFixed(2)}',
-                              textAlign: TextAlign.right,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      TableRow(
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 16),
-                            child: Text(
-                              'Additional Discount',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 16),
-                            child: Text(
-                              '₹${additionalDiscount.toStringAsFixed(2)}',
-                              textAlign: TextAlign.right,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      TableRow(
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.05),
-                          borderRadius: const BorderRadius.only(
-                            bottomLeft: Radius.circular(12),
-                            bottomRight: Radius.circular(12),
-                          ),
-                        ),
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 16),
-                            child: Text(
-                              'Final Total',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 16),
-                            child: Text(
-                              '₹${(total - itemDiscounts.fold<double>(0.0, (sum, disc) => sum + disc) - additionalDiscount).toStringAsFixed(2)}',
-                              textAlign: TextAlign.right,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      final sumItemDisc = itemDiscounts.fold<double>(0.0, (sum, disc) => sum + disc);
-                      final finalTotal = total - sumItemDisc - additionalDiscount;
-                      final initialPayment = double.tryParse(initialPaymentController.text) ?? 0.0;
-
-                      // Validate item discounts
-                      for (int i = 0; i < order.items.length; i++) {
-                        final item = order.items[i];
-                        final itemTotal = item.price * item.quantity + item.taxAmount;
-                        if (itemDiscounts[i] < 0) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Item discount cannot be negative',
-                                style: TextStyle(color: AppColors.white),
-                              ),
-                              backgroundColor: AppColors.red,
-                              behavior: SnackBarBehavior.floating,
-                              margin: EdgeInsets.all(16),
-                            ),
-                          );
-                          return;
-                        }
-                        if (itemDiscounts[i] > itemTotal) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Discount for ${item.productName} cannot exceed item total',
-                                style: TextStyle(color: AppColors.white),
-                              ),
-                              backgroundColor: AppColors.red,
-                              behavior: SnackBarBehavior.floating,
-                              margin: EdgeInsets.all(16),
-                            ),
-                          );
-                          return;
-                        }
-                      }
-                      // Validate additional discount
-                      if (additionalDiscount < 0) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Invalid additional discount',
-                              style: TextStyle(color: AppColors.white),
-                            ),
-                            backgroundColor: AppColors.red,
-                            behavior: SnackBarBehavior.floating,
-                            margin: EdgeInsets.all(16),
-                          ),
-                        );
-                        return;
-                      }
-                      final totalAfterItemDisc = total - sumItemDisc;
-                      if (additionalDiscount > totalAfterItemDisc) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Additional discount cannot exceed total after item discounts',
-                              style: TextStyle(color: AppColors.white),
-                            ),
-                            backgroundColor: AppColors.red,
-                            behavior: SnackBarBehavior.floating,
-                            margin: EdgeInsets.all(16),
-                          ),
-                        );
-                        return;
-                      }
-                      // Validate initial payment
-                      if (_selectedBillType == 'Credit') {
-                        if (initialPayment < 0) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Initial payment cannot be negative',
-                                style: TextStyle(color: AppColors.white),
-                              ),
-                              backgroundColor: AppColors.red,
-                              behavior: SnackBarBehavior.floating,
-                              margin: EdgeInsets.all(16),
-                            ),
-                          );
-                          return;
-                        }
-                        if (initialPayment > finalTotal) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Initial payment cannot exceed final total',
-                                style: TextStyle(color: AppColors.white),
-                              ),
-                              backgroundColor: AppColors.red,
-                              behavior: SnackBarBehavior.floating,
-                              margin: EdgeInsets.all(16),
-                            ),
-                          );
-                          return;
-                        }
-                        _initialPayment = initialPayment;
-                      }
-                      // Set total discount
-                      this.setState(() {
-                        _discount = sumItemDisc + additionalDiscount;
-                      });
-                      Navigator.pop(dialogContext, true);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: const Text(
-                      'Confirm',
-                      style: TextStyle(
-                        color: AppColors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-        ),);
+        );
       },
-    ) ??
-        false;
+    ) ?? false;
   }
-
   Widget _buildSelectionButtons(
       List<StockModel> products, List<StoreDto> stores) {
     return Column(
@@ -1053,12 +999,15 @@ class _BillingPageState extends State<BillingPage> {
       return;
     }
 
-    // Validate initial payment for Credit bills
+    final double subtotal = _cartItems.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
+    final double totalTax = _cartItems.fold(0.0, (sum, item) => sum + item.taxAmount);
+    final double totalItemDiscount = _cartItems.fold(0.0, (sum, item) => sum + item.discountAmount);
+    final double additionalDiscount = _discount ?? 0.0;
+    final double finalDiscount = totalItemDiscount + additionalDiscount;
+    final double totalAmount = subtotal + totalTax - finalDiscount;
+
     if (_selectedBillType == 'Credit') {
       final initialPayment = double.tryParse(_initialPaymentController.text) ?? 0.0;
-      final subtotal = _cartItems.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
-      final totalTax = _cartItems.fold(0.0, (sum, item) => sum + item.taxAmount);
-      final totalAmount = subtotal + totalTax - (_discount ?? 0.0);
       if (initialPayment < 0) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Initial payment cannot be negative')),
@@ -1076,252 +1025,81 @@ class _BillingPageState extends State<BillingPage> {
       _initialPayment = 0.0;
     }
 
-    // Initialize discount for fresh orders
     if (_discount == null && widget.orderId == null) {
-      setState(() {
-        _discount = 0.0;
-      });
+      _discount = 0.0;
     }
 
-    // Set discount to 0 if cart is empty (full return)
-    if (_cartItems.isEmpty) {
-      setState(() {
-        _discount = 0.0;
-      });
-    }
-
-    final double subtotal = _cartItems.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
-    final double totalTax = _cartItems.fold(0.0, (sum, item) => sum + item.taxAmount);
-    final double totalAmount = subtotal + totalTax - (_discount ?? 0.0);
-
-    // Get current user ID for invoiceLastUpdatedBy
     final userInfo = await sl<AccountRepository>().getUserInfo();
     final userId = userInfo?.userId;
     if (userId == null) {
-      throw Exception('User ID not found');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User ID not found')),
+      );
+      return;
     }
 
-    // Get customer ledger ID
     final customerLedgerId = _selectedCustomer!.accountLedgerId;
     if (customerLedgerId == null) {
-      print('No ledger ID found for customer: ${_selectedCustomer!.name}');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Customer ledger ID not found')),
       );
       return;
     }
 
-    // Create a temporary Order object for review dialog
-    Order tempOrder;
-    if (_existingBillNumber != null && widget.orderId != null) {
-      final state = _adminOrderCubit.state;
-      if (state is AdminOrderFetchSuccess) {
-        tempOrder = state.order.copyWith(
-          items: _cartItems,
-          totalAmount: totalAmount,
-          status: _selectedStatus,
-          orderDate: DateTime.now(),
-          storeId: _selectedStoreId,
-          billNumber: _existingBillNumber,
-          discount: _discount ?? state.order.discount ?? 0.0,
-          invoiceLastUpdatedBy: userId,
-          invoiceGeneratedDate: state.order.invoiceGeneratedDate ?? DateTime.now(),
-          invoiceType: _selectedBillType,
-          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : (_initialPayment! > 0 ? 'Partially Paid' : 'Not Paid'),
-          amountReceived: _selectedBillType == 'Cash' ? totalAmount : _initialPayment,
-          paymentDetails: [
-            if (_initialPayment! > 0)
-              {
-                'date': DateTime.now(),
-                'amount': _initialPayment,
-                'method': 'Cash',
-              },
-            ...(state.order.paymentDetails ?? []),
-          ],
-          slipNumber: state.order.slipNumber,
-          customerLedgerId: customerLedgerId,
-        );
-      } else {
-        tempOrder = Order(
-          id: widget.orderId!,
-          userId: _selectedCustomer!.userId!,
-          userName: _selectedCustomer!.name ?? _selectedCustomer!.userName ?? 'Unknown',
-          items: _cartItems,
-          totalAmount: totalAmount,
-          status: _selectedStatus,
-          orderDate: DateTime.now(),
-          orderTakenBy: userId,
-          storeId: _selectedStoreId,
-          lastUpdatedBy: userId,
-          billNumber: _existingBillNumber,
-          discount: _discount ?? 0.0,
-          invoiceLastUpdatedBy: userId,
-          invoiceGeneratedDate: DateTime.now(),
-          invoiceType: _selectedBillType,
-          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : (_initialPayment! > 0 ? 'Partially Paid' : 'Not Paid'),
-          amountReceived: _selectedBillType == 'Cash' ? totalAmount : _initialPayment,
-          paymentDetails: [
-            if (_initialPayment! > 0)
-              {
-                'date': DateTime.now(),
-                'amount': _initialPayment,
-                'method': 'Cash',
-              },
-          ],
-          slipNumber: null,
-          customerLedgerId: customerLedgerId,
-        );
-      }
-    } else {
-      tempOrder = Order(
-        id: widget.orderId ?? DateTime.now().millisecondsSinceEpoch.toString(),
-        userId: _selectedCustomer!.userId!,
-        userName: _selectedCustomer!.name ?? _selectedCustomer!.userName ?? 'Unknown',
-        items: _cartItems,
-        totalAmount: totalAmount,
-        status: _selectedStatus,
-        orderDate: DateTime.now(),
-        orderTakenBy: userId,
-        storeId: _selectedStoreId,
-        lastUpdatedBy: userId,
-        billNumber: 'BILL-${DateTime.now().millisecondsSinceEpoch}',
-        discount: _discount ?? 0.0,
-        invoiceLastUpdatedBy: userId,
-        invoiceGeneratedDate: DateTime.now(),
-        invoiceType: _selectedBillType,
-        paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : (_initialPayment! > 0 ? 'Partially Paid' : 'Not Paid'),
-        amountReceived: _selectedBillType == 'Cash' ? totalAmount : _initialPayment,
-        paymentDetails: [
-          if (_initialPayment! > 0)
-            {
-              'date': DateTime.now(),
-              'amount': _initialPayment,
-              'method': 'Cash',
-            },
-        ],
-        slipNumber: null,
-        customerLedgerId: customerLedgerId,
-      );
-    }
+    Order order = Order(
+      id: widget.orderId ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      userId: _selectedCustomer!.userId!,
+      userName: _selectedCustomer!.name ?? _selectedCustomer!.userName ?? 'Unknown',
+      items: _cartItems,
+      totalAmount: totalAmount,
+      status: _selectedStatus,
+      orderDate: DateTime.now(),
+      orderTakenBy: userId,
+      storeId: _selectedStoreId,
+      lastUpdatedBy: userId,
+      billNumber: _existingBillNumber ?? 'BILL-${DateTime.now().millisecondsSinceEpoch}',
+      discount: _discount, // Stores only additional discount
+      invoiceLastUpdatedBy: userId,
+      invoiceGeneratedDate: DateTime.now(),
+      invoiceType: _selectedBillType,
+      paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : (_initialPayment! > 0 ? 'Partially Paid' : 'Not Paid'),
+      amountReceived: _selectedBillType == 'Cash' ? totalAmount : _initialPayment,
+      paymentDetails: [
+        if (_initialPayment! > 0)
+          {
+            'date': DateTime.now(),
+            'amount': _initialPayment,
+            'method': 'Cash',
+          },
+      ],
+      slipNumber: null,
+      customerLedgerId: customerLedgerId,
+    );
 
-    // Show review dialog before generating bill
-    final bool confirmed = await _showReviewDialog(tempOrder);
+    final bool confirmed = await _showReviewDialog(order);
     if (!confirmed) {
       return;
     }
 
-    // Recreate Order object with updated discount and invoice fields after dialog confirmation
-    Order order;
-    final updatedTotalAmount = subtotal + totalTax - (_discount ?? 0.0);
-    if (_existingBillNumber != null && widget.orderId != null) {
-      final state = _adminOrderCubit.state;
-      if (state is AdminOrderFetchSuccess) {
-        order = state.order.copyWith(
-          items: _cartItems,
-          totalAmount: updatedTotalAmount,
-          status: _selectedStatus,
-          orderDate: DateTime.now(),
-          storeId: _selectedStoreId,
-          billNumber: _existingBillNumber,
-          discount: _discount ?? state.order.discount ?? 0.0,
-          invoiceLastUpdatedBy: userId,
-          invoiceGeneratedDate: state.order.invoiceGeneratedDate ?? DateTime.now(),
-          invoiceType: _selectedBillType,
-          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : (_initialPayment! > 0 ? 'Partially Paid' : 'Not Paid'),
-          amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : _initialPayment,
-          paymentDetails: [
-            if (_initialPayment! > 0)
-              {
-                'date': DateTime.now(),
-                'amount': _initialPayment,
-                'method': 'Cash',
-              },
-            ...(state.order.paymentDetails ?? []),
-          ],
-          slipNumber: state.order.slipNumber,
-          customerLedgerId: customerLedgerId,
-        );
-      } else {
-        order = Order(
-          id: widget.orderId!,
-          userId: _selectedCustomer!.userId!,
-          userName: _selectedCustomer!.name ?? _selectedCustomer!.userName ?? 'Unknown',
-          items: _cartItems,
-          totalAmount: updatedTotalAmount,
-          status: _selectedStatus,
-          orderDate: DateTime.now(),
-          orderTakenBy: userId,
-          storeId: _selectedStoreId,
-          lastUpdatedBy: userId,
-          billNumber: _existingBillNumber,
-          discount: _discount ?? 0.0,
-          invoiceLastUpdatedBy: userId,
-          invoiceGeneratedDate: DateTime.now(),
-          invoiceType: _selectedBillType,
-          paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : (_initialPayment! > 0 ? 'Partially Paid' : 'Not Paid'),
-          amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : _initialPayment,
-          paymentDetails: [
-            if (_initialPayment! > 0)
-              {
-                'date': DateTime.now(),
-                'amount': _initialPayment,
-                'method': 'Cash',
-              },
-          ],
-          slipNumber: null,
-          customerLedgerId: customerLedgerId,
-        );
-      }
-    } else {
-      order = Order(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        userId: _selectedCustomer!.userId!,
-        userName: _selectedCustomer!.name ?? _selectedCustomer!.userName ?? 'Unknown',
-        items: _cartItems,
-        totalAmount: updatedTotalAmount,
-        status: _selectedStatus,
-        orderDate: DateTime.now(),
-        orderTakenBy: userId,
-        storeId: _selectedStoreId,
-        lastUpdatedBy: userId,
-        billNumber: 'BILL-${DateTime.now().millisecondsSinceEpoch}',
-        discount: _discount ?? 0.0,
-        invoiceLastUpdatedBy: userId,
-        invoiceGeneratedDate: DateTime.now(),
-        invoiceType: _selectedBillType,
-        paymentStatus: _selectedBillType == 'Cash' ? 'Paid' : (_initialPayment! > 0 ? 'Partially Paid' : 'Not Paid'),
-        amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : _initialPayment,
-        paymentDetails: [
-          if (_initialPayment! > 0)
-            {
-              'date': DateTime.now(),
-              'amount': _initialPayment,
-              'method': 'Cash',
-            },
-        ],
-        slipNumber: null,
-        customerLedgerId: customerLedgerId,
-      );
-    }
+    final updatedSubtotal = _cartItems.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
+    final updatedTotalTax = _cartItems.fold(0.0, (sum, item) => sum + item.taxAmount);
+    final updatedTotalItemDiscount = _cartItems.fold(0.0, (sum, item) => sum + item.discountAmount);
+    final updatedFinalDiscount = updatedTotalItemDiscount + (_discount ?? 0.0);
+    final updatedTotalAmount = updatedSubtotal + updatedTotalTax - updatedFinalDiscount;
+
+    order = order.copyWith(
+      items: _cartItems,
+      totalAmount: updatedTotalAmount,
+      discount: _discount, // Stores only additional discount
+      amountReceived: _selectedBillType == 'Cash' ? updatedTotalAmount : _initialPayment,
+    );
 
     setState(() => _isLoading = true);
     try {
       final orderService = sl<IOrderService>();
       final ledgerCubit = sl<UserLedgerCubit>();
-      final billNumber = _existingBillNumber ?? 'BILL-${DateTime.now().millisecondsSinceEpoch}';
-      final customerLedgerId = _selectedCustomer!.accountLedgerId;
+      final billNumber = order.billNumber;
 
-      // Validate customer ledger ID
-      if (customerLedgerId == null) {
-        print('No ledger ID found for customer: ${_selectedCustomer!.name}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Customer ledger ID not found. Cannot process bill.')),
-        );
-        setState(() => _isLoading = false);
-        return;
-      }
-
-      // Fetch store's ledger ID
       final stores = await sl<StockRepository>().getStores(userInfo?.companyId ?? '');
       final store = stores.firstWhere(
             (store) => store.storeId == _selectedStoreId,
@@ -1334,23 +1112,14 @@ class _BillingPageState extends State<BillingPage> {
         ),
       );
       final storeLedgerId = store.accountLedgerId;
-
-      // Validate store ledger ID
       if (storeLedgerId == null) {
-        print('No ledger ID found for store: ${store.name}');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Store ledger ID not found. Cannot process bill.')),
+          const SnackBar(content: Text('Store ledger ID not found')),
         );
         setState(() => _isLoading = false);
         return;
       }
 
-      print('Processing bill: billNumber=$billNumber, cartItems=${_cartItems.length}, totalAmount=$updatedTotalAmount, discount=${_discount ?? 0.0}, store=${store.name}');
-
-      // Start PDF generation in parallel
-      final pdfFuture = _generatePdf(order);
-
-      // Check if invoice already exists
       Order? existingInvoice;
       try {
         existingInvoice = await orderService.getInvoiceById(order.id);
@@ -1359,9 +1128,7 @@ class _BillingPageState extends State<BillingPage> {
       }
 
       if (_existingBillNumber == null) {
-        // New order: Validate and update stock
         if (_stockCubit.state is! StockLoaded) {
-          print('Stock state is not StockLoaded: ${_stockCubit.state.runtimeType}');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Stock data not loaded')),
           );
@@ -1380,7 +1147,6 @@ class _BillingPageState extends State<BillingPage> {
               lastUpdated: DateTime.now(),
             ),
           );
-          print('Validating stock for ${item.productName}: available=${stock.quantity}, required=${item.quantity}, stockId=${stock.id}');
           if (stock.quantity < item.quantity) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Insufficient stock for ${item.productName}')),
@@ -1388,21 +1154,6 @@ class _BillingPageState extends State<BillingPage> {
             setState(() => _isLoading = false);
             return;
           }
-        }
-
-        // Update stock for new order
-        for (var item in _cartItems) {
-          final stock = (_stockCubit.state as StockLoaded).stockItems.firstWhere(
-                (stock) => stock.productId == item.productId && stock.storeId == _selectedStoreId,
-            orElse: () => StockModel(
-              id: '${item.productId}_$_selectedStoreId',
-              productId: item.productId,
-              storeId: _selectedStoreId!,
-              quantity: 0,
-              lastUpdated: DateTime.now(),
-            ),
-          );
-          print('Generating bill for ${item.productName}, quantity=${item.quantity}, stockId=${stock.id}, currentStock=${stock.quantity}');
           await _stockCubit.generateBill(
             stock,
             item.quantity,
@@ -1411,7 +1162,6 @@ class _BillingPageState extends State<BillingPage> {
           );
         }
 
-        // Customer ledger entries
         await ledgerCubit.addTransaction(
           ledgerId: customerLedgerId,
           amount: updatedTotalAmount,
@@ -1419,7 +1169,7 @@ class _BillingPageState extends State<BillingPage> {
           billNumber: billNumber,
           purpose: 'Purchase',
           typeOfPurpose: _selectedBillType,
-          remarks: 'Bill generated for order ${order.id} with discount ₹${(_discount ?? 0.0).toStringAsFixed(2)}',
+          remarks: 'Bill generated for order ${order.id} with discount ${updatedFinalDiscount.toStringAsFixed(2)}',
           userType: UserType.Customer,
         );
 
@@ -1432,12 +1182,11 @@ class _BillingPageState extends State<BillingPage> {
             billNumber: billNumber,
             purpose: 'Payment',
             typeOfPurpose: 'Cash',
-            remarks: 'Payment received for bill $billNumber with discount ₹${(_discount ?? 0.0).toStringAsFixed(2)}',
+            remarks: 'Payment received for bill $billNumber',
             userType: UserType.Customer,
           );
         }
 
-        // Store ledger entries for new order
         await ledgerCubit.addTransaction(
           ledgerId: storeLedgerId,
           amount: updatedTotalAmount,
@@ -1445,7 +1194,7 @@ class _BillingPageState extends State<BillingPage> {
           billNumber: billNumber,
           purpose: 'Sale',
           typeOfPurpose: _selectedBillType,
-          remarks: 'Sale of stock for bill $billNumber to customer ${_selectedCustomer!.name ?? 'Unknown'} with discount ₹${(_discount ?? 0.0).toStringAsFixed(2)}',
+          remarks: 'Sale for bill $billNumber to customer ${_selectedCustomer!.name ?? 'Unknown'}',
           userType: UserType.Store,
         );
 
@@ -1458,189 +1207,169 @@ class _BillingPageState extends State<BillingPage> {
             billNumber: billNumber,
             purpose: 'Cash Received',
             typeOfPurpose: 'Cash',
-            remarks: 'Cash received for bill $billNumber from customer ${_selectedCustomer!.name ?? 'Unknown'}',
+            remarks: 'Cash received for bill $billNumber',
             userType: UserType.Store,
           );
         }
 
-        order = order.copyWith(billNumber: billNumber);
         await orderService.placeOrder(order);
         if (existingInvoice == null) {
           await orderService.placeInvoice(order);
         }
-      } else {
-        if (widget.orderId != null) {
-          final originalOrder = (await orderService.getOrderById(widget.orderId!))!;
-          final returnAmount = originalOrder.totalAmount - updatedTotalAmount;
+      } else if (widget.orderId != null) {
+        final originalOrder = (await orderService.getOrderById(widget.orderId!))!;
+        final returnAmount = originalOrder.totalAmount - updatedTotalAmount;
 
-          final processedProductIds = <String>{};
-          print('Starting return processing for order ${widget.orderId}, originalItems=${originalOrder.items.length}, currentItems=${_cartItems.length}');
+        final processedProductIds = <String>{};
+        for (var item in originalOrder.items) {
+          if (processedProductIds.contains(item.productId)) continue;
+          processedProductIds.add(item.productId);
 
-          for (var item in originalOrder.items) {
-            if (processedProductIds.contains(item.productId)) {
-              print('Skipping duplicate item ${item.productName}, productId=${item.productId}');
-              continue;
-            }
-            processedProductIds.add(item.productId);
-
-            final currentItem = _cartItems.firstWhere(
-                  (i) => i.productId == item.productId,
-              orElse: () => item.copyWith(quantity: 0),
-            );
-            final returnQuantity = item.quantity - currentItem.quantity;
-            if (returnQuantity > 0) {
-              final stock = _stockCubit.state is StockLoaded
-                  ? (_stockCubit.state as StockLoaded).stockItems.firstWhere(
-                    (stock) => stock.productId == item.productId && stock.storeId == _selectedStoreId,
-                orElse: () => StockModel(
-                  id: '${item.productId}_$_selectedStoreId',
-                  productId: item.productId,
-                  storeId: _selectedStoreId!,
-                  quantity: 0,
-                  lastUpdated: DateTime.now(),
-                ),
-              )
-                  : null;
-              if (stock == null) {
-                print('Stock not found for ${item.productName}, productId=${item.productId}, storeId=$_selectedStoreId');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Stock data not found for ${item.productName}')),
-                );
-                setState(() => _isLoading = false);
-                return;
-              }
-              print('Returning stock for ${item.productName}, returnQuantity=$returnQuantity, stockId=${stock.id}, currentStock=${stock.quantity}, newStock=${stock.quantity + returnQuantity}');
-              await _stockCubit.updateStock(
-                stock.copyWith(
-                  quantity: stock.quantity + returnQuantity,
-                  lastUpdated: DateTime.now(),
-                ),
-                remarks: 'Return of $returnQuantity units of ${item.productName}',
-                isReturn: true,
+          final currentItem = _cartItems.firstWhere(
+                (i) => i.productId == item.productId,
+            orElse: () => item.copyWith(quantity: 0),
+          );
+          final returnQuantity = item.quantity - currentItem.quantity;
+          if (returnQuantity > 0) {
+            final stock = _stockCubit.state is StockLoaded
+                ? (_stockCubit.state as StockLoaded).stockItems.firstWhere(
+                  (stock) => stock.productId == item.productId && stock.storeId == _selectedStoreId,
+              orElse: () => StockModel(
+                id: '${item.productId}_$_selectedStoreId',
+                productId: item.productId,
+                storeId: _selectedStoreId!,
+                quantity: 0,
+                lastUpdated: DateTime.now(),
+              ),
+            )
+                : null;
+            if (stock == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Stock data not found for ${item.productName}')),
               );
-              print('Stock updated for ${item.productName}, newStock=${stock.quantity + returnQuantity}');
-            } else {
-              print('No return for ${item.productName}, returnQuantity=$returnQuantity');
+              setState(() => _isLoading = false);
+              return;
             }
-          }
-          print('Completed return processing, processed ${processedProductIds.length} items');
-
-          final totalOriginalQuantity = originalOrder.items.fold<int>(0, (sum, item) => sum + item.quantity);
-          final totalCurrentQuantity = _cartItems.fold<int>(0, (sum, item) => sum + item.quantity);
-          if (totalOriginalQuantity > totalCurrentQuantity && returnAmount > 0) {
-            await ledgerCubit.addTransaction(
-              ledgerId: customerLedgerId,
-              amount: returnAmount,
-              type: 'Credit',
-              billNumber: billNumber,
-              purpose: 'Return',
-              typeOfPurpose: _selectedBillType,
-              remarks: 'Return for order ${widget.orderId} (credited ₹${returnAmount.toStringAsFixed(2)} after discount ₹${(_discount ?? 0.0).toStringAsFixed(2)})',
-              userType: UserType.Customer,
+            await _stockCubit.updateStock(
+              stock.copyWith(
+                quantity: stock.quantity + returnQuantity,
+                lastUpdated: DateTime.now(),
+              ),
+              remarks: 'Return of $returnQuantity units of ${item.productName}',
+              isReturn: true,
             );
-            if (_selectedBillType == 'Cash' && _selectedReturnMethod == 'Cash') {
-              await ledgerCubit.addTransaction(
-                ledgerId: customerLedgerId,
-                amount: returnAmount,
-                type: 'Debit',
-                billNumber: billNumber,
-                purpose: 'Return Payment',
-                typeOfPurpose: 'Cash',
-                remarks: 'Cash paid back for return for order ${widget.orderId} (₹${returnAmount.toStringAsFixed(2)})',
-                userType: UserType.Customer,
-              );
-            }
           }
-
-          if (_cartItems.isNotEmpty) {
-            await ledgerCubit.addTransaction(
-              ledgerId: customerLedgerId,
-              amount: updatedTotalAmount,
-              type: 'Debit',
-              billNumber: billNumber,
-              purpose: 'Purchase',
-              typeOfPurpose: _selectedBillType,
-              remarks: 'Bill updated for order ${order.id} with discount ₹${(_discount ?? 0.0).toStringAsFixed(2)}',
-              userType: UserType.Customer,
-            );
-            if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
-              final paymentAmount = _selectedBillType == 'Cash' ? updatedTotalAmount : _initialPayment!;
-              await ledgerCubit.addTransaction(
-                ledgerId: customerLedgerId,
-                amount: paymentAmount,
-                type: 'Credit',
-                billNumber: billNumber,
-                purpose: 'Payment',
-                typeOfPurpose: 'Cash',
-                remarks: 'Payment received for updated bill $billNumber with discount ₹${(_discount ?? 0.0).toStringAsFixed(2)}',
-                userType: UserType.Customer,
-              );
-            }
-          }
-
-          if (_cartItems.isNotEmpty) {
-            await ledgerCubit.addTransaction(
-              ledgerId: storeLedgerId,
-              amount: updatedTotalAmount,
-              type: 'Credit',
-              billNumber: billNumber,
-              purpose: 'Sale',
-              typeOfPurpose: _selectedBillType,
-              remarks: 'Updated sale for bill $billNumber to customer ${_selectedCustomer!.name ?? 'Unknown'} with discount ₹${(_discount ?? 0.0).toStringAsFixed(2)}',
-              userType: UserType.Store,
-            );
-
-            if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
-              final paymentAmount = _selectedBillType == 'Cash' ? updatedTotalAmount : _initialPayment!;
-              await ledgerCubit.addTransaction(
-                ledgerId: storeLedgerId,
-                amount: paymentAmount,
-                type: 'Debit',
-                billNumber: billNumber,
-                purpose: 'Cash Received',
-                typeOfPurpose: 'Cash',
-                remarks: 'Cash received for updated bill $billNumber from customer ${_selectedCustomer!.name ?? 'Unknown'}',
-                userType: UserType.Store,
-              );
-            }
-          }
-
-          if (totalOriginalQuantity > totalCurrentQuantity && returnAmount > 0) {
-            await ledgerCubit.addTransaction(
-              ledgerId: storeLedgerId,
-              amount: returnAmount,
-              type: 'Debit',
-              billNumber: billNumber,
-              purpose: 'Return',
-              typeOfPurpose: _selectedBillType,
-              remarks: 'Return of stock for bill $billNumber (debited ₹${returnAmount.toStringAsFixed(2)})',
-              userType: UserType.Store,
-            );
-
-            if (_selectedBillType == 'Cash' && _selectedReturnMethod == 'Cash') {
-              await ledgerCubit.addTransaction(
-                ledgerId: storeLedgerId,
-                amount: returnAmount,
-                type: 'Credit',
-                billNumber: billNumber,
-                purpose: 'Return Payment',
-                typeOfPurpose: 'Cash',
-                remarks: 'Cash paid back for return for bill $billNumber (₹${returnAmount.toStringAsFixed(2)})',
-                userType: UserType.Store,
-              );
-            }
-          }
-
-          await orderService.updateOrderStatus(widget.orderId!, _selectedStatus);
-          await orderService.updateOrder(order);
-          await orderService.updateInvoice(order);
         }
+
+        if (returnAmount > 0) {
+          await ledgerCubit.addTransaction(
+            ledgerId: customerLedgerId,
+            amount: returnAmount,
+            type: 'Credit',
+            billNumber: billNumber,
+            purpose: 'Return',
+            typeOfPurpose: _selectedBillType,
+            remarks: 'Return for order ${widget.orderId}',
+            userType: UserType.Customer,
+          );
+          if (_selectedBillType == 'Cash' && _selectedReturnMethod == 'Cash') {
+            await ledgerCubit.addTransaction(
+              ledgerId: customerLedgerId,
+              amount: returnAmount,
+              type: 'Debit',
+              billNumber: billNumber,
+              purpose: 'Return Payment',
+              typeOfPurpose: 'Cash',
+              remarks: 'Cash paid back for return for order ${widget.orderId}',
+              userType: UserType.Customer,
+            );
+          }
+        }
+
+        if (_cartItems.isNotEmpty) {
+          await ledgerCubit.addTransaction(
+            ledgerId: customerLedgerId,
+            amount: updatedTotalAmount,
+            type: 'Debit',
+            billNumber: billNumber,
+            purpose: 'Purchase',
+            typeOfPurpose: _selectedBillType,
+            remarks: 'Bill updated for order ${order.id}',
+            userType: UserType.Customer,
+          );
+          if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
+            final paymentAmount = _selectedBillType == 'Cash' ? updatedTotalAmount : _initialPayment!;
+            await ledgerCubit.addTransaction(
+              ledgerId: customerLedgerId,
+              amount: paymentAmount,
+              type: 'Credit',
+              billNumber: billNumber,
+              purpose: 'Payment',
+              typeOfPurpose: 'Cash',
+              remarks: 'Payment received for updated bill $billNumber',
+              userType: UserType.Customer,
+            );
+          }
+        }
+
+        if (_cartItems.isNotEmpty) {
+          await ledgerCubit.addTransaction(
+            ledgerId: storeLedgerId,
+            amount: updatedTotalAmount,
+            type: 'Credit',
+            billNumber: billNumber,
+            purpose: 'Sale',
+            typeOfPurpose: _selectedBillType,
+            remarks: 'Updated sale for bill $billNumber',
+            userType: UserType.Store,
+          );
+          if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
+            final paymentAmount = _selectedBillType == 'Cash' ? updatedTotalAmount : _initialPayment!;
+            await ledgerCubit.addTransaction(
+              ledgerId: storeLedgerId,
+              amount: paymentAmount,
+              type: 'Debit',
+              billNumber: billNumber,
+              purpose: 'Cash Received',
+              typeOfPurpose: 'Cash',
+              remarks: 'Cash received for updated bill $billNumber',
+              userType: UserType.Store,
+            );
+          }
+        }
+
+        if (returnAmount > 0) {
+          await ledgerCubit.addTransaction(
+            ledgerId: storeLedgerId,
+            amount: returnAmount,
+            type: 'Debit',
+            billNumber: billNumber,
+            purpose: 'Return',
+            typeOfPurpose: _selectedBillType,
+            remarks: 'Return of stock for bill $billNumber',
+            userType: UserType.Store,
+          );
+          if (_selectedBillType == 'Cash' && _selectedReturnMethod == 'Cash') {
+            await ledgerCubit.addTransaction(
+              ledgerId: storeLedgerId,
+              amount: returnAmount,
+              type: 'Credit',
+              billNumber: billNumber,
+              purpose: 'Return Payment',
+              typeOfPurpose: 'Cash',
+              remarks: 'Cash paid back for return for bill $billNumber',
+              userType: UserType.Store,
+            );
+          }
+        }
+
+        await orderService.updateOrderStatus(widget.orderId!, _selectedStatus);
+        await orderService.updateOrder(order);
+        await orderService.updateInvoice(order);
       }
 
-      // Await the PDF generation that was started earlier
-      final pdf = await pdfFuture;
-
-      await sl<Coordinator>().navigateToBillPdfPage(pdf: pdf, billNumber: billNumber);
+      final pdf = await _generatePdf(order);
+      await sl<Coordinator>().navigateToBillPdfPage(pdf: pdf, billNumber: billNumber ?? '');
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -1648,7 +1377,6 @@ class _BillingPageState extends State<BillingPage> {
         ),
       );
     } catch (e) {
-      print('Error in generateBill: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to process bill: $e')),
       );
@@ -1656,8 +1384,7 @@ class _BillingPageState extends State<BillingPage> {
       setState(() => _isLoading = false);
     }
   }
-
-// Updated _generatePdf method to display product-wise discounts
+  // Updated _generatePdf method to display product-wise discounts
   Future<pw.Document> _generatePdf(Order order) async {
     final pdf = pw.Document();
     final accountRepository = sl<AccountRepository>();
@@ -1669,7 +1396,7 @@ class _BillingPageState extends State<BillingPage> {
       companyName = userInfo?.companyId ?? companyName;
       issuerName = userInfo?.name ?? userInfo?.userName ?? issuerName;
     } catch (e) {
-      print('Error fetching company or issuer name: $e');
+      debugPrint('Error fetching company or issuer name: $e');
     }
 
     final primaryColor = PdfColor.fromInt(AppColors.primary.value);
@@ -1681,7 +1408,8 @@ class _BillingPageState extends State<BillingPage> {
 
     final double subtotal = order.items.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
     final double totalTax = order.items.fold(0.0, (sum, item) => sum + item.taxAmount);
-    final double totalDiscount = order.items.fold(0.0, (sum, item) => sum + item.discountAmount) + (order.discount ?? 0.0);
+    final double totalItemDiscount = order.items.fold(0.0, (sum, item) => sum + item.discountAmount);
+    final double totalDiscount = totalItemDiscount + (order.discount ?? 0.0);
     final double outstandingAmount = order.totalAmount - (order.amountReceived ?? 0.0);
 
     pdf.addPage(
@@ -1701,9 +1429,9 @@ class _BillingPageState extends State<BillingPage> {
                 children: [
                   pw.Text(
                     companyName,
-                    style: pw.TextStyle(font: boldFont, fontSize: 22, color: primaryColor),
+                    style: pw.TextStyle(font: boldFont, fontSize: 24, color: primaryColor),
                   ),
-                  pw.SizedBox(height: 4),
+                  pw.SizedBox(height: 6),
                   pw.Text(
                     '123 Business Street, City, Country',
                     style: pw.TextStyle(font: regularFont, fontSize: 12, color: textSecondaryColor),
@@ -1715,11 +1443,15 @@ class _BillingPageState extends State<BillingPage> {
                 children: [
                   pw.Text(
                     'INVOICE',
-                    style: pw.TextStyle(font: boldFont, fontSize: 28, color: primaryColor),
+                    style: pw.TextStyle(font: boldFont, fontSize: 30, color: primaryColor),
                   ),
-                  pw.SizedBox(height: 4),
+                  pw.SizedBox(height: 6),
                   pw.Text(
                     'Bill #: ${order.billNumber ?? 'N/A'}',
+                    style: pw.TextStyle(font: regularFont, fontSize: 14),
+                  ),
+                  pw.Text(
+                    'Order ID: ${order.id}',
                     style: pw.TextStyle(font: regularFont, fontSize: 14),
                   ),
                   pw.Text(
@@ -1727,63 +1459,190 @@ class _BillingPageState extends State<BillingPage> {
                     style: pw.TextStyle(font: regularFont, fontSize: 14),
                   ),
                   pw.Text(
-                    'Issuer: $issuerName',
-                    style: pw.TextStyle(font: regularFont, fontSize: 14),
-                  ),
-                  pw.Text(
                     'Invoice Type: ${order.invoiceType ?? 'N/A'}',
                     style: pw.TextStyle(font: regularFont, fontSize: 14),
                   ),
-                  pw.Text(
-                    'Payment Status: ${order.paymentStatus ?? 'N/A'}',
-                    style: pw.TextStyle(font: regularFont, fontSize: 14),
-                  ),
-                  if (order.amountReceived != null)
-                    pw.Text(
-                      'Amount Received: ${order.amountReceived!.toStringAsFixed(2)}',
-                      style: pw.TextStyle(font: regularFont, fontSize: 14),
-                    ),
-                  if (_initialPayment != null && _initialPayment! > 0)
-                    pw.Text(
-                      'Initial Payment: ${_initialPayment!.toStringAsFixed(2)}',
-                      style: pw.TextStyle(font: regularFont, fontSize: 14),
-                    ),
-                  if (order.slipNumber != null)
-                    pw.Text(
-                      'Slip Number: ${order.slipNumber}',
-                      style: pw.TextStyle(font: regularFont, fontSize: 14),
-                    ),
-                  if (order.invoiceLastUpdatedBy != null)
-                    pw.Text(
-                      'Last Updated By: ${order.invoiceLastUpdatedBy}',
-                      style: pw.TextStyle(font: regularFont, fontSize: 14),
-                    ),
-                  if (order.invoiceGeneratedDate != null)
-                    pw.Text(
-                      'Invoice Generated: ${order.invoiceGeneratedDate!.toString().substring(0, 10)}',
-                      style: pw.TextStyle(font: regularFont, fontSize: 14),
-                    ),
                 ],
               ),
             ],
           ),
         ),
         build: (context) => [
-          pw.SizedBox(height: 24),
-          pw.Text(
-            'Bill To:',
-            style: pw.TextStyle(font: boldFont, fontSize: 18, color: PdfColors.black),
+          pw.SizedBox(height: 20),
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    'Bill To:',
+                    style: pw.TextStyle(font: boldFont, fontSize: 18, color: PdfColors.black),
+                  ),
+                  pw.SizedBox(height: 8),
+                  pw.Text(
+                    order.userName ?? 'Unknown Customer',
+                    style: pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
+                  ),
+                  pw.Text(
+                    'Store ID: ${order.storeId ?? 'N/A'}',
+                    style: pw.TextStyle(font: regularFont, fontSize: 12, color: textSecondaryColor),
+                  ),
+                ],
+              ),
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.end,
+                children: [
+                  pw.Text(
+                    'Invoice Details',
+                    style: pw.TextStyle(font: boldFont, fontSize: 16),
+                  ),
+                  pw.SizedBox(height: 8),
+                  pw.Table(
+                    border: pw.TableBorder.all(color: greyColor, width: 0.5),
+                    columnWidths: {
+                      0: const pw.FixedColumnWidth(100),
+                      1: const pw.FixedColumnWidth(150),
+                    },
+                    children: [
+                      pw.TableRow(
+                        children: [
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(6),
+                            child: pw.Text(
+                              'Issuer',
+                              style: pw.TextStyle(font: regularFont, fontSize: 12),
+                            ),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(6),
+                            child: pw.Text(
+                              issuerName,
+                              style: pw.TextStyle(font: regularFont, fontSize: 12),
+                            ),
+                          ),
+                        ],
+                      ),
+                      pw.TableRow(
+                        children: [
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(6),
+                            child: pw.Text(
+                              'Payment Status',
+                              style: pw.TextStyle(font: regularFont, fontSize: 12),
+                            ),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(6),
+                            child: pw.Text(
+                              order.paymentStatus ?? 'N/A',
+                              style: pw.TextStyle(font: regularFont, fontSize: 12),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (order.amountReceived != null)
+                        pw.TableRow(
+                          children: [
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(6),
+                              child: pw.Text(
+                                'Amount Received',
+                                style: pw.TextStyle(font: regularFont, fontSize: 12),
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(6),
+                              child: pw.Text(
+                                order.amountReceived!.toStringAsFixed(2),
+                                style: pw.TextStyle(font: regularFont, fontSize: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                      if (_initialPayment != null && _initialPayment! > 0)
+                        pw.TableRow(
+                          children: [
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(6),
+                              child: pw.Text(
+                                'Initial Payment',
+                                style: pw.TextStyle(font: regularFont, fontSize: 12),
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(6),
+                              child: pw.Text(
+                                _initialPayment!.toStringAsFixed(2),
+                                style: pw.TextStyle(font: regularFont, fontSize: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                      if (order.slipNumber != null)
+                        pw.TableRow(
+                          children: [
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(6),
+                              child: pw.Text(
+                                'Slip Number',
+                                style: pw.TextStyle(font: regularFont, fontSize: 12),
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(6),
+                              child: pw.Text(
+                                order.id,
+                                style: pw.TextStyle(font: regularFont, fontSize: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                      if (order.invoiceLastUpdatedBy != null)
+                        pw.TableRow(
+                          children: [
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(6),
+                              child: pw.Text(
+                                'Last Updated By',
+                                style: pw.TextStyle(font: regularFont, fontSize: 12),
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(6),
+                              child: pw.Text(
+                                order.invoiceLastUpdatedBy!,
+                                style: pw.TextStyle(font: regularFont, fontSize: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                      if (order.invoiceGeneratedDate != null)
+                        pw.TableRow(
+                          children: [
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(6),
+                              child: pw.Text(
+                                'Invoice Generated',
+                                style: pw.TextStyle(font: regularFont, fontSize: 12),
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(6),
+                              child: pw.Text(
+                                order.invoiceGeneratedDate!.toString().substring(0, 10),
+                                style: pw.TextStyle(font: regularFont, fontSize: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
           ),
-          pw.SizedBox(height: 8),
-          pw.Text(
-            order.userName ?? 'Unknown Customer',
-            style: pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
-          ),
-          pw.Text(
-            'Store ID: ${order.storeId ?? 'N/A'}',
-            style: pw.TextStyle(font: regularFont, fontSize: 12, color: textSecondaryColor),
-          ),
-          pw.SizedBox(height: 24),
+          pw.SizedBox(height: 20),
           pw.Text(
             'Items',
             style: pw.TextStyle(font: boldFont, fontSize: 18),
@@ -1806,31 +1665,59 @@ class _BillingPageState extends State<BillingPage> {
                 children: [
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Product', style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                    child: pw.Text(
+                      'Product',
+                      style: pw.TextStyle(font: boldFont, fontSize: 13),
+                      textAlign: pw.TextAlign.left,
+                    ),
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Qty', style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                    child: pw.Text(
+                      'Qty',
+                      style: pw.TextStyle(font: boldFont, fontSize: 13),
+                      textAlign: pw.TextAlign.center,
+                    ),
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Unit Price', style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                    child: pw.Text(
+                      'Unit Price',
+                      style: pw.TextStyle(font: boldFont, fontSize: 13),
+                      textAlign: pw.TextAlign.right,
+                    ),
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Tax', style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                    child: pw.Text(
+                      'Tax',
+                      style: pw.TextStyle(font: boldFont, fontSize: 13),
+                      textAlign: pw.TextAlign.right,
+                    ),
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Disc. Amt', style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                    child: pw.Text(
+                      'Disc. Amt',
+                      style: pw.TextStyle(font: boldFont, fontSize: 13),
+                      textAlign: pw.TextAlign.right,
+                    ),
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Disc. %', style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                    child: pw.Text(
+                      'Disc. %',
+                      style: pw.TextStyle(font: boldFont, fontSize: 13),
+                      textAlign: pw.TextAlign.right,
+                    ),
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Total', style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                    child: pw.Text(
+                      'Total',
+                      style: pw.TextStyle(font: boldFont, fontSize: 13),
+                      textAlign: pw.TextAlign.right,
+                    ),
                   ),
                 ],
               ),
@@ -1845,6 +1732,7 @@ class _BillingPageState extends State<BillingPage> {
                       item.productName,
                       style: pw.TextStyle(font: regularFont, fontSize: 12),
                       softWrap: true,
+                      textAlign: pw.TextAlign.left,
                     ),
                   ),
                   pw.Padding(
@@ -1899,7 +1787,7 @@ class _BillingPageState extends State<BillingPage> {
               )),
             ],
           ),
-          pw.SizedBox(height: 24),
+          pw.SizedBox(height: 20),
           if (order.paymentDetails != null && order.paymentDetails!.isNotEmpty)
             pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -1922,15 +1810,27 @@ class _BillingPageState extends State<BillingPage> {
                       children: [
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(10),
-                          child: pw.Text('Date', style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                          child: pw.Text(
+                            'Date',
+                            style: pw.TextStyle(font: boldFont, fontSize: 13),
+                            textAlign: pw.TextAlign.left,
+                          ),
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(10),
-                          child: pw.Text('Amount', style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                          child: pw.Text(
+                            'Amount',
+                            style: pw.TextStyle(font: boldFont, fontSize: 13),
+                            textAlign: pw.TextAlign.right,
+                          ),
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(10),
-                          child: pw.Text('Method', style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                          child: pw.Text(
+                            'Method',
+                            style: pw.TextStyle(font: boldFont, fontSize: 13),
+                            textAlign: pw.TextAlign.left,
+                          ),
                         ),
                       ],
                     ),
@@ -1944,6 +1844,7 @@ class _BillingPageState extends State<BillingPage> {
                           child: pw.Text(
                             payment['date']?.toString().substring(0, 10) ?? 'N/A',
                             style: pw.TextStyle(font: regularFont, fontSize: 12),
+                            textAlign: pw.TextAlign.left,
                           ),
                         ),
                         pw.Padding(
@@ -1959,13 +1860,14 @@ class _BillingPageState extends State<BillingPage> {
                           child: pw.Text(
                             payment['method'] ?? 'N/A',
                             style: pw.TextStyle(font: regularFont, fontSize: 12),
+                            textAlign: pw.TextAlign.left,
                           ),
                         ),
                       ],
                     )),
                   ],
                 ),
-                pw.SizedBox(height: 24),
+                pw.SizedBox(height: 20),
               ],
             ),
           pw.Container(
@@ -1973,6 +1875,7 @@ class _BillingPageState extends State<BillingPage> {
             decoration: pw.BoxDecoration(
               color: PdfColors.grey50,
               border: pw.Border.all(color: greyColor, width: 1),
+              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
             ),
             child: pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.end,
@@ -1991,7 +1894,7 @@ class _BillingPageState extends State<BillingPage> {
                     ),
                     pw.SizedBox(height: 8),
                     pw.Text(
-                      'Item Discounts: ${order.items.fold(0.0, (sum, item) => sum + item.discountAmount).toStringAsFixed(2)}',
+                      'Item Discounts: ${totalItemDiscount.toStringAsFixed(2)}',
                       style: pw.TextStyle(font: regularFont, fontSize: 14),
                     ),
                     pw.SizedBox(height: 8),
@@ -2038,8 +1941,7 @@ class _BillingPageState extends State<BillingPage> {
     );
 
     return pdf;
-  }
-  Widget _buildGenerateBillButton() {
+  }  Widget _buildGenerateBillButton() {
     return ElevatedButton(
       onPressed: _generateBill,
       style: ElevatedButton.styleFrom(
