@@ -67,7 +67,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   padding: const EdgeInsets.only(right: 16.0),
                   child: Center(
                     child: Text(
-                      'Welcome, $userName',
+                      isWeb ? 'Welcome, $userName' : userName.split(RegExp(r'[._]')).first, // First part in mobile, original in web
                       style: defaultTextStyle(
                         fontSize: isWeb ? 16 : 14, // Smaller on mobile, regular on web
                         fontWeight: FontWeight.w400,
@@ -77,6 +77,51 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                 ),
               if (actions != null) ...actions!,
+              if (!isWeb) // Overflow menu with logout for mobile only
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert, color: AppColors.appBarIconColor),
+                  onSelected: (value) {
+                    if (value == 'logout') {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          title: const Text(
+                            'Logout',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          content: const Text('Are you sure you want to logout?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(color: AppColors.textSecondary),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () => Navigator.pop(context), // No action on confirm
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.red,
+                                foregroundColor: AppColors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Text('Logout'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem<String>(
+                      value: 'logout',
+                      child: Text('Logout'),
+                    ),
+                  ],
+                ),
             ],
             leading: automaticallyImplyLeading
                 ? IconButton(

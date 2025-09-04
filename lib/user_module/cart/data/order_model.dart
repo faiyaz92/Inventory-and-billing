@@ -1,8 +1,80 @@
+// Updated CartItem class to include discountAmount and discountPercentage
 import 'package:requirment_gathering_app/user_module/cart/data/order_dto.dart';
 
+class CartItem {
+  final String productId;
+  final String productName;
+  final double price;
+  final int quantity;
+  final double taxRate;
+  final double taxAmount;
+  final double discountAmount; // Added
+  final double discountPercentage; // Added
+
+  CartItem({
+    required this.productId,
+    required this.productName,
+    required this.price,
+    required this.quantity,
+    required this.taxRate,
+    required this.taxAmount,
+    this.discountAmount = 0.0, // Default to 0.0
+    this.discountPercentage = 0.0, // Default to 0.0
+  });
+
+  factory CartItem.fromDto(CartItemDto dto) {
+    return CartItem(
+      productId: dto.productId,
+      productName: dto.productName,
+      price: dto.price,
+      quantity: dto.quantity,
+      taxRate: dto.taxRate,
+      taxAmount: dto.taxAmount,
+      discountAmount: dto.discountAmount,
+      discountPercentage: dto.discountPercentage,
+    );
+  }
+
+  CartItem copyWith({
+    String? productId,
+    String? productName,
+    double? price,
+    int? quantity,
+    double? taxRate,
+    double? taxAmount,
+    double? discountAmount,
+    double? discountPercentage,
+  }) {
+    return CartItem(
+      productId: productId ?? this.productId,
+      productName: productName ?? this.productName,
+      price: price ?? this.price,
+      quantity: quantity ?? this.quantity,
+      taxRate: taxRate ?? this.taxRate,
+      taxAmount: taxAmount ?? this.taxAmount,
+      discountAmount: discountAmount ?? this.discountAmount,
+      discountPercentage: discountPercentage ?? this.discountPercentage,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'productId': productId,
+      'productName': productName,
+      'price': price,
+      'quantity': quantity,
+      'taxRate': taxRate,
+      'taxAmount': taxAmount,
+      'discountAmount': discountAmount,
+      'discountPercentage': discountPercentage,
+    };
+  }
+}
+
+// Updated Order class to handle updated CartItem
 class Order {
   final String id;
-  final String userId; // customer id
+  final String userId;
   final String userName;
   final List<CartItem> items;
   final double totalAmount;
@@ -24,7 +96,7 @@ class Order {
   final double? amountReceived;
   final List<Map<String, dynamic>>? paymentDetails;
   final int? slipNumber;
-  final String? customerLedgerId; // Added
+  final String? customerLedgerId;
 
   Order({
     required this.id,
@@ -50,7 +122,7 @@ class Order {
     this.amountReceived,
     this.paymentDetails,
     this.slipNumber,
-    this.customerLedgerId, // Added
+    this.customerLedgerId,
   });
 
   factory Order.fromDto(OrderDto dto) {
@@ -78,7 +150,7 @@ class Order {
       amountReceived: dto.amountReceived,
       paymentDetails: dto.paymentDetails,
       slipNumber: dto.slipNumber,
-      customerLedgerId: dto.customerLedgerId, // Added
+      customerLedgerId: dto.customerLedgerId,
     );
   }
 
@@ -106,7 +178,7 @@ class Order {
     double? amountReceived,
     List<Map<String, dynamic>>? paymentDetails,
     int? slipNumber,
-    String? customerLedgerId, // Added
+    String? customerLedgerId,
   }) {
     return Order(
       id: id ?? this.id,
@@ -132,64 +204,7 @@ class Order {
       amountReceived: amountReceived ?? this.amountReceived,
       paymentDetails: paymentDetails ?? this.paymentDetails,
       slipNumber: slipNumber ?? this.slipNumber,
-      customerLedgerId: customerLedgerId ?? this.customerLedgerId, // Added
+      customerLedgerId: customerLedgerId ?? this.customerLedgerId,
     );
-  }
-}
-class CartItem {
-  final String productId;
-  final String productName;
-  final double price;
-  final int quantity;
-  final double taxRate;
-  final double taxAmount;
-
-  CartItem({
-    required this.productId,
-    required this.productName,
-    required this.price,
-    required this.quantity,
-    required this.taxRate,
-    required this.taxAmount,
-  });
-
-  factory CartItem.fromDto(CartItemDto dto) {
-    return CartItem(
-      productId: dto.productId,
-      productName: dto.productName,
-      price: dto.price,
-      quantity: dto.quantity,
-      taxRate: dto.taxRate,
-      taxAmount: dto.taxAmount,
-    );
-  }
-
-  CartItem copyWith({
-    String? productId,
-    String? productName,
-    double? price,
-    int? quantity,
-    double? taxRate,
-    double? taxAmount,
-  }) {
-    return CartItem(
-      productId: productId ?? this.productId,
-      productName: productName ?? this.productName,
-      price: price ?? this.price,
-      quantity: quantity ?? this.quantity,
-      taxRate: taxRate ?? this.taxRate,
-      taxAmount: taxAmount ?? this.taxAmount,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'productId': productId,
-      'productName': productName,
-      'price': price,
-      'quantity': quantity,
-      'taxRate': taxRate,
-      'taxAmount': taxAmount,
-    };
   }
 }

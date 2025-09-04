@@ -130,6 +130,7 @@ class AnalyticsPage extends StatelessWidget {
                 ],
               ),
               body: Container(
+                height: MediaQuery.of(context).size.height, // Fix: Set explicit height
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
@@ -147,28 +148,6 @@ class AnalyticsPage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // SizedBox(
-                          //   width: double.infinity,
-                          //   child: Card(
-                          //     elevation: 8,
-                          //     shape: RoundedRectangleBorder(
-                          //       borderRadius: BorderRadius.circular(16),
-                          //     ),
-                          //     color: Colors.white,
-                          //     child: Padding(
-                          //       padding: EdgeInsets.all(isWeb ? 24.0 : 16.0),
-                          //       child: Text(
-                          //         'Welcome to Analytics Dashboard, ${state.userName}',
-                          //         style: TextStyle(
-                          //           fontSize: isWeb ? 28 : 24,
-                          //           fontWeight: FontWeight.bold,
-                          //           color: Theme.of(context).primaryColor,
-                          //         ),
-                          //       ),
-                          //     ),
-                          //   ),
-                          // ),
-                          // SizedBox(height: isWeb ? 32 : 24),
                           _buildGroupSection(
                             context,
                             'Employee Analytics',

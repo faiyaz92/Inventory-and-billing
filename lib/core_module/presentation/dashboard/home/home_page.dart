@@ -15,7 +15,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Define demo expiration date
-    final DateTime demoExpirationDate = DateTime(2025, 10, 10);
+    final DateTime demoExpirationDate = DateTime(2030, 10, 10);
     final bool isDemoExpired = DateTime.now().isAfter(demoExpirationDate);
 
     return BlocProvider(
@@ -240,6 +240,14 @@ class HomePage extends StatelessWidget {
             color: Colors.pink,
             onTap: () {
               sl<Coordinator>().navigateToCartDashboard();
+            },
+          ),
+          _buildGridItem(
+            icon: Icons.receipt_long,
+            label: 'Purchase Invoice',
+            color: Colors.blueAccent,
+            onTap: () {
+              sl<Coordinator>().navigateToPurchaseInvoicePanelPage();
             },
           ),
           _buildGridItem(
@@ -483,7 +491,7 @@ class HomePage extends StatelessWidget {
       case Role.STORE_ACCOUNTANT:
       case Role.STORE_MANAGER:
       case Role.USER:
-      // Common items for all roles
+        // Common items for all roles
         break;
     }
 

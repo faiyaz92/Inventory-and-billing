@@ -1657,6 +1657,7 @@ class _BillingPageState extends State<BillingPage> {
     }
   }
 
+// Updated _generatePdf method to display product-wise discounts
   Future<pw.Document> _generatePdf(Order order) async {
     final pdf = pw.Document();
     final accountRepository = sl<AccountRepository>();
@@ -1680,6 +1681,7 @@ class _BillingPageState extends State<BillingPage> {
 
     final double subtotal = order.items.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
     final double totalTax = order.items.fold(0.0, (sum, item) => sum + item.taxAmount);
+    final double totalDiscount = order.items.fold(0.0, (sum, item) => sum + item.discountAmount) + (order.discount ?? 0.0);
     final double outstandingAmount = order.totalAmount - (order.amountReceived ?? 0.0);
 
     pdf.addPage(
@@ -1794,7 +1796,9 @@ class _BillingPageState extends State<BillingPage> {
               1: const pw.FlexColumnWidth(1),
               2: const pw.FlexColumnWidth(1.5),
               3: const pw.FlexColumnWidth(1.5),
-              4: const pw.FlexColumnWidth(2),
+              4: const pw.FlexColumnWidth(1.5),
+              5: const pw.FlexColumnWidth(1.5),
+              6: const pw.FlexColumnWidth(2),
             },
             children: [
               pw.TableRow(
@@ -1815,6 +1819,14 @@ class _BillingPageState extends State<BillingPage> {
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
                     child: pw.Text('Tax', style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text('Disc. Amt', style: pw.TextStyle(font: boldFont, fontSize: 13)),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text('Disc. %', style: pw.TextStyle(font: boldFont, fontSize: 13)),
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
@@ -1862,7 +1874,23 @@ class _BillingPageState extends State<BillingPage> {
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
                     child: pw.Text(
-                      ((item.price * item.quantity) + item.taxAmount).toStringAsFixed(2),
+                      item.discountAmount.toStringAsFixed(2),
+                      style: pw.TextStyle(font: regularFont, fontSize: 12),
+                      textAlign: pw.TextAlign.right,
+                    ),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text(
+                      '${item.discountPercentage.toStringAsFixed(2)}%',
+                      style: pw.TextStyle(font: regularFont, fontSize: 12),
+                      textAlign: pw.TextAlign.right,
+                    ),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(10),
+                    child: pw.Text(
+                      ((item.price * item.quantity) + item.taxAmount - item.discountAmount).toStringAsFixed(2),
                       style: pw.TextStyle(font: regularFont, fontSize: 12),
                       textAlign: pw.TextAlign.right,
                     ),
@@ -1963,7 +1991,12 @@ class _BillingPageState extends State<BillingPage> {
                     ),
                     pw.SizedBox(height: 8),
                     pw.Text(
-                      'Discount: ${(order.discount ?? 0.0).toStringAsFixed(2)}',
+                      'Item Discounts: ${order.items.fold(0.0, (sum, item) => sum + item.discountAmount).toStringAsFixed(2)}',
+                      style: pw.TextStyle(font: regularFont, fontSize: 14),
+                    ),
+                    pw.SizedBox(height: 8),
+                    pw.Text(
+                      'Additional Discount: ${(order.discount ?? 0.0).toStringAsFixed(2)}',
                       style: pw.TextStyle(font: regularFont, fontSize: 14),
                     ),
                     if (_initialPayment != null && _initialPayment! > 0)

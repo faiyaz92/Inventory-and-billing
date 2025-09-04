@@ -251,7 +251,6 @@ class _StockListPageState extends State<StockListPage> {
     bool generatePdf = true;
     List<Map<String, dynamic>> transferEntries = [];
     bool isLoading = false;
-    String? selectedStockId;
     final _formKey = GlobalKey<FormState>();
 
     void addToTransferEntries(StockModel stock, int quantity) {
@@ -341,9 +340,9 @@ class _StockListPageState extends State<StockListPage> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryColor,
-                foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8)),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               ),
               child: const Text('Save'),
             ),
@@ -353,504 +352,578 @@ class _StockListPageState extends State<StockListPage> {
     }
 
     showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return LoadingOverlay(
-              isLoading: isLoading,
-              child: AlertDialog(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                title: const Text('Transfer Stock'),
-                content: Form(
-                  key: _formKey,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        DropdownButtonFormField<String>(
-                          decoration: InputDecoration(
-                            labelText: 'Transfer to Store',
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8)),
-                            filled: true,
-                            fillColor: Colors.grey[100],
-                          ),
-                          value: selectedStoreId,
-                          items: stores
-                              .where((store) => !stockItems
-                              .any((stock) => stock.storeId == store.storeId))
-                              .map((store) => DropdownMenuItem(
-                            value: store.storeId,
-                            child: Text(store.name),
-                          ))
-                              .toList(),
-                          onChanged: (value) =>
-                              setDialogState(() => selectedStoreId = value),
-                          validator: (value) =>
-                          value == null ? 'Please select a store' : null,
-                        ),
-                        const SizedBox(height: 16),
-                        DropdownButtonFormField<String>(
-                          decoration: InputDecoration(
-                            labelText: 'Add Stock Item',
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8)),
-                            filled: true,
-                            fillColor: Colors.grey[100],
-                          ),
-                          value: null,
-                          hint: const Text('Select a product to add'),
-                          items: stockItems
-                              .where((stock) => stock.quantity > 0)
-                              .map((stock) => DropdownMenuItem(
-                            value: stock.id,
-                            child: Text(stock.name ?? 'Unknown'),
-                          ))
-                              .toList(),
-                          onChanged: (value) {
-                            if (value != null) {
-                              final selectedStock =
-                              stockItems.firstWhere((stock) => stock.id == value);
-                              setDialogState(() {
-                                addToTransferEntries(selectedStock, 1);
-                              });
-                            }
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Transfer Entries',
-                              style:
-                              TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        context: context,
+        builder: (dialogContext) {
+          return StatefulBuilder(
+            builder: (context, setDialogState) {
+              return LoadingOverlay(
+                isLoading: isLoading,
+                child: AlertDialog(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  title: const Text('Transfer Stock'),
+                  content: Form(
+                    key: _formKey,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          DropdownButtonFormField<String>(
+                            decoration: InputDecoration(
+                              labelText: 'Transfer to Store',
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                              filled: true,
+                              fillColor: Colors.grey[100],
                             ),
-                            const SizedBox(height: 8),
-                            if (transferEntries.isEmpty)
+                            value: selectedStoreId,
+                            items: stores
+                                .where((store) => !stockItems
+                                .any((stock) => stock.storeId == store.storeId))
+                                .map((store) => DropdownMenuItem(
+                              value: store.storeId,
+                              child: Text(store.name),
+                            ))
+                                .toList(),
+                            onChanged: (value) =>
+                                setDialogState(() => selectedStoreId = value),
+                            validator: (value) =>
+                            value == null ? 'Please select a store' : null,
+                          ),
+                          const SizedBox(height: 16),
+                          DropdownButtonFormField<String>(
+                            decoration: InputDecoration(
+                              labelText: 'Add Stock Item',
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                              filled: true,
+                              fillColor: Colors.grey[100],
+                            ),
+                            value: null,
+                            hint: const Text('Select a product to add'),
+                            items: stockItems
+                                .where((stock) => stock.quantity > 0)
+                                .map((stock) => DropdownMenuItem(
+                              value: stock.id,
+                              child: Text(stock.name ?? 'Unknown'),
+                            ))
+                                .toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                final selectedStock =
+                                stockItems.firstWhere((stock) => stock.id == value);
+                                setDialogState(() {
+                                  addToTransferEntries(selectedStock, 1);
+                                });
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
                               const Text(
-                                'No stock items selected',
-                                style: TextStyle(fontSize: 16, color: Colors.grey),
-                              )
-                            else
-                              ...transferEntries.asMap().entries.map((entry) {
-                                final stock = entry.value['stock'] as StockModel;
-                                final quantity = entry.value['quantity'] as int;
-                                final double price = stock.price ?? 0.0;
-                                final double taxRate = stock.tax ?? 0.0;
-                                final double subtotal = price * quantity;
-                                final double taxAmount = subtotal * (taxRate / 100);
-                                return Card(
-                                  elevation: 3,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12)),
-                                  margin: const EdgeInsets.symmetric(vertical: 8),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                'Transfer Entries',
+                                style: TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 8),
+                              if (transferEntries.isEmpty)
+                                const Text(
+                                  'No stock items selected',
+                                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                                )
+                              else
+                                ...transferEntries.asMap().entries.map((entry) {
+                                  final stock = entry.value['stock'] as StockModel;
+                                  final quantity = entry.value['quantity'] as int;
+                                  final double price = stock.price ?? 0.0;
+                                  final double taxRate = stock.tax ?? 0.0;
+                                  final double subtotal = price * quantity;
+                                  final double taxAmount = subtotal * (taxRate / 100);
+                                  return Card(
+                                    elevation: 3,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12)),
+                                    margin: const EdgeInsets.symmetric(vertical: 8),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      stock.name ?? 'Unknown',
+                                                      style: const TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 8),
+                                                    Text(
+                                                      'Price: ₹${price.toStringAsFixed(2)}',
+                                                      style: const TextStyle(
+                                                          fontSize: 14,
+                                                          color: Colors.grey),
+                                                    ),
+                                                    Text(
+                                                      'Tax: ${taxRate.toStringAsFixed(0)}%',
+                                                      style: const TextStyle(
+                                                          fontSize: 14,
+                                                          color: Colors.grey),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              Column(
                                                 children: [
-                                                  Text(
-                                                    stock.name ?? 'Unknown',
-                                                    style: const TextStyle(
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.w600,
+                                                  Container(
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      borderRadius:
+                                                      BorderRadius.circular(24),
+                                                      border: Border.all(
+                                                          color: Colors.grey
+                                                              .withOpacity(0.3)),
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        IconButton(
+                                                          icon: Icon(
+                                                            Icons.remove,
+                                                            color: quantity > 0
+                                                                ? Colors.red
+                                                                : Colors.grey,
+                                                            size: 20,
+                                                          ),
+                                                          onPressed: () => setDialogState(
+                                                                  () => updateTransferEntryQuantity(
+                                                                  stock.id, -1)),
+                                                        ),
+                                                        SizedBox(
+                                                          width: 48,
+                                                          child: Text(
+                                                            '$quantity',
+                                                            textAlign: TextAlign.center,
+                                                            style: const TextStyle(
+                                                                fontSize: 16,
+                                                                fontWeight:
+                                                                FontWeight.w600),
+                                                          ),
+                                                        ),
+                                                        IconButton(
+                                                          icon: const Icon(Icons.add,
+                                                              color: Colors.green,
+                                                              size: 20),
+                                                          onPressed: () => setDialogState(
+                                                                  () => updateTransferEntryQuantity(
+                                                                  stock.id, 1)),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
                                                   const SizedBox(height: 8),
-                                                  Text(
-                                                    'Price: ₹${price.toStringAsFixed(2)}',
-                                                    style: const TextStyle(
-                                                        fontSize: 14, color: Colors.grey),
+                                                  Row(
+                                                    children: [
+                                                      ElevatedButton(
+                                                        onPressed: () =>
+                                                            showQuantityInputDialog(
+                                                                stock,
+                                                                initialQuantity:
+                                                                quantity),
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor:
+                                                          Theme.of(context)
+                                                              .primaryColor,
+                                                          shape:
+                                                          RoundedRectangleBorder(
+                                                              borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                  8)),
+                                                          padding: const EdgeInsets
+                                                              .symmetric(
+                                                              horizontal: 8,
+                                                              vertical: 4),
+                                                        ),
+                                                        child: const Text(
+                                                          'Enter Qty',
+                                                          style: TextStyle(
+                                                              color: Colors.white,
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                              FontWeight.w600),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 8),
+                                                      ElevatedButton(
+                                                        onPressed: () => setDialogState(
+                                                                () => clearTransferEntry(
+                                                                stock.id)),
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor: Colors.red,
+                                                          shape:
+                                                          RoundedRectangleBorder(
+                                                              borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                  8)),
+                                                          padding: const EdgeInsets
+                                                              .symmetric(
+                                                              horizontal: 8,
+                                                              vertical: 4),
+                                                        ),
+                                                        child: const Text(
+                                                          'Clear',
+                                                          style: TextStyle(
+                                                              color: Colors.white,
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                              FontWeight.w600),
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                  Text(
-                                                    'Tax: ${taxRate.toStringAsFixed(0)}%',
-                                                    style: const TextStyle(
-                                                        fontSize: 14, color: Colors.grey),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          if (quantity > 0) ...[
+                                            const SizedBox(height: 12),
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                border: Border.all(
+                                                    color:
+                                                    Colors.grey.withOpacity(0.3)),
+                                                borderRadius:
+                                                BorderRadius.circular(12),
+                                              ),
+                                              child: Table(
+                                                border: TableBorder(
+                                                  verticalInside: BorderSide(
+                                                      color: Colors.grey
+                                                          .withOpacity(0.3)),
+                                                  horizontalInside: BorderSide(
+                                                      color: Colors.grey
+                                                          .withOpacity(0.3)),
+                                                ),
+                                                columnWidths: const {
+                                                  0: FlexColumnWidth(3),
+                                                  1: FlexColumnWidth(2),
+                                                },
+                                                children: [
+                                                  TableRow(
+                                                    children: [
+                                                      Padding(
+                                                        padding: const EdgeInsets
+                                                            .symmetric(
+                                                            vertical: 8,
+                                                            horizontal: 12),
+                                                        child: Text(
+                                                          'Subtotal (₹${price.toStringAsFixed(2)} x $quantity)',
+                                                          style: const TextStyle(
+                                                              fontSize: 14,
+                                                              color: Colors.grey),
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding: const EdgeInsets
+                                                            .symmetric(
+                                                            vertical: 8,
+                                                            horizontal: 12),
+                                                        child: Text(
+                                                          '₹${subtotal.toStringAsFixed(2)}',
+                                                          textAlign: TextAlign.right,
+                                                          style: const TextStyle(
+                                                              fontSize: 14,
+                                                              fontWeight:
+                                                              FontWeight.w600),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  TableRow(
+                                                    children: [
+                                                      Padding(
+                                                        padding: const EdgeInsets
+                                                            .symmetric(
+                                                            vertical: 8,
+                                                            horizontal: 12),
+                                                        child: Text(
+                                                          'Tax (${taxRate.toStringAsFixed(0)}%)',
+                                                          style: const TextStyle(
+                                                              fontSize: 14,
+                                                              color: Colors.grey),
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding: const EdgeInsets
+                                                            .symmetric(
+                                                            vertical: 8,
+                                                            horizontal: 12),
+                                                        child: Text(
+                                                          '₹${taxAmount.toStringAsFixed(2)}',
+                                                          textAlign: TextAlign.right,
+                                                          style: const TextStyle(
+                                                              fontSize: 14,
+                                                              color: Colors.grey),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  TableRow(
+                                                    decoration: BoxDecoration(
+                                                      color: Theme.of(context)
+                                                          .primaryColor
+                                                          .withOpacity(0.05),
+                                                      borderRadius:
+                                                      const BorderRadius.only(
+                                                        bottomLeft:
+                                                        Radius.circular(12),
+                                                        bottomRight:
+                                                        Radius.circular(12),
+                                                      ),
+                                                    ),
+                                                    children: [
+                                                      const Padding(
+                                                        padding: EdgeInsets.symmetric(
+                                                            vertical: 8,
+                                                            horizontal: 12),
+                                                        child: Text(
+                                                          'Total',
+                                                          style: TextStyle(
+                                                              fontSize: 14,
+                                                              fontWeight:
+                                                              FontWeight.w700),
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding: const EdgeInsets
+                                                            .symmetric(
+                                                            vertical: 8,
+                                                            horizontal: 12),
+                                                        child: Text(
+                                                          '₹${(subtotal + taxAmount).toStringAsFixed(2)}',
+                                                          textAlign: TextAlign.right,
+                                                          style: const TextStyle(
+                                                              fontSize: 14,
+                                                              fontWeight:
+                                                              FontWeight.w700),
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ],
                                               ),
                                             ),
-                                            Column(
-                                              children: [
-                                                Container(
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.white,
-                                                    borderRadius:
-                                                    BorderRadius.circular(24),
-                                                    border: Border.all(
-                                                        color:
-                                                        Colors.grey.withOpacity(0.3)),
-                                                  ),
-                                                  child: Row(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    children: [
-                                                      IconButton(
-                                                        icon: Icon(
-                                                          Icons.remove,
-                                                          color: quantity > 0
-                                                              ? Colors.red
-                                                              : Colors.grey,
-                                                          size: 20,
-                                                        ),
-                                                        onPressed: () => setDialogState(
-                                                                () => updateTransferEntryQuantity(
-                                                                stock.id, -1)),
-                                                      ),
-                                                      SizedBox(
-                                                        width: 48,
-                                                        child: Text(
-                                                          '$quantity',
-                                                          textAlign: TextAlign.center,
-                                                          style: const TextStyle(
-                                                              fontSize: 16,
-                                                              fontWeight: FontWeight.w600),
-                                                        ),
-                                                      ),
-                                                      IconButton(
-                                                        icon: const Icon(Icons.add,
-                                                            color: Colors.green, size: 20),
-                                                        onPressed: () => setDialogState(
-                                                                () => updateTransferEntryQuantity(
-                                                                stock.id, 1)),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 8),
-                                                Row(
-                                                  children: [
-                                                    ElevatedButton(
-                                                      onPressed: () => showQuantityInputDialog(
-                                                          stock,
-                                                          initialQuantity: quantity),
-                                                      style: ElevatedButton.styleFrom(
-                                                        backgroundColor:
-                                                        Theme.of(context).primaryColor,
-                                                        shape: RoundedRectangleBorder(
-                                                            borderRadius:
-                                                            BorderRadius.circular(8)),
-                                                        padding: const EdgeInsets.symmetric(
-                                                            horizontal: 8, vertical: 4),
-                                                      ),
-                                                      child: const Text(
-                                                        'Enter Qty',
-                                                        style: TextStyle(
-                                                            color: Colors.white,
-                                                            fontSize: 12,
-                                                            fontWeight: FontWeight.w600),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(width: 8),
-                                                    ElevatedButton(
-                                                      onPressed: () => setDialogState(
-                                                              () => clearTransferEntry(stock.id)),
-                                                      style: ElevatedButton.styleFrom(
-                                                        backgroundColor: Colors.red,
-                                                        shape: RoundedRectangleBorder(
-                                                            borderRadius:
-                                                            BorderRadius.circular(8)),
-                                                        padding: const EdgeInsets.symmetric(
-                                                            horizontal: 8, vertical: 4),
-                                                      ),
-                                                      child: const Text(
-                                                        'Clear',
-                                                        style: TextStyle(
-                                                            color: Colors.white,
-                                                            fontSize: 12,
-                                                            fontWeight: FontWeight.w600),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
                                           ],
-                                        ),
-                                        if (quantity > 0) ...[
-                                          const SizedBox(height: 12),
-                                          Container(
-                                            decoration: BoxDecoration(
-                                              border: Border.all(
-                                                  color: Colors.grey.withOpacity(0.3)),
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                            child: Table(
-                                              border: TableBorder(
-                                                verticalInside: BorderSide(
-                                                    color: Colors.grey.withOpacity(0.3)),
-                                                horizontalInside: BorderSide(
-                                                    color: Colors.grey.withOpacity(0.3)),
-                                              ),
-                                              columnWidths: const {
-                                                0: FlexColumnWidth(3),
-                                                1: FlexColumnWidth(2),
-                                              },
-                                              children: [
-                                                TableRow(
-                                                  children: [
-                                                    Padding(
-                                                      padding: const EdgeInsets.symmetric(
-                                                          vertical: 8, horizontal: 12),
-                                                      child: Text(
-                                                        'Subtotal (₹${price.toStringAsFixed(2)} x $quantity)',
-                                                        style: const TextStyle(
-                                                            fontSize: 14, color: Colors.grey),
-                                                      ),
-                                                    ),
-                                                    Padding(
-                                                      padding: const EdgeInsets.symmetric(
-                                                          vertical: 8, horizontal: 12),
-                                                      child: Text(
-                                                        '₹${subtotal.toStringAsFixed(2)}',
-                                                        textAlign: TextAlign.right,
-                                                        style: const TextStyle(
-                                                            fontSize: 14,
-                                                            fontWeight: FontWeight.w600),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                TableRow(
-                                                  children: [
-                                                    Padding(
-                                                      padding: const EdgeInsets.symmetric(
-                                                          vertical: 8, horizontal: 12),
-                                                      child: Text(
-                                                        'Tax (${taxRate.toStringAsFixed(0)}%)',
-                                                        style: const TextStyle(
-                                                            fontSize: 14, color: Colors.grey),
-                                                      ),
-                                                    ),
-                                                    Padding(
-                                                      padding: const EdgeInsets.symmetric(
-                                                          vertical: 8, horizontal: 12),
-                                                      child: Text(
-                                                        '₹${taxAmount.toStringAsFixed(2)}',
-                                                        textAlign: TextAlign.right,
-                                                        style: const TextStyle(
-                                                            fontSize: 14, color: Colors.grey),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                TableRow(
-                                                  decoration: BoxDecoration(
-                                                    color: Theme.of(context)
-                                                        .primaryColor
-                                                        .withOpacity(0.05),
-                                                    borderRadius: const BorderRadius.only(
-                                                      bottomLeft: Radius.circular(12),
-                                                      bottomRight: Radius.circular(12),
-                                                    ),
-                                                  ),
-                                                  children: [
-                                                    const Padding(
-                                                      padding: EdgeInsets.symmetric(
-                                                          vertical: 8, horizontal: 12),
-                                                      child: Text(
-                                                        'Total',
-                                                        style: TextStyle(
-                                                            fontSize: 14,
-                                                            fontWeight: FontWeight.w700),
-                                                      ),
-                                                    ),
-                                                    Padding(
-                                                      padding: const EdgeInsets.symmetric(
-                                                          vertical: 8, horizontal: 12),
-                                                      child: Text(
-                                                        '₹${(subtotal + taxAmount).toStringAsFixed(2)}',
-                                                        textAlign: TextAlign.right,
-                                                        style: const TextStyle(
-                                                            fontSize: 14,
-                                                            fontWeight: FontWeight.w700),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
                                         ],
-                                      ],
+                                      ),
                                     ),
-                                  ),
-                                );
-                              }).toList(),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          decoration: InputDecoration(
-                            labelText: 'Remarks (Optional)',
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8)),
-                            filled: true,
-                            fillColor: Colors.grey[100],
+                                  );
+                                }).toList(),
+                            ],
                           ),
-                          onChanged: (value) => remarks = value.isEmpty ? null : value,
-                        ),
-                        const SizedBox(height: 16),
-                        CheckboxListTile(
-                          title: const Text('Generate PDF Report'),
-                          value: generatePdf,
-                          onChanged: (value) =>
-                              setDialogState(() => generatePdf = value ?? true),
-                          controlAffinity: ListTileControlAffinity.leading,
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ],
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            decoration: InputDecoration(
+                              labelText: 'Remarks (Optional)',
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                              filled: true,
+                              fillColor: Colors.grey[100],
+                            ),
+                            onChanged: (value) =>
+                            remarks = value.isEmpty ? null : value,
+                          ),
+                          const SizedBox(height: 16),
+                          CheckboxListTile(
+                            title: const Text('Generate PDF Report'),
+                            value: generatePdf,
+                            onChanged: (value) =>
+                                setDialogState(() => generatePdf = value ?? true),
+                            controlAffinity: ListTileControlAffinity.leading,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(dialogContext),
-                    child: const Text('Cancel'),
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      child: const Text('Cancel'),
                     ),
-                    onPressed: transferEntries.isEmpty || selectedStoreId == null
-                        ? null
-                        : () async {
-                      if (_formKey.currentState!.validate()) {
-                        setDialogState(() => isLoading = true);
-                        final userInfo = await sl<AccountRepository>().getUserInfo();
-                        final companyId = userInfo?.companyId ?? 'Unknown';
-                        final transferId =
-                        DateTime.now().millisecondsSinceEpoch.toString();
-                        final ledgerCubit = sl<UserLedgerCubit>();
-                        final storesList =
-                        await sl<StockRepository>().getStores(companyId);
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).primaryColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
+                      onPressed: transferEntries.isEmpty || selectedStoreId == null
+                          ? null
+                          : () async {
+                        if (_formKey.currentState!.validate()) {
+                          setDialogState(() => isLoading = true);
+                          final userInfo =
+                          await sl<AccountRepository>().getUserInfo();
+                          final companyId = userInfo?.companyId ?? 'Unknown';
+                          final transferId =
+                          DateTime.now().millisecondsSinceEpoch.toString();
+                          final ledgerCubit = sl<UserLedgerCubit>();
+                          final storesList = await sl<StockRepository>()
+                              .getStores(companyId);
 
-                        final fromStore = storesList.firstWhere(
-                              (store) => store.storeId == stockItems.first.storeId,
-                          orElse: () => StoreDto(
-                            storeId: stockItems.first.storeId,
-                            name: 'Unknown',
-                            createdBy: '',
-                            createdAt: DateTime.now(),
-                            accountLedgerId: null,
-                          ),
-                        );
-                        final toStore = storesList.firstWhere(
-                              (store) => store.storeId == selectedStoreId,
-                          orElse: () => StoreDto(
-                            storeId: selectedStoreId!,
-                            name: 'Unknown',
-                            createdBy: '',
-                            createdAt: DateTime.now(),
-                            accountLedgerId: null,
-                          ),
-                        );
-
-                        if (fromStore.accountLedgerId == null ||
-                            toStore.accountLedgerId == null) {
-                          setDialogState(() => isLoading = false);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Ledger ID missing for ${fromStore.accountLedgerId == null ? 'source' : 'destination'} store',
-                              ),
+                          final fromStore = storesList.firstWhere(
+                                (store) =>
+                            store.storeId == stockItems.first.storeId,
+                            orElse: () => StoreDto(
+                              storeId: stockItems.first.storeId,
+                              name: 'Unknown',
+                              createdBy: '',
+                              createdAt: DateTime.now(),
+                              accountLedgerId: null,
+                              storeType: StoreType.store,
                             ),
                           );
-                          return;
-                        }
+                          final toStore = storesList.firstWhere(
+                                (store) => store.storeId == selectedStoreId,
+                            orElse: () => StoreDto(
+                              storeId: selectedStoreId!,
+                              name: 'Unknown',
+                              createdBy: '',
+                              createdAt: DateTime.now(),
+                              accountLedgerId: null,
+                              storeType: StoreType.store,
+                            ),
+                          );
 
-                        try {
-                          for (var entry in transferEntries) {
-                            final stock = entry['stock'] as StockModel;
-                            final quantity = entry['quantity'] as int;
-                            final price = stock.price ?? 0.0;
-                            final taxRate = stock.tax ?? 0.0;
-                            final amount =
-                                (price * quantity) + (price * quantity * (taxRate / 100));
-
-                            await _stockCubit.transferStock(
-                              stock,
-                              selectedStoreId!,
-                              quantity,
-                              remarks: remarks,
+                          if (fromStore.accountLedgerId == null &&
+                              fromStore.storeType != StoreType.salesman) {
+                            setDialogState(() => isLoading = false);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Ledger ID missing for source store',
+                                ),
+                              ),
                             );
-
-                            await ledgerCubit.addTransaction(
-                              ledgerId: fromStore.accountLedgerId!,
-                              amount: amount,
-                              type: 'Credit',
-                              billNumber: 'TRANSFER-$transferId',
-                              purpose: 'Stock Transfer Out',
-                              typeOfPurpose: 'Transfer',
-                              remarks:
-                              'Transferred $quantity units of ${stock.name ?? 'Unknown'} to store ${toStore.name} (Transfer ID: $transferId)',
-                              userType: UserType.Store,
+                            return;
+                          }
+                          if (toStore.accountLedgerId == null &&
+                              toStore.storeType != StoreType.salesman) {
+                            setDialogState(() => isLoading = false);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Ledger ID missing for destination store',
+                                ),
+                              ),
                             );
-
-                            await ledgerCubit.addTransaction(
-                              ledgerId: toStore.accountLedgerId!,
-                              amount: amount,
-                              type: 'Debit',
-                              billNumber: 'TRANSFER-$transferId',
-                              purpose: 'Stock Transfer In',
-                              typeOfPurpose: 'Transfer',
-                              remarks:
-                              'Received $quantity units of ${stock.name ?? 'Unknown'} from store ${fromStore.name} (Transfer ID: $transferId)',
-                              userType: UserType.Store,
-                            );
+                            return;
                           }
 
-                          if (generatePdf) {
-                            final pdf = await _generateTransferPdf(
-                              transferId,
-                              stockItems.first.storeId,
-                              selectedStoreId!,
-                              transferEntries,
-                              userInfo?.userName ?? 'Unknown',
-                              companyId,
+                          try {
+                            for (var entry in transferEntries) {
+                              final stock = entry['stock'] as StockModel;
+                              final quantity = entry['quantity'] as int;
+                              final price = stock.price ?? 0.0;
+                              final taxRate = stock.tax ?? 0.0;
+                              final amount = (price * quantity) +
+                                  (price * quantity * (taxRate / 100));
+
+                              await _stockCubit.transferStock(
+                                stock,
+                                selectedStoreId!,
+                                quantity,
+                                remarks: remarks,
+                              );
+
+                              // Add credit entry for source store/warehouse (if not salesman)
+                              if (fromStore.storeType !=
+                                  StoreType.salesman &&
+                                  fromStore.accountLedgerId != null) {
+                                await ledgerCubit.addTransaction(
+                                  ledgerId: fromStore.accountLedgerId!,
+                                  amount: amount,
+                                  type: 'Credit',
+                                  billNumber: 'TRANSFER-$transferId',
+                                  purpose: 'Stock Transfer Out',
+                                  typeOfPurpose: 'Transfer',
+                                  remarks:
+                                  'Transferred $quantity units of ${stock.name ?? 'Unknown'} to ${toStore.name} (Transfer ID: $transferId)',
+                                  userType: UserType.Store,
+                                );
+                              }
+
+                              // Add debit entry for destination store/warehouse (if not salesman)
+                              if (toStore.storeType != StoreType.salesman &&
+                                  toStore.accountLedgerId != null) {
+                                await ledgerCubit.addTransaction(
+                                  ledgerId: toStore.accountLedgerId!,
+                                  amount: amount,
+                                  type: 'Debit',
+                                  billNumber: 'TRANSFER-$transferId',
+                                  purpose: 'Stock Transfer In',
+                                  typeOfPurpose: 'Transfer',
+                                  remarks:
+                                  'Received $quantity units of ${stock.name ?? 'Unknown'} from ${fromStore.name} (Transfer ID: $transferId)',
+                                  userType: UserType.Store,
+                                );
+                              }
+                            }
+
+                            if (generatePdf) {
+                              final pdf = await _generateTransferPdf(
+                                transferId,
+                                stockItems.first.storeId,
+                                selectedStoreId!,
+                                transferEntries,
+                                userInfo?.userName ?? 'Unknown',
+                                companyId,
+                              );
+                              await sl<Coordinator>().navigateToBillPdfPage(
+                                pdf: pdf,
+                                billNumber: 'TRANSFER-$transferId',
+                              );
+                            }
+
+                            await _stockCubit
+                                .fetchStock(stockItems.first.storeId);
+                            setDialogState(() => isLoading = false);
+                            Navigator.pop(dialogContext);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                  Text('Stock transferred successfully')),
                             );
-                            await sl<Coordinator>().navigateToBillPdfPage(
-                              pdf: pdf,
-                              billNumber: 'TRANSFER-$transferId',
+                          } catch (e) {
+                            setDialogState(() => isLoading = false);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content:
+                                  Text('Failed to transfer stock: $e')),
                             );
                           }
-
-                          await _stockCubit.fetchStock(stockItems.first.storeId);
-                          setDialogState(() => isLoading = false);
-                          Navigator.pop(dialogContext);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Stock transferred successfully')),
-                          );
-                        } catch (e) {
-                          setDialogState(() => isLoading = false);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Failed to transfer stock: $e')),
-                          );
                         }
-                      }
-                    },
-                    child: const Text(AppLabels.saveButtonText),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
+                      },
+                      child: const Text(AppLabels.saveButtonText),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        }
     );
   }
 
