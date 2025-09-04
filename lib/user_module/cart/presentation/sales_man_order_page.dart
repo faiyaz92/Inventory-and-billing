@@ -1,14 +1,13 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:requirment_gathering_app/company_admin_module/presentation/users/add_user_cubit.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
+import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/custom_loading_dialog.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
-import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/sales_man_order_cubit.dart';
 
@@ -25,7 +24,7 @@ class SalesmanOrderPage extends StatelessWidget {
       create: (_) => cubit,
       child: BlocConsumer<SalesmanOrderCubit, SalesmanOrderState>(
         listenWhen: (previous, current) =>
-        current is SalesmanOrderPlaced || current is SalesmanOrderError,
+            current is SalesmanOrderPlaced || current is SalesmanOrderError,
         listener: (context, state) {
           if (state is SalesmanOrderPlaced) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -99,7 +98,7 @@ class SalesmanOrderPage extends StatelessWidget {
           }
         },
         buildWhen: (previous, current) =>
-        current is SalesmanOrderLoading ||
+            current is SalesmanOrderLoading ||
             current is SalesmanOrderLoaded ||
             previous is SalesmanOrderLoading ||
             previous is SalesmanOrderLoaded,
@@ -150,7 +149,8 @@ class SalesmanOrderPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 12),
                         InkWell(
-                          onTap: () => _showCustomerSelectionDialog(context, userServices, cubit),
+                          onTap: () => _showCustomerSelectionDialog(
+                              context, userServices, cubit),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 12),
@@ -158,19 +158,21 @@ class SalesmanOrderPage extends StatelessWidget {
                               color: AppColors.white,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                  color: AppColors.textSecondary.withOpacity(0.3)),
+                                  color:
+                                      AppColors.textSecondary.withOpacity(0.3)),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   state is SalesmanOrderLoaded &&
-                                      state.selectedCustomer != null
-                                      ? state.selectedCustomer!.name ?? 'Unknown'
+                                          state.selectedCustomer != null
+                                      ? state.selectedCustomer!.name ??
+                                          'Unknown'
                                       : 'Select a customer',
                                   style: TextStyle(
                                     color: state is SalesmanOrderLoaded &&
-                                        state.selectedCustomer != null
+                                            state.selectedCustomer != null
                                         ? AppColors.textPrimary
                                         : AppColors.textSecondary,
                                   ),
@@ -203,7 +205,8 @@ class SalesmanOrderPage extends StatelessWidget {
                     },
                   ),
                 ),
-                if (state is SalesmanOrderLoaded && state.filteredProducts.isEmpty)
+                if (state is SalesmanOrderLoaded &&
+                    state.filteredProducts.isEmpty)
                   SliverFillRemaining(
                     hasScrollBody: false,
                     child: Center(
@@ -228,27 +231,28 @@ class SalesmanOrderPage extends StatelessWidget {
                 else if (state is SalesmanOrderLoaded)
                   SliverList(
                     delegate: SliverChildBuilderDelegate(
-                          (context, index) {
+                      (context, index) {
                         final product = state.filteredProducts[index];
-                        final quantity = state.productQuantities[product.id] ?? 0;
+                        final quantity =
+                            state.productQuantities[product.id] ?? 0;
                         return Card(
-                            elevation: 3,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16)),
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
-                            child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                  Row(
+                          elevation: 3,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             product.name,
@@ -289,7 +293,8 @@ class SalesmanOrderPage extends StatelessWidget {
                                         Container(
                                           decoration: BoxDecoration(
                                             color: AppColors.white,
-                                            borderRadius: BorderRadius.circular(24),
+                                            borderRadius:
+                                                BorderRadius.circular(24),
                                             border: Border.all(
                                                 color: AppColors.textSecondary
                                                     .withOpacity(0.3)),
@@ -318,7 +323,8 @@ class SalesmanOrderPage extends StatelessWidget {
                                                   style: const TextStyle(
                                                     fontSize: 16,
                                                     fontWeight: FontWeight.w600,
-                                                    color: AppColors.textPrimary,
+                                                    color:
+                                                        AppColors.textPrimary,
                                                   ),
                                                 ),
                                               ),
@@ -347,12 +353,16 @@ class SalesmanOrderPage extends StatelessWidget {
                                                     context, cubit, product.id);
                                               },
                                               style: ElevatedButton.styleFrom(
-                                                backgroundColor: AppColors.primary,
+                                                backgroundColor:
+                                                    AppColors.primary,
                                                 shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
                                                 ),
-                                                padding: const EdgeInsets.symmetric(
-                                                    horizontal: 8, vertical: 4),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 4),
                                               ),
                                               child: const Text(
                                                 'Enter Manual Qty',
@@ -367,17 +377,20 @@ class SalesmanOrderPage extends StatelessWidget {
                                             ElevatedButton(
                                               onPressed: quantity > 0
                                                   ? () {
-                                                cubit.setProductQuantity(
-                                                    product.id, 0);
-                                              }
+                                                      cubit.setProductQuantity(
+                                                          product.id, 0);
+                                                    }
                                                   : null,
                                               style: ElevatedButton.styleFrom(
                                                 backgroundColor: AppColors.red,
                                                 shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
                                                 ),
-                                                padding: const EdgeInsets.symmetric(
-                                                    horizontal: 8, vertical: 4),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 4),
                                               ),
                                               child: const Text(
                                                 'Clear',
@@ -395,127 +408,140 @@ class SalesmanOrderPage extends StatelessWidget {
                                   ],
                                 ),
                                 if (quantity > 0) ...[
-                            const SizedBox(height: 12),
-                        Container(
-                        decoration: BoxDecoration(
-                        border: Border.all(
-                        color: AppColors.textSecondary
-                            .withOpacity(0.3)),
-                        borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Table(
-                        border: TableBorder(
-                        verticalInside: BorderSide(
-                        color: AppColors.textSecondary
-                            .withOpacity(0.3)),
-                        horizontalInside: BorderSide(
-                        color: AppColors.textSecondary
-                            .withOpacity(0.3)),
-                        ),
-                        columnWidths: const {
-                        0: FlexColumnWidth(3),
-                        1: FlexColumnWidth(2),
-                        },
-                        children: [
-                        TableRow(
-                        children: [
-                        Padding(
-                        padding: const EdgeInsets.symmetric(
-                        vertical: 8, horizontal: 12),
-                        child: Text(
-                        'Subtotal (₹${product.price.toStringAsFixed(2)} x $quantity)',
-                        style: const TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                        ),
-                        ),
-                        ),
-                        Padding(
-                        padding: const EdgeInsets.symmetric(
-                        vertical: 8, horizontal: 12),
-                        child: Text(
-                        '₹${cubit.calculateProductSubtotal(product.id).toStringAsFixed(2)}',
-                        textAlign: TextAlign.right,
-                        style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                        ),
-                        ),
-                        ),
-                        ],
-                        ),
-                        TableRow(
-                        children: [
-                        Padding(
-                        padding: const EdgeInsets.symmetric(
-                        vertical: 8, horizontal: 12),
-                        child: Text(
-                        'Tax (${(product.taxRate * 100).toStringAsFixed(0)}%)',
-                        style: const TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                        ),
-                        ),
-                        ),
-                        Padding(
-                        padding: const EdgeInsets.symmetric(
-                        vertical: 8, horizontal: 12),
-                        child: Text(
-                        '₹${cubit.calculateProductTax(product.id).toStringAsFixed(2)}',
-                        textAlign: TextAlign.right,
-                        style: const TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                        ),
-                        ),
-                        ),
-                        ],
-                        ),
-                        TableRow(
-                        decoration: BoxDecoration(
-                        color:
-                        AppColors.primary.withOpacity(0.05),
-                        borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(12),
-                        bottomRight: Radius.circular(12),
-                        ),
-                        ),
-                        children: [
-                        const Padding(
-                        padding: EdgeInsets.symmetric(
-                        vertical: 8, horizontal: 12),
-                        child: Text(
-                        'Total',
-                        style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                        ),
-                        ),
-                        ),
-                        Padding(
-                        padding: const EdgeInsets.symmetric(
-                        vertical: 8, horizontal: 12),
-                        child: Text(
-                        '₹${cubit.calculateProductTotal(product.id).toStringAsFixed(2)}',
-                        textAlign: TextAlign.right,
-                        style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                        ),
-                        ),
-                        ),
-                        ],
-                        ),
-                        ],
-                        ),
-                        ),
-                        ],
-                        ],
-                        ),
-                        ),
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: AppColors.textSecondary
+                                              .withOpacity(0.3)),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Table(
+                                      border: TableBorder(
+                                        verticalInside: BorderSide(
+                                            color: AppColors.textSecondary
+                                                .withOpacity(0.3)),
+                                        horizontalInside: BorderSide(
+                                            color: AppColors.textSecondary
+                                                .withOpacity(0.3)),
+                                      ),
+                                      columnWidths: const {
+                                        0: FlexColumnWidth(3),
+                                        1: FlexColumnWidth(2),
+                                      },
+                                      children: [
+                                        TableRow(
+                                          children: [
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 8,
+                                                      horizontal: 12),
+                                              child: Text(
+                                                'Subtotal (₹${product.price.toStringAsFixed(2)} x $quantity)',
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  color:
+                                                      AppColors.textSecondary,
+                                                ),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 8,
+                                                      horizontal: 12),
+                                              child: Text(
+                                                '₹${cubit.calculateProductSubtotal(product.id).toStringAsFixed(2)}',
+                                                textAlign: TextAlign.right,
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: AppColors.textPrimary,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        TableRow(
+                                          children: [
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 8,
+                                                      horizontal: 12),
+                                              child: Text(
+                                                'Tax (${(product.taxRate * 100).toStringAsFixed(0)}%)',
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  color:
+                                                      AppColors.textSecondary,
+                                                ),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 8,
+                                                      horizontal: 12),
+                                              child: Text(
+                                                '₹${cubit.calculateProductTax(product.id).toStringAsFixed(2)}',
+                                                textAlign: TextAlign.right,
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  color:
+                                                      AppColors.textSecondary,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        TableRow(
+                                          decoration: BoxDecoration(
+                                            color: AppColors.primary
+                                                .withOpacity(0.05),
+                                            borderRadius: BorderRadius.only(
+                                              bottomLeft: Radius.circular(12),
+                                              bottomRight: Radius.circular(12),
+                                            ),
+                                          ),
+                                          children: [
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 8, horizontal: 12),
+                                              child: Text(
+                                                'Total',
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: AppColors.textPrimary,
+                                                ),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 8,
+                                                      horizontal: 12),
+                                              child: Text(
+                                                '₹${cubit.calculateProductTotal(product.id).toStringAsFixed(2)}',
+                                                textAlign: TextAlign.right,
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: AppColors.textPrimary,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
                         );
                       },
                       childCount: state.filteredProducts.length,
@@ -551,27 +577,39 @@ class SalesmanOrderPage extends StatelessWidget {
                     showModalBottomSheet(
                       context: context,
                       shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(20)),
                       ),
                       isScrollControlled: true,
                       backgroundColor: AppColors.white,
                       builder: (context) {
-                        final TextEditingController discountController =
-                        TextEditingController(text: cubit.discount.toStringAsFixed(2));
-                        final List<double> itemDiscounts = List.filled(
-                            currentState.filteredProducts.length, 0.0); // Temporary item discounts
-                        double additionalDiscount = cubit.discount; // Initialize with cubit discount
-
+                        final TextEditingController
+                            additionalDiscountController =
+                            TextEditingController(
+                                text: cubit.discount.toStringAsFixed(2));
+                        final Map<String, TextEditingController>
+                            discountControllers = {
+                          for (var product in currentState.filteredProducts)
+                            product.id: TextEditingController(
+                                text: (cubit.itemDiscounts[product.id] ?? 0.0)
+                                    .toStringAsFixed(2)),
+                        };
                         return StatefulBuilder(
                           builder: (context, setState) => Padding(
-                            padding: const EdgeInsets.all(20),
+                            padding: EdgeInsets.only(
+                              bottom: MediaQuery.of(context).viewInsets.bottom,
+                              left: 20,
+                              right: 20,
+                              top: 20,
+                            ),
                             child: SingleChildScrollView(
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       const Text(
                                         'Order Summary',
@@ -604,15 +642,18 @@ class SalesmanOrderPage extends StatelessWidget {
                                   Container(
                                     decoration: BoxDecoration(
                                       border: Border.all(
-                                          color: AppColors.textSecondary.withOpacity(0.3)),
+                                          color: AppColors.textSecondary
+                                              .withOpacity(0.3)),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Table(
                                       border: TableBorder(
                                         verticalInside: BorderSide(
-                                            color: AppColors.textSecondary.withOpacity(0.3)),
+                                            color: AppColors.textSecondary
+                                                .withOpacity(0.3)),
                                         horizontalInside: BorderSide(
-                                            color: AppColors.textSecondary.withOpacity(0.3)),
+                                            color: AppColors.textSecondary
+                                                .withOpacity(0.3)),
                                       ),
                                       columnWidths: const {
                                         0: FlexColumnWidth(3),
@@ -625,7 +666,8 @@ class SalesmanOrderPage extends StatelessWidget {
                                       children: [
                                         TableRow(
                                           decoration: BoxDecoration(
-                                            color: AppColors.primary.withOpacity(0.05),
+                                            color: AppColors.primary
+                                                .withOpacity(0.05),
                                           ),
                                           children: const [
                                             Padding(
@@ -706,96 +748,126 @@ class SalesmanOrderPage extends StatelessWidget {
                                             .asMap()
                                             .entries
                                             .where((entry) =>
-                                        currentState.productQuantities[entry.value.id]! > 0)
+                                                currentState.productQuantities[
+                                                    entry.value.id]! >
+                                                0)
                                             .map((entry) {
-                                          final index = entry.key;
                                           final product = entry.value;
-                                          final quantity =
-                                          currentState.productQuantities[product.id]!;
+                                          final quantity = currentState
+                                              .productQuantities[product.id]!;
+                                          final discount =
+                                              cubit.itemDiscounts[product.id] ??
+                                                  0.0;
                                           return TableRow(
                                             children: [
                                               Padding(
-                                                padding: const EdgeInsets.symmetric(
-                                                    vertical: 8, horizontal: 12),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 8,
+                                                        horizontal: 12),
                                                 child: Text(
                                                   product.name,
                                                   style: const TextStyle(
                                                     fontSize: 14,
-                                                    color: AppColors.textPrimary,
+                                                    color:
+                                                        AppColors.textPrimary,
                                                   ),
                                                 ),
                                               ),
                                               Padding(
-                                                padding: const EdgeInsets.symmetric(
-                                                    vertical: 8, horizontal: 12),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 8,
+                                                        horizontal: 12),
                                                 child: Text(
                                                   '$quantity',
                                                   textAlign: TextAlign.right,
                                                   style: const TextStyle(
                                                     fontSize: 14,
-                                                    color: AppColors.textPrimary,
+                                                    color:
+                                                        AppColors.textPrimary,
                                                   ),
                                                 ),
                                               ),
                                               Padding(
-                                                padding: const EdgeInsets.symmetric(
-                                                    vertical: 8, horizontal: 12),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 8,
+                                                        horizontal: 12),
                                                 child: Text(
                                                   '₹${cubit.calculateProductSubtotal(product.id).toStringAsFixed(2)}',
                                                   textAlign: TextAlign.right,
                                                   style: const TextStyle(
                                                     fontSize: 14,
-                                                    color: AppColors.textPrimary,
+                                                    color:
+                                                        AppColors.textPrimary,
                                                   ),
                                                 ),
                                               ),
                                               Padding(
-                                                padding: const EdgeInsets.symmetric(
-                                                    vertical: 8, horizontal: 12),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 8,
+                                                        horizontal: 12),
                                                 child: Text(
                                                   '₹${cubit.calculateProductTax(product.id).toStringAsFixed(2)}',
                                                   textAlign: TextAlign.right,
                                                   style: const TextStyle(
                                                     fontSize: 14,
-                                                    color: AppColors.textSecondary,
+                                                    color:
+                                                        AppColors.textSecondary,
                                                   ),
                                                 ),
                                               ),
                                               Padding(
-                                                padding: const EdgeInsets.symmetric(
-                                                    vertical: 8, horizontal: 12),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 8,
+                                                        horizontal: 12),
                                                 child: TextFormField(
-                                                  initialValue:
-                                                  itemDiscounts[index].toStringAsFixed(2),
-                                                  keyboardType:
-                                                  TextInputType.numberWithOptions(decimal: true),
+                                                  controller:
+                                                      discountControllers[
+                                                          product.id],
+                                                  keyboardType: TextInputType
+                                                      .numberWithOptions(
+                                                          decimal: true),
                                                   textAlign: TextAlign.right,
-                                                  decoration: const InputDecoration(
+                                                  decoration:
+                                                      const InputDecoration(
                                                     border: InputBorder.none,
-                                                    contentPadding: EdgeInsets.zero,
+                                                    contentPadding:
+                                                        EdgeInsets.zero,
                                                     isDense: true,
                                                   ),
                                                   style: const TextStyle(
                                                     fontSize: 14,
-                                                    color: AppColors.textSecondary,
+                                                    color:
+                                                        AppColors.textSecondary,
                                                   ),
                                                   onChanged: (value) {
-                                                    final disc = double.tryParse(value) ?? 0.0;
-                                                    itemDiscounts[index] = disc;
+                                                    final disc =
+                                                        double.tryParse(
+                                                                value) ??
+                                                            0.0;
+                                                    cubit.setItemDiscounts(
+                                                        {product.id: disc});
                                                     setState(() {});
                                                   },
                                                 ),
                                               ),
                                               Padding(
-                                                padding: const EdgeInsets.symmetric(
-                                                    vertical: 8, horizontal: 12),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 8,
+                                                        horizontal: 12),
                                                 child: Text(
-                                                  '₹${(cubit.calculateProductTotal(product.id) - itemDiscounts[index]).toStringAsFixed(2)}',
+                                                  '₹${(cubit.calculateProductTotal(product.id) - discount).toStringAsFixed(2)}',
                                                   textAlign: TextAlign.right,
                                                   style: const TextStyle(
                                                     fontSize: 14,
                                                     fontWeight: FontWeight.w600,
-                                                    color: AppColors.textPrimary,
+                                                    color:
+                                                        AppColors.textPrimary,
                                                   ),
                                                 ),
                                               ),
@@ -807,17 +879,21 @@ class SalesmanOrderPage extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 20),
                                   TextField(
-                                    controller: discountController,
+                                    controller: additionalDiscountController,
                                     decoration: InputDecoration(
                                       labelText: 'Additional Discount (₹)',
                                       border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8)),
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
                                       filled: true,
                                       fillColor: Colors.grey[100],
                                     ),
-                                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                                    keyboardType:
+                                        TextInputType.numberWithOptions(
+                                            decimal: true),
                                     onChanged: (value) {
-                                      additionalDiscount = double.tryParse(value) ?? 0.0;
+                                      cubit.setDiscount(
+                                          double.tryParse(value) ?? 0.0);
                                       setState(() {});
                                     },
                                   ),
@@ -825,15 +901,18 @@ class SalesmanOrderPage extends StatelessWidget {
                                   Container(
                                     decoration: BoxDecoration(
                                       border: Border.all(
-                                          color: AppColors.textSecondary.withOpacity(0.3)),
+                                          color: AppColors.textSecondary
+                                              .withOpacity(0.3)),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Table(
                                       border: TableBorder(
                                         verticalInside: BorderSide(
-                                            color: AppColors.textSecondary.withOpacity(0.3)),
+                                            color: AppColors.textSecondary
+                                                .withOpacity(0.3)),
                                         horizontalInside: BorderSide(
-                                            color: AppColors.textSecondary.withOpacity(0.3)),
+                                            color: AppColors.textSecondary
+                                                .withOpacity(0.3)),
                                       ),
                                       columnWidths: const {
                                         0: FlexColumnWidth(3),
@@ -855,8 +934,10 @@ class SalesmanOrderPage extends StatelessWidget {
                                               ),
                                             ),
                                             Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 12, horizontal: 16),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 12,
+                                                      horizontal: 16),
                                               child: Text(
                                                 '₹${cubit.calculateOverallSubtotal().toStringAsFixed(2)}',
                                                 textAlign: TextAlign.right,
@@ -878,19 +959,23 @@ class SalesmanOrderPage extends StatelessWidget {
                                                 'Total Tax',
                                                 style: TextStyle(
                                                   fontSize: 16,
-                                                  color: AppColors.textSecondary,
+                                                  color:
+                                                      AppColors.textSecondary,
                                                 ),
                                               ),
                                             ),
                                             Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 12, horizontal: 16),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 12,
+                                                      horizontal: 16),
                                               child: Text(
                                                 '₹${cubit.calculateOverallTax().toStringAsFixed(2)}',
                                                 textAlign: TextAlign.right,
                                                 style: const TextStyle(
                                                   fontSize: 16,
-                                                  color: AppColors.textSecondary,
+                                                  color:
+                                                      AppColors.textSecondary,
                                                 ),
                                               ),
                                             ),
@@ -905,19 +990,23 @@ class SalesmanOrderPage extends StatelessWidget {
                                                 'Item Discounts',
                                                 style: TextStyle(
                                                   fontSize: 16,
-                                                  color: AppColors.textSecondary,
+                                                  color:
+                                                      AppColors.textSecondary,
                                                 ),
                                               ),
                                             ),
                                             Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 12, horizontal: 16),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 12,
+                                                      horizontal: 16),
                                               child: Text(
-                                                '₹${itemDiscounts.fold<double>(0.0, (sum, disc) => sum + disc).toStringAsFixed(2)}',
+                                                '₹${cubit.itemDiscounts.values.fold<double>(0.0, (sum, disc) => sum + disc).toStringAsFixed(2)}',
                                                 textAlign: TextAlign.right,
                                                 style: const TextStyle(
                                                   fontSize: 16,
-                                                  color: AppColors.textSecondary,
+                                                  color:
+                                                      AppColors.textSecondary,
                                                 ),
                                               ),
                                             ),
@@ -932,19 +1021,23 @@ class SalesmanOrderPage extends StatelessWidget {
                                                 'Additional Discount',
                                                 style: TextStyle(
                                                   fontSize: 16,
-                                                  color: AppColors.textSecondary,
+                                                  color:
+                                                      AppColors.textSecondary,
                                                 ),
                                               ),
                                             ),
                                             Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 12, horizontal: 16),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 12,
+                                                      horizontal: 16),
                                               child: Text(
-                                                '₹${additionalDiscount.toStringAsFixed(2)}',
+                                                '₹${cubit.discount.toStringAsFixed(2)}',
                                                 textAlign: TextAlign.right,
                                                 style: const TextStyle(
                                                   fontSize: 16,
-                                                  color: AppColors.textSecondary,
+                                                  color:
+                                                      AppColors.textSecondary,
                                                 ),
                                               ),
                                             ),
@@ -952,8 +1045,10 @@ class SalesmanOrderPage extends StatelessWidget {
                                         ),
                                         TableRow(
                                           decoration: BoxDecoration(
-                                            color: AppColors.primary.withOpacity(0.05),
-                                            borderRadius: const BorderRadius.only(
+                                            color: AppColors.primary
+                                                .withOpacity(0.05),
+                                            borderRadius:
+                                                const BorderRadius.only(
                                               bottomLeft: Radius.circular(12),
                                               bottomRight: Radius.circular(12),
                                             ),
@@ -972,10 +1067,12 @@ class SalesmanOrderPage extends StatelessWidget {
                                               ),
                                             ),
                                             Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  vertical: 12, horizontal: 16),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 12,
+                                                      horizontal: 16),
                                               child: Text(
-                                                '₹${(cubit.calculateOverallTotal() - itemDiscounts.fold<double>(0.0, (sum, disc) => sum + disc) - additionalDiscount).toStringAsFixed(2)}',
+                                                '₹${cubit.calculateFinalTotal().toStringAsFixed(2)}',
                                                 textAlign: TextAlign.right,
                                                 style: const TextStyle(
                                                   fontSize: 18,
@@ -994,86 +1091,108 @@ class SalesmanOrderPage extends StatelessWidget {
                                     width: double.infinity,
                                     child: ElevatedButton(
                                       onPressed: () {
-                                        final sumItemDisc =
-                                        itemDiscounts.fold<double>(0.0, (sum, disc) => sum + disc);
-                                        // Validate item discounts
-                                        for (int i = 0; i < currentState.filteredProducts.length; i++) {
-                                          final product = currentState.filteredProducts[i];
+// Validate item discounts
+                                        for (var product
+                                            in currentState.filteredProducts) {
                                           final quantity =
-                                              currentState.productQuantities[product.id] ?? 0;
+                                              currentState.productQuantities[
+                                                      product.id] ??
+                                                  0;
                                           if (quantity == 0) continue;
-                                          final itemTotal = cubit.calculateProductTotal(product.id);
-                                          if (itemDiscounts[i] < 0) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
+                                          final discount =
+                                              cubit.itemDiscounts[product.id] ??
+                                                  0.0;
+                                          if (discount < 0) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
                                               const SnackBar(
                                                 content: Text(
                                                   'Item discount cannot be negative',
-                                                  style: TextStyle(color: AppColors.white),
+                                                  style: TextStyle(
+                                                      color: AppColors.white),
                                                 ),
                                                 backgroundColor: AppColors.red,
-                                                behavior: SnackBarBehavior.floating,
+                                                behavior:
+                                                    SnackBarBehavior.floating,
                                                 margin: EdgeInsets.all(16),
                                               ),
                                             );
                                             return;
                                           }
-                                          if (itemDiscounts[i] > itemTotal) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
+                                          final itemTotal =
+                                              cubit.calculateProductTotal(
+                                                  product.id);
+                                          if (discount > itemTotal) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
                                               SnackBar(
                                                 content: Text(
                                                   'Discount for ${product.name} cannot exceed item total',
-                                                  style: const TextStyle(color: AppColors.white),
+                                                  style: const TextStyle(
+                                                      color: AppColors.white),
                                                 ),
                                                 backgroundColor: AppColors.red,
-                                                behavior: SnackBarBehavior.floating,
-                                                margin: const EdgeInsets.all(16),
+                                                behavior:
+                                                    SnackBarBehavior.floating,
+                                                margin:
+                                                    const EdgeInsets.all(16),
                                               ),
                                             );
                                             return;
                                           }
                                         }
-                                        // Validate additional discount
-                                        if (additionalDiscount < 0) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
+// Validate additional discount
+                                        if (cubit.discount < 0) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
                                             const SnackBar(
                                               content: Text(
                                                 'Additional discount cannot be negative',
-                                                style: TextStyle(color: AppColors.white),
+                                                style: TextStyle(
+                                                    color: AppColors.white),
                                               ),
                                               backgroundColor: AppColors.red,
-                                              behavior: SnackBarBehavior.floating,
+                                              behavior:
+                                                  SnackBarBehavior.floating,
                                               margin: EdgeInsets.all(16),
                                             ),
                                           );
                                           return;
                                         }
-                                        final totalAfterItemDisc =
-                                            cubit.calculateOverallTotal() - sumItemDisc;
-                                        if (additionalDiscount > totalAfterItemDisc) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
+                                        final totalAfterItemDisc = cubit
+                                                .calculateOverallTotal() -
+                                            cubit.itemDiscounts.values
+                                                .fold<double>(0.0,
+                                                    (sum, disc) => sum + disc);
+                                        if (cubit.discount >
+                                            totalAfterItemDisc) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
                                             const SnackBar(
                                               content: Text(
                                                 'Additional discount cannot exceed total after item discounts',
-                                                style: TextStyle(color: AppColors.white),
+                                                style: TextStyle(
+                                                    color: AppColors.white),
                                               ),
                                               backgroundColor: AppColors.red,
-                                              behavior: SnackBarBehavior.floating,
+                                              behavior:
+                                                  SnackBarBehavior.floating,
                                               margin: EdgeInsets.all(16),
                                             ),
                                           );
                                           return;
                                         }
-                                        // Set total discount in cubit
-                                        cubit.setDiscount(sumItemDisc + additionalDiscount);
                                         Navigator.pop(context);
                                         cubit.placeOrder();
                                       },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: AppColors.primary,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
                                         ),
-                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 16),
                                       ),
                                       child: const Text(
                                         'Place Order',
@@ -1125,14 +1244,16 @@ class SalesmanOrderPage extends StatelessWidget {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: const Text('Set Quantity'),
           content: Form(
             key: _formKey,
             child: TextFormField(
               decoration: InputDecoration(
                 labelText: 'Enter Quantity',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 filled: true,
                 fillColor: Colors.grey[100],
               ),
@@ -1180,16 +1301,18 @@ class SalesmanOrderPage extends StatelessWidget {
     );
   }
 
-  Future<void> _showCustomerSelectionDialog(
-      BuildContext context, UserServices userServices, SalesmanOrderCubit cubit) async {
-    final TextEditingController customerNameController = TextEditingController();
+  Future<void> _showCustomerSelectionDialog(BuildContext context,
+      UserServices userServices, SalesmanOrderCubit cubit) async {
+    final TextEditingController customerNameController =
+        TextEditingController();
     final TextEditingController searchController = TextEditingController();
     bool isLoading = false;
     List<UserInfo> filteredCustomers = [];
 
     try {
       final users = await userServices.getUsersFromTenantCompany();
-      final customerUsers = users.where((u) => u.userType == UserType.Customer).toList();
+      final customerUsers =
+          users.where((u) => u.userType == UserType.Customer).toList();
       filteredCustomers = customerUsers;
       if (!context.mounted) return;
       showModalBottomSheet(
@@ -1226,24 +1349,30 @@ class SalesmanOrderPage extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 8.0),
                   child: TextField(
                     controller: searchController,
                     decoration: InputDecoration(
                       hintText: 'Search Customers',
-                      hintStyle: const TextStyle(color: AppColors.textSecondary),
-                      prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+                      hintStyle:
+                          const TextStyle(color: AppColors.textSecondary),
+                      prefixIcon: const Icon(Icons.search,
+                          color: AppColors.textSecondary),
                       filled: true,
                       fillColor: AppColors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
+                        borderSide: BorderSide(
+                            color: AppColors.textSecondary.withOpacity(0.3)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
+                        borderSide: BorderSide(
+                            color: AppColors.textSecondary.withOpacity(0.3)),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                     ),
                     onChanged: (value) {
                       setState(() {
@@ -1252,7 +1381,10 @@ class SalesmanOrderPage extends StatelessWidget {
                         } else {
                           filteredCustomers = customerUsers
                               .where((customer) =>
-                          customer.name?.toLowerCase().contains(value.toLowerCase()) ?? false)
+                                  customer.name
+                                      ?.toLowerCase()
+                                      .contains(value.toLowerCase()) ??
+                                  false)
                               .toList();
                         }
                       });
@@ -1260,7 +1392,8 @@ class SalesmanOrderPage extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 8.0),
                   child: TextField(
                     controller: customerNameController,
                     decoration: InputDecoration(
@@ -1268,7 +1401,7 @@ class SalesmanOrderPage extends StatelessWidget {
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8)),
                       errorText: customerNameController.text.isEmpty &&
-                          filteredCustomers.isEmpty
+                              filteredCustomers.isEmpty
                           ? 'Name is required'
                           : null,
                     ),
@@ -1283,64 +1416,68 @@ class SalesmanOrderPage extends StatelessWidget {
                     onPressed: isLoading
                         ? null
                         : () async {
-                      if (customerNameController.text.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Customer name is required')),
-                        );
-                        return;
-                      }
-                      setState(() => isLoading = true);
-                      try {
-                        final companyId =
-                            (await sl<AccountRepository>().getUserInfo())
-                                ?.companyId;
-                        final userInfo = UserInfo(
-                          name: customerNameController.text.trim(),
-                          userType: UserType.Customer,
-                          companyId: companyId,
-                        );
-                        await userServices.addUserToCompany(userInfo, '');
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Customer added successfully')),
-                        );
-                        cubit.refreshCustomers();
-                        if (context.mounted) Navigator.of(context).pop();
-                      } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Failed to add customer: $e')),
-                          );
-                        }
-                      } finally {
-                        setState(() => isLoading = false);
-                      }
-                    },
+                            if (customerNameController.text.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('Customer name is required')),
+                              );
+                              return;
+                            }
+                            setState(() => isLoading = true);
+                            try {
+                              final companyId =
+                                  (await sl<AccountRepository>().getUserInfo())
+                                      ?.companyId;
+                              final userInfo = UserInfo(
+                                name: customerNameController.text.trim(),
+                                userType: UserType.Customer,
+                                companyId: companyId,
+                              );
+                              await userServices.addUserToCompany(userInfo, '');
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content:
+                                        Text('Customer added successfully')),
+                              );
+                              cubit.refreshCustomers();
+                              if (context.mounted) Navigator.of(context).pop();
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content:
+                                          Text('Failed to add customer: $e')),
+                                );
+                              }
+                            } finally {
+                              setState(() => isLoading = false);
+                            }
+                          },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 12),
                     ),
                     child: isLoading
                         ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        color: AppColors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: AppColors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
                         : const Text(
-                      'Add New Customer',
-                      style: TextStyle(
-                        color: AppColors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                            'Add New Customer',
+                            style: TextStyle(
+                              color: AppColors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -1348,24 +1485,26 @@ class SalesmanOrderPage extends StatelessWidget {
                   child: filteredCustomers.isEmpty
                       ? const Center(child: Text('No customers found'))
                       : ListView.builder(
-                    controller: scrollController,
-                    itemCount: filteredCustomers.length,
-                    itemBuilder: (dialogContext, index) {
-                      final user = filteredCustomers[index];
-                      return ListTile(
-                        title: Text(
-                          user.name ?? 'Unknown',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          controller: scrollController,
+                          itemCount: filteredCustomers.length,
+                          itemBuilder: (dialogContext, index) {
+                            final user = filteredCustomers[index];
+                            return ListTile(
+                              title: Text(
+                                user.name ?? 'Unknown',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Text('ID: ${user.userId}'),
+                              onTap: () {
+                                print(
+                                    'Selecting customer: ${user.name} (ID: ${user.userId})');
+                                cubit.selectCustomer(user);
+                                Navigator.of(dialogContext).pop();
+                              },
+                            );
+                          },
                         ),
-                        subtitle: Text('ID: ${user.userId}'),
-                        onTap: () {
-                          print('Selecting customer: ${user.name} (ID: ${user.userId})');
-                          cubit.selectCustomer(user);
-                          Navigator.of(dialogContext).pop();
-                        },
-                      );
-                    },
-                  ),
                 ),
               ],
             ),
@@ -1394,7 +1533,8 @@ class _StickySearchBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => 60;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -1407,13 +1547,16 @@ class _StickySearchBarDelegate extends SliverPersistentHeaderDelegate {
           fillColor: AppColors.white,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
+            borderSide:
+                BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
+            borderSide:
+                BorderSide(color: AppColors.textSecondary.withOpacity(0.3)),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
         onChanged: onSearchChanged,
       ),
@@ -1421,5 +1564,6 @@ class _StickySearchBarDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => true;
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) =>
+      true;
 }
