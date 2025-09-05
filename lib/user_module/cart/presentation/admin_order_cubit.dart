@@ -252,7 +252,7 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
       },
       {
         'label': 'Total Amount',
-        'value': '₹${totalAmount.toStringAsFixed(2)}',
+        'value': 'IQD ${totalAmount.toStringAsFixed(2)}',
         'color': AppColors.textPrimary,
         'highlight': true
       },

@@ -278,7 +278,7 @@ class OrderListPage extends StatelessWidget {
                                                       child: Align(
                                                         alignment: Alignment.centerRight,
                                                         child: Text(
-                                                          '₹${order.totalAmount.toStringAsFixed(2)}',
+                                                          'IQD ${order.totalAmount.toStringAsFixed(2)}',
                                                           style: const TextStyle(
                                                             fontSize: 14,
                                                             color: AppColors.textPrimary,

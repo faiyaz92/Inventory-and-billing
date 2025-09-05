@@ -228,7 +228,7 @@ class UserOrderDetailsPage extends StatelessWidget {
                                             child: Align(
                                               alignment: Alignment.centerRight,
                                               child: Text(
-                                                '₹${subtotal.toStringAsFixed(2)}',
+                                                'IQD ${subtotal.toStringAsFixed(2)}',
                                                 style: const TextStyle(
                                                   fontSize: 14,
                                                   color: AppColors.textPrimary,
@@ -259,7 +259,7 @@ class UserOrderDetailsPage extends StatelessWidget {
                                             child: Align(
                                               alignment: Alignment.centerRight,
                                               child: Text(
-                                                '₹${totalTax.toStringAsFixed(2)}',
+                                                'IQD ${totalTax.toStringAsFixed(2)}',
                                                 style: const TextStyle(
                                                   fontSize: 14,
                                                   color: AppColors.textSecondary,
@@ -297,7 +297,7 @@ class UserOrderDetailsPage extends StatelessWidget {
                                             child: Align(
                                               alignment: Alignment.centerRight,
                                               child: Text(
-                                                '₹${order.totalAmount.toStringAsFixed(2)}',
+                                                'IQD ${order.totalAmount.toStringAsFixed(2)}',
                                                 style: const TextStyle(
                                                   fontSize: 14,
                                                   color: AppColors.textPrimary,
@@ -392,7 +392,7 @@ class UserOrderDetailsPage extends StatelessWidget {
                                                         child: Align(
                                                           alignment: Alignment.centerLeft,
                                                           child: Text(
-                                                            'Subtotal (₹${item.price} x ${item.quantity})',
+                                                            'Subtotal (IQD ${item.price} x ${item.quantity})',
                                                             style: const TextStyle(
                                                               fontSize: 14,
                                                               color: AppColors.textSecondary,
@@ -406,7 +406,7 @@ class UserOrderDetailsPage extends StatelessWidget {
                                                         child: Align(
                                                           alignment: Alignment.centerRight,
                                                           child: Text(
-                                                            '₹${(item.price * item.quantity).toStringAsFixed(2)}',
+                                                            'IQD ${(item.price * item.quantity).toStringAsFixed(2)}',
                                                             style: const TextStyle(
                                                               fontSize: 14,
                                                               color: AppColors.textPrimary,
@@ -439,7 +439,7 @@ class UserOrderDetailsPage extends StatelessWidget {
                                                         child: Align(
                                                           alignment: Alignment.centerRight,
                                                           child: Text(
-                                                            '₹${item.taxAmount.toStringAsFixed(2)}',
+                                                            'IQD ${item.taxAmount.toStringAsFixed(2)}',
                                                             style: const TextStyle(
                                                               fontSize: 14,
                                                               color: AppColors.textSecondary,
@@ -479,7 +479,7 @@ class UserOrderDetailsPage extends StatelessWidget {
                                                         child: Align(
                                                           alignment: Alignment.centerRight,
                                                           child: Text(
-                                                            '₹${((item.price * item.quantity) + item.taxAmount).toStringAsFixed(2)}',
+                                                            'IQD ${((item.price * item.quantity) + item.taxAmount).toStringAsFixed(2)}',
                                                             style: const TextStyle(
                                                               fontSize: 14,
                                                               color: AppColors.textPrimary,

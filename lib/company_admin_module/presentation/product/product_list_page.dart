@@ -283,7 +283,7 @@ class ProductListPage extends StatelessWidget {
                                         ),
                                       ),
                                       subtitle: Text(
-                                        '₹${product.price ?? 0}',
+                                        'IQD ${product.price ?? 0}',
                                         style: TextStyle(
                                           color: Colors.grey[600],
                                         ),

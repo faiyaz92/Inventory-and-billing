@@ -1163,7 +1163,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                       ),
                       _buildTableRow(
                         'Total',
-                        '₹${order.totalAmount.toStringAsFixed(2)}',
+                        'IQD ${order.totalAmount.toStringAsFixed(2)}',
                         isBold: true,
                         valueColor: AppColors.textPrimary,
                         backgroundColor: AppColors.primary.withOpacity(0.1),

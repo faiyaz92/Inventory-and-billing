@@ -847,7 +847,7 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
                     _cachedUserInfo?.dailyWage != null
-                        ? "₹${_cachedUserInfo!.dailyWage!.toStringAsFixed(2)}"
+                        ? "IQD ${_cachedUserInfo!.dailyWage!.toStringAsFixed(2)}"
                         : "N/A",
                     style: defaultTextStyle(fontSize: 14),
                   ),
@@ -951,7 +951,7 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
                     widget.user!.dailyWage != null
-                        ? "₹${widget.user!.dailyWage!.toStringAsFixed(2)}"
+                        ? "IQD ${widget.user!.dailyWage!.toStringAsFixed(2)}"
                         : "N/A",
                     style: defaultTextStyle(fontSize: 14),
                   ),
@@ -1273,8 +1273,8 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
                         children: [
                           Text(
                             txn.type == "Debit"
-                                ? "Debit: ₹${txn.amount.toStringAsFixed(2)}"
-                                : "Credit: ₹${txn.amount.toStringAsFixed(2)}",
+                                ? "Debit: IQD ${txn.amount.toStringAsFixed(2)}"
+                                : "Credit: IQD ${txn.amount.toStringAsFixed(2)}",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,

@@ -652,7 +652,7 @@ class _AddStockPageState extends State<AddStockPage> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Price: ₹${product.price.toStringAsFixed(2)}',
+                                          'Price: IQD ${product.price.toStringAsFixed(2)}',
                                           style: const TextStyle(
                                               fontSize: 14,
                                               color: AppColors.textSecondary),
@@ -860,10 +860,10 @@ class _AddStockPageState extends State<AddStockPage> {
                                       _buildTableCell(quantity.toString(),
                                           align: TextAlign.center),
                                       _buildTableCell(
-                                          '₹${itemSubtotal.toStringAsFixed(2)}',
+                                          'IQD ${itemSubtotal.toStringAsFixed(2)}',
                                           align: TextAlign.right),
                                       _buildTableCell(
-                                          '₹${itemTax.toStringAsFixed(2)}',
+                                          'IQD ${itemTax.toStringAsFixed(2)}',
                                           align: TextAlign.right),
                                     ],
                                   );
@@ -880,11 +880,11 @@ class _AddStockPageState extends State<AddStockPage> {
                                     _buildTableCell('',
                                         align: TextAlign.center),
                                     _buildTableCell(
-                                        '₹${subtotal.toStringAsFixed(2)}',
+                                        'IQD ${subtotal.toStringAsFixed(2)}',
                                         isHeader: true,
                                         align: TextAlign.right),
                                     _buildTableCell(
-                                        '₹${totalTax.toStringAsFixed(2)}',
+                                        'IQD ${totalTax.toStringAsFixed(2)}',
                                         isHeader: true,
                                         align: TextAlign.right),
                                   ],
@@ -998,7 +998,7 @@ class _AddStockPageState extends State<AddStockPage> {
                                           ),
                                         ),
                                         Text(
-                                          '₹${payableAmount.toStringAsFixed(2)}',
+                                          'IQD ${payableAmount.toStringAsFixed(2)}',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             color: AppColors.primary,
@@ -1495,7 +1495,7 @@ class _AddStockPageState extends State<AddStockPage> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'Price: ₹${product.price.toStringAsFixed(2)}',
+                                'Price: IQD ${product.price.toStringAsFixed(2)}',
                                 style: const TextStyle(
                                     fontSize: 14,
                                     color: AppColors.textSecondary),
@@ -1629,7 +1629,7 @@ class _AddStockPageState extends State<AddStockPage> {
                                   padding: const EdgeInsets.symmetric(
                                       vertical: 8, horizontal: 12),
                                   child: Text(
-                                    'Subtotal (₹${product.price.toStringAsFixed(2)} x $quantity)',
+                                    'Subtotal (IQD ${product.price.toStringAsFixed(2)} x $quantity)',
                                     style: const TextStyle(
                                         fontSize: 14,
                                         color: AppColors.textSecondary),
@@ -1639,7 +1639,7 @@ class _AddStockPageState extends State<AddStockPage> {
                                   padding: const EdgeInsets.symmetric(
                                       vertical: 8, horizontal: 12),
                                   child: Text(
-                                    '₹${subtotal.toStringAsFixed(2)}',
+                                    'IQD ${subtotal.toStringAsFixed(2)}',
                                     textAlign: TextAlign.right,
                                     style: const TextStyle(
                                         fontSize: 14,
@@ -1665,7 +1665,7 @@ class _AddStockPageState extends State<AddStockPage> {
                                   padding: const EdgeInsets.symmetric(
                                       vertical: 8, horizontal: 12),
                                   child: Text(
-                                    '₹${taxAmount.toStringAsFixed(2)}',
+                                    'IQD ${taxAmount.toStringAsFixed(2)}',
                                     textAlign: TextAlign.right,
                                     style: const TextStyle(
                                         fontSize: 14,
@@ -1698,7 +1698,7 @@ class _AddStockPageState extends State<AddStockPage> {
                                   padding: const EdgeInsets.symmetric(
                                       vertical: 8, horizontal: 12),
                                   child: Text(
-                                    '₹${(subtotal + taxAmount).toStringAsFixed(2)}',
+                                    'IQD ${(subtotal + taxAmount).toStringAsFixed(2)}',
                                     textAlign: TextAlign.right,
                                     style: const TextStyle(
                                         fontSize: 14,

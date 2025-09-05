@@ -1208,14 +1208,14 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                       ),
                       _buildTableRow(
                         'Total',
-                        '₹${invoice.totalAmount.toStringAsFixed(2)}',
+                        'IQD ${invoice.totalAmount.toStringAsFixed(2)}',
                         isBold: true,
                         valueColor: AppColors.textPrimary,
                         backgroundColor: AppColors.primary.withOpacity(0.1),
                       ),
                       _buildTableRow(
                         'Outstanding',
-                        '₹${(invoice.totalAmount - (invoice.amountReceived ?? 0.0)).toStringAsFixed(2)}',
+                        'IQD ${(invoice.totalAmount - (invoice.amountReceived ?? 0.0)).toStringAsFixed(2)}',
                         isBold: true,
                         valueColor: AppColors.red,
                         backgroundColor: AppColors.red.withOpacity(0.1),
@@ -1309,7 +1309,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                     Text('Order ID: ${invoice.id}', style: const TextStyle(fontSize: 14)),
                     Text('Invoice Number: ${invoice.billNumber ?? 'N/A'}', style: const TextStyle(fontSize: 14)),
                     Text(
-                      'Outstanding: ₹${(invoice.totalAmount - (invoice.amountReceived ?? 0.0)).toStringAsFixed(2)}',
+                      'Outstanding: IQD ${(invoice.totalAmount - (invoice.amountReceived ?? 0.0)).toStringAsFixed(2)}',
                       style: const TextStyle(fontSize: 14),
                     ),
                     const SizedBox(height: 16),
@@ -1330,7 +1330,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                         }
                         final outstanding = invoice.totalAmount - (invoice.amountReceived ?? 0.0);
                         if (amount > outstanding) {
-                          return 'Amount cannot exceed outstanding balance of ₹${outstanding.toStringAsFixed(2)}';
+                          return 'Amount cannot exceed outstanding balance of IQD ${outstanding.toStringAsFixed(2)}';
                         }
                         return null;
                       },
@@ -1391,7 +1391,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
     final outstanding = invoice.totalAmount - currentAmountReceived;
     if (amount > outstanding) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Amount cannot exceed outstanding balance of ₹${outstanding.toStringAsFixed(2)}')),
+        SnackBar(content: Text('Amount cannot exceed outstanding balance of IQD ${outstanding.toStringAsFixed(2)}')),
       );
       return;
     }

@@ -130,7 +130,7 @@ class EmployeesPageState extends State<EmployeesPage> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            'Total Payable Salary: ₹${totalPayable.toStringAsFixed(2)}',
+            'Total Payable Salary: IQD ${totalPayable.toStringAsFixed(2)}',
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
@@ -150,7 +150,7 @@ class EmployeesPageState extends State<EmployeesPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(user.email ?? "No Email"),
-                      Text('Payable: ₹${payableSalary.toStringAsFixed(2)}'),
+                      Text('Payable: IQD ${payableSalary.toStringAsFixed(2)}'),
                     ],
                   ),
                   trailing: PopupMenuButton<String>(

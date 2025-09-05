@@ -86,7 +86,8 @@ class _StockListPageState extends State<StockListPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: const Text('Add Stock'),
           content: Form(
             key: _formKey,
@@ -175,7 +176,8 @@ class _StockListPageState extends State<StockListPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: const Text('Subtract Stock'),
           content: Form(
             key: _formKey,
@@ -244,8 +246,8 @@ class _StockListPageState extends State<StockListPage> {
     );
   }
 
-  void _showTransferStockDialog(
-      BuildContext context, List<StockModel> stockItems, List<StoreDto> stores) {
+  void _showTransferStockDialog(BuildContext pageContext,
+      List<StockModel> stockItems, List<StoreDto> stores) {
     String? selectedStoreId;
     String? remarks;
     bool generatePdf = true;
@@ -256,7 +258,7 @@ class _StockListPageState extends State<StockListPage> {
     void addToTransferEntries(StockModel stock, int quantity) {
       if (quantity <= 0 || quantity > stock.quantity) return;
       final existingEntry = transferEntries.firstWhere(
-            (entry) => entry['stock'].id == stock.id,
+        (entry) => entry['stock'].id == stock.id,
         orElse: () => {'stock': stock, 'quantity': 0},
       );
       if (!transferEntries.contains(existingEntry)) {
@@ -276,7 +278,7 @@ class _StockListPageState extends State<StockListPage> {
       transferEntries = transferEntries.map((entry) {
         if (entry['stock'].id == stockId) {
           final newQuantity =
-          (entry['quantity'] + change).clamp(0, entry['stock'].quantity);
+              (entry['quantity'] + change).clamp(0, entry['stock'].quantity);
           return {'stock': entry['stock'], 'quantity': newQuantity};
         }
         return entry;
@@ -290,13 +292,14 @@ class _StockListPageState extends State<StockListPage> {
 
     void showQuantityInputDialog(StockModel stock, {int initialQuantity = 1}) {
       final TextEditingController quantityController =
-      TextEditingController(text: initialQuantity.toString());
+          TextEditingController(text: initialQuantity.toString());
       final _dialogFormKey = GlobalKey<FormState>();
 
       showDialog(
-        context: context,
+        context: pageContext,
         builder: (dialogContext) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: Text('Set Quantity for ${stock.name ?? 'Unknown'}'),
           content: Form(
             key: _dialogFormKey,
@@ -304,7 +307,8 @@ class _StockListPageState extends State<StockListPage> {
               controller: quantityController,
               decoration: InputDecoration(
                 labelText: 'Quantity',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 filled: true,
                 fillColor: Colors.grey[100],
               ),
@@ -339,10 +343,10 @@ class _StockListPageState extends State<StockListPage> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
+                backgroundColor: Theme.of(pageContext).primaryColor,
+                foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8)),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               ),
               child: const Text('Save'),
             ),
@@ -352,578 +356,617 @@ class _StockListPageState extends State<StockListPage> {
     }
 
     showDialog(
-        context: context,
-        builder: (dialogContext) {
-          return StatefulBuilder(
-            builder: (context, setDialogState) {
-              return LoadingOverlay(
-                isLoading: isLoading,
-                child: AlertDialog(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  title: const Text('Transfer Stock'),
-                  content: Form(
-                    key: _formKey,
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          DropdownButtonFormField<String>(
-                            decoration: InputDecoration(
-                              labelText: 'Transfer to Store',
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              filled: true,
-                              fillColor: Colors.grey[100],
-                            ),
-                            value: selectedStoreId,
-                            items: stores
-                                .where((store) => !stockItems
-                                .any((stock) => stock.storeId == store.storeId))
-                                .map((store) => DropdownMenuItem(
-                              value: store.storeId,
-                              child: Text(store.name),
-                            ))
-                                .toList(),
-                            onChanged: (value) =>
-                                setDialogState(() => selectedStoreId = value),
-                            validator: (value) =>
-                            value == null ? 'Please select a store' : null,
+      context: pageContext,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return LoadingOverlay(
+              isLoading: isLoading,
+              child: AlertDialog(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                title: const Text('Transfer Stock'),
+                content: Form(
+                  key: _formKey,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            labelText: 'Transfer to Store',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                            filled: true,
+                            fillColor: Colors.grey[100],
                           ),
-                          const SizedBox(height: 16),
-                          DropdownButtonFormField<String>(
-                            decoration: InputDecoration(
-                              labelText: 'Add Stock Item',
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              filled: true,
-                              fillColor: Colors.grey[100],
-                            ),
-                            value: null,
-                            hint: const Text('Select a product to add'),
-                            items: stockItems
-                                .where((stock) => stock.quantity > 0)
-                                .map((stock) => DropdownMenuItem(
-                              value: stock.id,
-                              child: Text(stock.name ?? 'Unknown'),
-                            ))
-                                .toList(),
-                            onChanged: (value) {
-                              if (value != null) {
-                                final selectedStock =
-                                stockItems.firstWhere((stock) => stock.id == value);
-                                setDialogState(() {
-                                  addToTransferEntries(selectedStock, 1);
-                                });
-                              }
-                            },
+                          value: selectedStoreId,
+                          items: stores
+                              .where((store) => !stockItems.any(
+                                  (stock) => stock.storeId == store.storeId))
+                              .map((store) => DropdownMenuItem(
+                                    value: store.storeId,
+                                    child: Text(store.name),
+                                  ))
+                              .toList(),
+                          onChanged: (value) =>
+                              setDialogState(() => selectedStoreId = value),
+                          validator: (value) =>
+                              value == null ? 'Please select a store' : null,
+                        ),
+                        const SizedBox(height: 16),
+                        DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            labelText: 'Add Stock Item',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                            filled: true,
+                            fillColor: Colors.grey[100],
                           ),
-                          const SizedBox(height: 16),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
+                          value: null,
+                          hint: const Text('Select a product to add'),
+                          items: stockItems
+                              .where((stock) => stock.quantity > 0)
+                              .map((stock) => DropdownMenuItem(
+                                    value: stock.id,
+                                    child: Text(stock.name ?? 'Unknown'),
+                                  ))
+                              .toList(),
+                          onChanged: (value) {
+                            if (value != null) {
+                              final selectedStock = stockItems
+                                  .firstWhere((stock) => stock.id == value);
+                              setDialogState(() {
+                                addToTransferEntries(selectedStock, 1);
+                              });
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Transfer Entries',
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 8),
+                            if (transferEntries.isEmpty)
                               const Text(
-                                'Transfer Entries',
-                                style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 8),
-                              if (transferEntries.isEmpty)
-                                const Text(
-                                  'No stock items selected',
-                                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                                )
-                              else
-                                ...transferEntries.asMap().entries.map((entry) {
-                                  final stock = entry.value['stock'] as StockModel;
-                                  final quantity = entry.value['quantity'] as int;
-                                  final double price = stock.price ?? 0.0;
-                                  final double taxRate = stock.tax ?? 0.0;
-                                  final double subtotal = price * quantity;
-                                  final double taxAmount = subtotal * (taxRate / 100);
-                                  return Card(
-                                    elevation: 3,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12)),
-                                    margin: const EdgeInsets.symmetric(vertical: 8),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(12),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      stock.name ?? 'Unknown',
-                                                      style: const TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight: FontWeight.w600,
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 8),
-                                                    Text(
-                                                      'Price: ₹${price.toStringAsFixed(2)}',
-                                                      style: const TextStyle(
-                                                          fontSize: 14,
-                                                          color: Colors.grey),
-                                                    ),
-                                                    Text(
-                                                      'Tax: ${taxRate.toStringAsFixed(0)}%',
-                                                      style: const TextStyle(
-                                                          fontSize: 14,
-                                                          color: Colors.grey),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              Column(
+                                'No stock items selected',
+                                style:
+                                    TextStyle(fontSize: 16, color: Colors.grey),
+                              )
+                            else
+                              ...transferEntries.asMap().entries.map((entry) {
+                                final stock =
+                                    entry.value['stock'] as StockModel;
+                                final quantity = entry.value['quantity'] as int;
+                                final double price = stock.price ?? 0.0;
+                                final double taxRate = stock.tax ?? 0.0;
+                                final double subtotal = price * quantity;
+                                final double taxAmount =
+                                    subtotal * (taxRate / 100);
+                                return Card(
+                                  elevation: 3,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 8),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
-                                                  Container(
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.white,
-                                                      borderRadius:
-                                                      BorderRadius.circular(24),
-                                                      border: Border.all(
-                                                          color: Colors.grey
-                                                              .withOpacity(0.3)),
-                                                    ),
-                                                    child: Row(
-                                                      mainAxisSize: MainAxisSize.min,
-                                                      children: [
-                                                        IconButton(
-                                                          icon: Icon(
-                                                            Icons.remove,
-                                                            color: quantity > 0
-                                                                ? Colors.red
-                                                                : Colors.grey,
-                                                            size: 20,
-                                                          ),
-                                                          onPressed: () => setDialogState(
-                                                                  () => updateTransferEntryQuantity(
-                                                                  stock.id, -1)),
-                                                        ),
-                                                        SizedBox(
-                                                          width: 48,
-                                                          child: Text(
-                                                            '$quantity',
-                                                            textAlign: TextAlign.center,
-                                                            style: const TextStyle(
-                                                                fontSize: 16,
-                                                                fontWeight:
-                                                                FontWeight.w600),
-                                                          ),
-                                                        ),
-                                                        IconButton(
-                                                          icon: const Icon(Icons.add,
-                                                              color: Colors.green,
-                                                              size: 20),
-                                                          onPressed: () => setDialogState(
-                                                                  () => updateTransferEntryQuantity(
-                                                                  stock.id, 1)),
-                                                        ),
-                                                      ],
+                                                  Text(
+                                                    stock.name ?? 'Unknown',
+                                                    style: const TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.w600,
                                                     ),
                                                   ),
                                                   const SizedBox(height: 8),
-                                                  Row(
-                                                    children: [
-                                                      ElevatedButton(
-                                                        onPressed: () =>
-                                                            showQuantityInputDialog(
-                                                                stock,
-                                                                initialQuantity:
-                                                                quantity),
-                                                        style: ElevatedButton.styleFrom(
-                                                          backgroundColor:
-                                                          Theme.of(context)
-                                                              .primaryColor,
-                                                          shape:
-                                                          RoundedRectangleBorder(
-                                                              borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                  8)),
-                                                          padding: const EdgeInsets
-                                                              .symmetric(
-                                                              horizontal: 8,
-                                                              vertical: 4),
-                                                        ),
-                                                        child: const Text(
-                                                          'Enter Qty',
-                                                          style: TextStyle(
-                                                              color: Colors.white,
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                              FontWeight.w600),
-                                                        ),
-                                                      ),
-                                                      const SizedBox(width: 8),
-                                                      ElevatedButton(
-                                                        onPressed: () => setDialogState(
-                                                                () => clearTransferEntry(
-                                                                stock.id)),
-                                                        style: ElevatedButton.styleFrom(
-                                                          backgroundColor: Colors.red,
-                                                          shape:
-                                                          RoundedRectangleBorder(
-                                                              borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                  8)),
-                                                          padding: const EdgeInsets
-                                                              .symmetric(
-                                                              horizontal: 8,
-                                                              vertical: 4),
-                                                        ),
-                                                        child: const Text(
-                                                          'Clear',
-                                                          style: TextStyle(
-                                                              color: Colors.white,
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                              FontWeight.w600),
-                                                        ),
-                                                      ),
-                                                    ],
+                                                  Text(
+                                                    'Price: IQD ${price.toStringAsFixed(2)}',
+                                                    style: const TextStyle(
+                                                        fontSize: 14,
+                                                        color: Colors.grey),
                                                   ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                          if (quantity > 0) ...[
-                                            const SizedBox(height: 12),
-                                            Container(
-                                              decoration: BoxDecoration(
-                                                border: Border.all(
-                                                    color:
-                                                    Colors.grey.withOpacity(0.3)),
-                                                borderRadius:
-                                                BorderRadius.circular(12),
-                                              ),
-                                              child: Table(
-                                                border: TableBorder(
-                                                  verticalInside: BorderSide(
-                                                      color: Colors.grey
-                                                          .withOpacity(0.3)),
-                                                  horizontalInside: BorderSide(
-                                                      color: Colors.grey
-                                                          .withOpacity(0.3)),
-                                                ),
-                                                columnWidths: const {
-                                                  0: FlexColumnWidth(3),
-                                                  1: FlexColumnWidth(2),
-                                                },
-                                                children: [
-                                                  TableRow(
-                                                    children: [
-                                                      Padding(
-                                                        padding: const EdgeInsets
-                                                            .symmetric(
-                                                            vertical: 8,
-                                                            horizontal: 12),
-                                                        child: Text(
-                                                          'Subtotal (₹${price.toStringAsFixed(2)} x $quantity)',
-                                                          style: const TextStyle(
-                                                              fontSize: 14,
-                                                              color: Colors.grey),
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding: const EdgeInsets
-                                                            .symmetric(
-                                                            vertical: 8,
-                                                            horizontal: 12),
-                                                        child: Text(
-                                                          '₹${subtotal.toStringAsFixed(2)}',
-                                                          textAlign: TextAlign.right,
-                                                          style: const TextStyle(
-                                                              fontSize: 14,
-                                                              fontWeight:
-                                                              FontWeight.w600),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  TableRow(
-                                                    children: [
-                                                      Padding(
-                                                        padding: const EdgeInsets
-                                                            .symmetric(
-                                                            vertical: 8,
-                                                            horizontal: 12),
-                                                        child: Text(
-                                                          'Tax (${taxRate.toStringAsFixed(0)}%)',
-                                                          style: const TextStyle(
-                                                              fontSize: 14,
-                                                              color: Colors.grey),
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding: const EdgeInsets
-                                                            .symmetric(
-                                                            vertical: 8,
-                                                            horizontal: 12),
-                                                        child: Text(
-                                                          '₹${taxAmount.toStringAsFixed(2)}',
-                                                          textAlign: TextAlign.right,
-                                                          style: const TextStyle(
-                                                              fontSize: 14,
-                                                              color: Colors.grey),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  TableRow(
-                                                    decoration: BoxDecoration(
-                                                      color: Theme.of(context)
-                                                          .primaryColor
-                                                          .withOpacity(0.05),
-                                                      borderRadius:
-                                                      const BorderRadius.only(
-                                                        bottomLeft:
-                                                        Radius.circular(12),
-                                                        bottomRight:
-                                                        Radius.circular(12),
-                                                      ),
-                                                    ),
-                                                    children: [
-                                                      const Padding(
-                                                        padding: EdgeInsets.symmetric(
-                                                            vertical: 8,
-                                                            horizontal: 12),
-                                                        child: Text(
-                                                          'Total',
-                                                          style: TextStyle(
-                                                              fontSize: 14,
-                                                              fontWeight:
-                                                              FontWeight.w700),
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding: const EdgeInsets
-                                                            .symmetric(
-                                                            vertical: 8,
-                                                            horizontal: 12),
-                                                        child: Text(
-                                                          '₹${(subtotal + taxAmount).toStringAsFixed(2)}',
-                                                          textAlign: TextAlign.right,
-                                                          style: const TextStyle(
-                                                              fontSize: 14,
-                                                              fontWeight:
-                                                              FontWeight.w700),
-                                                        ),
-                                                      ),
-                                                    ],
+                                                  Text(
+                                                    'Tax: ${taxRate.toStringAsFixed(0)}%',
+                                                    style: const TextStyle(
+                                                        fontSize: 14,
+                                                        color: Colors.grey),
                                                   ),
                                                 ],
                                               ),
                                             ),
+                                            Column(
+                                              children: [
+                                                Container(
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            24),
+                                                    border: Border.all(
+                                                        color: Colors.grey
+                                                            .withOpacity(0.3)),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      IconButton(
+                                                        icon: Icon(
+                                                          Icons.remove,
+                                                          color: quantity > 0
+                                                              ? Colors.red
+                                                              : Colors.grey,
+                                                          size: 20,
+                                                        ),
+                                                        onPressed: () =>
+                                                            setDialogState(() =>
+                                                                updateTransferEntryQuantity(
+                                                                    stock.id,
+                                                                    -1)),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 48,
+                                                        child: Text(
+                                                          '$quantity',
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: const TextStyle(
+                                                              fontSize: 16,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600),
+                                                        ),
+                                                      ),
+                                                      IconButton(
+                                                        icon: const Icon(
+                                                            Icons.add,
+                                                            color: Colors.green,
+                                                            size: 20),
+                                                        onPressed: () =>
+                                                            setDialogState(() =>
+                                                                updateTransferEntryQuantity(
+                                                                    stock.id,
+                                                                    1)),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 8),
+                                                Row(
+                                                  children: [
+                                                    ElevatedButton(
+                                                      onPressed: () =>
+                                                          showQuantityInputDialog(
+                                                              stock,
+                                                              initialQuantity:
+                                                                  quantity),
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                        backgroundColor:
+                                                            Theme.of(context)
+                                                                .primaryColor,
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            8)),
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 8,
+                                                                vertical: 4),
+                                                      ),
+                                                      child: const Text(
+                                                        'Enter Qty',
+                                                        style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w600),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    ElevatedButton(
+                                                      onPressed: () =>
+                                                          setDialogState(() =>
+                                                              clearTransferEntry(
+                                                                  stock.id)),
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                        backgroundColor:
+                                                            Colors.red,
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            8)),
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 8,
+                                                                vertical: 4),
+                                                      ),
+                                                      child: const Text(
+                                                        'Clear',
+                                                        style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w600),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
                                           ],
+                                        ),
+                                        if (quantity > 0) ...[
+                                          const SizedBox(height: 12),
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              border: Border.all(
+                                                  color: Colors.grey
+                                                      .withOpacity(0.3)),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Table(
+                                              border: TableBorder(
+                                                verticalInside: BorderSide(
+                                                    color: Colors.grey
+                                                        .withOpacity(0.3)),
+                                                horizontalInside: BorderSide(
+                                                    color: Colors.grey
+                                                        .withOpacity(0.3)),
+                                              ),
+                                              columnWidths: const {
+                                                0: FlexColumnWidth(3),
+                                                1: FlexColumnWidth(2),
+                                              },
+                                              children: [
+                                                TableRow(
+                                                  children: [
+                                                    Padding(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          vertical: 8,
+                                                          horizontal: 12),
+                                                      child: Text(
+                                                        'Subtotal (IQD ${price.toStringAsFixed(2)} x $quantity)',
+                                                        style: const TextStyle(
+                                                            fontSize: 14,
+                                                            color: Colors.grey),
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          vertical: 8,
+                                                          horizontal: 12),
+                                                      child: Text(
+                                                        'IQD ${subtotal.toStringAsFixed(2)}',
+                                                        textAlign:
+                                                            TextAlign.right,
+                                                        style: const TextStyle(
+                                                            fontSize: 14,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w600),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                TableRow(
+                                                  children: [
+                                                    Padding(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          vertical: 8,
+                                                          horizontal: 12),
+                                                      child: Text(
+                                                        'Tax (${taxRate.toStringAsFixed(0)}%)',
+                                                        style: const TextStyle(
+                                                            fontSize: 14,
+                                                            color: Colors.grey),
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          vertical: 8,
+                                                          horizontal: 12),
+                                                      child: Text(
+                                                        'IQD ${taxAmount.toStringAsFixed(2)}',
+                                                        textAlign:
+                                                            TextAlign.right,
+                                                        style: const TextStyle(
+                                                            fontSize: 14,
+                                                            color: Colors.grey),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                TableRow(
+                                                  decoration: BoxDecoration(
+                                                    color: Theme.of(context)
+                                                        .primaryColor
+                                                        .withOpacity(0.05),
+                                                    borderRadius:
+                                                        const BorderRadius.only(
+                                                      bottomLeft:
+                                                          Radius.circular(12),
+                                                      bottomRight:
+                                                          Radius.circular(12),
+                                                    ),
+                                                  ),
+                                                  children: [
+                                                    const Padding(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              vertical: 8,
+                                                              horizontal: 12),
+                                                      child: Text(
+                                                        'Total',
+                                                        style: TextStyle(
+                                                            fontSize: 14,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w700),
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          vertical: 8,
+                                                          horizontal: 12),
+                                                      child: Text(
+                                                        'IQD ${(subtotal + taxAmount).toStringAsFixed(2)}',
+                                                        textAlign:
+                                                            TextAlign.right,
+                                                        style: const TextStyle(
+                                                            fontSize: 14,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w700),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                         ],
-                                      ),
+                                      ],
                                     ),
-                                  );
-                                }).toList(),
-                            ],
+                                  ),
+                                );
+                              }).toList(),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          decoration: InputDecoration(
+                            labelText: 'Remarks (Optional)',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                            filled: true,
+                            fillColor: Colors.grey[100],
                           ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            decoration: InputDecoration(
-                              labelText: 'Remarks (Optional)',
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              filled: true,
-                              fillColor: Colors.grey[100],
-                            ),
-                            onChanged: (value) =>
-                            remarks = value.isEmpty ? null : value,
-                          ),
-                          const SizedBox(height: 16),
-                          CheckboxListTile(
-                            title: const Text('Generate PDF Report'),
-                            value: generatePdf,
-                            onChanged: (value) =>
-                                setDialogState(() => generatePdf = value ?? true),
-                            controlAffinity: ListTileControlAffinity.leading,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                        ],
-                      ),
+                          onChanged: (value) =>
+                              remarks = value.isEmpty ? null : value,
+                        ),
+                        const SizedBox(height: 16),
+                        CheckboxListTile(
+                          title: const Text('Generate PDF Report'),
+                          value: generatePdf,
+                          onChanged: (value) =>
+                              setDialogState(() => generatePdf = value ?? true),
+                          controlAffinity: ListTileControlAffinity.leading,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ],
                     ),
                   ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(dialogContext),
-                      child: const Text('Cancel'),
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                      ),
-                      onPressed: transferEntries.isEmpty || selectedStoreId == null
-                          ? null
-                          : () async {
-                        if (_formKey.currentState!.validate()) {
-                          setDialogState(() => isLoading = true);
-                          final userInfo =
-                          await sl<AccountRepository>().getUserInfo();
-                          final companyId = userInfo?.companyId ?? 'Unknown';
-                          final transferId =
-                          DateTime.now().millisecondsSinceEpoch.toString();
-                          final ledgerCubit = sl<UserLedgerCubit>();
-                          final storesList = await sl<StockRepository>()
-                              .getStores(companyId);
-
-                          final fromStore = storesList.firstWhere(
-                                (store) =>
-                            store.storeId == stockItems.first.storeId,
-                            orElse: () => StoreDto(
-                              storeId: stockItems.first.storeId,
-                              name: 'Unknown',
-                              createdBy: '',
-                              createdAt: DateTime.now(),
-                              accountLedgerId: null,
-                              storeType: StoreType.store,
-                            ),
-                          );
-                          final toStore = storesList.firstWhere(
-                                (store) => store.storeId == selectedStoreId,
-                            orElse: () => StoreDto(
-                              storeId: selectedStoreId!,
-                              name: 'Unknown',
-                              createdBy: '',
-                              createdAt: DateTime.now(),
-                              accountLedgerId: null,
-                              storeType: StoreType.store,
-                            ),
-                          );
-
-                          if (fromStore.accountLedgerId == null &&
-                              fromStore.storeType != StoreType.salesman) {
-                            setDialogState(() => isLoading = false);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Ledger ID missing for source store',
-                                ),
-                              ),
-                            );
-                            return;
-                          }
-                          if (toStore.accountLedgerId == null &&
-                              toStore.storeType != StoreType.salesman) {
-                            setDialogState(() => isLoading = false);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Ledger ID missing for destination store',
-                                ),
-                              ),
-                            );
-                            return;
-                          }
-
-                          try {
-                            for (var entry in transferEntries) {
-                              final stock = entry['stock'] as StockModel;
-                              final quantity = entry['quantity'] as int;
-                              final price = stock.price ?? 0.0;
-                              final taxRate = stock.tax ?? 0.0;
-                              final amount = (price * quantity) +
-                                  (price * quantity * (taxRate / 100));
-
-                              await _stockCubit.transferStock(
-                                stock,
-                                selectedStoreId!,
-                                quantity,
-                                remarks: remarks,
-                              );
-
-                              // Add credit entry for source store/warehouse (if not salesman)
-                              if (fromStore.storeType !=
-                                  StoreType.salesman &&
-                                  fromStore.accountLedgerId != null) {
-                                await ledgerCubit.addTransaction(
-                                  ledgerId: fromStore.accountLedgerId!,
-                                  amount: amount,
-                                  type: 'Credit',
-                                  billNumber: 'TRANSFER-$transferId',
-                                  purpose: 'Stock Transfer Out',
-                                  typeOfPurpose: 'Transfer',
-                                  remarks:
-                                  'Transferred $quantity units of ${stock.name ?? 'Unknown'} to ${toStore.name} (Transfer ID: $transferId)',
-                                  userType: UserType.Store,
-                                );
-                              }
-
-                              // Add debit entry for destination store/warehouse (if not salesman)
-                              if (toStore.storeType != StoreType.salesman &&
-                                  toStore.accountLedgerId != null) {
-                                await ledgerCubit.addTransaction(
-                                  ledgerId: toStore.accountLedgerId!,
-                                  amount: amount,
-                                  type: 'Debit',
-                                  billNumber: 'TRANSFER-$transferId',
-                                  purpose: 'Stock Transfer In',
-                                  typeOfPurpose: 'Transfer',
-                                  remarks:
-                                  'Received $quantity units of ${stock.name ?? 'Unknown'} from ${fromStore.name} (Transfer ID: $transferId)',
-                                  userType: UserType.Store,
-                                );
-                              }
-                            }
-
-                            if (generatePdf) {
-                              final pdf = await _generateTransferPdf(
-                                transferId,
-                                stockItems.first.storeId,
-                                selectedStoreId!,
-                                transferEntries,
-                                userInfo?.userName ?? 'Unknown',
-                                companyId,
-                              );
-                              await sl<Coordinator>().navigateToBillPdfPage(
-                                pdf: pdf,
-                                billNumber: 'TRANSFER-$transferId',
-                              );
-                            }
-
-                            await _stockCubit
-                                .fetchStock(stockItems.first.storeId);
-                            setDialogState(() => isLoading = false);
-                            Navigator.pop(dialogContext);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                  Text('Stock transferred successfully')),
-                            );
-                          } catch (e) {
-                            setDialogState(() => isLoading = false);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content:
-                                  Text('Failed to transfer stock: $e')),
-                            );
-                          }
-                        }
-                      },
-                      child: const Text(AppLabels.saveButtonText),
-                    ),
-                  ],
                 ),
-              );
-            },
-          );
-        }
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(dialogContext),
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                    onPressed: transferEntries.isEmpty ||
+                            selectedStoreId == null
+                        ? null
+                        : () async {
+                            if (_formKey.currentState!.validate()) {
+                              setDialogState(() => isLoading = true);
+                              final userInfo =
+                                  await sl<AccountRepository>().getUserInfo();
+                              final companyId =
+                                  userInfo?.companyId ?? 'Unknown';
+                              final transferId = DateTime.now()
+                                  .millisecondsSinceEpoch
+                                  .toString();
+                              final ledgerCubit = sl<UserLedgerCubit>();
+                              final storesList = await sl<StockRepository>()
+                                  .getStores(companyId);
+
+                              final fromStore = storesList.firstWhere(
+                                (store) =>
+                                    store.storeId == stockItems.first.storeId,
+                                orElse: () => StoreDto(
+                                  storeId: stockItems.first.storeId,
+                                  name: 'Unknown',
+                                  createdBy: '',
+                                  createdAt: DateTime.now(),
+                                  accountLedgerId: null,
+                                  storeType: StoreType.store,
+                                ),
+                              );
+                              final toStore = storesList.firstWhere(
+                                (store) => store.storeId == selectedStoreId,
+                                orElse: () => StoreDto(
+                                  storeId: selectedStoreId!,
+                                  name: 'Unknown',
+                                  createdBy: '',
+                                  createdAt: DateTime.now(),
+                                  accountLedgerId: null,
+                                  storeType: StoreType.store,
+                                ),
+                              );
+
+                              // Validate ledger IDs only for non-salesman entities
+                              if (fromStore.storeType != StoreType.salesman &&
+                                  fromStore.accountLedgerId == null) {
+                                setDialogState(() => isLoading = false);
+                                ScaffoldMessenger.of(pageContext).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        'Ledger ID missing for source store'),
+                                  ),
+                                );
+                                return;
+                              }
+                              if (toStore.storeType != StoreType.salesman &&
+                                  toStore.accountLedgerId == null) {
+                                setDialogState(() => isLoading = false);
+                                ScaffoldMessenger.of(pageContext).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        'Ledger ID missing for destination store'),
+                                  ),
+                                );
+                                return;
+                              }
+
+                              List<Future> saveFutures = [];
+
+                              for (var entry in transferEntries) {
+                                final stock = entry['stock'] as StockModel;
+                                final quantity = entry['quantity'] as int;
+                                final price = stock.price ?? 0.0;
+                                final taxRate = stock.tax ?? 0.0;
+                                final amount = (price * quantity) +
+                                    (price * quantity * (taxRate / 100));
+
+                                saveFutures.add(_stockCubit.transferStock(
+                                  stock,
+                                  selectedStoreId!,
+                                  quantity,
+                                  remarks: remarks,
+                                ));
+
+                                // Add credit entry for source store/warehouse (if not salesman)
+                                if (fromStore.storeType != StoreType.salesman &&
+                                    fromStore.accountLedgerId != null) {
+                                  saveFutures.add(ledgerCubit.addTransaction(
+                                    ledgerId: fromStore.accountLedgerId!,
+                                    amount: amount,
+                                    type: 'Credit',
+                                    billNumber: 'TRANSFER-$transferId',
+                                    purpose: 'Stock Transfer Out',
+                                    typeOfPurpose: 'Transfer',
+                                    remarks:
+                                        'Transferred $quantity units of ${stock.name ?? 'Unknown'} to ${toStore.name} (Transfer ID: $transferId)',
+                                    userType: UserType.Store,
+                                  ));
+                                }
+
+                                // Add debit entry for destination store/warehouse (if not salesman)
+                                if (toStore.storeType != StoreType.salesman &&
+                                    toStore.accountLedgerId != null) {
+                                  saveFutures.add(ledgerCubit.addTransaction(
+                                    ledgerId: toStore.accountLedgerId!,
+                                    amount: amount,
+                                    type: 'Debit',
+                                    billNumber: 'TRANSFER-$transferId',
+                                    purpose: 'Stock Transfer In',
+                                    typeOfPurpose: 'Transfer',
+                                    remarks:
+                                        'Received $quantity units of ${stock.name ?? 'Unknown'} from ${fromStore.name} (Transfer ID: $transferId)',
+                                    userType: UserType.Store,
+                                  ));
+                                }
+                              }
+
+                              final savesFuture = Future.wait(saveFutures);
+                              final postSaveFuture = savesFuture.then((_) =>
+                                  _stockCubit
+                                      .fetchStock(stockItems.first.storeId));
+
+                              postSaveFuture.then((_) {
+                                ScaffoldMessenger.of(pageContext).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          'Stock transferred successfully')),
+                                );
+                              }).catchError((e) {
+                                ScaffoldMessenger.of(pageContext).showSnackBar(
+                                  SnackBar(
+                                      content:
+                                          Text('Failed to transfer stock: $e')),
+                                );
+                              });
+
+                              if (generatePdf) {
+                                final pdf = await _generateTransferPdf(
+                                  transferId,
+                                  stockItems.first.storeId,
+                                  selectedStoreId!,
+                                  transferEntries,
+                                  userInfo?.userName ?? 'Unknown',
+                                  companyId,
+                                );
+                                setDialogState(() => isLoading = false);
+                                Navigator.pop(dialogContext);
+                                await sl<Coordinator>().navigateToBillPdfPage(
+                                  pdf: pdf,
+                                  billNumber: 'TRANSFER-$transferId',
+                                );
+                              } else {
+                                setDialogState(() => isLoading = false);
+                                Navigator.pop(dialogContext);
+                              }
+                            }
+                          },
+                    child: const Text(AppLabels.saveButtonText),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -946,20 +989,26 @@ class _StockListPageState extends State<StockListPage> {
 
     final stores = await sl<StockRepository>().getStores(companyId);
     final fromStore = stores.firstWhere(
-          (store) => store.storeId == fromStoreId,
+      (store) => store.storeId == fromStoreId,
       orElse: () => StoreDto(
-          storeId: fromStoreId,
-          name: 'Unknown',
-          createdBy: '',
-          createdAt: DateTime.now()),
+        storeId: fromStoreId,
+        name: 'Unknown',
+        createdBy: '',
+        createdAt: DateTime.now(),
+        accountLedgerId: null,
+        storeType: StoreType.store,
+      ),
     );
     final toStore = stores.firstWhere(
-          (store) => store.storeId == toStoreId,
+      (store) => store.storeId == toStoreId,
       orElse: () => StoreDto(
-          storeId: toStoreId,
-          name: 'Unknown',
-          createdBy: '',
-          createdAt: DateTime.now()),
+        storeId: toStoreId,
+        name: 'Unknown',
+        createdBy: '',
+        createdAt: DateTime.now(),
+        accountLedgerId: null,
+        storeType: StoreType.store,
+      ),
     );
 
     final primaryColor = PdfColor.fromInt(AppColors.primary.value);
@@ -971,11 +1020,13 @@ class _StockListPageState extends State<StockListPage> {
 
     final double subtotal = transferEntries.fold(
       0.0,
-          (sum, entry) => sum + ((entry['stock'] as StockModel).price ?? 0.0) * entry['quantity'],
+      (sum, entry) =>
+          sum +
+          ((entry['stock'] as StockModel).price ?? 0.0) * entry['quantity'],
     );
     final double totalTax = transferEntries.fold(
       0.0,
-          (sum, entry) {
+      (sum, entry) {
         final stock = entry['stock'] as StockModel;
         final price = stock.price ?? 0.0;
         final taxRate = stock.tax ?? 0.0;
@@ -990,7 +1041,8 @@ class _StockListPageState extends State<StockListPage> {
         header: (context) => pw.Container(
           padding: const pw.EdgeInsets.only(bottom: 12),
           decoration: pw.BoxDecoration(
-            border: pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
+            border:
+                pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
           ),
           child: pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -1000,13 +1052,16 @@ class _StockListPageState extends State<StockListPage> {
                 children: [
                   pw.Text(
                     companyName,
-                    style: pw.TextStyle(font: boldFont, fontSize: 22, color: primaryColor),
+                    style: pw.TextStyle(
+                        font: boldFont, fontSize: 22, color: primaryColor),
                   ),
                   pw.SizedBox(height: 4),
                   pw.Text(
                     '123 Business Street, City, Country',
                     style: pw.TextStyle(
-                        font: regularFont, fontSize: 12, color: textSecondaryColor),
+                        font: regularFont,
+                        fontSize: 12,
+                        color: textSecondaryColor),
                   ),
                 ],
               ),
@@ -1015,7 +1070,8 @@ class _StockListPageState extends State<StockListPage> {
                 children: [
                   pw.Text(
                     'STOCK TRANSFER',
-                    style: pw.TextStyle(font: boldFont, fontSize: 28, color: primaryColor),
+                    style: pw.TextStyle(
+                        font: boldFont, fontSize: 28, color: primaryColor),
                   ),
                   pw.SizedBox(height: 4),
                   pw.Text(
@@ -1039,16 +1095,19 @@ class _StockListPageState extends State<StockListPage> {
           pw.SizedBox(height: 24),
           pw.Text(
             'Transfer Details:',
-            style: pw.TextStyle(font: boldFont, fontSize: 18, color: PdfColors.black),
+            style: pw.TextStyle(
+                font: boldFont, fontSize: 18, color: PdfColors.black),
           ),
           pw.SizedBox(height: 8),
           pw.Text(
             'From Store: ${fromStore.name}',
-            style: pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
+            style:
+                pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
           ),
           pw.Text(
             'To Store: ${toStore.name}',
-            style: pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
+            style:
+                pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
           ),
           pw.SizedBox(height: 24),
           pw.Text(
@@ -1067,7 +1126,7 @@ class _StockListPageState extends State<StockListPage> {
             },
             children: [
               pw.TableRow(
-                decoration: const pw.BoxDecoration(color: PdfColors.grey100),
+                decoration: pw.BoxDecoration(color: PdfColors.grey100),
                 children: [
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
@@ -1104,7 +1163,8 @@ class _StockListPageState extends State<StockListPage> {
                 final taxAmount = price * quantity * (taxRate / 100);
                 return pw.TableRow(
                   decoration: pw.BoxDecoration(
-                    border: pw.Border(bottom: pw.BorderSide(color: greyColor, width: 0.5)),
+                    border: pw.Border(
+                        bottom: pw.BorderSide(color: greyColor, width: 0.5)),
                   ),
                   children: [
                     pw.Padding(
@@ -1126,7 +1186,7 @@ class _StockListPageState extends State<StockListPage> {
                     pw.Padding(
                       padding: const pw.EdgeInsets.all(10),
                       child: pw.Text(
-                        price.toStringAsFixed(2),
+                        'IQD ${price.toStringAsFixed(2)}',
                         style: pw.TextStyle(font: regularFont, fontSize: 12),
                         textAlign: pw.TextAlign.right,
                       ),
@@ -1134,7 +1194,7 @@ class _StockListPageState extends State<StockListPage> {
                     pw.Padding(
                       padding: const pw.EdgeInsets.all(10),
                       child: pw.Text(
-                        taxAmount.toStringAsFixed(2),
+                        'IQD ${taxAmount.toStringAsFixed(2)}',
                         style: pw.TextStyle(font: regularFont, fontSize: 12),
                         textAlign: pw.TextAlign.right,
                       ),
@@ -1142,7 +1202,7 @@ class _StockListPageState extends State<StockListPage> {
                     pw.Padding(
                       padding: const pw.EdgeInsets.all(10),
                       child: pw.Text(
-                        ((price * quantity) + taxAmount).toStringAsFixed(2),
+                        'IQD ${((price * quantity) + taxAmount).toStringAsFixed(2)}',
                         style: pw.TextStyle(font: regularFont, fontSize: 12),
                         textAlign: pw.TextAlign.right,
                       ),
@@ -1166,17 +1226,17 @@ class _StockListPageState extends State<StockListPage> {
                   crossAxisAlignment: pw.CrossAxisAlignment.end,
                   children: [
                     pw.Text(
-                      'Subtotal: ${subtotal.toStringAsFixed(2)}',
+                      'Subtotal: IQD ${subtotal.toStringAsFixed(2)}',
                       style: pw.TextStyle(font: regularFont, fontSize: 14),
                     ),
                     pw.SizedBox(height: 8),
                     pw.Text(
-                      'Total Tax: ${totalTax.toStringAsFixed(2)}',
+                      'Total Tax: IQD ${totalTax.toStringAsFixed(2)}',
                       style: pw.TextStyle(font: regularFont, fontSize: 14),
                     ),
                     pw.SizedBox(height: 8),
                     pw.Text(
-                      'Total Amount: ${(subtotal + totalTax).toStringAsFixed(2)}',
+                      'Total Amount: IQD ${(subtotal + totalTax).toStringAsFixed(2)}',
                       style: pw.TextStyle(
                           font: boldFont, fontSize: 16, color: primaryColor),
                     ),
@@ -1191,8 +1251,8 @@ class _StockListPageState extends State<StockListPage> {
           padding: const pw.EdgeInsets.only(top: 12),
           child: pw.Text(
             'Generated by $companyName | Page ${context.pageNumber} of ${context.pagesCount}',
-            style:
-            pw.TextStyle(font: regularFont, fontSize: 10, color: textSecondaryColor),
+            style: pw.TextStyle(
+                font: regularFont, fontSize: 10, color: textSecondaryColor),
           ),
         ),
       ),
@@ -1233,7 +1293,7 @@ class _StockListPageState extends State<StockListPage> {
                       sl<Coordinator>().navigateToBillPdfPage(
                         pdf: pdf,
                         billNumber:
-                        'Stock_Value_${_selectedStoreId}_${DateTime.now().millisecondsSinceEpoch}',
+                            'Stock_Value_${_selectedStoreId}_${DateTime.now().millisecondsSinceEpoch}',
                       );
                     }
                   },
@@ -1242,7 +1302,8 @@ class _StockListPageState extends State<StockListPage> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     minimumSize: const Size(40, 40),
                   ),
                   child: const Text(
@@ -1256,7 +1317,8 @@ class _StockListPageState extends State<StockListPage> {
             Container(
               decoration: BoxDecoration(
                 color: AppColors.primary.withOpacity(0.1),
-                border: Border.all(color: AppColors.textSecondary.withOpacity(0.5)),
+                border:
+                    Border.all(color: AppColors.textSecondary.withOpacity(0.5)),
                 borderRadius: BorderRadius.circular(8),
               ),
               padding: const EdgeInsets.all(8),
@@ -1280,7 +1342,7 @@ class _StockListPageState extends State<StockListPage> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '₹${totalStockValue.toStringAsFixed(2)}',
+                    'IQD ${totalStockValue.toStringAsFixed(2)}',
                     style: const TextStyle(
                       fontSize: 16,
                       color: AppColors.primary,
@@ -1312,7 +1374,7 @@ class _StockListPageState extends State<StockListPage> {
     }
 
     final store = stores.firstWhere(
-          (s) => s.storeId == storeId,
+      (s) => s.storeId == storeId,
       orElse: () => StoreDto(
         storeId: storeId,
         name: 'Unknown Store',
@@ -1336,7 +1398,8 @@ class _StockListPageState extends State<StockListPage> {
         header: (context) => pw.Container(
           padding: const pw.EdgeInsets.only(bottom: 12),
           decoration: pw.BoxDecoration(
-            border: pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
+            border:
+                pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
           ),
           child: pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -1346,13 +1409,16 @@ class _StockListPageState extends State<StockListPage> {
                 children: [
                   pw.Text(
                     companyName,
-                    style: pw.TextStyle(font: boldFont, fontSize: 22, color: primaryColor),
+                    style: pw.TextStyle(
+                        font: boldFont, fontSize: 22, color: primaryColor),
                   ),
                   pw.SizedBox(height: 4),
                   pw.Text(
                     '123 Business Street, City, Country',
                     style: pw.TextStyle(
-                        font: regularFont, fontSize: 12, color: textSecondaryColor),
+                        font: regularFont,
+                        fontSize: 12,
+                        color: textSecondaryColor),
                   ),
                 ],
               ),
@@ -1361,7 +1427,8 @@ class _StockListPageState extends State<StockListPage> {
                 children: [
                   pw.Text(
                     'STOCK VALUE REPORT',
-                    style: pw.TextStyle(font: boldFont, fontSize: 28, color: primaryColor),
+                    style: pw.TextStyle(
+                        font: boldFont, fontSize: 28, color: primaryColor),
                   ),
                   pw.SizedBox(height: 4),
                   pw.Text(
@@ -1420,7 +1487,7 @@ class _StockListPageState extends State<StockListPage> {
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(10),
                     child: pw.Text(
-                      '₹${totalStockValue.toStringAsFixed(2)}',
+                      'IQD ${totalStockValue.toStringAsFixed(2)}',
                       style: pw.TextStyle(font: regularFont, fontSize: 12),
                       textAlign: pw.TextAlign.right,
                     ),
@@ -1435,8 +1502,8 @@ class _StockListPageState extends State<StockListPage> {
           padding: const pw.EdgeInsets.only(top: 12),
           child: pw.Text(
             'Generated by $companyName | Page ${context.pageNumber} of ${context.pagesCount}',
-            style:
-            pw.TextStyle(font: regularFont, fontSize: 10, color: textSecondaryColor),
+            style: pw.TextStyle(
+                font: regularFont, fontSize: 10, color: textSecondaryColor),
           ),
         ),
       ),
@@ -1470,7 +1537,9 @@ class _StockListPageState extends State<StockListPage> {
                   if (state is StockError) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                          content: Text(state.error), backgroundColor: AppColors.red),
+                        content: Text(state.error),
+                        backgroundColor: AppColors.red,
+                      ),
                     );
                   }
                 },
@@ -1495,12 +1564,15 @@ class _StockListPageState extends State<StockListPage> {
                       }
 
                       final stores = (state is StockLoaded) ? state.stores : [];
-                      final stockItems = (state is StockLoaded) ? state.stockItems : [];
-                      final totalStockValue = _calculateStockValue(stockItems as List<StockModel>);
+                      final stockItems =
+                          (state is StockLoaded) ? state.stockItems : [];
+                      final totalStockValue =
+                          _calculateStockValue(stockItems as List<StockModel>);
 
                       final filteredItems = stockItems
                           .where((item) =>
-                      item.name?.toLowerCase().contains(_searchQuery) ?? false)
+                              item.name?.toLowerCase().contains(_searchQuery) ??
+                              false)
                           .toList();
 
                       return Column(
@@ -1524,25 +1596,29 @@ class _StockListPageState extends State<StockListPage> {
                                     borderRadius: BorderRadius.circular(8),
                                     borderSide: BorderSide.none,
                                   ),
-                                  contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                                  errorStyle: const TextStyle(color: Colors.red),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 12),
+                                  errorStyle:
+                                      const TextStyle(color: Colors.red),
                                 ),
                                 value: _selectedStoreId,
                                 items: stores
                                     .map((store) => DropdownMenuItem<String>(
-                                  value: store.storeId,
-                                  child: Text(store.name),
-                                ))
+                                          value: store.storeId,
+                                          child: Text(store.name),
+                                        ))
                                     .toList(),
                                 onChanged: (value) {
                                   setState(() => _selectedStoreId = value);
                                   if (value != null) {
-                                    context.read<StockCubit>().fetchStock(value);
+                                    context
+                                        .read<StockCubit>()
+                                        .fetchStock(value);
                                   }
                                 },
-                                validator: (value) =>
-                                value == null ? 'Please select a store' : null,
+                                validator: (value) => value == null
+                                    ? 'Please select a store'
+                                    : null,
                               ),
                             ),
                           ),
@@ -1557,7 +1633,8 @@ class _StockListPageState extends State<StockListPage> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16.0),
                               child: TextField(
                                 decoration: InputDecoration(
                                   hintText: 'Search products...',
@@ -1579,139 +1656,148 @@ class _StockListPageState extends State<StockListPage> {
                           Expanded(
                             child: _selectedStoreId == null
                                 ? Center(
-                              child: Card(
-                                elevation: 4,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Padding(
-                                  padding: EdgeInsets.all(16.0),
-                                  child: Text(
-                                    'Please select a store',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            )
-                                : filteredItems.isEmpty
-                                ? Center(
-                              child: Card(
-                                elevation: 4,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Text(
-                                    _searchQuery.isEmpty
-                                        ? 'No stock available'
-                                        : 'No products found matching "$_searchQuery"',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            )
-                                : ListView.separated(
-                              itemCount: filteredItems.length,
-                              separatorBuilder: (context, index) =>
-                              const SizedBox(height: 12),
-                              itemBuilder: (context, index) {
-                                final stock = filteredItems[index];
-                                final price = stock.price ?? 0.0;
-                                final totalValue = _calculateItemStockValue(stock);
-                                return Card(
-                                  elevation: 4,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: ListTile(
-                                    leading: Icon(
-                                      Icons.inventory,
-                                      color: Theme.of(context).primaryColor,
-                                      size: 36,
-                                    ),
-                                    title: Text(
-                                      stock.name ?? 'Unknown',
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
+                                    child: Card(
+                                      elevation: 4,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(16.0),
+                                        child: Text(
+                                          'Please select a store',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                    subtitle: Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Quantity: ${stock.quantity}',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.grey[600],
+                                  )
+                                : filteredItems.isEmpty
+                                    ? Center(
+                                        child: Card(
+                                          elevation: 4,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(16.0),
+                                            child: Text(
+                                              _searchQuery.isEmpty
+                                                  ? 'No stock available'
+                                                  : 'No products found matching "$_searchQuery"',
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
                                           ),
                                         ),
-                                        Text(
-                                          'Price: ₹${price.toStringAsFixed(2)}',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.grey[600],
-                                          ),
-                                        ),
-                                        Text(
-                                          'Total Value: ₹${totalValue.toStringAsFixed(2)}',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.grey[600],
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        // IconButton(
-                                        //   icon: Icon(
-                                        //     Icons.add,
-                                        //     color:
-                                        //     Theme.of(context).primaryColor,
-                                        //   ),
-                                        //   onPressed: () =>
-                                        //       _showAddStockDialog(context, stock),
-                                        //   tooltip: 'Add Stock',
-                                        // ),
-                                        // IconButton(
-                                        //   icon: Icon(
-                                        //     Icons.remove,
-                                        //     color:
-                                        //     Theme.of(context).primaryColor,
-                                        //   ),
-                                        //   onPressed: () =>
-                                        //       _showSubtractStockDialog(context, stock),
-                                        //   tooltip: 'Subtract Stock',
-                                        // ),
-                                        IconButton(
-                                          icon: Icon(
-                                            Icons.swap_horiz,
-                                            color:
-                                            Theme.of(context).primaryColor,
-                                          ),
-                                          onPressed: () => _showTransferStockDialog(
-                                              context,
-                                              filteredItems as List<StockModel>,
-                                              stores as List<StoreDto>),
-                                          tooltip: 'Transfer Stock',
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
+                                      )
+                                    : ListView.separated(
+                                        itemCount: filteredItems.length,
+                                        separatorBuilder: (context, index) =>
+                                            const SizedBox(height: 12),
+                                        itemBuilder: (context, index) {
+                                          final stock = filteredItems[index];
+                                          final price = stock.price ?? 0.0;
+                                          final totalValue =
+                                              _calculateItemStockValue(stock);
+                                          return Card(
+                                            elevation: 4,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: ListTile(
+                                              leading: Icon(
+                                                Icons.inventory,
+                                                color: Theme.of(context)
+                                                    .primaryColor,
+                                                size: 36,
+                                              ),
+                                              title: Text(
+                                                stock.name ?? 'Unknown',
+                                                style: const TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              subtitle: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    'Quantity: ${stock.quantity}',
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: Colors.grey[600],
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    'Price: IQD ${price.toStringAsFixed(2)}',
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: Colors.grey[600],
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    'Total Value: IQD ${totalValue.toStringAsFixed(2)}',
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: Colors.grey[600],
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              trailing: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  // IconButton(
+                                                  //   icon: Icon(
+                                                  //     Icons.add,
+                                                  //     color:
+                                                  //     Theme.of(context).primaryColor,
+                                                  //   ),
+                                                  //   onPressed: () =>
+                                                  //       _showAddStockDialog(context, stock),
+                                                  //   tooltip: 'Add Stock',
+                                                  // ),
+                                                  // IconButton(
+                                                  //   icon: Icon(
+                                                  //     Icons.remove,
+                                                  //     color:
+                                                  //     Theme.of(context).primaryColor,
+                                                  //   ),
+                                                  //   onPressed: () =>
+                                                  //       _showSubtractStockDialog(context, stock),
+                                                  //   tooltip: 'Subtract Stock',
+                                                  // ),
+                                                  IconButton(
+                                                    icon: Icon(
+                                                      Icons.swap_horiz,
+                                                      color: Theme.of(context)
+                                                          .primaryColor,
+                                                    ),
+                                                    onPressed: () =>
+                                                        _showTransferStockDialog(
+                                                            context,
+                                                            filteredItems
+                                                                as List<
+                                                                    StockModel>,
+                                                            stores as List<
+                                                                StoreDto>),
+                                                    tooltip: 'Transfer Stock',
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
                           ),
                         ],
                       );

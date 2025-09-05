@@ -198,7 +198,7 @@ class OverallStockCubit extends Cubit<OverallStockState> {
       print('Loaded ${productStocks.length} products, '
           '${categories.length} categories, '
           '${subcategories.length} subcategories, '
-          'Total Stock Value: ₹$totalStockValue');
+          'Total Stock Value: IQD $totalStockValue');
       emit(OverallStockSuccess(
         productStocks: productStocks,
         filteredProductStocks: List.from(productStocks),

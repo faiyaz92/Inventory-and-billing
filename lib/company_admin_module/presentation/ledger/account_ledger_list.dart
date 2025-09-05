@@ -61,8 +61,8 @@ class _LedgerListView extends StatelessWidget {
                   child: ListTile(
                     title: Text(
                       txn?.type == "Debit"
-                          ? "Debited ₹${txn?.amount}"
-                          : "Credited ₹${txn?.amount}",
+                          ? "Debited IQD ${txn?.amount}"
+                          : "Credited IQD ${txn?.amount}",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,

@@ -266,7 +266,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                           ),
                                           const SizedBox(height: 8),
                                           Text(
-                                            'Price: ₹${product.price.toStringAsFixed(2)}',
+                                            'Price: IQD ${product.price.toStringAsFixed(2)}',
                                             style: const TextStyle(
                                               fontSize: 14,
                                               color: AppColors.textSecondary,
@@ -280,7 +280,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                             ),
                                           ),
                                           Text(
-                                            'Price with Tax: ₹${product.priceWithTax.toStringAsFixed(2)}',
+                                            'Price with Tax: IQD ${product.priceWithTax.toStringAsFixed(2)}',
                                             style: const TextStyle(
                                               fontSize: 14,
                                               color: AppColors.textSecondary,
@@ -440,7 +440,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                                       vertical: 8,
                                                       horizontal: 12),
                                               child: Text(
-                                                'Subtotal (₹${product.price.toStringAsFixed(2)} x $quantity)',
+                                                'Subtotal (IQD ${product.price.toStringAsFixed(2)} x $quantity)',
                                                 style: const TextStyle(
                                                   fontSize: 14,
                                                   color:
@@ -454,7 +454,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                                       vertical: 8,
                                                       horizontal: 12),
                                               child: Text(
-                                                '₹${cubit.calculateProductSubtotal(product.id).toStringAsFixed(2)}',
+                                                'IQD ${cubit.calculateProductSubtotal(product.id).toStringAsFixed(2)}',
                                                 textAlign: TextAlign.right,
                                                 style: const TextStyle(
                                                   fontSize: 14,
@@ -487,7 +487,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                                       vertical: 8,
                                                       horizontal: 12),
                                               child: Text(
-                                                '₹${cubit.calculateProductTax(product.id).toStringAsFixed(2)}',
+                                                'IQD ${cubit.calculateProductTax(product.id).toStringAsFixed(2)}',
                                                 textAlign: TextAlign.right,
                                                 style: const TextStyle(
                                                   fontSize: 14,
@@ -526,7 +526,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                                       vertical: 8,
                                                       horizontal: 12),
                                               child: Text(
-                                                '₹${cubit.calculateProductTotal(product.id).toStringAsFixed(2)}',
+                                                'IQD ${cubit.calculateProductTotal(product.id).toStringAsFixed(2)}',
                                                 textAlign: TextAlign.right,
                                                 style: const TextStyle(
                                                   fontSize: 14,
@@ -643,13 +643,13 @@ class SalesmanOrderPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Unit Price: ₹${product.price.toStringAsFixed(2)}',
+                    'Unit Price: IQD ${product.price.toStringAsFixed(2)}',
                     style: const TextStyle(
                         fontSize: 16, color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Item Total (Qty × Price + Tax): ₹${itemTotal.toStringAsFixed(2)}',
+                    'Item Total (Qty × Price + Tax): IQD ${itemTotal.toStringAsFixed(2)}',
                     style: const TextStyle(
                         fontSize: 16, color: AppColors.textSecondary),
                   ),
@@ -659,7 +659,7 @@ class SalesmanOrderPage extends StatelessWidget {
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     decoration: InputDecoration(
-                      labelText: 'Discount (₹)',
+                      labelText: 'Discount (IQD )',
                       border: const OutlineInputBorder(),
                       errorText: errorText,
                       contentPadding: const EdgeInsets.symmetric(
@@ -914,7 +914,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                 padding: EdgeInsets.symmetric(
                                     vertical: 8, horizontal: isMobile ? 8 : 12),
                                 child: Text(
-                                  '₹${cubit.calculateProductSubtotal(product.id).toStringAsFixed(2)}',
+                                  'IQD ${cubit.calculateProductSubtotal(product.id).toStringAsFixed(2)}',
                                   textAlign: TextAlign.right,
                                   style: TextStyle(
                                     fontSize: isMobile ? 14 : 16,
@@ -926,7 +926,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                 padding: EdgeInsets.symmetric(
                                     vertical: 8, horizontal: isMobile ? 8 : 12),
                                 child: Text(
-                                  '₹${cubit.calculateProductTax(product.id).toStringAsFixed(2)}',
+                                  'IQD ${cubit.calculateProductTax(product.id).toStringAsFixed(2)}',
                                   textAlign: TextAlign.right,
                                   style: TextStyle(
                                     fontSize: isMobile ? 14 : 16,
@@ -943,7 +943,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                       horizontal: isMobile ? 8 : 12),
                                   color: Colors.transparent,
                                   child: Text(
-                                    '₹${discount.toStringAsFixed(2)}',
+                                    'IQD ${discount.toStringAsFixed(2)}',
                                     textAlign: TextAlign.right,
                                     style: TextStyle(
                                       fontSize: isMobile ? 14 : 16,
@@ -957,7 +957,7 @@ class SalesmanOrderPage extends StatelessWidget {
                                 padding: EdgeInsets.symmetric(
                                     vertical: 8, horizontal: isMobile ? 8 : 12),
                                 child: Text(
-                                  '₹${(cubit.calculateProductTotal(product.id) - discount).toStringAsFixed(2)}',
+                                  'IQD ${(cubit.calculateProductTotal(product.id) - discount).toStringAsFixed(2)}',
                                   textAlign: TextAlign.right,
                                   style: TextStyle(
                                     fontSize: isMobile ? 14 : 16,
@@ -976,7 +976,7 @@ class SalesmanOrderPage extends StatelessWidget {
                   TextField(
                     controller: additionalDiscountController,
                     decoration: InputDecoration(
-                      labelText: 'Additional Discount (₹)',
+                      labelText: 'Additional Discount (IQD )',
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8)),
                       filled: true,
@@ -1030,7 +1030,7 @@ class SalesmanOrderPage extends StatelessWidget {
                               padding: EdgeInsets.symmetric(
                                   vertical: 12, horizontal: isMobile ? 12 : 16),
                               child: Text(
-                                '₹${cubit.calculateOverallSubtotal().toStringAsFixed(2)}',
+                                'IQD ${cubit.calculateOverallSubtotal().toStringAsFixed(2)}',
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
                                   fontSize: isMobile ? 14 : 16,
@@ -1058,7 +1058,7 @@ class SalesmanOrderPage extends StatelessWidget {
                               padding: EdgeInsets.symmetric(
                                   vertical: 12, horizontal: isMobile ? 12 : 16),
                               child: Text(
-                                '₹${cubit.calculateOverallTax().toStringAsFixed(2)}',
+                                'IQD ${cubit.calculateOverallTax().toStringAsFixed(2)}',
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
                                   fontSize: isMobile ? 14 : 16,
@@ -1085,7 +1085,7 @@ class SalesmanOrderPage extends StatelessWidget {
                               padding: EdgeInsets.symmetric(
                                   vertical: 12, horizontal: isMobile ? 12 : 16),
                               child: Text(
-                                '₹${itemDiscounts.values.fold<double>(0.0, (sum, disc) => sum + disc).toStringAsFixed(2)}',
+                                'IQD ${itemDiscounts.values.fold<double>(0.0, (sum, disc) => sum + disc).toStringAsFixed(2)}',
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
                                   fontSize: isMobile ? 14 : 16,
@@ -1112,7 +1112,7 @@ class SalesmanOrderPage extends StatelessWidget {
                               padding: EdgeInsets.symmetric(
                                   vertical: 12, horizontal: isMobile ? 12 : 16),
                               child: Text(
-                                '₹${cubit.discount.toStringAsFixed(2)}',
+                                'IQD ${cubit.discount.toStringAsFixed(2)}',
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
                                   fontSize: isMobile ? 14 : 16,
@@ -1147,7 +1147,7 @@ class SalesmanOrderPage extends StatelessWidget {
                               padding: EdgeInsets.symmetric(
                                   vertical: 12, horizontal: isMobile ? 12 : 16),
                               child: Text(
-                                '₹${cubit.calculateFinalTotal().toStringAsFixed(2)}',
+                                'IQD ${cubit.calculateFinalTotal().toStringAsFixed(2)}',
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
                                   fontSize: isMobile ? 16 : 18,

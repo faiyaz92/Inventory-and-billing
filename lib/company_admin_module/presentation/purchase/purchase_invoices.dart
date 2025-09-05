@@ -1185,14 +1185,14 @@ class _PurchaseInvoicePanelPageState extends State<PurchaseInvoicePanelPage> {
                       ),
                       _buildTableRow(
                         'Total',
-                        '₹${order.totalAmount.toStringAsFixed(2)}',
+                        'IQD ${order.totalAmount.toStringAsFixed(2)}',
                         isBold: true,
                         valueColor: AppColors.textPrimary,
                         backgroundColor: AppColors.primary.withOpacity(0.1),
                       ),
                       _buildTableRow(
                         'Outstanding',
-                        '₹${(order.totalAmount - (order.amountReceived ?? 0.0)).toStringAsFixed(2)}',
+                        'IQD ${(order.totalAmount - (order.amountReceived ?? 0.0)).toStringAsFixed(2)}',
                         isBold: true,
                         valueColor: AppColors.red,
                         backgroundColor: AppColors.red.withOpacity(0.1),
@@ -1365,7 +1365,7 @@ class _PurchaseInvoicePanelPageState extends State<PurchaseInvoicePanelPage> {
     final outstanding = order.totalAmount - currentAmountReceived;
     if (amount > outstanding) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Amount cannot exceed outstanding balance of ₹${outstanding.toStringAsFixed(2)}')),
+        SnackBar(content: Text('Amount cannot exceed outstanding balance of IQD ${outstanding.toStringAsFixed(2)}')),
       );
       return;
     }

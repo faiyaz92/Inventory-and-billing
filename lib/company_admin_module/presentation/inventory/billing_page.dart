@@ -292,12 +292,12 @@ class _BillingPageState extends State<BillingPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Unit Price: ₹${item.price.toStringAsFixed(2)}',
+                'Unit Price: IQD ${item.price.toStringAsFixed(2)}',
                 style: const TextStyle(fontSize: 16, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 8),
               Text(
-                'Item Total (Qty × Price + Tax): ₹${itemTotal.toStringAsFixed(2)}',
+                'Item Total (Qty × Price + Tax): IQD ${itemTotal.toStringAsFixed(2)}',
                 style: const TextStyle(fontSize: 16, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 16),
@@ -305,7 +305,7 @@ class _BillingPageState extends State<BillingPage> {
                 controller: itemDiscountController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
-                  labelText: 'Discount (₹)',
+                  labelText: 'Discount (IQD )',
                   border: const OutlineInputBorder(),
                   errorText: errorText,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -535,7 +535,7 @@ class _BillingPageState extends State<BillingPage> {
                               Padding(
                                 padding: EdgeInsets.symmetric(vertical: 8, horizontal: isMobile ? 8 : 12),
                                 child: Text(
-                                  '₹${(item.price * item.quantity).toStringAsFixed(2)}',
+                                  'IQD ${(item.price * item.quantity).toStringAsFixed(2)}',
                                   textAlign: TextAlign.right,
                                   style: TextStyle(
                                     fontSize: isMobile ? 14 : 16,
@@ -546,7 +546,7 @@ class _BillingPageState extends State<BillingPage> {
                               Padding(
                                 padding: EdgeInsets.symmetric(vertical: 8, horizontal: isMobile ? 8 : 12),
                                 child: Text(
-                                  '₹${item.taxAmount.toStringAsFixed(2)}',
+                                  'IQD ${item.taxAmount.toStringAsFixed(2)}',
                                   textAlign: TextAlign.right,
                                   style: TextStyle(
                                     fontSize: isMobile ? 14 : 16,
@@ -560,7 +560,7 @@ class _BillingPageState extends State<BillingPage> {
                                   padding: EdgeInsets.symmetric(vertical: 8, horizontal: isMobile ? 8 : 12),
                                   color: Colors.transparent, // Ensures tap area is full cell
                                   child: Text(
-                                    '₹${itemDiscounts[index].toStringAsFixed(2)}',
+                                    'IQD ${itemDiscounts[index].toStringAsFixed(2)}',
                                     textAlign: TextAlign.right,
                                     style: TextStyle(
                                       fontSize: isMobile ? 14 : 16,
@@ -573,7 +573,7 @@ class _BillingPageState extends State<BillingPage> {
                               Padding(
                                 padding: EdgeInsets.symmetric(vertical: 8, horizontal: isMobile ? 8 : 12),
                                 child: Text(
-                                  '₹${((item.price * item.quantity) + item.taxAmount - itemDiscounts[index]).toStringAsFixed(2)}',
+                                  'IQD ${((item.price * item.quantity) + item.taxAmount - itemDiscounts[index]).toStringAsFixed(2)}',
                                   textAlign: TextAlign.right,
                                   style: TextStyle(
                                     fontSize: isMobile ? 14 : 16,
@@ -592,7 +592,7 @@ class _BillingPageState extends State<BillingPage> {
                   TextField(
                     controller: discountController,
                     decoration: InputDecoration(
-                      labelText: 'Additional Discount (₹)',
+                      labelText: 'Additional Discount (IQD )',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                       filled: true,
                       fillColor: Colors.grey[100],
@@ -613,7 +613,7 @@ class _BillingPageState extends State<BillingPage> {
                     TextFormField(
                       controller: initialPaymentController,
                       decoration: InputDecoration(
-                        labelText: 'Initial Payment (₹)',
+                        labelText: 'Initial Payment (IQD )',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                         filled: true,
                         fillColor: Colors.grey[100],
@@ -667,7 +667,7 @@ class _BillingPageState extends State<BillingPage> {
                             Padding(
                               padding: EdgeInsets.symmetric(vertical: 12, horizontal: isMobile ? 12 : 16),
                               child: Text(
-                                '₹${subtotal.toStringAsFixed(2)}',
+                                'IQD ${subtotal.toStringAsFixed(2)}',
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
                                   fontSize: isMobile ? 14 : 16,
@@ -693,7 +693,7 @@ class _BillingPageState extends State<BillingPage> {
                             Padding(
                               padding: EdgeInsets.symmetric(vertical: 12, horizontal: isMobile ? 12 : 16),
                               child: Text(
-                                '₹${totalTax.toStringAsFixed(2)}',
+                                'IQD ${totalTax.toStringAsFixed(2)}',
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
                                   fontSize: isMobile ? 14 : 16,
@@ -719,7 +719,7 @@ class _BillingPageState extends State<BillingPage> {
                             Padding(
                               padding: EdgeInsets.symmetric(vertical: 12, horizontal: isMobile ? 12 : 16),
                               child: Text(
-                                '₹${total.toStringAsFixed(2)}',
+                                'IQD ${total.toStringAsFixed(2)}',
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
                                   fontSize: isMobile ? 14 : 16,
@@ -745,7 +745,7 @@ class _BillingPageState extends State<BillingPage> {
                             Padding(
                               padding: EdgeInsets.symmetric(vertical: 12, horizontal: isMobile ? 12 : 16),
                               child: Text(
-                                '₹${itemDiscounts.fold(0.0, (sum, disc) => sum + disc).toStringAsFixed(2)}',
+                                'IQD ${itemDiscounts.fold(0.0, (sum, disc) => sum + disc).toStringAsFixed(2)}',
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
                                   fontSize: isMobile ? 14 : 16,
@@ -770,7 +770,7 @@ class _BillingPageState extends State<BillingPage> {
                             Padding(
                               padding: EdgeInsets.symmetric(vertical: 12, horizontal: isMobile ? 12 : 16),
                               child: Text(
-                                '₹${additionalDiscount.toStringAsFixed(2)}',
+                                'IQD ${additionalDiscount.toStringAsFixed(2)}',
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
                                   fontSize: isMobile ? 14 : 16,
@@ -803,7 +803,7 @@ class _BillingPageState extends State<BillingPage> {
                             Padding(
                               padding: EdgeInsets.symmetric(vertical: 12, horizontal: isMobile ? 12 : 16),
                               child: Text(
-                                '₹${(total - itemDiscounts.fold(0.0, (sum, disc) => sum + disc) - additionalDiscount).toStringAsFixed(2)}',
+                                'IQD ${(total - itemDiscounts.fold(0.0, (sum, disc) => sum + disc) - additionalDiscount).toStringAsFixed(2)}',
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
                                   fontSize: isMobile ? 16 : 18,
@@ -1224,6 +1224,10 @@ class _BillingPageState extends State<BillingPage> {
         existingInvoice = null;
       }
 
+      Order? originalOrder;
+      double returnAmount = 0.0;
+      final Map<String, int> returnQuantities = {};
+
       if (_existingBillNumber == null) {
         if (_stockCubit.state is! StockLoaded) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1251,71 +1255,10 @@ class _BillingPageState extends State<BillingPage> {
             setState(() => _isLoading = false);
             return;
           }
-          await _stockCubit.generateBill(
-            stock,
-            item.quantity,
-            _selectedCustomer!.userId!,
-            remarks: 'Bill generated for $_selectedBillType sale (Order: ${order.id})',
-          );
-        }
-
-        await ledgerCubit.addTransaction(
-          ledgerId: customerLedgerId,
-          amount: updatedTotalAmount,
-          type: 'Debit',
-          billNumber: billNumber,
-          purpose: 'Purchase',
-          typeOfPurpose: _selectedBillType,
-          remarks: 'Bill generated for order ${order.id} with discount ${updatedFinalDiscount.toStringAsFixed(2)}',
-          userType: UserType.Customer,
-        );
-
-        if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
-          final paymentAmount = _selectedBillType == 'Cash' ? updatedTotalAmount : _initialPayment!;
-          await ledgerCubit.addTransaction(
-            ledgerId: customerLedgerId,
-            amount: paymentAmount,
-            type: 'Credit',
-            billNumber: billNumber,
-            purpose: 'Payment',
-            typeOfPurpose: 'Cash',
-            remarks: 'Payment received for bill $billNumber',
-            userType: UserType.Customer,
-          );
-        }
-
-        await ledgerCubit.addTransaction(
-          ledgerId: storeLedgerId,
-          amount: updatedTotalAmount,
-          type: 'Credit',
-          billNumber: billNumber,
-          purpose: 'Sale',
-          typeOfPurpose: _selectedBillType,
-          remarks: 'Sale for bill $billNumber to customer ${_selectedCustomer!.name ?? 'Unknown'}',
-          userType: UserType.Store,
-        );
-
-        if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
-          final paymentAmount = _selectedBillType == 'Cash' ? updatedTotalAmount : _initialPayment!;
-          await ledgerCubit.addTransaction(
-            ledgerId: storeLedgerId,
-            amount: paymentAmount,
-            type: 'Debit',
-            billNumber: billNumber,
-            purpose: 'Cash Received',
-            typeOfPurpose: 'Cash',
-            remarks: 'Cash received for bill $billNumber',
-            userType: UserType.Store,
-          );
-        }
-
-        await orderService.placeOrder(order);
-        if (existingInvoice == null) {
-          await orderService.placeInvoice(order);
         }
       } else if (widget.orderId != null) {
-        final originalOrder = (await orderService.getOrderById(widget.orderId!))!;
-        final returnAmount = originalOrder.totalAmount - updatedTotalAmount;
+        originalOrder = (await orderService.getOrderById(widget.orderId!))!;
+        returnAmount = originalOrder.totalAmount - updatedTotalAmount;
 
         final processedProductIds = <String>{};
         for (var item in originalOrder.items) {
@@ -1347,124 +1290,12 @@ class _BillingPageState extends State<BillingPage> {
               setState(() => _isLoading = false);
               return;
             }
-            await _stockCubit.updateStock(
-              stock.copyWith(
-                quantity: stock.quantity + returnQuantity,
-                lastUpdated: DateTime.now(),
-              ),
-              remarks: 'Return of $returnQuantity units of ${item.productName}',
-              isReturn: true,
-            );
+            returnQuantities[item.productId] = returnQuantity;
           }
         }
-
-        if (returnAmount > 0) {
-          await ledgerCubit.addTransaction(
-            ledgerId: customerLedgerId,
-            amount: returnAmount,
-            type: 'Credit',
-            billNumber: billNumber,
-            purpose: 'Return',
-            typeOfPurpose: _selectedBillType,
-            remarks: 'Return for order ${widget.orderId}',
-            userType: UserType.Customer,
-          );
-          if (_selectedBillType == 'Cash' && _selectedReturnMethod == 'Cash') {
-            await ledgerCubit.addTransaction(
-              ledgerId: customerLedgerId,
-              amount: returnAmount,
-              type: 'Debit',
-              billNumber: billNumber,
-              purpose: 'Return Payment',
-              typeOfPurpose: 'Cash',
-              remarks: 'Cash paid back for return for order ${widget.orderId}',
-              userType: UserType.Customer,
-            );
-          }
-        }
-
-        if (_cartItems.isNotEmpty) {
-          await ledgerCubit.addTransaction(
-            ledgerId: customerLedgerId,
-            amount: updatedTotalAmount,
-            type: 'Debit',
-            billNumber: billNumber,
-            purpose: 'Purchase',
-            typeOfPurpose: _selectedBillType,
-            remarks: 'Bill updated for order ${order.id}',
-            userType: UserType.Customer,
-          );
-          if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
-            final paymentAmount = _selectedBillType == 'Cash' ? updatedTotalAmount : _initialPayment!;
-            await ledgerCubit.addTransaction(
-              ledgerId: customerLedgerId,
-              amount: paymentAmount,
-              type: 'Credit',
-              billNumber: billNumber,
-              purpose: 'Payment',
-              typeOfPurpose: 'Cash',
-              remarks: 'Payment received for updated bill $billNumber',
-              userType: UserType.Customer,
-            );
-          }
-        }
-
-        if (_cartItems.isNotEmpty) {
-          await ledgerCubit.addTransaction(
-            ledgerId: storeLedgerId,
-            amount: updatedTotalAmount,
-            type: 'Credit',
-            billNumber: billNumber,
-            purpose: 'Sale',
-            typeOfPurpose: _selectedBillType,
-            remarks: 'Updated sale for bill $billNumber',
-            userType: UserType.Store,
-          );
-          if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
-            final paymentAmount = _selectedBillType == 'Cash' ? updatedTotalAmount : _initialPayment!;
-            await ledgerCubit.addTransaction(
-              ledgerId: storeLedgerId,
-              amount: paymentAmount,
-              type: 'Debit',
-              billNumber: billNumber,
-              purpose: 'Cash Received',
-              typeOfPurpose: 'Cash',
-              remarks: 'Cash received for updated bill $billNumber',
-              userType: UserType.Store,
-            );
-          }
-        }
-
-        if (returnAmount > 0) {
-          await ledgerCubit.addTransaction(
-            ledgerId: storeLedgerId,
-            amount: returnAmount,
-            type: 'Debit',
-            billNumber: billNumber,
-            purpose: 'Return',
-            typeOfPurpose: _selectedBillType,
-            remarks: 'Return of stock for bill $billNumber',
-            userType: UserType.Store,
-          );
-          if (_selectedBillType == 'Cash' && _selectedReturnMethod == 'Cash') {
-            await ledgerCubit.addTransaction(
-              ledgerId: storeLedgerId,
-              amount: returnAmount,
-              type: 'Credit',
-              billNumber: billNumber,
-              purpose: 'Return Payment',
-              typeOfPurpose: 'Cash',
-              remarks: 'Cash paid back for return for bill $billNumber',
-              userType: UserType.Store,
-            );
-          }
-        }
-
-        await orderService.updateOrderStatus(widget.orderId!, _selectedStatus);
-        await orderService.updateOrder(order);
-        await orderService.updateInvoice(order);
       }
 
+      // All reads and checks are done. Generate PDF first.
       final pdf = await _generatePdf(order);
       await sl<Coordinator>().navigateToBillPdfPage(pdf: pdf, billNumber: billNumber ?? '');
 
@@ -1473,6 +1304,17 @@ class _BillingPageState extends State<BillingPage> {
           content: Text(_existingBillNumber == null ? 'Bill generated successfully' : 'Bill updated successfully'),
         ),
       );
+
+      // Perform data saving in the background
+      _saveDataInBackground(
+        order: order,
+        originalOrder: originalOrder,
+        existingInvoice: existingInvoice,
+        storeLedgerId: storeLedgerId,
+        customerLedgerId: customerLedgerId,
+        returnAmount: returnAmount,
+        returnQuantities: returnQuantities,
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to process bill: $e')),
@@ -1480,6 +1322,239 @@ class _BillingPageState extends State<BillingPage> {
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  void _saveDataInBackground({
+    required Order order,
+    required Order? originalOrder,
+    required Order? existingInvoice,
+    required String storeLedgerId,
+    required String customerLedgerId,
+    required double returnAmount,
+    required Map<String, int> returnQuantities,
+  }) {
+    Future<void>(() async {
+      try {
+        final orderService = sl<IOrderService>();
+        final ledgerCubit = sl<UserLedgerCubit>();
+
+        if (_existingBillNumber == null) {
+          // New bill saves
+          for (var item in _cartItems) {
+            final stock = (_stockCubit.state as StockLoaded).stockItems.firstWhere(
+                  (stock) => stock.productId == item.productId && stock.storeId == _selectedStoreId,
+              orElse: () => StockModel(
+                id: '${item.productId}_$_selectedStoreId',
+                productId: item.productId,
+                storeId: _selectedStoreId!,
+                quantity: 0,
+                lastUpdated: DateTime.now(),
+              ),
+            );
+            await _stockCubit.generateBill(
+              stock,
+              item.quantity,
+              _selectedCustomer!.userId!,
+              remarks: 'Bill generated for $_selectedBillType sale (Order: ${order.id})',
+            );
+          }
+
+          await ledgerCubit.addTransaction(
+            ledgerId: customerLedgerId,
+            amount: order.totalAmount,
+            type: 'Debit',
+            billNumber: order.billNumber,
+            purpose: 'Purchase',
+            typeOfPurpose: _selectedBillType,
+            remarks: 'Bill generated for order ${order.id} with discount ${order.discount?.toStringAsFixed(2) ?? '0.00'}',
+            userType: UserType.Customer,
+          );
+
+          if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
+            final paymentAmount = _selectedBillType == 'Cash' ? order.totalAmount : _initialPayment!;
+            await ledgerCubit.addTransaction(
+              ledgerId: customerLedgerId,
+              amount: paymentAmount,
+              type: 'Credit',
+              billNumber: order.billNumber,
+              purpose: 'Payment',
+              typeOfPurpose: 'Cash',
+              remarks: 'Payment received for bill ${order.billNumber}',
+              userType: UserType.Customer,
+            );
+          }
+
+          await ledgerCubit.addTransaction(
+            ledgerId: storeLedgerId,
+            amount: order.totalAmount,
+            type: 'Credit',
+            billNumber: order.billNumber,
+            purpose: 'Sale',
+            typeOfPurpose: _selectedBillType,
+            remarks: 'Sale for bill ${order.billNumber} to customer ${_selectedCustomer!.name ?? 'Unknown'}',
+            userType: UserType.Store,
+          );
+
+          if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
+            final paymentAmount = _selectedBillType == 'Cash' ? order.totalAmount : _initialPayment!;
+            await ledgerCubit.addTransaction(
+              ledgerId: storeLedgerId,
+              amount: paymentAmount,
+              type: 'Debit',
+              billNumber: order.billNumber,
+              purpose: 'Cash Received',
+              typeOfPurpose: 'Cash',
+              remarks: 'Cash received for bill ${order.billNumber}',
+              userType: UserType.Store,
+            );
+          }
+
+          await orderService.placeOrder(order);
+          if (existingInvoice == null) {
+            await orderService.placeInvoice(order);
+          }
+        } else {
+          // Update bill saves
+          final processedProductIds = <String>{};
+          for (var item in originalOrder!.items) {
+            if (processedProductIds.contains(item.productId)) continue;
+            processedProductIds.add(item.productId);
+
+            final returnQuantity = returnQuantities[item.productId] ?? 0;
+            if (returnQuantity > 0) {
+              final stock = (_stockCubit.state as StockLoaded).stockItems.firstWhere(
+                    (stock) => stock.productId == item.productId && stock.storeId == _selectedStoreId,
+                orElse: () => StockModel(
+                  id: '${item.productId}_$_selectedStoreId',
+                  productId: item.productId,
+                  storeId: _selectedStoreId!,
+                  quantity: 0,
+                  lastUpdated: DateTime.now(),
+                ),
+              );
+              await _stockCubit.updateStock(
+                stock.copyWith(
+                  quantity: stock.quantity + returnQuantity,
+                  lastUpdated: DateTime.now(),
+                ),
+                remarks: 'Return of $returnQuantity units of ${item.productName}',
+                isReturn: true,
+              );
+            }
+          }
+
+          if (returnAmount > 0) {
+            await ledgerCubit.addTransaction(
+              ledgerId: customerLedgerId,
+              amount: returnAmount,
+              type: 'Credit',
+              billNumber: order.billNumber,
+              purpose: 'Return',
+              typeOfPurpose: _selectedBillType,
+              remarks: 'Return for order ${widget.orderId}',
+              userType: UserType.Customer,
+            );
+            if (_selectedBillType == 'Cash' && _selectedReturnMethod == 'Cash') {
+              await ledgerCubit.addTransaction(
+                ledgerId: customerLedgerId,
+                amount: returnAmount,
+                type: 'Debit',
+                billNumber: order.billNumber,
+                purpose: 'Return Payment',
+                typeOfPurpose: 'Cash',
+                remarks: 'Cash paid back for return for order ${widget.orderId}',
+                userType: UserType.Customer,
+              );
+            }
+          }
+
+          if (_cartItems.isNotEmpty) {
+            await ledgerCubit.addTransaction(
+              ledgerId: customerLedgerId,
+              amount: order.totalAmount,
+              type: 'Debit',
+              billNumber: order.billNumber,
+              purpose: 'Purchase',
+              typeOfPurpose: _selectedBillType,
+              remarks: 'Bill updated for order ${order.id}',
+              userType: UserType.Customer,
+            );
+            if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
+              final paymentAmount = _selectedBillType == 'Cash' ? order.totalAmount : _initialPayment!;
+              await ledgerCubit.addTransaction(
+                ledgerId: customerLedgerId,
+                amount: paymentAmount,
+                type: 'Credit',
+                billNumber: order.billNumber,
+                purpose: 'Payment',
+                typeOfPurpose: 'Cash',
+                remarks: 'Payment received for updated bill ${order.billNumber}',
+                userType: UserType.Customer,
+              );
+            }
+          }
+
+          if (_cartItems.isNotEmpty) {
+            await ledgerCubit.addTransaction(
+              ledgerId: storeLedgerId,
+              amount: order.totalAmount,
+              type: 'Credit',
+              billNumber: order.billNumber,
+              purpose: 'Sale',
+              typeOfPurpose: _selectedBillType,
+              remarks: 'Updated sale for bill ${order.billNumber}',
+              userType: UserType.Store,
+            );
+            if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
+              final paymentAmount = _selectedBillType == 'Cash' ? order.totalAmount : _initialPayment!;
+              await ledgerCubit.addTransaction(
+                ledgerId: storeLedgerId,
+                amount: paymentAmount,
+                type: 'Debit',
+                billNumber: order.billNumber,
+                purpose: 'Cash Received',
+                typeOfPurpose: 'Cash',
+                remarks: 'Cash received for updated bill ${order.billNumber}',
+                userType: UserType.Store,
+              );
+            }
+          }
+
+          if (returnAmount > 0) {
+            await ledgerCubit.addTransaction(
+              ledgerId: storeLedgerId,
+              amount: returnAmount,
+              type: 'Debit',
+              billNumber: order.billNumber,
+              purpose: 'Return',
+              typeOfPurpose: _selectedBillType,
+              remarks: 'Return of stock for bill ${order.billNumber}',
+              userType: UserType.Store,
+            );
+            if (_selectedBillType == 'Cash' && _selectedReturnMethod == 'Cash') {
+              await ledgerCubit.addTransaction(
+                ledgerId: storeLedgerId,
+                amount: returnAmount,
+                type: 'Credit',
+                billNumber: order.billNumber,
+                purpose: 'Return Payment',
+                typeOfPurpose: 'Cash',
+                remarks: 'Cash paid back for return for bill ${order.billNumber}',
+                userType: UserType.Store,
+              );
+            }
+          }
+
+          await orderService.updateOrderStatus(widget.orderId!, _selectedStatus);
+          await orderService.updateOrder(order);
+          await orderService.updateInvoice(order);
+        }
+      } catch (e) {
+        // Handle background save error (e.g., log it or show a delayed notification)
+        debugPrint('Background save failed: $e');
+        // Optionally, use a global key or notification system to show error to user
+      }
+    });
   }
 
   Future<pw.Document> _generatePdf(Order order) async {
@@ -1492,7 +1567,7 @@ class _BillingPageState extends State<BillingPage> {
     String companyPhone = ''; // Not in current, so empty
     String companyEmail = ''; // Not in current, so empty
     String companyWebsite = ''; // Not in current, so empty
-    String currency = '₹'; // Keep from current code; example uses IQD, but no assumption
+    String currency = 'IQD '; // Keep from current code; example uses IQD
     double customerTotalBalance = 0.0; // Not in current, so 0
 
     try {
@@ -1523,7 +1598,7 @@ class _BillingPageState extends State<BillingPage> {
 
     // Helper function for formatting numbers with commas and no decimals
     String formatNumber(double number) {
-      return number.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},');
+      return 'IQD ${number.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
     }
 
     pdf.addPage(
@@ -1689,23 +1764,23 @@ class _BillingPageState extends State<BillingPage> {
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(2),
-                          child: pw.Text(formatNumber(item.price), style: pw.TextStyle(font: regularFont, fontSize: 12)),
+                          child: pw.Text(item.price.toString(), style: pw.TextStyle(font: regularFont, fontSize: 12)),
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(2),
-                          child: pw.Text(formatNumber(item.taxAmount), style: pw.TextStyle(font: regularFont, fontSize: 12)),
+                          child: pw.Text(item.taxAmount.toString(), style: pw.TextStyle(font: regularFont, fontSize: 12)),
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(2),
-                          child: pw.Text(formatNumber(item.discountAmount), style: pw.TextStyle(font: regularFont, fontSize: 12)),
+                          child: pw.Text(item.discountAmount.toString(), style: pw.TextStyle(font: regularFont, fontSize: 12)),
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(2),
-                          child: pw.Text(formatNumber(item.discountPercentage), style: pw.TextStyle(font: regularFont, fontSize: 12)),
+                          child: pw.Text(item.discountPercentage.toString(), style: pw.TextStyle(font: regularFont, fontSize: 12)),
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(2),
-                          child: pw.Text(formatNumber((item.price * item.quantity) + item.taxAmount - item.discountAmount), style: pw.TextStyle(font: regularFont, fontSize: 12)),
+                          child: pw.Text(((item.price * item.quantity) + item.taxAmount - item.discountAmount).toString(), style: pw.TextStyle(font: regularFont, fontSize: 12)),
                         ),
                       ],
                     );
@@ -1809,7 +1884,6 @@ class _BillingPageState extends State<BillingPage> {
                   ),
                 ),
               ),
-
               if (order.paymentDetails != null && order.paymentDetails!.isNotEmpty)
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -1916,7 +1990,8 @@ class _BillingPageState extends State<BillingPage> {
     );
 
     return pdf;
-  }  Widget _buildGenerateBillButton() {
+  }
+  Widget _buildGenerateBillButton() {
     return ElevatedButton(
       onPressed: _generateBill,
       style: ElevatedButton.styleFrom(
@@ -2022,7 +2097,7 @@ class _BillingPageState extends State<BillingPage> {
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    'Price: ₹${item.price.toStringAsFixed(2)}',
+                                    'Price: IQD ${item.price.toStringAsFixed(2)}',
                                     style: const TextStyle(
                                       fontSize: 14,
                                       color: AppColors.textSecondary,
@@ -2186,7 +2261,7 @@ class _BillingPageState extends State<BillingPage> {
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 8, horizontal: 12),
                                       child: Text(
-                                        'Subtotal (₹${item.price.toStringAsFixed(2)} x ${item.quantity})',
+                                        'Subtotal (IQD ${item.price.toStringAsFixed(2)} x ${item.quantity})',
                                         style: const TextStyle(
                                           fontSize: 14,
                                           color: AppColors.textSecondary,
@@ -2197,7 +2272,7 @@ class _BillingPageState extends State<BillingPage> {
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 8, horizontal: 12),
                                       child: Text(
-                                        '₹${(item.price * item.quantity).toStringAsFixed(2)}',
+                                        'IQD ${(item.price * item.quantity).toStringAsFixed(2)}',
                                         textAlign: TextAlign.right,
                                         style: const TextStyle(
                                           fontSize: 14,
@@ -2225,7 +2300,7 @@ class _BillingPageState extends State<BillingPage> {
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 8, horizontal: 12),
                                       child: Text(
-                                        '₹${item.taxAmount.toStringAsFixed(2)}',
+                                        'IQD ${item.taxAmount.toStringAsFixed(2)}',
                                         textAlign: TextAlign.right,
                                         style: const TextStyle(
                                           fontSize: 14,
@@ -2260,7 +2335,7 @@ class _BillingPageState extends State<BillingPage> {
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 8, horizontal: 12),
                                       child: Text(
-                                        '₹${((item.price * item.quantity) + item.taxAmount).toStringAsFixed(2)}',
+                                        'IQD ${((item.price * item.quantity) + item.taxAmount).toStringAsFixed(2)}',
                                         textAlign: TextAlign.right,
                                         style: const TextStyle(
                                           fontSize: 14,
@@ -2283,7 +2358,7 @@ class _BillingPageState extends State<BillingPage> {
             const SizedBox(height: 8),
             if (_discount != null && _discount! > 0) ...[
               Text(
-                'Discount: ₹${_discount!.toStringAsFixed(2)}',
+                'Discount: IQD ${_discount!.toStringAsFixed(2)}',
                 style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -2292,7 +2367,7 @@ class _BillingPageState extends State<BillingPage> {
               const SizedBox(height: 8),
             ],
             Text(
-              'Total: ₹${finalTotal.toStringAsFixed(2)}',
+              'Total: IQD ${finalTotal.toStringAsFixed(2)}',
               style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -2434,7 +2509,7 @@ class _BillingPageState extends State<BillingPage> {
                                     fontWeight: FontWeight.bold),
                               ),
                               subtitle: Text(
-                                'Price: ₹${product.price?.toStringAsFixed(2) ?? '0.00'} | Stock: ${product.quantity}',
+                                'Price: IQD ${product.price?.toStringAsFixed(2) ?? '0.00'} | Stock: ${product.quantity}',
                               ),
                               trailing: IconButton(
                                 icon: const Icon(Icons.add,
