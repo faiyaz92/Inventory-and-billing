@@ -1809,14 +1809,7 @@ class _BillingPageState extends State<BillingPage> {
                   ),
                 ),
               ),
-              pw.SizedBox(height: 8),
-              pw.Align(
-                alignment: pw.Alignment.centerRight,
-                child: pw.Text(
-                  'Customer Total Balance ${formatNumber(customerTotalBalance)}',
-                  style: pw.TextStyle(font: boldFont, fontSize: 12),
-                ),
-              ),
+
               if (order.paymentDetails != null && order.paymentDetails!.isNotEmpty)
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
