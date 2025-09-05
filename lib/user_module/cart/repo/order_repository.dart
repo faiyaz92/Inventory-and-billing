@@ -155,6 +155,7 @@ class OrderRepositoryImpl implements IOrderRepository {
           .map((doc) => OrderDto.fromFirestore(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
+      print(e.toString());
       throw Exception('Failed to fetch orders: $e');
     }
   }
@@ -328,6 +329,7 @@ class OrderRepositoryImpl implements IOrderRepository {
           .map((doc) => OrderDto.fromFirestore(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
+      print(e.toString());
       throw Exception('Failed to fetch invoices: $e');
     }
   }
