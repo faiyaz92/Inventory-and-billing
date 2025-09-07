@@ -200,4 +200,8 @@ class OrderService implements IOrderService {
     await orderRepository.setPaymentStatus(
         userInfo?.companyId ?? '', invoiceId, paymentStatus, userInfo?.userId);
   }
+  @override
+  Future<String> getNextInvoiceNumber(String companyId) async {
+    return await orderRepository.getNextInvoiceNumber(companyId);
+  }
 }

@@ -43,4 +43,5 @@ abstract class IOrderService {
   Future<void> setInvoiceGeneratedDate(String invoiceId, DateTime date);
   Future<void> setInvoiceType(String invoiceId, String invoiceType);
   Future<void> setPaymentStatus(String invoiceId, String paymentStatus);
+  Future<String> getNextInvoiceNumber(String companyId);
 }

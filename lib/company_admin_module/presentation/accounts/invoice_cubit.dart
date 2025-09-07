@@ -1,13 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart' show FirebaseFirestore;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/store_services.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
 import 'package:requirment_gathering_app/user_module/cart/services/iorder_service.dart';
-import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 
 abstract class AdminInvoiceState {}
 
@@ -57,6 +58,7 @@ class AdminInvoiceListFetchSuccess extends AdminInvoiceState {
 
 class AdminInvoiceListFetchError extends AdminInvoiceState {
   final String message;
+
   AdminInvoiceListFetchError(this.message);
 }
 
@@ -84,6 +86,7 @@ class AdminInvoiceFetchSuccess extends AdminInvoiceState {
 
 class AdminInvoiceFetchError extends AdminInvoiceState {
   final String message;
+
   AdminInvoiceFetchError(this.message);
 }
 
@@ -154,38 +157,39 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
       List<Order> invoices, bool showTodayStats) {
     final totalInvoices = invoices.length;
     final totalAmount =
-    invoices.fold<double>(0.0, (sum, invoice) => sum + invoice.totalAmount);
-    final newInvoices =
-        invoices.where((invoice) => _isToday(invoice.invoiceGeneratedDate)).length;
+        invoices.fold<double>(0.0, (sum, invoice) => sum + invoice.totalAmount);
+    final newInvoices = invoices
+        .where((invoice) => _isToday(invoice.invoiceGeneratedDate))
+        .length;
     final cashSales = invoices
         .where((invoice) => invoice.invoiceType == 'Cash')
         .fold<double>(0.0, (sum, invoice) => sum + invoice.totalAmount);
     final creditSales = invoices
         .where((invoice) => invoice.invoiceType == 'Credit')
         .fold<double>(0.0, (sum, invoice) => sum + invoice.totalAmount);
-    final paidInvoices = invoices
-        .where((invoice) => invoice.paymentStatus == 'Paid')
-        .length;
+    final paidInvoices =
+        invoices.where((invoice) => invoice.paymentStatus == 'Paid').length;
     final partialPaidInvoices = invoices
         .where((invoice) => invoice.paymentStatus == 'Partial Paid')
         .length;
-    final notPaidInvoices = invoices
-        .where((invoice) => invoice.paymentStatus == 'Not Paid')
-        .length;
-    final cashInvoicesCount = invoices
-        .where((invoice) => invoice.invoiceType == 'Cash')
-        .length;
+    final notPaidInvoices =
+        invoices.where((invoice) => invoice.paymentStatus == 'Not Paid').length;
+    final cashInvoicesCount =
+        invoices.where((invoice) => invoice.invoiceType == 'Cash').length;
     final totalCollectedAmount = invoices
         .where((invoice) =>
-    invoice.paymentStatus == 'Paid' || invoice.paymentStatus == 'Partial Paid')
+            invoice.paymentStatus == 'Paid' ||
+            invoice.paymentStatus == 'Partial Paid')
         .fold<double>(
-        0.0, (sum, invoice) => sum + (invoice.amountReceived ?? 0.0));
+            0.0, (sum, invoice) => sum + (invoice.amountReceived ?? 0.0));
     final totalPendingAmount = invoices
         .where((invoice) =>
-    invoice.paymentStatus == 'Not Paid' ||
-        invoice.paymentStatus == 'Partial Paid')
-        .fold<double>(0.0,
-            (sum, invoice) => sum + (invoice.totalAmount - (invoice.amountReceived ?? 0.0)));
+            invoice.paymentStatus == 'Not Paid' ||
+            invoice.paymentStatus == 'Partial Paid')
+        .fold<double>(
+            0.0,
+            (sum, invoice) =>
+                sum + (invoice.totalAmount - (invoice.amountReceived ?? 0.0)));
 
     var stats = <Map<String, dynamic>>[
       {
@@ -279,22 +283,25 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
       'color': normalizedStatus == 'paid'
           ? Colors.green
           : normalizedStatus == 'partial paid'
-          ? Colors.orange
-          : Colors.red,
+              ? Colors.orange
+              : Colors.red,
       'backgroundColor': normalizedStatus == 'paid'
           ? Colors.green.withOpacity(0.1)
           : normalizedStatus == 'partial paid'
-          ? Colors.orange.withOpacity(0.1)
-          : Colors.red.withOpacity(0.1),
+              ? Colors.orange.withOpacity(0.1)
+              : Colors.red.withOpacity(0.1),
     };
   }
 
   String? getUserNameById(String? userId, List<UserInfo> users) {
     if (userId == null || userId.isEmpty) return null;
-    return users.firstWhere(
-          (user) => user.userId == userId,
-      orElse: () => UserInfo(userId: userId, userName: 'Unknown'),
-    ).userName ?? 'Unknown';
+    return users
+            .firstWhere(
+              (user) => user.userId == userId,
+              orElse: () => UserInfo(userId: userId, userName: 'Unknown'),
+            )
+            .userName ??
+        'Unknown';
   }
 
   Future<void> fetchInvoices({
@@ -323,13 +330,16 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
         maxTotalAmount: maxTotalAmount,
       );
       _allInvoices = invoices;
-      final users = await employeeServices.getUsersFromTenantCompany(storeId: storeId);
+      final users =
+          await employeeServices.getUsersFromTenantCompany(storeId: storeId);
       final stores = await storeService.getStores();
 
       List<Order> filteredInvoices = invoices;
       if (_searchQuery.isNotEmpty) {
         filteredInvoices = filteredInvoices
-            .where((invoice) => (invoice.billNumber??'').toLowerCase().contains(_searchQuery.toLowerCase()))
+            .where((invoice) => (invoice.billNumber ?? '')
+                .toLowerCase()
+                .contains(_searchQuery.toLowerCase()))
             .toList();
       }
 
@@ -373,7 +383,8 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
         showTodayStats: showTodayStats,
       ));
     } catch (e) {
-      emit(AdminInvoiceListFetchError('Failed to fetch invoices: ${e.toString()}'));
+      emit(AdminInvoiceListFetchError(
+          'Failed to fetch invoices: ${e.toString()}'));
     }
   }
 
@@ -385,11 +396,14 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
 
       if (_searchQuery.isNotEmpty) {
         filteredInvoices = filteredInvoices
-            .where((invoice) => (invoice.billNumber??'').toLowerCase().contains(_searchQuery.toLowerCase()))
+            .where((invoice) => (invoice.billNumber ?? '')
+                .toLowerCase()
+                .contains(_searchQuery.toLowerCase()))
             .toList();
       }
 
-      final showTodayStats = _shouldShowTodayStats(currentState.startDate, currentState.endDate);
+      final showTodayStats =
+          _shouldShowTodayStats(currentState.startDate, currentState.endDate);
       emit(AdminInvoiceListFetchSuccess(
         invoices: filteredInvoices,
         users: currentState.users,
@@ -404,7 +418,8 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
         minTotalAmount: currentState.minTotalAmount,
         maxTotalAmount: currentState.maxTotalAmount,
         groupedInvoices: _groupInvoicesByDate(filteredInvoices),
-        dateRangeLabel: _formatDateRange(currentState.startDate, currentState.endDate),
+        dateRangeLabel:
+            _formatDateRange(currentState.startDate, currentState.endDate),
         statistics: _computeStatistics(filteredInvoices, showTodayStats),
         previousStatistics: currentState.previousStatistics,
         showTodayStats: showTodayStats,
@@ -420,134 +435,19 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
       emit(AdminInvoiceFetchSuccess(
         invoice: invoice,
         users: users,
-        normalizedPaymentStatus: invoice.paymentStatus?.toLowerCase() ?? 'not paid',
-        subtotal: invoice.items.fold(
-            0.0, (sum, item) => sum + (item.price * item.quantity)),
+        normalizedPaymentStatus:
+            invoice.paymentStatus?.toLowerCase() ?? 'not paid',
+        subtotal: invoice.items
+            .fold(0.0, (sum, item) => sum + (item.price * item.quantity)),
         totalTax: invoice.items.fold(0.0, (sum, item) => sum + item.taxAmount),
         invoiceGeneratedDateFormatted: invoice.invoiceGeneratedDate != null
             ? _fullDateFormatter.format(invoice.invoiceGeneratedDate!)
             : 'No Date',
-        invoiceLastUpdatedByName: getUserNameById(invoice.invoiceLastUpdatedBy, users),
+        invoiceLastUpdatedByName:
+            getUserNameById(invoice.invoiceLastUpdatedBy, users),
       ));
     } catch (e) {
       emit(AdminInvoiceFetchError('Failed to fetch invoice: ${e.toString()}'));
     }
   }
 }
-//indexcies
-/*{
-  "indexes": [
-    {
-      "collectionGroup": "orders",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "storeId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "orderDate",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "orders",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "status",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "orderDate",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "orders",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "storeId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "totalAmount",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "orders",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "storeId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "expectedDeliveryDate",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "invoices",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "storeId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "invoiceGeneratedDate",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "invoices",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "invoiceType",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "invoiceGeneratedDate",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "invoices",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "paymentStatus",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "invoiceGeneratedDate",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "invoices",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "storeId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "totalAmount",
-          "order": "ASCENDING"
-        }
-      ]
-    }
-  ]
-}*/

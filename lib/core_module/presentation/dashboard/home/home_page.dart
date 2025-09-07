@@ -412,14 +412,14 @@ class HomePage extends StatelessWidget {
         break;
       case Role.SALES_MAN:
         gridItems.addAll([
-          _buildGridItem(
-            icon: Icons.note_add,
-            label: 'Take Purchase Order',
-            color: Colors.blueAccent,
-            onTap: () {
-              sl<Coordinator>().navigateToSalesManOrderPage();
-            },
-          ),
+          // _buildGridItem(
+          //   icon: Icons.note_add,
+          //   label: 'Take Purchase Order',
+          //   color: Colors.blueAccent,
+          //   onTap: () {
+          //     sl<Coordinator>().navigateToSalesManOrderPage();
+          //   },
+          // ),
           _buildGridItem(
             icon: Icons.receipt,
             label: 'Create Invoice',
@@ -453,36 +453,18 @@ class HomePage extends StatelessWidget {
             },
           ),
           _buildGridItem(
+            icon: Icons.person_add,
+            label: 'Add Customer',
+            color: Colors.red,
+            onTap: () => sl<Coordinator>().navigateToAddUserPage(),
+          ),
+          _buildGridItem(
             icon: Icons.money_off,
             label: 'Add Expenses',
             color: Colors.orangeAccent,
             onTap: () {
               sl<Coordinator>().navigateToUserLedgerPage(
                   transactionType: TransactionType.Expense);
-            },
-          ),
-          _buildGridItem(
-            icon: Icons.attach_money,
-            label: 'Quick Receive',
-            color: Colors.green,
-            onTap: () {
-              sl<Coordinator>().navigateToQuickTransactionPage('receive');
-            },
-          ),
-          _buildGridItem(
-            icon: Icons.payment,
-            label: 'Quick Pay',
-            color: Colors.red,
-            onTap: () {
-              sl<Coordinator>().navigateToQuickTransactionPage('pay');
-            },
-          ),
-          _buildGridItem(
-            icon: Icons.account_circle,
-            label: 'My Account',
-            color: Colors.orangeAccent,
-            onTap: () {
-              sl<Coordinator>().navigateToUserLedgerPage();
             },
           ),
         ]);

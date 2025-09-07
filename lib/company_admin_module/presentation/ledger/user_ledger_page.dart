@@ -1163,80 +1163,90 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
 
   Widget _buildTransactionButtons(BuildContext context) {
     final role = widget.user?.role ?? Role.STORE_ACCOUNTANT;
-    final isEmployee = widget.user?.userType == UserType.Employee;
+    final isEmployee = widget.user?.userType == UserType.Employee ||
+        _cachedUserInfo?.userType == UserType.Employee;
     final isSalesman = role == Role.SALES_MAN;
+    final isAdminOrAccountant = _cachedUserInfo?.role == Role.COMPANY_ADMIN ||
+        _cachedUserInfo?.role == Role.COMPANY_ACCOUNTANT;
+
+    // For "My Account" (widget.user == null, widget.store == null, and type == General)
+    // and user is Employee, only show buttons for COMPANY_ADMIN or COMPANY_ACCOUNTANT
+    if (widget.user == null &&
+        widget.store == null &&
+        widget.type == TransactionType.General &&
+        isEmployee &&
+        !isAdminOrAccountant) {
+      return const SizedBox.shrink(); // Hide buttons for non-admin/accountant employees
+    }
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         ElevatedButton(
           onPressed: _accounts.isEmpty ||
-                  _selectedSourceLedgerId == null ||
-                  _selectedDestinationLedgerId == null
+              _selectedSourceLedgerId == null ||
+              _selectedDestinationLedgerId == null
               ? null
               : () {
-                  if (_selectionFormKey.currentState!.validate()) {
-                    context.read<UserLedgerCubit>().openTransactionPopup(
-                          false,
-                          role,
-                          widget.type == TransactionType.Expense,
-                          widget.type == TransactionType.Reimbursement,
-                        );
-                  }
-                },
+            if (_selectionFormKey.currentState!.validate()) {
+              context.read<UserLedgerCubit>().openTransactionPopup(
+                false,
+                role,
+                widget.type == TransactionType.Expense,
+                widget.type == TransactionType.Reimbursement,
+              );
+            }
+          },
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
           child: Text(widget.type == TransactionType.Expense
               ? "Add Expense"
               : widget.type == TransactionType.Reimbursement
-                  ? "Reimburse"
-                  : widget.type == TransactionType.OtherLedger
-                      ? "Receive"
-                      : isEmployee
-                          ? "Receive Cash"
-                          : isSalesman
-                              ? "Collect Cash"
-                              : "Receive"),
+              ? "Reimburse"
+              : widget.type == TransactionType.OtherLedger
+              ? "Receive"
+              : isEmployee
+              ? "Receive Cash"
+              : isSalesman
+              ? "Collect Cash"
+              : "Receive"),
         ),
         ElevatedButton(
           onPressed: _accounts.isEmpty ||
-                  _selectedSourceLedgerId == null ||
-                  _selectedDestinationLedgerId == null
+              _selectedSourceLedgerId == null ||
+              _selectedDestinationLedgerId == null
               ? null
               : () {
-                  if (_selectionFormKey.currentState!.validate()) {
-                    context.read<UserLedgerCubit>().openTransactionPopup(
-                          true,
-                          role,
-                          widget.type == TransactionType.Expense,
-                          widget.type == TransactionType.Reimbursement,
-                        );
-                  }
-                },
+            if (_selectionFormKey.currentState!.validate()) {
+              context.read<UserLedgerCubit>().openTransactionPopup(
+                true,
+                role,
+                widget.type == TransactionType.Expense,
+                widget.type == TransactionType.Reimbursement,
+              );
+            }
+          },
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
           child: Text(widget.type == TransactionType.Expense
               ? "Reverse Expense"
               : widget.type == TransactionType.Reimbursement
-                  ? "Reverse Reimbursement"
-                  : widget.type == TransactionType.OtherLedger
-                      ? "Pay"
-                      : isEmployee
-                          ? "Pay Cash"
-                          : isSalesman
-                              ? "Pay Cash"
-                              : "Pay Cash/Amount"),
+              ? "Reverse Reimbursement"
+              : widget.type == TransactionType.OtherLedger
+              ? "Pay"
+              : isEmployee
+              ? "Pay Cash"
+              : isSalesman
+              ? "Pay Cash"
+              : "Pay Cash/Amount"),
         ),
       ],
     );
   }
-
   SliverList _buildTransactionList(AccountLedger ledger) {
     return SliverList(
       delegate: SliverChildBuilderDelegate(

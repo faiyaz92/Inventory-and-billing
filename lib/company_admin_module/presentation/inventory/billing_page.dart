@@ -1,5 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:cloud_firestore/cloud_firestore.dart' show FirebaseFirestore;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdf/pdf.dart';
@@ -449,15 +448,15 @@ class _BillingPageState extends State<BillingPage> {
                           columnWidths: {
                             0: FlexColumnWidth(isMobile ? 2.5 : 3),
                             // Product
-                            1: FlexColumnWidth(1),
+                            1: const FlexColumnWidth(1),
                             // Qty
-                            2: FlexColumnWidth(1.2),
+                            2: const FlexColumnWidth(1.2),
                             // Subtotal
-                            3: FlexColumnWidth(1.2),
+                            3: const FlexColumnWidth(1.2),
                             // Tax
-                            4: FlexColumnWidth(1.5),
+                            4: const FlexColumnWidth(1.5),
                             // Discount (wider for tap target)
-                            5: FlexColumnWidth(1.2),
+                            5: const FlexColumnWidth(1.2),
                             // Total
                           },
                           children: [
@@ -945,7 +944,7 @@ class _BillingPageState extends State<BillingPage> {
                                         'Discount for ${item.productName} cannot exceed item total'),
                                     backgroundColor: AppColors.red,
                                     behavior: SnackBarBehavior.floating,
-                                    margin: EdgeInsets.all(16),
+                                    margin: const EdgeInsets.all(16),
                                   ),
                                 );
                                 return;
@@ -1264,7 +1263,8 @@ class _BillingPageState extends State<BillingPage> {
 
     // Generate new invoice number for new bills
     final billNumber = _existingBillNumber ??
-        await _getNextInvoiceNumber(userInfo?.companyId ?? '');
+        await sl<IOrderService>()
+            .getNextInvoiceNumber(userInfo?.companyId ?? '');
 
     Order order = Order(
       id: widget.orderId ?? DateTime.now().millisecondsSinceEpoch.toString(),
@@ -1722,27 +1722,578 @@ class _BillingPageState extends State<BillingPage> {
     });
   }
 
-  Future<String> _getNextInvoiceNumber(String companyId) async {
-    final year =
-        DateTime.now().year.toString().substring(2); // e.g., "25" for 2025
-    final snapshot = await FirebaseFirestore.instance
-        .collection('tenantCompanies')
-        .doc(companyId)
-        .collection('invoices')
-        .where('billNumber', isGreaterThanOrEqualTo: '$year-')
-        .where('billNumber', isLessThanOrEqualTo: '$year-\uffff')
-        .orderBy('billNumber', descending: true)
-        .limit(1)
-        .get();
-
-    int nextNumber = 1;
-    if (snapshot.docs.isNotEmpty) {
-      final lastBillNumber = snapshot.docs.first.get('billNumber') as String;
-      final lastNumber = int.parse(lastBillNumber.split('-')[1]);
-      nextNumber = lastNumber + 1;
-    }
-    return '$year-${nextNumber.toString().padLeft(3, '0')}'; // e.g., "25-001"
-  }
+  // Future<pw.Document> _generatePdf(Order order) async {
+  //   final pdf = pw.Document();
+  //   final accountRepository = sl<AccountRepository>();
+  //   final addTenantCompanyCubit = sl<AddTenantCompanyCubit>();
+  //
+  //   String companyName = 'Abc Pvt. Ltd.';
+  //   String issuerName = 'Unknown Issuer';
+  //   String companyAddress = '123 Business Street, City, Country';
+  //   String companyPhone = '';
+  //   String companyEmail = '';
+  //   String companyWebsite = '';
+  //   String currency = 'IQD ';
+  //   double customerTotalBalance = 0.0;
+  //
+  //   try {
+  //     final userInfo = await accountRepository.getUserInfo();
+  //     issuerName = userInfo?.name ?? userInfo?.userName ?? issuerName;
+  //     if (userInfo?.companyId != null) {
+  //       await addTenantCompanyCubit.getTenantCompanyById(userInfo!.companyId!);
+  //       final state = addTenantCompanyCubit.state;
+  //       if (state is TenantCompanyLoaded) {
+  //         final company = state.company;
+  //         companyName = company.name ?? companyName;
+  //         companyAddress = [
+  //           company.address ?? '',
+  //           company.city ?? '',
+  //           company.state ?? '',
+  //           company.zipCode ?? '',
+  //           company.country ?? ''
+  //         ].where((e) => e.isNotEmpty).join(', ');
+  //         companyPhone = company.mobileNumber ?? companyPhone;
+  //         companyEmail = company.email ?? companyEmail;
+  //       } else if (state is AddTenantCompanyError) {
+  //         debugPrint('Error fetching company details: ${state.message}');
+  //       }
+  //     }
+  //   } catch (e, stackTrace) {
+  //     debugPrint('Error fetching company or issuer details: $e\nStackTrace: $stackTrace');
+  //   }
+  //
+  //   final primaryColor = PdfColor.fromInt(AppColors.primary.value);
+  //   final textSecondaryColor = PdfColor.fromInt(AppColors.textSecondary.value);
+  //   final greyColor = PdfColors.grey300;
+  //   final rowBackgroundColor = PdfColors.grey100;
+  //
+  //   final regularFont = pw.Font.times();
+  //   final boldFont = pw.Font.timesBold();
+  //
+  //   final double subtotal = order.items
+  //       .fold(0.0, (sum, item) => sum + (item.price * item.quantity));
+  //   final double totalTax =
+  //   order.items.fold(0.0, (sum, item) => sum + item.taxAmount);
+  //   final double totalItemDiscount =
+  //   order.items.fold(0.0, (sum, item) => sum + item.discountAmount);
+  //   final double totalDiscount = totalItemDiscount + (order.discount ?? 0.0);
+  //   final double outstandingAmount =
+  //       order.totalAmount - (order.amountReceived ?? 0.0);
+  //   final double paymentsCredits = order.amountReceived ?? 0.0;
+  //
+  //   final String billToAddress = [
+  //     _selectedCustomer?.name ?? order.userName ?? 'Unknown Customer',
+  //     if (_selectedCustomer?.businessName?.isNotEmpty ?? false)
+  //       _selectedCustomer!.businessName!,
+  //     if (_selectedCustomer?.address?.isNotEmpty ?? false)
+  //       _selectedCustomer!.address!,
+  //     if (_selectedCustomer?.mobileNumber?.isNotEmpty ?? false)
+  //       _selectedCustomer!.mobileNumber!,
+  //     if (_selectedCustomer?.email?.isNotEmpty ?? false)
+  //       _selectedCustomer!.email!,
+  //   ].where((e) => e.isNotEmpty).join('\n');
+  //
+  //   String formatNumber(double number) {
+  //     return 'IQD ${number.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
+  //   }
+  //
+  //   try {
+  //     pdf.addPage(
+  //       pw.MultiPage(
+  //         pageFormat: PdfPageFormat.a4,
+  //         margin: const pw.EdgeInsets.all(40),
+  //         build: (context) => [
+  //           pw.Stack(
+  //             children: [
+  //               pw.Column(
+  //                 crossAxisAlignment: pw.CrossAxisAlignment.center,
+  //                 children: [
+  //                   pw.Text(
+  //                     'Invoice',
+  //                     style: pw.TextStyle(
+  //                         font: boldFont, fontSize: 24, color: PdfColors.black),
+  //                   ),
+  //                   pw.SizedBox(height: 8),
+  //                   pw.Row(
+  //                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+  //                     children: [
+  //                       pw.Column(
+  //                         crossAxisAlignment: pw.CrossAxisAlignment.start,
+  //                         children: [
+  //                           pw.Text(
+  //                             companyName,
+  //                             style: pw.TextStyle(
+  //                                 font: boldFont, fontSize: 18, color: primaryColor),
+  //                           ),
+  //                           pw.SizedBox(height: 4),
+  //                           pw.Text(
+  //                             companyAddress,
+  //                             style: pw.TextStyle(
+  //                                 font: regularFont,
+  //                                 fontSize: 12,
+  //                                 color: textSecondaryColor),
+  //                           ),
+  //                           if (companyPhone.isNotEmpty)
+  //                             pw.Text(
+  //                               companyPhone,
+  //                               style: pw.TextStyle(
+  //                                   font: regularFont,
+  //                                   fontSize: 12,
+  //                                   color: textSecondaryColor),
+  //                             ),
+  //                           if (companyEmail.isNotEmpty)
+  //                             pw.Text(
+  //                               companyEmail,
+  //                               style: pw.TextStyle(
+  //                                   font: regularFont,
+  //                                   fontSize: 12,
+  //                                   color: textSecondaryColor),
+  //                             ),
+  //                         ],
+  //                       ),
+  //                       pw.Column(
+  //                         crossAxisAlignment: pw.CrossAxisAlignment.end,
+  //                         children: [
+  //                           pw.Table(
+  //                             columnWidths: {
+  //                               0: pw.FixedColumnWidth(80),
+  //                               1: pw.FixedColumnWidth(100),
+  //                             },
+  //                             children: [
+  //                               pw.TableRow(
+  //                                 children: [
+  //                                   pw.Text('Date',
+  //                                       style: pw.TextStyle(
+  //                                           font: boldFont, fontSize: 12)),
+  //                                   pw.Text(
+  //                                       order.orderDate.toString().substring(0, 10),
+  //                                       style: pw.TextStyle(
+  //                                           font: regularFont, fontSize: 12)),
+  //                                 ],
+  //                               ),
+  //                               pw.TableRow(
+  //                                 children: [
+  //                                   pw.Text('Invoice #',
+  //                                       style: pw.TextStyle(
+  //                                           font: boldFont, fontSize: 12)),
+  //                                   pw.Text(order.billNumber ?? 'N/A',
+  //                                       style: pw.TextStyle(
+  //                                           font: regularFont, fontSize: 12)),
+  //                                 ],
+  //                               ),
+  //                               pw.TableRow(
+  //                                 children: [
+  //                                   pw.Text('Issuer',
+  //                                       style: pw.TextStyle(
+  //                                           font: boldFont, fontSize: 12)),
+  //                                   pw.Text(issuerName,
+  //                                       style: pw.TextStyle(
+  //                                           font: regularFont, fontSize: 12)),
+  //                                 ],
+  //                               ),
+  //                             ],
+  //                           ),
+  //                         ],
+  //                       ),
+  //                     ],
+  //                   ),
+  //                   pw.SizedBox(height: 8),
+  //                   pw.Row(
+  //                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+  //                     children: [
+  //                       pw.Expanded(
+  //                         child: pw.Column(
+  //                           crossAxisAlignment: pw.CrossAxisAlignment.start,
+  //                           children: [
+  //                             pw.Text(
+  //                               'Bill To',
+  //                               style: pw.TextStyle(font: boldFont, fontSize: 12),
+  //                             ),
+  //                             pw.Container(
+  //                               decoration: pw.BoxDecoration(
+  //                                 border: pw.Border.all(color: greyColor),
+  //                               ),
+  //                               padding: const pw.EdgeInsets.all(8),
+  //                               child: pw.Text(
+  //                                 billToAddress,
+  //                                 style: pw.TextStyle(font: regularFont, fontSize: 12),
+  //                               ),
+  //                             ),
+  //                           ],
+  //                         ),
+  //                       ),
+  //                       pw.SizedBox(width: 16),
+  //                       pw.Expanded(
+  //                         child: pw.Column(
+  //                           crossAxisAlignment: pw.CrossAxisAlignment.start,
+  //                           children: [
+  //                             pw.Text(
+  //                               'Terms',
+  //                               style: pw.TextStyle(font: boldFont, fontSize: 12),
+  //                             ),
+  //                             pw.Container(
+  //                               decoration: pw.BoxDecoration(
+  //                                 border: pw.Border.all(color: greyColor),
+  //                               ),
+  //                               padding: const pw.EdgeInsets.all(8),
+  //                               child: pw.Text(
+  //                                 order.invoiceType ?? '',
+  //                                 style: pw.TextStyle(font: regularFont, fontSize: 12),
+  //                               ),
+  //                             ),
+  //                           ],
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                   pw.SizedBox(height: 8),
+  //                   pw.Table(
+  //                     border: pw.TableBorder(
+  //                       top: pw.BorderSide(color: greyColor, width: 1),
+  //                       bottom: pw.BorderSide(color: greyColor, width: 1),
+  //                       left: pw.BorderSide.none,
+  //                       right: pw.BorderSide.none,
+  //                       horizontalInside: pw.BorderSide.none,
+  //                       verticalInside: pw.BorderSide(color: greyColor, width: 1),
+  //                     ),
+  //                     children: [
+  //                       pw.TableRow(
+  //                         children: [
+  //                           pw.Padding(
+  //                             padding: const pw.EdgeInsets.all(2),
+  //                             child: pw.Text('Item',
+  //                                 style: pw.TextStyle(font: boldFont, fontSize: 12)),
+  //                           ),
+  //                           pw.Padding(
+  //                             padding: const pw.EdgeInsets.all(2),
+  //                             child: pw.Text('Qty',
+  //                                 style: pw.TextStyle(font: boldFont, fontSize: 12)),
+  //                           ),
+  //                           pw.Padding(
+  //                             padding: const pw.EdgeInsets.all(2),
+  //                             child: pw.Text('Rate',
+  //                                 style: pw.TextStyle(font: boldFont, fontSize: 12)),
+  //                           ),
+  //                           pw.Padding(
+  //                             padding: const pw.EdgeInsets.all(2),
+  //                             child: pw.Text('Tax',
+  //                                 style: pw.TextStyle(font: boldFont, fontSize: 12)),
+  //                           ),
+  //                           pw.Padding(
+  //                             padding: const pw.EdgeInsets.all(2),
+  //                             child: pw.Text('Disc. Amt',
+  //                                 style: pw.TextStyle(font: boldFont, fontSize: 12)),
+  //                           ),
+  //                           pw.Padding(
+  //                             padding: const pw.EdgeInsets.all(2),
+  //                             child: pw.Text('Disc. %',
+  //                                 style: pw.TextStyle(font: boldFont, fontSize: 12)),
+  //                           ),
+  //                           pw.Padding(
+  //                             padding: const pw.EdgeInsets.all(2),
+  //                             child: pw.Text('Amount',
+  //                                 style: pw.TextStyle(font: boldFont, fontSize: 12)),
+  //                           ),
+  //                         ],
+  //                       ),
+  //                       ...order.items.asMap().entries.map((entry) {
+  //                         final index = entry.key;
+  //                         final item = entry.value;
+  //                         return pw.TableRow(
+  //                           decoration: index.isEven
+  //                               ? null
+  //                               : pw.BoxDecoration(color: rowBackgroundColor),
+  //                           children: [
+  //                             pw.Padding(
+  //                               padding: const pw.EdgeInsets.all(2),
+  //                               child: pw.Text(item.productName,
+  //                                   style: pw.TextStyle(font: regularFont, fontSize: 12)),
+  //                             ),
+  //                             pw.Padding(
+  //                               padding: const pw.EdgeInsets.all(2),
+  //                               child: pw.Text(item.quantity.toString(),
+  //                                   style: pw.TextStyle(font: regularFont, fontSize: 12)),
+  //                             ),
+  //                             pw.Padding(
+  //                               padding: const pw.EdgeInsets.all(2),
+  //                               child: pw.Text(item.price.toString(),
+  //                                   style: pw.TextStyle(font: regularFont, fontSize: 12)),
+  //                             ),
+  //                             pw.Padding(
+  //                               padding: const pw.EdgeInsets.all(2),
+  //                               child: pw.Text(item.taxAmount.toString(),
+  //                                   style: pw.TextStyle(font: regularFont, fontSize: 12)),
+  //                             ),
+  //                             pw.Padding(
+  //                               padding: const pw.EdgeInsets.all(2),
+  //                               child: pw.Text(item.discountAmount.toString(),
+  //                                   style: pw.TextStyle(font: regularFont, fontSize: 12)),
+  //                             ),
+  //                             pw.Padding(
+  //                               padding: const pw.EdgeInsets.all(2),
+  //                               child: pw.Text(item.discountPercentage.toString(),
+  //                                   style: pw.TextStyle(font: regularFont, fontSize: 12)),
+  //                             ),
+  //                             pw.Padding(
+  //                               padding: const pw.EdgeInsets.all(2),
+  //                               child: pw.Text(
+  //                                   ((item.price * item.quantity) +
+  //                                       item.taxAmount -
+  //                                       item.discountAmount)
+  //                                       .toString(),
+  //                                   style: pw.TextStyle(font: regularFont, fontSize: 12)),
+  //                             ),
+  //                           ],
+  //                         );
+  //                       }),
+  //                     ],
+  //                   ),
+  //                   pw.SizedBox(height: 16),
+  //                   pw.Align(
+  //                     alignment: pw.Alignment.centerRight,
+  //                     child: pw.Container(
+  //                       decoration: pw.BoxDecoration(
+  //                         border: pw.Border.all(color: greyColor, width: 1),
+  //                       ),
+  //                       child: pw.Row(
+  //                         mainAxisSize: pw.MainAxisSize.min,
+  //                         children: [
+  //                           pw.Column(
+  //                             crossAxisAlignment: pw.CrossAxisAlignment.start,
+  //                             children: [
+  //                               pw.Padding(
+  //                                 padding: const pw.EdgeInsets.all(4),
+  //                                 child: pw.Text('Subtotal',
+  //                                     style: pw.TextStyle(font: regularFont, fontSize: 12)),
+  //                               ),
+  //                               if (totalTax != 0)
+  //                                 pw.Padding(
+  //                                   padding: const pw.EdgeInsets.all(4),
+  //                                   child: pw.Text('Total Tax',
+  //                                       style: pw.TextStyle(font: regularFont, fontSize: 12)),
+  //                                 ),
+  //                               if (totalTax != 0)
+  //                                 pw.Padding(
+  //                                   padding: const pw.EdgeInsets.all(4),
+  //                                   child: pw.Text('Total with Tax',
+  //                                       style: pw.TextStyle(font: regularFont, fontSize: 12)),
+  //                                 ),
+  //                               if (totalItemDiscount != 0)
+  //                                 pw.Padding(
+  //                                   padding: const pw.EdgeInsets.all(4),
+  //                                   child: pw.Text('Item Discounts',
+  //                                       style: pw.TextStyle(font: regularFont, fontSize: 12)),
+  //                                 ),
+  //                               if (order.discount != null && order.discount != 0)
+  //                                 pw.Padding(
+  //                                   padding: const pw.EdgeInsets.all(4),
+  //                                   child: pw.Text('Additional Discount',
+  //                                       style: pw.TextStyle(font: regularFont, fontSize: 12)),
+  //                                 ),
+  //                               pw.Padding(
+  //                                 padding: const pw.EdgeInsets.all(4),
+  //                                 child: pw.Text('Total',
+  //                                     style: pw.TextStyle(font: boldFont, fontSize: 12)),
+  //                               ),
+  //                               pw.Padding(
+  //                                 padding: const pw.EdgeInsets.all(4),
+  //                                 child: pw.Text('Payments/Credits',
+  //                                     style: pw.TextStyle(font: regularFont, fontSize: 12)),
+  //                               ),
+  //                               pw.Padding(
+  //                                 padding: const pw.EdgeInsets.all(4),
+  //                                 child: pw.Text('Balance Due',
+  //                                     style: pw.TextStyle(font: boldFont, fontSize: 14)),
+  //                               ),
+  //                             ],
+  //                           ),
+  //                           pw.SizedBox(width: 16),
+  //                           pw.Column(
+  //                             crossAxisAlignment: pw.CrossAxisAlignment.end,
+  //                             children: [
+  //                               pw.Padding(
+  //                                 padding: const pw.EdgeInsets.all(4),
+  //                                 child: pw.Text(formatNumber(subtotal),
+  //                                     style: pw.TextStyle(font: regularFont, fontSize: 12),
+  //                                     textAlign: pw.TextAlign.right),
+  //                               ),
+  //                               if (totalTax != 0)
+  //                                 pw.Padding(
+  //                                   padding: const pw.EdgeInsets.all(4),
+  //                                   child: pw.Text('+${formatNumber(totalTax)}',
+  //                                       style: pw.TextStyle(font: regularFont, fontSize: 12),
+  //                                       textAlign: pw.TextAlign.right),
+  //                                 ),
+  //                               if (totalTax != 0)
+  //                                 pw.Padding(
+  //                                   padding: const pw.EdgeInsets.all(4),
+  //                                   child: pw.Text(formatNumber(subtotal + totalTax),
+  //                                       style: pw.TextStyle(font: regularFont, fontSize: 12),
+  //                                       textAlign: pw.TextAlign.right),
+  //                                 ),
+  //                               if (totalItemDiscount != 0)
+  //                                 pw.Padding(
+  //                                   padding: const pw.EdgeInsets.all(4),
+  //                                   child: pw.Text('-${formatNumber(totalItemDiscount)}',
+  //                                       style: pw.TextStyle(font: regularFont, fontSize: 12),
+  //                                       textAlign: pw.TextAlign.right),
+  //                                 ),
+  //                               if (order.discount != null && order.discount != 0)
+  //                                 pw.Padding(
+  //                                   padding: const pw.EdgeInsets.all(4),
+  //                                   child: pw.Text('-${formatNumber(order.discount ?? 0.0)}',
+  //                                       style: pw.TextStyle(font: regularFont, fontSize: 12),
+  //                                       textAlign: pw.TextAlign.right),
+  //                                 ),
+  //                               pw.Padding(
+  //                                 padding: const pw.EdgeInsets.all(4),
+  //                                 child: pw.Text(formatNumber(order.totalAmount),
+  //                                     style: pw.TextStyle(font: boldFont, fontSize: 12),
+  //                                     textAlign: pw.TextAlign.right),
+  //                               ),
+  //                               pw.Padding(
+  //                                 padding: const pw.EdgeInsets.all(4),
+  //                                 child: pw.Text('-${formatNumber(paymentsCredits)}',
+  //                                     style: pw.TextStyle(font: regularFont, fontSize: 12),
+  //                                     textAlign: pw.TextAlign.right),
+  //                               ),
+  //                               pw.Padding(
+  //                                 padding: const pw.EdgeInsets.all(4),
+  //                                 child: pw.Text(formatNumber(outstandingAmount),
+  //                                     style: pw.TextStyle(font: boldFont, fontSize: 14),
+  //                                     textAlign: pw.TextAlign.right),
+  //                               ),
+  //                             ],
+  //                           ),
+  //                         ],
+  //                       ),
+  //                     ),
+  //                   ),
+  //                   if (order.paymentDetails != null && order.paymentDetails!.isNotEmpty)
+  //                     pw.Column(
+  //                       crossAxisAlignment: pw.CrossAxisAlignment.start,
+  //                       children: [
+  //                         pw.SizedBox(height: 16),
+  //                         pw.Text(
+  //                           'Payment Details',
+  //                           style: pw.TextStyle(font: boldFont, fontSize: 18),
+  //                         ),
+  //                         pw.SizedBox(height: 8),
+  //                         pw.Table(
+  //                           border: pw.TableBorder(
+  //                             top: pw.BorderSide(color: greyColor, width: 1),
+  //                             bottom: pw.BorderSide(color: greyColor, width: 1),
+  //                             left: pw.BorderSide.none,
+  //                             right: pw.BorderSide.none,
+  //                             horizontalInside: pw.BorderSide.none,
+  //                             verticalInside: pw.BorderSide(color: greyColor, width: 1),
+  //                           ),
+  //                           children: [
+  //                             pw.TableRow(
+  //                               children: [
+  //                                 pw.Padding(
+  //                                   padding: const pw.EdgeInsets.all(10),
+  //                                   child: pw.Text(
+  //                                     'Date',
+  //                                     style: pw.TextStyle(font: boldFont, fontSize: 13),
+  //                                     textAlign: pw.TextAlign.left,
+  //                                   ),
+  //                                 ),
+  //                                 pw.Padding(
+  //                                   padding: const pw.EdgeInsets.all(10),
+  //                                   child: pw.Text(
+  //                                     'Amount',
+  //                                     style: pw.TextStyle(font: boldFont, fontSize: 13),
+  //                                     textAlign: pw.TextAlign.right,
+  //                                   ),
+  //                                 ),
+  //                                 pw.Padding(
+  //                                   padding: const pw.EdgeInsets.all(10),
+  //                                   child: pw.Text(
+  //                                     'Method',
+  //                                     style: pw.TextStyle(font: boldFont, fontSize: 13),
+  //                                     textAlign: pw.TextAlign.left,
+  //                                   ),
+  //                                 ),
+  //                               ],
+  //                             ),
+  //                             ...order.paymentDetails!.asMap().entries.map((entry) {
+  //                               final index = entry.key;
+  //                               final payment = entry.value;
+  //                               return pw.TableRow(
+  //                                 decoration: index.isEven
+  //                                     ? null
+  //                                     : pw.BoxDecoration(color: rowBackgroundColor),
+  //                                 children: [
+  //                                   pw.Padding(
+  //                                     padding: const pw.EdgeInsets.all(10),
+  //                                     child: pw.Text(
+  //                                       payment['date']?.toString().substring(0, 10) ??
+  //                                           'N/A',
+  //                                       style:
+  //                                       pw.TextStyle(font: regularFont, fontSize: 12),
+  //                                       textAlign: pw.TextAlign.left,
+  //                                     ),
+  //                                   ),
+  //                                   pw.Padding(
+  //                                     padding: const pw.EdgeInsets.all(10),
+  //                                     child: pw.Text(
+  //                                       formatNumber(payment['amount'] ?? 0.0),
+  //                                       style:
+  //                                       pw.TextStyle(font: regularFont, fontSize: 12),
+  //                                       textAlign: pw.TextAlign.right,
+  //                                     ),
+  //                                   ),
+  //                                   pw.Padding(
+  //                                     padding: const pw.EdgeInsets.all(10),
+  //                                     child: pw.Text(
+  //                                       payment['method'] ?? 'N/A',
+  //                                       style:
+  //                                       pw.TextStyle(font: regularFont, fontSize: 12),
+  //                                       textAlign: pw.TextAlign.left,
+  //                                     ),
+  //                                   ),
+  //                                 ],
+  //                               );
+  //                             }),
+  //                           ],
+  //                         ),
+  //                       ],
+  //                     ),
+  //                   pw.Positioned(
+  //                     top: PdfPageFormat.a4.height / 2,
+  //                     left: 0,
+  //                     right: 0,
+  //                     child: pw.Container(
+  //                       alignment: pw.Alignment.center,
+  //                       height: 100, // Constrain height to prevent infinite height
+  //                       child: pw.Watermark(
+  //                         angle: 45 * 3.14159 / 180, // 45-degree rotation
+  //                         child: pw.Text(
+  //                           order.invoiceType?.toLowerCase() == 'cash' ? 'PAID' : 'NOT PAID',
+  //                           style: pw.TextStyle(
+  //                             font: boldFont,
+  //                             fontSize: 50,
+  //                             color: PdfColor.fromInt(0x808080),
+  //                           ),
+  //                         ),
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ],
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //   } catch (e, stackTrace) {
+  //     debugPrint('Error generating PDF: $e\nStackTrace: $stackTrace');
+  //     rethrow; // Rethrow to allow caller to handle the error
+  //   }
+  //
+  //   return pdf;
+  // }
 
   Future<pw.Document> _generatePdf(Order order) async {
     final pdf = pw.Document();
@@ -1780,8 +2331,8 @@ class _BillingPageState extends State<BillingPage> {
           debugPrint('Error fetching company details: ${state.message}');
         }
       }
-    } catch (e) {
-      debugPrint('Error fetching company or issuer details: $e');
+    } catch (e, stackTrace) {
+      debugPrint('Error fetching company or issuer details: $e\nStackTrace: $stackTrace');
     }
 
     final primaryColor = PdfColor.fromInt(AppColors.primary.value);
@@ -1795,9 +2346,9 @@ class _BillingPageState extends State<BillingPage> {
     final double subtotal = order.items
         .fold(0.0, (sum, item) => sum + (item.price * item.quantity));
     final double totalTax =
-        order.items.fold(0.0, (sum, item) => sum + item.taxAmount);
+    order.items.fold(0.0, (sum, item) => sum + item.taxAmount);
     final double totalItemDiscount =
-        order.items.fold(0.0, (sum, item) => sum + item.discountAmount);
+    order.items.fold(0.0, (sum, item) => sum + item.discountAmount);
     final double totalDiscount = totalItemDiscount + (order.discount ?? 0.0);
     final double outstandingAmount =
         order.totalAmount - (order.amountReceived ?? 0.0);
@@ -1805,537 +2356,828 @@ class _BillingPageState extends State<BillingPage> {
 
     final String billToAddress = [
       _selectedCustomer?.name ?? order.userName ?? 'Unknown Customer',
-      _selectedCustomer?.businessName ?? '',
-      _selectedCustomer?.email ?? '',
-      _selectedCustomer?.mobileNumber ?? '',
-      _selectedCustomer?.address ?? ''
+      if (_selectedCustomer?.businessName?.isNotEmpty ?? false)
+        _selectedCustomer!.businessName!,
+      if (_selectedCustomer?.address?.isNotEmpty ?? false)
+        _selectedCustomer!.address!,
+      if (_selectedCustomer?.mobileNumber?.isNotEmpty ?? false)
+        _selectedCustomer!.mobileNumber!,
+      if (_selectedCustomer?.email?.isNotEmpty ?? false)
+        _selectedCustomer!.email!,
     ].where((e) => e.isNotEmpty).join('\n');
-
-    final String deliveryToAddress = billToAddress;
 
     String formatNumber(double number) {
       return 'IQD ${number.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
     }
 
-    pdf.addPage(
-      pw.MultiPage(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(40),
-        build: (context) => [
-          pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text(
-                        companyName,
-                        style: pw.TextStyle(
-                            font: boldFont, fontSize: 18, color: primaryColor),
-                      ),
-                      pw.SizedBox(height: 4),
-                      pw.Text(
-                        companyAddress,
-                        style: pw.TextStyle(
-                            font: regularFont,
-                            fontSize: 12,
-                            color: textSecondaryColor),
-                      ),
-                      if (companyPhone.isNotEmpty)
-                        pw.Text(
-                          companyPhone,
-                          style: pw.TextStyle(
-                              font: regularFont,
-                              fontSize: 12,
-                              color: textSecondaryColor),
-                        ),
-                      if (companyEmail.isNotEmpty)
-                        pw.Text(
-                          companyEmail,
-                          style: pw.TextStyle(
-                              font: regularFont,
-                              fontSize: 12,
-                              color: textSecondaryColor),
-                        ),
-                    ],
-                  ),
-                  pw.Text(
-                    'Invoice',
-                    style: pw.TextStyle(
-                        font: boldFont, fontSize: 24, color: PdfColors.black),
-                  ),
-                  pw.SizedBox(width: 50, height: 50),
-                ],
-              ),
-              pw.SizedBox(height: 8),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.end,
-                children: [
-                  pw.Table(
-                    columnWidths: {
-                      0: pw.FixedColumnWidth(80),
-                      1: pw.FixedColumnWidth(100),
-                    },
-                    children: [
-                      pw.TableRow(
-                        children: [
-                          pw.Text('Date',
-                              style:
-                                  pw.TextStyle(font: boldFont, fontSize: 12)),
-                          pw.Text(order.orderDate.toString().substring(0, 10),
-                              style: pw.TextStyle(
-                                  font: regularFont, fontSize: 12)),
-                        ],
-                      ),
-                      pw.TableRow(
-                        children: [
-                          pw.Text('Invoice #',
-                              style:
-                                  pw.TextStyle(font: boldFont, fontSize: 12)),
-                          pw.Text(order.billNumber ?? 'N/A',
-                              style: pw.TextStyle(
-                                  font: regularFont, fontSize: 12)),
-                        ],
-                      ),
-                      pw.TableRow(
-                        children: [
-                          pw.Text('Due Date',
-                              style:
-                                  pw.TextStyle(font: boldFont, fontSize: 12)),
-                          pw.Text(order.orderDate.toString().substring(0, 10),
-                              style: pw.TextStyle(
-                                  font: regularFont, fontSize: 12)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              pw.SizedBox(height: 8),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Expanded(
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Text('Bill To',
-                            style: pw.TextStyle(font: boldFont, fontSize: 12)),
-                        pw.Container(
-                          decoration: pw.BoxDecoration(
-                              border: pw.Border.all(color: greyColor)),
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text(
-                            billToAddress,
-                            style:
-                                pw.TextStyle(font: regularFont, fontSize: 12),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  pw.SizedBox(width: 16),
-                  pw.Expanded(
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Text('Terms',
-                            style: pw.TextStyle(font: boldFont, fontSize: 12)),
-                        pw.Container(
-                          decoration: pw.BoxDecoration(
-                              border: pw.Border.all(color: greyColor)),
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text(order.invoiceType ?? '',
-                              style: pw.TextStyle(
-                                  font: regularFont, fontSize: 12)),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              pw.SizedBox(height: 8),
-              pw.Table(
-                border: pw.TableBorder(
-                  top: pw.BorderSide(color: greyColor, width: 1),
-                  bottom: pw.BorderSide(color: greyColor, width: 1),
-                  left: pw.BorderSide.none,
-                  right: pw.BorderSide.none,
-                  horizontalInside: pw.BorderSide.none,
-                  verticalInside: pw.BorderSide(color: greyColor, width: 1),
-                ),
-                children: [
-                  pw.TableRow(
-                    children: [
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(2),
-                        child: pw.Text('Item',
-                            style: pw.TextStyle(font: boldFont, fontSize: 12)),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(2),
-                        child: pw.Text('Qty',
-                            style: pw.TextStyle(font: boldFont, fontSize: 12)),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(2),
-                        child: pw.Text('Rate',
-                            style: pw.TextStyle(font: boldFont, fontSize: 12)),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(2),
-                        child: pw.Text('Tax',
-                            style: pw.TextStyle(font: boldFont, fontSize: 12)),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(2),
-                        child: pw.Text('Disc. Amt',
-                            style: pw.TextStyle(font: boldFont, fontSize: 12)),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(2),
-                        child: pw.Text('Disc. %',
-                            style: pw.TextStyle(font: boldFont, fontSize: 12)),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(2),
-                        child: pw.Text('Amount',
-                            style: pw.TextStyle(font: boldFont, fontSize: 12)),
-                      ),
-                    ],
-                  ),
-                  ...order.items.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final item = entry.value;
-                    return pw.TableRow(
-                      decoration: index.isEven
-                          ? null
-                          : pw.BoxDecoration(color: rowBackgroundColor),
-                      children: [
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(2),
-                          child: pw.Text(item.productName,
-                              style: pw.TextStyle(
-                                  font: regularFont, fontSize: 12)),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(2),
-                          child: pw.Text(item.quantity.toString(),
-                              style: pw.TextStyle(
-                                  font: regularFont, fontSize: 12)),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(2),
-                          child: pw.Text(item.price.toString(),
-                              style: pw.TextStyle(
-                                  font: regularFont, fontSize: 12)),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(2),
-                          child: pw.Text(item.taxAmount.toString(),
-                              style: pw.TextStyle(
-                                  font: regularFont, fontSize: 12)),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(2),
-                          child: pw.Text(item.discountAmount.toString(),
-                              style: pw.TextStyle(
-                                  font: regularFont, fontSize: 12)),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(2),
-                          child: pw.Text(item.discountPercentage.toString(),
-                              style: pw.TextStyle(
-                                  font: regularFont, fontSize: 12)),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(2),
-                          child: pw.Text(
-                              ((item.price * item.quantity) +
-                                      item.taxAmount -
-                                      item.discountAmount)
-                                  .toString(),
-                              style: pw.TextStyle(
-                                  font: regularFont, fontSize: 12)),
-                        ),
-                      ],
-                    );
-                  }),
-                ],
-              ),
-              pw.SizedBox(height: 16),
-              pw.Align(
-                alignment: pw.Alignment.centerRight,
-                child: pw.Container(
-                  decoration: pw.BoxDecoration(
-                    border: pw.Border.all(color: greyColor, width: 1),
-                  ),
-                  child: pw.Row(
-                    mainAxisSize: pw.MainAxisSize.min,
-                    children: [
-                      pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        children: [
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.all(4),
-                            child: pw.Text('Subtotal',
-                                style: pw.TextStyle(
-                                    font: regularFont, fontSize: 12)),
-                          ),
-                          if (totalTax != 0)
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(4),
-                              child: pw.Text('Total Tax',
-                                  style: pw.TextStyle(
-                                      font: regularFont, fontSize: 12)),
-                            ),
-                          if (totalTax != 0)
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(4),
-                              child: pw.Text('Total with Tax',
-                                  style: pw.TextStyle(
-                                      font: regularFont, fontSize: 12)),
-                            ),
-                          if (totalItemDiscount != 0)
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(4),
-                              child: pw.Text('Item Discounts',
-                                  style: pw.TextStyle(
-                                      font: regularFont, fontSize: 12)),
-                            ),
-                          if (order.discount != null && order.discount != 0)
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(4),
-                              child: pw.Text('Additional Discount',
-                                  style: pw.TextStyle(
-                                      font: regularFont, fontSize: 12)),
-                            ),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.all(4),
-                            child: pw.Text('Total',
-                                style:
-                                    pw.TextStyle(font: boldFont, fontSize: 12)),
-                          ),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.all(4),
-                            child: pw.Text('Payments/Credits',
-                                style: pw.TextStyle(
-                                    font: regularFont, fontSize: 12)),
-                          ),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.all(4),
-                            child: pw.Text('Balance Due',
-                                style:
-                                    pw.TextStyle(font: boldFont, fontSize: 14)),
-                          ),
-                        ],
-                      ),
-                      pw.SizedBox(width: 16),
-                      pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.end,
-                        children: [
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.all(4),
-                            child: pw.Text(formatNumber(subtotal),
-                                style: pw.TextStyle(
-                                    font: regularFont, fontSize: 12),
-                                textAlign: pw.TextAlign.right),
-                          ),
-                          if (totalTax != 0)
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(4),
-                              child: pw.Text('+${formatNumber(totalTax)}',
-                                  style: pw.TextStyle(
-                                      font: regularFont, fontSize: 12),
-                                  textAlign: pw.TextAlign.right),
-                            ),
-                          if (totalTax != 0)
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(4),
-                              child: pw.Text(formatNumber(subtotal + totalTax),
-                                  style: pw.TextStyle(
-                                      font: regularFont, fontSize: 12),
-                                  textAlign: pw.TextAlign.right),
-                            ),
-                          if (totalItemDiscount != 0)
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(4),
-                              child: pw.Text(
-                                  '-${formatNumber(totalItemDiscount)}',
-                                  style: pw.TextStyle(
-                                      font: regularFont, fontSize: 12),
-                                  textAlign: pw.TextAlign.right),
-                            ),
-                          if (order.discount != null && order.discount != 0)
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(4),
-                              child: pw.Text(
-                                  '-${formatNumber(order.discount ?? 0.0)}',
-                                  style: pw.TextStyle(
-                                      font: regularFont, fontSize: 12),
-                                  textAlign: pw.TextAlign.right),
-                            ),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.all(4),
-                            child: pw.Text(formatNumber(order.totalAmount),
-                                style:
-                                    pw.TextStyle(font: boldFont, fontSize: 12),
-                                textAlign: pw.TextAlign.right),
-                          ),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.all(4),
-                            child: pw.Text('-${formatNumber(paymentsCredits)}',
-                                style: pw.TextStyle(
-                                    font: regularFont, fontSize: 12),
-                                textAlign: pw.TextAlign.right),
-                          ),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.all(4),
-                            child: pw.Text(formatNumber(outstandingAmount),
-                                style:
-                                    pw.TextStyle(font: boldFont, fontSize: 14),
-                                textAlign: pw.TextAlign.right),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              if (order.paymentDetails != null &&
-                  order.paymentDetails!.isNotEmpty)
+    try {
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(40),
+          build: (context) => [
+            pw.Stack(
+              children: [
                 pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
                   children: [
-                    pw.SizedBox(height: 16),
                     pw.Text(
-                      'Payment Details',
-                      style: pw.TextStyle(font: boldFont, fontSize: 18),
+                      'Invoice',
+                      style: pw.TextStyle(
+                        font: boldFont,
+                        fontSize: 24,
+                        color: PdfColors.black,
+                      ),
+                    ),
+                    pw.SizedBox(height: 8),
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.Text(
+                              companyName,
+                              style: pw.TextStyle(
+                                font: boldFont,
+                                fontSize: 18,
+                                color: primaryColor,
+                              ),
+                            ),
+                            pw.SizedBox(height: 4),
+                            pw.Text(
+                              companyAddress,
+                              style: pw.TextStyle(
+                                font: regularFont,
+                                fontSize: 12,
+                                color: textSecondaryColor,
+                              ),
+                            ),
+                            if (companyPhone.isNotEmpty)
+                              pw.Text(
+                                companyPhone,
+                                style: pw.TextStyle(
+                                  font: regularFont,
+                                  fontSize: 12,
+                                  color: textSecondaryColor,
+                                ),
+                              ),
+                            if (companyEmail.isNotEmpty)
+                              pw.Text(
+                                companyEmail,
+                                style: pw.TextStyle(
+                                  font: regularFont,
+                                  fontSize: 12,
+                                  color: textSecondaryColor,
+                                ),
+                              ),
+                          ],
+                        ),
+                        pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.end,
+                          children: [
+                            pw.Table(
+                              columnWidths: {
+                                0: pw.FixedColumnWidth(80),
+                                1: pw.FixedColumnWidth(100),
+                              },
+                              children: [
+                                pw.TableRow(
+                                  children: [
+                                    pw.Text(
+                                      'Date',
+                                      style: pw.TextStyle(
+                                        font: boldFont,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    pw.Text(
+                                      order.orderDate.toString().substring(0, 10),
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                pw.TableRow(
+                                  children: [
+                                    pw.Text(
+                                      'Invoice #',
+                                      style: pw.TextStyle(
+                                        font: boldFont,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    pw.Text(
+                                      order.billNumber ?? 'N/A',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                pw.TableRow(
+                                  children: [
+                                    pw.Text(
+                                      'Issuer',
+                                      style: pw.TextStyle(
+                                        font: boldFont,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    pw.Text(
+                                      issuerName,
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    pw.SizedBox(height: 8),
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Expanded(
+                          child: pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text(
+                                'Bill To',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              pw.Container(
+                                decoration: pw.BoxDecoration(
+                                  border: pw.Border.all(color: greyColor),
+                                ),
+                                padding: const pw.EdgeInsets.all(8),
+                                child: pw.Text(
+                                  billToAddress,
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        pw.SizedBox(width: 16),
+                        pw.Expanded(
+                          child: pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text(
+                                'Terms',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              pw.Container(
+                                decoration: pw.BoxDecoration(
+                                  border: pw.Border.all(color: greyColor),
+                                ),
+                                padding: const pw.EdgeInsets.all(8),
+                                child: pw.Text(
+                                  order.invoiceType ?? '',
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                     pw.SizedBox(height: 8),
                     pw.Table(
                       border: pw.TableBorder(
                         top: pw.BorderSide(color: greyColor, width: 1),
                         bottom: pw.BorderSide(color: greyColor, width: 1),
-                        left: pw.BorderSide.none,
-                        right: pw.BorderSide.none,
+                        left: pw.BorderSide(color: greyColor, width: 1),
+                        right: pw.BorderSide(color: greyColor, width: 1),
                         horizontalInside: pw.BorderSide.none,
-                        verticalInside:
-                            pw.BorderSide(color: greyColor, width: 1),
+                        verticalInside: pw.BorderSide(color: greyColor, width: 1),
                       ),
                       children: [
                         pw.TableRow(
+                          decoration: pw.BoxDecoration(color: rowBackgroundColor),
                           children: [
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(10),
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
                               child: pw.Text(
-                                'Date',
-                                style:
-                                    pw.TextStyle(font: boldFont, fontSize: 13),
-                                textAlign: pw.TextAlign.left,
+                                'Item',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
                               ),
                             ),
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(10),
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
+                              child: pw.Text(
+                                'Qty',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
+                              child: pw.Text(
+                                'Rate',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
+                              child: pw.Text(
+                                'Tax',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
+                              child: pw.Text(
+                                'Disc. Amt',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
+                              child: pw.Text(
+                                'Disc. %',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
                               child: pw.Text(
                                 'Amount',
-                                style:
-                                    pw.TextStyle(font: boldFont, fontSize: 13),
-                                textAlign: pw.TextAlign.right,
-                              ),
-                            ),
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(10),
-                              child: pw.Text(
-                                'Method',
-                                style:
-                                    pw.TextStyle(font: boldFont, fontSize: 13),
-                                textAlign: pw.TextAlign.left,
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
                               ),
                             ),
                           ],
                         ),
-                        ...order.paymentDetails!.asMap().entries.map((entry) {
+                        ...order.items.asMap().entries.map((entry) {
                           final index = entry.key;
-                          final payment = entry.value;
+                          final item = entry.value;
                           return pw.TableRow(
                             decoration: index.isEven
                                 ? null
                                 : pw.BoxDecoration(color: rowBackgroundColor),
                             children: [
-                              pw.Padding(
-                                padding: const pw.EdgeInsets.all(10),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
                                 child: pw.Text(
-                                  payment['date']
-                                          ?.toString()
-                                          .substring(0, 10) ??
-                                      'N/A',
+                                  item.productName,
                                   style: pw.TextStyle(
-                                      font: regularFont, fontSize: 12),
-                                  textAlign: pw.TextAlign.left,
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ),
-                              pw.Padding(
-                                padding: const pw.EdgeInsets.all(10),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
                                 child: pw.Text(
-                                  formatNumber(payment['amount'] ?? 0.0),
+                                  item.quantity.toString(),
                                   style: pw.TextStyle(
-                                      font: regularFont, fontSize: 12),
-                                  textAlign: pw.TextAlign.right,
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ),
-                              pw.Padding(
-                                padding: const pw.EdgeInsets.all(10),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
                                 child: pw.Text(
-                                  payment['method'] ?? 'N/A',
+                                  item.price.toString(),
                                   style: pw.TextStyle(
-                                      font: regularFont, fontSize: 12),
-                                  textAlign: pw.TextAlign.left,
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  item.taxAmount.toString(),
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  item.discountAmount.toString(),
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  item.discountPercentage.toString(),
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  ((item.price * item.quantity) +
+                                      item.taxAmount -
+                                      item.discountAmount)
+                                      .toString(),
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ),
                             ],
                           );
                         }),
+                        ...List.generate(
+                          10 - order.items.length > 0 ? 10 - order.items.length : 0,
+                              (index) => pw.TableRow(
+                            decoration: (order.items.length + index).isEven
+                                ? null
+                                : pw.BoxDecoration(color: rowBackgroundColor),
+                            children: [
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  '',
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  '',
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  '',
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  '',
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  '',
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  '',
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  '',
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
+                    ),
+                    pw.SizedBox(height: 16),
+                    pw.Align(
+                      alignment: pw.Alignment.centerRight,
+                      child: pw.Container(
+                        decoration: pw.BoxDecoration(
+                          border: pw.Border.all(color: greyColor, width: 1),
+                        ),
+                        child: pw.Row(
+                          mainAxisSize: pw.MainAxisSize.min,
+                          children: [
+                            pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    'Subtotal',
+                                    style: pw.TextStyle(
+                                      font: regularFont,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                                if (totalTax != 0)
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      'Total Tax',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                if (totalTax != 0)
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      'Total with Tax',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                if (totalItemDiscount != 0)
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      'Item Discounts',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                if (order.discount != null && order.discount != 0)
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      'Additional Discount',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    'Total',
+                                    style: pw.TextStyle(
+                                      font: boldFont,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    'Payments/Credits',
+                                    style: pw.TextStyle(
+                                      font: regularFont,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    'Balance Due',
+                                    style: pw.TextStyle(
+                                      font: boldFont,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            pw.SizedBox(width: 16),
+                            pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.end,
+                              children: [
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    formatNumber(subtotal),
+                                    style: pw.TextStyle(
+                                      font: regularFont,
+                                      fontSize: 12,
+                                    ),
+                                    textAlign: pw.TextAlign.right,
+                                  ),
+                                ),
+                                if (totalTax != 0)
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      '+${formatNumber(totalTax)}',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                      textAlign: pw.TextAlign.right,
+                                    ),
+                                  ),
+                                if (totalTax != 0)
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      formatNumber(subtotal + totalTax),
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                      textAlign: pw.TextAlign.right,
+                                    ),
+                                  ),
+                                if (totalItemDiscount != 0)
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      '-${formatNumber(totalItemDiscount)}',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                      textAlign: pw.TextAlign.right,
+                                    ),
+                                  ),
+                                if (order.discount != null && order.discount != 0)
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      '-${formatNumber(order.discount ?? 0.0)}',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                      textAlign: pw.TextAlign.right,
+                                    ),
+                                  ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    formatNumber(order.totalAmount),
+                                    style: pw.TextStyle(
+                                      font: boldFont,
+                                      fontSize: 12,
+                                    ),
+                                    textAlign: pw.TextAlign.right,
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    '-${formatNumber(paymentsCredits)}',
+                                    style: pw.TextStyle(
+                                      font: regularFont,
+                                      fontSize: 12,
+                                    ),
+                                    textAlign: pw.TextAlign.right,
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    formatNumber(outstandingAmount),
+                                    style: pw.TextStyle(
+                                      font: boldFont,
+                                      fontSize: 14,
+                                    ),
+                                    textAlign: pw.TextAlign.right,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (order.paymentDetails != null && order.paymentDetails!.isNotEmpty)
+                      pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.SizedBox(height: 16),
+                          pw.Text(
+                            'Payment Details',
+                            style: pw.TextStyle(
+                              font: boldFont,
+                              fontSize: 18,
+                            ),
+                          ),
+                          pw.SizedBox(height: 8),
+                          pw.Table(
+                            border: pw.TableBorder(
+                              top: pw.BorderSide(color: greyColor, width: 1),
+                              bottom: pw.BorderSide(color: greyColor, width: 1),
+                              left: pw.BorderSide.none,
+                              right: pw.BorderSide.none,
+                              horizontalInside: pw.BorderSide.none,
+                              verticalInside: pw.BorderSide(color: greyColor, width: 1),
+                            ),
+                            children: [
+                              pw.TableRow(
+                                children: [
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(10),
+                                    child: pw.Text(
+                                      'Date',
+                                      style: pw.TextStyle(
+                                        font: boldFont,
+                                        fontSize: 13,
+                                      ),
+                                      textAlign: pw.TextAlign.left,
+                                    ),
+                                  ),
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(10),
+                                    child: pw.Text(
+                                      'Amount',
+                                      style: pw.TextStyle(
+                                        font: boldFont,
+                                        fontSize: 13,
+                                      ),
+                                      textAlign: pw.TextAlign.right,
+                                    ),
+                                  ),
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(10),
+                                    child: pw.Text(
+                                      'Method',
+                                      style: pw.TextStyle(
+                                        font: boldFont,
+                                        fontSize: 13,
+                                      ),
+                                      textAlign: pw.TextAlign.left,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              ...order.paymentDetails!.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final payment = entry.value;
+                                return pw.TableRow(
+                                  decoration: index.isEven
+                                      ? null
+                                      : pw.BoxDecoration(color: rowBackgroundColor),
+                                  children: [
+                                    pw.Padding(
+                                      padding: const pw.EdgeInsets.all(10),
+                                      child: pw.Text(
+                                        payment['date']?.toString().substring(0, 10) ??
+                                            'N/A',
+                                        style: pw.TextStyle(
+                                          font: regularFont,
+                                          fontSize: 12,
+                                        ),
+                                        textAlign: pw.TextAlign.left,
+                                      ),
+                                    ),
+                                    pw.Padding(
+                                      padding: const pw.EdgeInsets.all(10),
+                                      child: pw.Text(
+                                        formatNumber(payment['amount'] ?? 0.0),
+                                        style: pw.TextStyle(
+                                          font: regularFont,
+                                          fontSize: 12,
+                                        ),
+                                        textAlign: pw.TextAlign.right,
+                                      ),
+                                    ),
+                                    pw.Padding(
+                                      padding: const pw.EdgeInsets.all(10),
+                                      child: pw.Text(
+                                        payment['method'] ?? 'N/A',
+                                        style: pw.TextStyle(
+                                          font: regularFont,
+                                          fontSize: 12,
+                                        ),
+                                        textAlign: pw.TextAlign.left,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }),
+                            ],
+                          ),
+                        ],
+                      ),
+                    pw.Positioned(
+                      top: (PdfPageFormat.a4.height - 100) / 2,
+                      child: pw.Container(
+                        alignment: pw.Alignment.center,
+                        height: 100,
+                        child: pw.Watermark(
+                          angle: 45 * 3.14159 / 180,
+                          child: pw.Text(
+                            order.invoiceType?.toLowerCase() == 'cash' ? 'PAID' : 'NOT PAID',
+                            style: pw.TextStyle(
+                              font: boldFont,
+                              fontSize: 50,
+                              color: PdfColor.fromInt(0x808080),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              pw.SizedBox(height: 16),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.start,
-                children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      if (companyEmail.isNotEmpty)
-                        pw.Text(companyEmail,
-                            style:
-                                pw.TextStyle(font: regularFont, fontSize: 12)),
-                      if (companyWebsite.isNotEmpty)
-                        pw.Text(companyWebsite,
-                            style:
-                                pw.TextStyle(font: regularFont, fontSize: 12)),
-                      if (companyPhone.isNotEmpty)
-                        pw.Text(companyPhone,
-                            style:
-                                pw.TextStyle(font: regularFont, fontSize: 12)),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+              ],
+            ),
+          ],
+        ),
+      );
+    } catch (e, stackTrace) {
+      debugPrint('Error generating PDF: $e\nStackTrace: $stackTrace');
+      rethrow;
+    }
 
     return pdf;
-  }
-
-  Widget _buildGenerateBillButton() {
+  }  Widget _buildGenerateBillButton() {
     return ElevatedButton(
       onPressed: _generateBill,
       style: ElevatedButton.styleFrom(

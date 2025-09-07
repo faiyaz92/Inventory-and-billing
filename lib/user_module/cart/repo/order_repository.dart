@@ -55,6 +55,7 @@ abstract class IOrderRepository {
       String companyId, String invoiceId, String invoiceType, String? lastUpdatedBy);
   Future<void> setPaymentStatus(
       String companyId, String invoiceId, String paymentStatus, String? lastUpdatedBy);
+  Future<String> getNextInvoiceNumber(String companyId);
 }
 
 class OrderRepositoryImpl implements IOrderRepository {
@@ -397,6 +398,30 @@ class OrderRepositoryImpl implements IOrderRepository {
       });
     } catch (e) {
       throw Exception('Failed to set payment status: $e');
+    }
+  }
+
+  @override
+  Future<String> getNextInvoiceNumber(String companyId) async {
+    try {
+      final year = DateTime.now().year.toString().substring(2); // e.g., "25" for 2025
+      final snapshot = await firestorePathProvider
+          .getInvoicesCollectionRef(companyId)
+          .where('billNumber', isGreaterThanOrEqualTo: '$year-')
+          .where('billNumber', isLessThanOrEqualTo: '$year-\uffff')
+          .orderBy('billNumber', descending: true)
+          .limit(1)
+          .get();
+
+      int nextNumber = 1;
+      if (snapshot.docs.isNotEmpty) {
+        final lastBillNumber = snapshot.docs.first.get('billNumber') as String;
+        final lastNumber = int.parse(lastBillNumber.split('-')[1]);
+        nextNumber = lastNumber + 1;
+      }
+      return '$year-${nextNumber.toString().padLeft(3, '0')}'; // e.g., "25-001"
+    } catch (e) {
+      throw Exception('Failed to get next invoice number: $e');
     }
   }
 }
