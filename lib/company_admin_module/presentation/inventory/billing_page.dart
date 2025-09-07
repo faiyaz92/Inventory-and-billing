@@ -340,9 +340,9 @@ class _BillingPageState extends State<BillingPage> {
                 },
               ),
               const SizedBox(height: 8),
-              Text(
+              const Text(
                 '(Total Discount = Quantity × Discount per Unit)',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,
                 ),
@@ -1465,15 +1465,15 @@ class _BillingPageState extends State<BillingPage> {
         ),
       );
 
-      _saveDataInBackground(
-        order: order,
-        originalOrder: originalOrder,
-        existingInvoice: existingInvoice,
-        storeLedgerId: storeLedgerId,
-        customerLedgerId: customerLedgerId,
-        returnAmount: returnAmount,
-        returnQuantities: returnQuantities,
-      );
+      // _saveDataInBackground(
+      //   order: order,
+      //   originalOrder: originalOrder,
+      //   existingInvoice: existingInvoice,
+      //   storeLedgerId: storeLedgerId,
+      //   customerLedgerId: customerLedgerId,
+      //   returnAmount: returnAmount,
+      //   returnQuantities: returnQuantities,
+      // );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to process bill: $e')),
@@ -1740,8 +1740,6 @@ class _BillingPageState extends State<BillingPage> {
     });
   }
 
-
-
   Future<pw.Document> _generatePdf(Order order) async {
     final pdf = pw.Document();
     final accountRepository = sl<AccountRepository>();
@@ -1784,12 +1782,14 @@ class _BillingPageState extends State<BillingPage> {
 
     final primaryColor = PdfColor.fromInt(AppColors.primary.value);
     final textSecondaryColor = PdfColor.fromInt(AppColors.textSecondary.value);
-    final greyColor = PdfColors.grey300;
-    final rowBackgroundColor = PdfColors.grey100;
-
+    const greyColor = PdfColors.grey300;
+    // final rowBackgroundColor = PdfColor.fromInt(0x1A000000); // Black with 90% transparency
     final regularFont = pw.Font.times();
     final boldFont = pw.Font.timesBold();
-
+     // const PdfColor rowBackgroundColor = PdfColor(0.6196, 0.6196, 0.6196, 0.1);
+     const PdfColor rowBackgroundColor = PdfColor(.99, .99, .99, 1.0);
+     //  PdfColor rowBackgroundColor = PdfColor.fromHex('#0000000D');
+     // const rowBackgroundColor = PdfColors.grey50; // Black with 90% transparency
     // Ensure non-negative values and handle nulls/NaN
     final double subtotal = order.items.isEmpty
         ? 0.0
@@ -1846,7 +1846,6 @@ class _BillingPageState extends State<BillingPage> {
           RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
     }
 
-    // Helper function to safely format dates
     String formatDate(dynamic date) {
       if (date == null) return 'N/A';
       if (date is DateTime) {
@@ -1857,7 +1856,7 @@ class _BillingPageState extends State<BillingPage> {
       return 'N/A';
     }
 
-    // Enhanced debug logging
+    // Debug logging
     print('Subtotal: $subtotal, isNaN: ${subtotal.isNaN}');
     print('TotalTax: $totalTax, isNaN: ${totalTax.isNaN}');
     print('TotalItemDiscount: $totalItemDiscount, isNaN: ${totalItemDiscount.isNaN}');
@@ -1897,6 +1896,36 @@ class _BillingPageState extends State<BillingPage> {
           build: (context) => [
             pw.Stack(
               children: [
+                // Watermark first to ensure it's at the bottom layer
+                pw.Positioned(
+                  top: (PdfPageFormat.a4.height - 100) / 2,
+                  left: 0,
+                  right: 0,
+                  child: pw.Container(
+                    alignment: pw.Alignment.center,
+                    height: 100,
+                    child: pw.Watermark(
+                      angle: 45 * 3.14159 / 180,
+                      child: pw.Text(
+                        order.paymentStatus == 'Paid'
+                            ? 'PAID'
+                            : order.paymentStatus == 'Not Paid'
+                            ? 'NOT PAID'
+                            : 'PARTIALLY PAID',
+                        style: pw.TextStyle(
+                          font: boldFont,
+                          fontSize: 50,
+                          color: order.paymentStatus == 'Paid'
+                              ? const PdfColor.fromInt(0xFF008000) // Green
+                              : order.paymentStatus == 'Not Paid'
+                              ? const PdfColor.fromInt(0xFFFF0000) // Red
+                              : const PdfColor.fromInt(0xFFFFA500), // Orange
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                // Invoice content on top
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.center,
                   children: [
@@ -1947,6 +1976,7 @@ class _BillingPageState extends State<BillingPage> {
                                 style: pw.TextStyle(
                                   font: regularFont,
                                   fontSize: 12,
+                                  color: textSecondaryColor,
                                 ),
                               ),
                           ],
@@ -1956,8 +1986,8 @@ class _BillingPageState extends State<BillingPage> {
                           children: [
                             pw.Table(
                               columnWidths: {
-                                0: pw.FixedColumnWidth(80),
-                                1: pw.FixedColumnWidth(100),
+                                0: const pw.FixedColumnWidth(80),
+                                1: const pw.FixedColumnWidth(100),
                               },
                               children: [
                                 pw.TableRow(
@@ -2023,6 +2053,7 @@ class _BillingPageState extends State<BillingPage> {
                     pw.SizedBox(height: 8),
                     pw.Row(
                       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: pw.CrossAxisAlignment.start, // Top-align Bill To and Terms
                       children: [
                         pw.Expanded(
                           child: pw.Column(
@@ -2193,11 +2224,14 @@ class _BillingPageState extends State<BillingPage> {
                               : 0.0;
                           final double amount = ((item.price ?? 0.0) * (item.quantity ?? 0)) +
                               (item.taxAmount ?? 0.0) - (item.discountAmount ?? 0.0);
-                          final double discountPercentage = (item.discountPercentage ?? 0.0).isNaN ? 0.0 : (item.discountPercentage ?? 0.0);
+                          final double discountPercentage = (item.discountPercentage ?? 0.0).isNaN
+                              ? 0.0
+                              : (item.discountPercentage ?? 0.0);
                           return pw.TableRow(
-                            decoration: index.isEven
-                                ? null
-                                : pw.BoxDecoration(color: rowBackgroundColor),
+                            // decoration: index.isEven
+                            //     ? null
+                            //     :  pw.BoxDecoration(color: rowBackgroundColor),
+
                             children: [
                               pw.Container(
                                 height: 18,
@@ -2496,6 +2530,7 @@ class _BillingPageState extends State<BillingPage> {
                                         fontSize: 12,
                                       ),
                                       textAlign: pw.TextAlign.right,
+
                                     ),
                                   ),
                                   pw.Padding(
@@ -2514,8 +2549,7 @@ class _BillingPageState extends State<BillingPage> {
                             ],
                           ),
                         ),
-                        ),
-                    if (order.paymentDetails != null && order.paymentDetails!.isNotEmpty)
+                    ),if (order.paymentDetails != null && order.paymentDetails!.isNotEmpty)
                     pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
@@ -2578,7 +2612,9 @@ class _BillingPageState extends State<BillingPage> {
                             ...order.paymentDetails!.asMap().entries.map((entry) {
                               final index = entry.key;
                               final payment = entry.value;
-                              final paymentAmount = (payment['amount'] ?? 0.0).isNaN ? 0.0 : (payment['amount'] ?? 0.0);
+                              final paymentAmount = (payment['amount'] ?? 0.0).isNaN
+                                  ? 0.0
+                                  : (payment['amount'] ?? 0.0);
                               return pw.TableRow(
                                 decoration: index.isEven
                                     ? null
@@ -2626,26 +2662,6 @@ class _BillingPageState extends State<BillingPage> {
                     ),
                   ],
                 ),
-                pw.Positioned(
-                  top: (PdfPageFormat.a4.height - 100) / 2,
-                  left: 0,
-                  right: 0,
-                  child: pw.Container(
-                    alignment: pw.Alignment.center,
-                    height: 100,
-                    child: pw.Watermark(
-                      angle: 45 * 3.14159 / 180,
-                      child: pw.Text(
-                        order.invoiceType?.toLowerCase() == 'cash' ? 'PAID' : 'NOT PAID',
-                        style: pw.TextStyle(
-                          font: boldFont,
-                          fontSize: 50,
-                          color: PdfColor.fromInt(0x808080),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
           ],
@@ -2658,6 +2674,7 @@ class _BillingPageState extends State<BillingPage> {
 
     return pdf;
   }
+
   Widget _buildGenerateBillButton() {
     return ElevatedButton(
       onPressed: _generateBill,

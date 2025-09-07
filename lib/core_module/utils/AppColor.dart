@@ -93,6 +93,8 @@ class AppColors {
   static const Color shipped = Color(0xFFAB47BC); // For shipped orders
   static const Color completed = Color(0xFF66BB6A); // For completed orders
   static const Color highLightOrange = Color(0xFFF3DDC7); // For processing orders
-
+  // static const Color rowColor = Colors.grey.withOpacity(0.3); // For processing orders
+  static Color rowColor = Color(0x808080);
+  static Color rowColorTransparent = rowColor.withOpacity(0.2); // 80% transparent (~0x33 alpha)
 
 }
