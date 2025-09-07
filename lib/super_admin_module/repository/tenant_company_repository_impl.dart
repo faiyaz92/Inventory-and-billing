@@ -417,4 +417,20 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
       'timestamp': FieldValue.serverTimestamp(),
     });
   }
+
+  @override
+  Future<TenantCompanyDto?> getTenantCompanyById(String companyId) async {
+    try {
+      final snapshot = await _firestoreProvider.getTenantCompanyRef(companyId).get();
+      if (!snapshot.exists) {
+        return null;
+      }
+      return TenantCompanyDto.fromFirestore(snapshot);
+    } catch (e) {
+      if (e.toString().contains('index')) {
+        print('Index issue detected in getTenantCompanyById: $e');
+      }
+      throw Exception('Failed to fetch tenant company by ID: $e');
+    }
+  }
 }

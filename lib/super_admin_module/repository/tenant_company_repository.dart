@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/attendance/attendance_dto.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/tenant_company_dto.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.dart';
@@ -6,11 +7,11 @@ abstract class ITenantCompanyRepository {
   Future<String> generateTenantCompanyId(String companyName);
 
   Future<void> createTenantCompany(
-    TenantCompanyDto dto,
-    String password, {
-    required String adminUsername,
-    required String adminName,
-  });
+      TenantCompanyDto dto,
+      String password, {
+        required String adminUsername,
+        required String adminName,
+      });
 
   Future<String> addUserToCompany(UserInfoDto userInfoDto, String password);
 
@@ -54,4 +55,6 @@ abstract class ITenantCompanyRepository {
       String userId, String companyId);
 
   Future<void> finalizeMonth(String userId, String companyId, String month);
+
+  Future<TenantCompanyDto?> getTenantCompanyById(String companyId);
 }

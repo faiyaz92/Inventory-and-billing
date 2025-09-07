@@ -9,4 +9,6 @@ abstract class TenantCompanyService {
       });
   Future<void> updateTenantCompany(TenantCompany company);
   Future<void> addSuperAdmin();
+  Future<List<TenantCompany>> getTenantCompanies();
+  Future<TenantCompany?> getTenantCompanyById(String companyId);
 }

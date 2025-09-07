@@ -700,7 +700,7 @@ class _PurchaseInvoicePanelPageState extends State<PurchaseInvoicePanelPage> {
           );
         }
         if (state is AdminPurchaseListFetchSuccess) {
-          final crossAxisCount = kIsWeb ? 7 : 2;
+          const crossAxisCount = kIsWeb ? 7 : 2;
           return Card(
             elevation: 4,
             shape: RoundedRectangleBorder(
@@ -1450,7 +1450,7 @@ class _PurchaseInvoicePanelPageState extends State<PurchaseInvoicePanelPage> {
 
     final primaryColor = PdfColor.fromInt(AppColors.primary.value);
     final textSecondaryColor = PdfColor.fromInt(AppColors.textSecondary.value);
-    final greyColor = PdfColors.grey300;
+    const greyColor = PdfColors.grey300;
 
     final regularFont = pw.Font.times();
     final boldFont = pw.Font.timesBold();

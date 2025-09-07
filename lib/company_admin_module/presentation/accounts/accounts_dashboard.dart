@@ -19,7 +19,6 @@ class AccountsDashboardPage extends StatelessWidget {
     // Define demo expiration date
     final DateTime demoExpirationDate = DateTime(2025, 10, 10);
     final bool isDemoExpired = DateTime.now().isAfter(demoExpirationDate);
-    final bool isWeb = MediaQuery.of(context).size.width > 600;
 
     return BlocProvider(
       create: (context) => sl<HomeCubit>()..fetchUserInfo(),
@@ -131,38 +130,16 @@ class AccountsDashboardPage extends StatelessWidget {
                 ),
                 child: SafeArea(
                   child: Padding(
-                    padding: EdgeInsets.all(isWeb ? 24.0 : 16.0),
+                    padding: EdgeInsets.all(kIsWeb ? 24.0 : 16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // SizedBox(
-                        //   width: double.infinity,
-                        //   child: Card(
-                        //     elevation: 8,
-                        //     shape: RoundedRectangleBorder(
-                        //       borderRadius: BorderRadius.circular(16),
-                        //     ),
-                        //     color: Colors.white,
-                        //     child: Padding(
-                        //       padding: EdgeInsets.all(isWeb ? 24.0 : 16.0),
-                        //       child: Text(
-                        //         'Welcome to Accounts Dashboard, ${state.userName}',
-                        //         style: TextStyle(
-                        //           fontSize: isWeb ? 28 : 24,
-                        //           fontWeight: FontWeight.bold,
-                        //           color: Theme.of(context).primaryColor,
-                        //         ),
-                        //       ),
-                        //     ),
-                        //   ),
-                        // ),
-                        // SizedBox(height: isWeb ? 32 : 24),
                         Expanded(
                           child: GridView.count(
-                            crossAxisCount: isWeb ? 7 : 3,
-                            crossAxisSpacing: isWeb ? 16 : 12,
-                            mainAxisSpacing: isWeb ? 16 : 12,
-                            childAspectRatio: isWeb ? 1.0 : 1.0,
+                            crossAxisCount: kIsWeb ? 7 : 3,
+                            crossAxisSpacing: kIsWeb ? 16 : 12,
+                            mainAxisSpacing: kIsWeb ? 16 : 12,
+                            childAspectRatio: kIsWeb ? 1.0 : 1.0,
                             children: [
                               _buildDashboardCard(
                                 context,
@@ -173,7 +150,6 @@ class AccountsDashboardPage extends StatelessWidget {
                                   sl<Coordinator>().navigateToUserLedgerPage(
                                       transactionType: TransactionType.OtherLedger);
                                 },
-                                isWeb,
                               ),
                               _buildDashboardCard(
                                 context,
@@ -184,9 +160,8 @@ class AccountsDashboardPage extends StatelessWidget {
                                   sl<Coordinator>().navigateToSimpleUserList(
                                       userType: UserType.Employee, role: Role.SALES_MAN);
                                 },
-                                isWeb,
                               ),
-                              ..._buildGridItems(context, isWeb),
+                              ..._buildGridItems(context),
                               _buildDashboardCard(
                                 context,
                                 'Store Accounts',
@@ -196,7 +171,6 @@ class AccountsDashboardPage extends StatelessWidget {
                                   sl<Coordinator>().navigateToStoresListPage(
                                       fromAccountPage: true);
                                 },
-                                isWeb,
                               ),
                               _buildDashboardCard(
                                 context,
@@ -204,7 +178,6 @@ class AccountsDashboardPage extends StatelessWidget {
                                 Icons.receipt_long,
                                 Colors.cyan,
                                     () => sl<Coordinator>().navigateToInvoiceListPage(),
-                                isWeb,
                               ),
                             ],
                           ),
@@ -237,7 +210,7 @@ class AccountsDashboardPage extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildGridItems(BuildContext context, bool isWeb) {
+  List<Widget> _buildGridItems(BuildContext context) {
     final colors = [
       Colors.blue,
       Colors.purple,
@@ -275,7 +248,6 @@ class AccountsDashboardPage extends StatelessWidget {
         iconMap[userType] ?? Icons.group,
         colors[index % colors.length],
             () => sl<Coordinator>().navigateToSimpleUserList(userType: userType),
-        isWeb,
       );
     }).toList();
   }
@@ -286,7 +258,6 @@ class AccountsDashboardPage extends StatelessWidget {
       IconData icon,
       Color color,
       VoidCallback onTap,
-      bool isWeb,
       ) {
     return GestureDetector(
       onTap: onTap,
@@ -303,13 +274,13 @@ class AccountsDashboardPage extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                size: isWeb ? 28 : 36,
+                size: kIsWeb ? 28 : 36,
                 color: color,
               ),
               const SizedBox(height: kIsWeb ? 12 : 8),
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: kIsWeb ? 16 : 14,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,

@@ -16,7 +16,6 @@ class InventoryDashboardPage extends StatelessWidget {
     // Define demo expiration date
     final DateTime demoExpirationDate = DateTime(2025, 10, 10);
     final bool isDemoExpired = DateTime.now().isAfter(demoExpirationDate);
-    final bool isWeb = MediaQuery.of(context).size.width > 600;
 
     return BlocProvider(
       create: (context) => sl<HomeCubit>()..fetchUserInfo(),
@@ -142,39 +141,17 @@ class InventoryDashboardPage extends StatelessWidget {
                 ),
                 child: SafeArea(
                   child: Padding(
-                    padding: EdgeInsets.all(isWeb ? 24.0 : 16.0),
+                    padding: EdgeInsets.all(kIsWeb ? 24.0 : 16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // SizedBox(
-                        //   width: double.infinity,
-                        //   child: Card(
-                        //     elevation: 8,
-                        //     shape: RoundedRectangleBorder(
-                        //       borderRadius: BorderRadius.circular(16),
-                        //     ),
-                        //     color: Colors.white,
-                        //     child: Padding(
-                        //       padding: EdgeInsets.all(isWeb ? 24.0 : 16.0),
-                        //       child: Text(
-                        //         'Welcome to Inventory Dashboard, ${state.userName}',
-                        //         style: TextStyle(
-                        //           fontSize: isWeb ? 28 : 24,
-                        //           fontWeight: FontWeight.bold,
-                        //           color: Theme.of(context).primaryColor,
-                        //         ),
-                        //       ),
-                        //     ),
-                        //   ),
-                        // ),
-                        // SizedBox(height: isWeb ? 32 : 24),
                         Expanded(
                           child: GridView.count(
-                            crossAxisCount: isWeb ? 7 : 3,
-                            crossAxisSpacing: isWeb ? 16 : 12,
-                            mainAxisSpacing: isWeb ? 16 : 12,
-                            childAspectRatio: isWeb ? 1.0 : 1.0,
-                            children: _buildGridItems(context, isWeb),
+                            crossAxisCount: kIsWeb ? 7 : 3,
+                            crossAxisSpacing: kIsWeb ? 16 : 12,
+                            mainAxisSpacing: kIsWeb ? 16 : 12,
+                            childAspectRatio: kIsWeb ? 1.0 : 1.0,
+                            children: _buildGridItems(context),
                           ),
                         ),
                       ],
@@ -212,7 +189,7 @@ class InventoryDashboardPage extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildGridItems(BuildContext context, bool isWeb) {
+  List<Widget> _buildGridItems(BuildContext context) {
     return [
       _buildDashboardCard(
         context,
@@ -220,7 +197,6 @@ class InventoryDashboardPage extends StatelessWidget {
         Icons.list,
         Colors.blue,
             () => sl<Coordinator>().navigateToStockListPage(),
-        isWeb,
       ),
       _buildDashboardCard(
         context,
@@ -228,7 +204,6 @@ class InventoryDashboardPage extends StatelessWidget {
         Icons.bar_chart,
         Colors.purple,
             () => sl<Coordinator>().navigateToSalesReportPage(),
-        isWeb,
       ),
       _buildDashboardCard(
         context,
@@ -236,7 +211,6 @@ class InventoryDashboardPage extends StatelessWidget {
         Icons.account_balance,
         Colors.teal,
             () => sl<Coordinator>().navigateToTransactionsPage(),
-        isWeb,
       ),
       _buildDashboardCard(
         context,
@@ -244,7 +218,6 @@ class InventoryDashboardPage extends StatelessWidget {
         Icons.person_add,
         Colors.red,
             () => sl<Coordinator>().navigateToAddUserPage(),
-        isWeb,
       ),
       _buildDashboardCard(
         context,
@@ -252,7 +225,6 @@ class InventoryDashboardPage extends StatelessWidget {
         Icons.store,
         Colors.indigo,
             () => sl<Coordinator>().navigateToStoresListPage(),
-        isWeb,
       ),
       _buildDashboardCard(
         context,
@@ -260,7 +232,6 @@ class InventoryDashboardPage extends StatelessWidget {
         Icons.add_business,
         Colors.amber,
             () => sl<Coordinator>().navigateToAddStorePage(),
-        isWeb,
       ),
       _buildDashboardCard(
         context,
@@ -268,7 +239,6 @@ class InventoryDashboardPage extends StatelessWidget {
         Icons.account_balance_wallet,
         Colors.green,
             () => sl<Coordinator>().navigateToOverAllStockPage(),
-        isWeb,
       ),
       _buildDashboardCard(
         context,
@@ -276,7 +246,6 @@ class InventoryDashboardPage extends StatelessWidget {
         Icons.store,
         Colors.orangeAccent,
             () => sl<Coordinator>().navigateToStoreDetailsPage(''),
-        isWeb,
       ),
       _buildDashboardCard(
         context,
@@ -284,7 +253,6 @@ class InventoryDashboardPage extends StatelessWidget {
         Icons.people,
         Colors.green,
             () => sl<Coordinator>().navigateToAttendancePage(),
-        isWeb,
       ),
       _buildDashboardCard(
         context,
@@ -292,7 +260,6 @@ class InventoryDashboardPage extends StatelessWidget {
         Icons.inventory_2,
         Colors.cyan,
             () => sl<Coordinator>().navigateToAddStockPage(),
-        isWeb,
       ),
       _buildDashboardCard(
         context,
@@ -300,7 +267,6 @@ class InventoryDashboardPage extends StatelessWidget {
         Icons.receipt_long,
         Colors.cyan,
             () => sl<Coordinator>().navigateToPurchaseInvoicePanelPage(),
-        isWeb,
       ),
     ];
   }
@@ -311,7 +277,6 @@ class InventoryDashboardPage extends StatelessWidget {
       IconData icon,
       Color color,
       VoidCallback onTap,
-      bool isWeb,
       ) {
     return GestureDetector(
       onTap: onTap,
@@ -328,7 +293,7 @@ class InventoryDashboardPage extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                size: isWeb ? 28 : 36,
+                size: kIsWeb ? 28 : 36,
                 color: color,
               ),
               const SizedBox(height: kIsWeb ? 12 : 8),

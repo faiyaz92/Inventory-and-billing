@@ -16,7 +16,6 @@ class AnalyticsPage extends StatelessWidget {
     // Define demo expiration date
     final DateTime demoExpirationDate = DateTime(2025, 10, 10);
     final bool isDemoExpired = DateTime.now().isAfter(demoExpirationDate);
-    final bool isWeb = MediaQuery.of(context).size.width > 600;
 
     return BlocProvider(
       create: (context) => sl<HomeCubit>()..fetchUserInfo(),
@@ -144,7 +143,7 @@ class AnalyticsPage extends StatelessWidget {
                 child: SafeArea(
                   child: SingleChildScrollView(
                     child: Padding(
-                      padding: EdgeInsets.all(isWeb ? 24.0 : 16.0),
+                      padding: const EdgeInsets.all(kIsWeb ? 24.0 : 16.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -158,7 +157,6 @@ class AnalyticsPage extends StatelessWidget {
                                 Icons.people,
                                 Colors.green,
                                     () => sl<Coordinator>().navigateToSalesmanOrderListPage(),
-                                isWeb,
                               ),
                               _buildDashboardCard(
                                 context,
@@ -166,12 +164,10 @@ class AnalyticsPage extends StatelessWidget {
                                 Icons.delivery_dining,
                                 Colors.purple,
                                     () => sl<Coordinator>().navigateToDeliveryManOrderListPage(),
-                                isWeb,
                               ),
                             ],
-                            isWeb,
                           ),
-                          SizedBox(height: isWeb ? 32 : 24),
+                          const SizedBox(height: kIsWeb ? 32 : 24),
                           _buildGroupSection(
                             context,
                             'Company Analytics',
@@ -182,7 +178,6 @@ class AnalyticsPage extends StatelessWidget {
                                 Icons.people,
                                 Colors.teal,
                                     () => sl<Coordinator>().navigateToCustomerOrderListPage(),
-                                isWeb,
                               ),
                               _buildDashboardCard(
                                 context,
@@ -190,7 +185,6 @@ class AnalyticsPage extends StatelessWidget {
                                 Icons.store,
                                 Colors.red,
                                     () => sl<Coordinator>().navigateToStoreOrderListPage(),
-                                isWeb,
                               ),
                               _buildDashboardCard(
                                 context,
@@ -198,7 +192,6 @@ class AnalyticsPage extends StatelessWidget {
                                 Icons.trending_up,
                                 Colors.blueAccent,
                                     () => sl<Coordinator>().navigateToCompanyPerformancePage(),
-                                isWeb,
                               ),
                               _buildDashboardCard(
                                 context,
@@ -206,10 +199,8 @@ class AnalyticsPage extends StatelessWidget {
                                 Icons.trending_up,
                                 Colors.blueAccent,
                                     () => sl<Coordinator>().navigateToProductPerformanceListPage(),
-                                isWeb,
                               ),
                             ],
-                            isWeb,
                           ),
                         ],
                       ),
@@ -251,7 +242,6 @@ class AnalyticsPage extends StatelessWidget {
       BuildContext context,
       String title,
       List<Widget> children,
-      bool isWeb,
       ) {
     return Card(
       elevation: 4,
@@ -263,16 +253,16 @@ class AnalyticsPage extends StatelessWidget {
         ),
       ),
       child: Padding(
-        padding: EdgeInsets.all(isWeb ? 16.0 : 12.0),
+        padding: const EdgeInsets.all(kIsWeb ? 16.0 : 12.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: EdgeInsets.only(left: 16, top: 8, bottom: 8),
+              padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
               child: Text(
                 title,
                 style: TextStyle(
-                  fontSize: isWeb ? 20 : 18,
+                  fontSize: kIsWeb ? 20 : 18,
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).primaryColor,
                 ),
@@ -280,10 +270,10 @@ class AnalyticsPage extends StatelessWidget {
             ),
             GridView.count(
               shrinkWrap: true,
-              crossAxisCount: isWeb ? 7 : 3,
-              crossAxisSpacing: isWeb ? 16 : 12,
-              mainAxisSpacing: isWeb ? 16 : 12,
-              childAspectRatio: isWeb ? 1.0 : 1.0,
+              crossAxisCount: kIsWeb ? 7 : 3,
+              crossAxisSpacing: kIsWeb ? 16 : 12,
+              mainAxisSpacing: kIsWeb ? 16 : 12,
+              childAspectRatio: kIsWeb ? 1.0 : 1.0,
               children: children,
             ),
           ],
@@ -298,7 +288,6 @@ class AnalyticsPage extends StatelessWidget {
       IconData icon,
       Color color,
       VoidCallback onTap,
-      bool isWeb,
       ) {
     return GestureDetector(
       onTap: onTap,
@@ -315,7 +304,7 @@ class AnalyticsPage extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                size: isWeb ? 28 : 36,
+                size: kIsWeb ? 28 : 36,
                 color: color,
               ),
               const SizedBox(height: kIsWeb ? 12 : 8),
