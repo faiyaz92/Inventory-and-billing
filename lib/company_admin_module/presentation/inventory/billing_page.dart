@@ -1465,15 +1465,15 @@ class _BillingPageState extends State<BillingPage> {
         ),
       );
 
-      // _saveDataInBackground(
-      //   order: order,
-      //   originalOrder: originalOrder,
-      //   existingInvoice: existingInvoice,
-      //   storeLedgerId: storeLedgerId,
-      //   customerLedgerId: customerLedgerId,
-      //   returnAmount: returnAmount,
-      //   returnQuantities: returnQuantities,
-      // );
+      _saveDataInBackground(
+        order: order,
+        originalOrder: originalOrder,
+        existingInvoice: existingInvoice,
+        storeLedgerId: storeLedgerId,
+        customerLedgerId: customerLedgerId,
+        returnAmount: returnAmount,
+        returnQuantities: returnQuantities,
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to process bill: $e')),
