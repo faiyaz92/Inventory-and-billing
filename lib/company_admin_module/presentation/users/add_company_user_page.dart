@@ -60,12 +60,11 @@ class _AddUserViewState extends State<_AddUserView> {
   UserType? _selectedUserType;
   AccountType? _selectedAccountType;
   bool isEditing = false;
-  UserInfo? loggedInUser; // To store logged-in user info
+  UserInfo? loggedInUser;
 
   @override
   void initState() {
     super.initState();
-    // Fetch logged-in user info
     _fetchLoggedInUser();
     if (widget.user != null) {
       isEditing = true;
@@ -81,6 +80,15 @@ class _AddUserViewState extends State<_AddUserView> {
       _selectedUserType = widget.user?.userType ?? UserType.Employee;
       _selectedAccountType = widget.user?.accountType;
       print('initState (editing): _selectedStoreId = $_selectedStoreId, _selectedUserType = $_selectedUserType, _selectedAccountType = $_selectedAccountType');
+    } else {
+      _fetchLoggedInUser().then((_) {
+        if (loggedInUser?.role == Role.SALES_MAN && loggedInUser?.userType == UserType.Employee) {
+          setState(() {
+            _selectedUserType = UserType.Customer;
+          });
+          print('initState: Defaulted _selectedUserType to Customer for SALES_MAN');
+        }
+      });
     }
     print('AddUserView initState: _selectedStoreId = $_selectedStoreId, _selectedUserType = $_selectedUserType, _selectedAccountType = $_selectedAccountType, isEditing = $isEditing');
   }
@@ -88,7 +96,7 @@ class _AddUserViewState extends State<_AddUserView> {
   Future<void> _fetchLoggedInUser() async {
     final accountRepository = sl<AccountRepository>();
     loggedInUser = await accountRepository.getUserInfo();
-    setState(() {}); // Trigger rebuild to reflect logged-in user info
+    setState(() {});
     print('Fetched loggedInUser: userId = ${loggedInUser?.userId}, role = ${loggedInUser?.role}');
   }
 
@@ -148,12 +156,11 @@ class _AddUserViewState extends State<_AddUserView> {
 
   @override
   Widget build(BuildContext context) {
-    // Determine if the logged-in user is editing their own profile
     final isSelfEditing = isEditing &&
         loggedInUser != null &&
         widget.user?.userId == loggedInUser?.userId;
-    // Determine if the logged-in user is a company admin
     final isCompanyAdmin = loggedInUser?.role == Role.COMPANY_ADMIN;
+    final isSalesMan = loggedInUser?.role == Role.SALES_MAN && loggedInUser?.userType == UserType.Employee;
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -233,12 +240,15 @@ class _AddUserViewState extends State<_AddUserView> {
                             print('BlocBuilder: _selectedStoreId = $_selectedStoreId, stores = ${stores.map((s) => s.storeId).toList()}, defaultStoreId = $defaultStoreId');
                           }
 
+                          final availableUserTypes = isSalesMan && !isEditing
+                              ? [UserType.Customer]
+                              : UserType.values;
+
                           return Form(
                             key: _formKey,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Account Name Field (for all user types)
                                 Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 12.0),
                                   child: TextFormField(
@@ -270,7 +280,6 @@ class _AddUserViewState extends State<_AddUserView> {
                                     value!.isEmpty ? (_selectedUserType == UserType.Accounts ? "Account name is required" : "Name is required") : null,
                                   ),
                                 ),
-                                // Email Field (for Employee only)
                                 if (_selectedUserType == UserType.Employee)
                                   Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 12.0),
@@ -310,7 +319,6 @@ class _AddUserViewState extends State<_AddUserView> {
                                       },
                                     ),
                                   ),
-                                // UserType Dropdown
                                 Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 12.0),
                                   child: DropdownButtonFormField<UserType>(
@@ -336,7 +344,7 @@ class _AddUserViewState extends State<_AddUserView> {
                                         borderSide: BorderSide(color: Theme.of(context).primaryColor),
                                       ),
                                     ),
-                                    items: UserType.values.map((userType) {
+                                    items: availableUserTypes.map((userType) {
                                       return DropdownMenuItem(
                                         value: userType,
                                         child: Text(
@@ -345,10 +353,11 @@ class _AddUserViewState extends State<_AddUserView> {
                                         ),
                                       );
                                     }).toList(),
-                                    onChanged: (value) {
+                                    onChanged: isEditing && _selectedUserType != null
+                                        ? null
+                                        : (value) {
                                       setState(() {
                                         _selectedUserType = value;
-                                        // Reset fields not relevant to the new user type
                                         if (value == UserType.Customer) {
                                           userNameController.clear();
                                           dailyWageController.clear();
@@ -379,7 +388,6 @@ class _AddUserViewState extends State<_AddUserView> {
                                     style: const TextStyle(fontSize: 16.0, color: Colors.black),
                                   ),
                                 ),
-                                // AccountType Dropdown (for Accounts only)
                                 if (_selectedUserType == UserType.Accounts)
                                   Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 12.0),
@@ -426,7 +434,6 @@ class _AddUserViewState extends State<_AddUserView> {
                                       style: const TextStyle(fontSize: 16.0, color: Colors.black),
                                     ),
                                   ),
-                                // Store Dropdown (for Employee and Accounts)
                                 if ((_selectedUserType == UserType.Employee || _selectedUserType == UserType.Accounts) && storeState is StoreLoaded && stores.length >= 1)
                                   Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 12.0),
@@ -478,9 +485,7 @@ class _AddUserViewState extends State<_AddUserView> {
                                       style: const TextStyle(fontSize: 16.0, color: Colors.black),
                                     ),
                                   ),
-                                // Fields for Customer
                                 if (_selectedUserType == UserType.Customer) ...[
-                                  // Mobile Number Field
                                   Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 12.0),
                                     child: TextFormField(
@@ -519,7 +524,6 @@ class _AddUserViewState extends State<_AddUserView> {
                                       },
                                     ),
                                   ),
-                                  // Business Name Field
                                   Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 12.0),
                                     child: TextFormField(
@@ -551,7 +555,6 @@ class _AddUserViewState extends State<_AddUserView> {
                                       value!.isEmpty ? "Business name is required for Customer" : null,
                                     ),
                                   ),
-                                  // Address Field
                                   Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 12.0),
                                     child: TextFormField(
@@ -584,7 +587,6 @@ class _AddUserViewState extends State<_AddUserView> {
                                     ),
                                   ),
                                 ],
-                                // Role Dropdown (for Employee only, conditionally enabled)
                                 if (_selectedUserType == UserType.Employee)
                                   Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 12.0),
@@ -621,7 +623,7 @@ class _AddUserViewState extends State<_AddUserView> {
                                         );
                                       }).toList(),
                                       onChanged: isSelfEditing || !isCompanyAdmin
-                                          ? null // Disable dropdown if self-editing or not company admin
+                                          ? null
                                           : (value) {
                                         setState(() {
                                           _selectedRole = value;
@@ -637,9 +639,7 @@ class _AddUserViewState extends State<_AddUserView> {
                                       style: const TextStyle(fontSize: 16.0, color: Colors.black),
                                     ),
                                   ),
-                                // Fields for Employee (continued)
                                 if (_selectedUserType == UserType.Employee) ...[
-                                  // Username Field
                                   Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 12.0),
                                     child: TextFormField(
@@ -674,7 +674,6 @@ class _AddUserViewState extends State<_AddUserView> {
                                       },
                                     ),
                                   ),
-                                  // Daily Wage Field
                                   Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 12.0),
                                     child: TextFormField(
@@ -714,7 +713,6 @@ class _AddUserViewState extends State<_AddUserView> {
                                       },
                                     ),
                                   ),
-                                  // Password Field
                                   if (!isEditing)
                                     Padding(
                                       padding: const EdgeInsets.symmetric(vertical: 12.0),
