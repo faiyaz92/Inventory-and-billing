@@ -1202,7 +1202,6 @@ class _BillingPageState extends State<BillingPage> {
   double? _initialPayment;
   final TextEditingController _initialPaymentController =
       TextEditingController();
-
   Future<void> _generateBill() async {
     if (_cartItems.isEmpty && _existingBillNumber == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1239,9 +1238,11 @@ class _BillingPageState extends State<BillingPage> {
     final double finalDiscount = totalItemDiscount + additionalDiscount;
     final double totalAmount = subtotal + totalTax - finalDiscount;
 
+    // Handle initial payment validation and bill type adjustment
+    double initialPayment = 0.0;
+    String adjustedBillType = _selectedBillType ?? 'Cash';
     if (_selectedBillType == 'Credit') {
-      final initialPayment =
-          double.tryParse(_initialPaymentController.text) ?? 0.0;
+      initialPayment = double.tryParse(_initialPaymentController.text) ?? 0.0;
       if (initialPayment < 0) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Initial payment cannot be negative')),
@@ -1255,9 +1256,15 @@ class _BillingPageState extends State<BillingPage> {
         );
         return;
       }
-      // _initialPayment is set in _showReviewDialog, so we don't set it here yet
+      // If initial payment equals total amount, treat as Cash bill
+      if (initialPayment == totalAmount) {
+        adjustedBillType = 'Cash';
+        _initialPayment = totalAmount;
+      } else {
+        _initialPayment = initialPayment;
+      }
     } else {
-      _initialPayment = 0.0;
+      _initialPayment = totalAmount; // For Cash bills, initial payment is total
     }
 
     if (_discount == null && widget.orderId == null) {
@@ -1303,10 +1310,19 @@ class _BillingPageState extends State<BillingPage> {
       discount: _discount,
       invoiceLastUpdatedBy: userId,
       invoiceGeneratedDate: DateTime.now(),
-      invoiceType: _selectedBillType,
-      paymentStatus: 'Pending', // Temporary status, will be updated after review
-      amountReceived: 0.0, // Temporary, will be updated after review
-      paymentDetails: [], // Temporary, will be updated after review
+      invoiceType: adjustedBillType, // Use adjusted bill type
+      paymentStatus: adjustedBillType == 'Cash'
+          ? 'Paid'
+          : (_initialPayment! > 0 ? 'Partial Paid' : 'Not Paid'),
+      amountReceived: adjustedBillType == 'Cash' ? totalAmount : _initialPayment,
+      paymentDetails: [
+        if (_initialPayment! > 0)
+          {
+            'date': DateTime.now(),
+            'amount': _initialPayment,
+            'method': 'Cash',
+          },
+      ],
       slipNumber: null,
       customerLedgerId: customerLedgerId,
     );
@@ -1327,16 +1343,23 @@ class _BillingPageState extends State<BillingPage> {
     final updatedTotalAmount =
         updatedSubtotal + updatedTotalTax - updatedFinalDiscount;
 
+    // Recalculate bill type and payment status after review dialog
+    if (adjustedBillType == 'Credit' && _initialPayment == updatedTotalAmount) {
+      adjustedBillType = 'Cash';
+      _initialPayment = updatedTotalAmount;
+    }
+
     // Create final Order object with updated payment details
     final order = tempOrder.copyWith(
       items: _cartItems,
       totalAmount: updatedTotalAmount,
       discount: _discount,
-      paymentStatus: _selectedBillType == 'Cash'
+      invoiceType: adjustedBillType, // Use adjusted bill type
+      paymentStatus: adjustedBillType == 'Cash'
           ? 'Paid'
-          : (_initialPayment! > 0 ? 'Partially Paid' : 'Not Paid'),
+          : (_initialPayment! > 0 ? 'Partial Paid' : 'Not Paid'),
       amountReceived:
-      _selectedBillType == 'Cash' ? updatedTotalAmount : _initialPayment,
+      adjustedBillType == 'Cash' ? updatedTotalAmount : _initialPayment,
       paymentDetails: [
         if (_initialPayment! > 0)
           {
@@ -1408,7 +1431,8 @@ class _BillingPageState extends State<BillingPage> {
           );
           if (stock.quantity < item.quantity) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Insufficient stock for ${item.productName}')),
+              SnackBar(
+                  content: Text('Insufficient stock for ${item.productName}')),
             );
             setState(() => _isLoading = false);
             return;
@@ -1446,7 +1470,8 @@ class _BillingPageState extends State<BillingPage> {
             if (stock == null) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                    content: Text('Stock data not found for ${item.productName}')),
+                    content:
+                    Text('Stock data not found for ${item.productName}')),
               );
               setState(() => _isLoading = false);
               return;
@@ -1485,6 +1510,8 @@ class _BillingPageState extends State<BillingPage> {
       setState(() => _isLoading = false);
     }
   }
+
+
   Future<void> _saveDataInBackground({
     required Order order,
     required Order? originalOrder,
@@ -2581,124 +2608,6 @@ class _BillingPageState extends State<BillingPage> {
                         ),
                       ),
                     ),
-                    if (order.paymentDetails != null &&
-                        order.paymentDetails!.isNotEmpty)
-                      pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        children: [
-                          pw.SizedBox(height: 16),
-                          pw.Text(
-                            'Payment Details',
-                            style: pw.TextStyle(
-                              font: boldFont,
-                              fontSize: 18,
-                            ),
-                          ),
-                          pw.SizedBox(height: 8),
-                          pw.Table(
-                            border: const pw.TableBorder(
-                              top: pw.BorderSide(color: greyColor, width: 1),
-                              bottom: pw.BorderSide(color: greyColor, width: 1),
-                              left: pw.BorderSide.none,
-                              right: pw.BorderSide.none,
-                              horizontalInside: pw.BorderSide.none,
-                              verticalInside:
-                                  pw.BorderSide(color: greyColor, width: 1),
-                            ),
-                            children: [
-                              pw.TableRow(
-                                children: [
-                                  pw.Padding(
-                                    padding: const pw.EdgeInsets.all(10),
-                                    child: pw.Text(
-                                      'Date',
-                                      style: pw.TextStyle(
-                                        font: boldFont,
-                                        fontSize: 13,
-                                      ),
-                                      textAlign: pw.TextAlign.left,
-                                    ),
-                                  ),
-                                  pw.Padding(
-                                    padding: const pw.EdgeInsets.all(10),
-                                    child: pw.Text(
-                                      'Amount',
-                                      style: pw.TextStyle(
-                                        font: boldFont,
-                                        fontSize: 13,
-                                      ),
-                                      textAlign: pw.TextAlign.right,
-                                    ),
-                                  ),
-                                  pw.Padding(
-                                    padding: const pw.EdgeInsets.all(10),
-                                    child: pw.Text(
-                                      'Method',
-                                      style: pw.TextStyle(
-                                        font: boldFont,
-                                        fontSize: 13,
-                                      ),
-                                      textAlign: pw.TextAlign.left,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              ...order.paymentDetails!
-                                  .asMap()
-                                  .entries
-                                  .map((entry) {
-                                final index = entry.key;
-                                final payment = entry.value;
-                                final paymentAmount =
-                                    (payment['amount'] ?? 0.0).isNaN
-                                        ? 0.0
-                                        : (payment['amount'] ?? 0.0);
-                                return pw.TableRow(
-                                  decoration: index.isEven
-                                      ? null
-                                      : const pw.BoxDecoration(
-                                          color: rowBackgroundColor),
-                                  children: [
-                                    pw.Padding(
-                                      padding: const pw.EdgeInsets.all(10),
-                                      child: pw.Text(
-                                        formatDate(payment['date']),
-                                        style: pw.TextStyle(
-                                          font: regularFont,
-                                          fontSize: 12,
-                                        ),
-                                        textAlign: pw.TextAlign.left,
-                                      ),
-                                    ),
-                                    pw.Padding(
-                                      padding: const pw.EdgeInsets.all(10),
-                                      child: pw.Text(
-                                        formatNumber(paymentAmount),
-                                        style: pw.TextStyle(
-                                          font: regularFont,
-                                          fontSize: 12,
-                                        ),
-                                        textAlign: pw.TextAlign.right,
-                                      ),
-                                    ),
-                                    pw.Padding(
-                                      padding: const pw.EdgeInsets.all(10),
-                                      child: pw.Text(
-                                        payment['method']?.toString() ?? 'N/A',
-                                        style: pw.TextStyle(
-                                          font: regularFont,
-                                          fontSize: 12,
-                                        ),
-                                        textAlign: pw.TextAlign.left,
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }),
-                            ],
-                          ),
-                        ],
-                      ),
                   ],
                 ),
               ],

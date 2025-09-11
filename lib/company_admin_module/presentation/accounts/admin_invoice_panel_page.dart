@@ -163,6 +163,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
       ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -234,7 +235,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
   Widget _buildFilters(BuildContext context) {
     return BlocBuilder<AdminInvoiceCubit, AdminInvoiceState>(
       buildWhen: (previous, current) =>
-          current is AdminInvoiceListFetchLoading ||
+      current is AdminInvoiceListFetchLoading ||
           current is AdminInvoiceListFetchSuccess ||
           current is AdminInvoiceListFetchError,
       builder: (context, state) {
@@ -265,12 +266,12 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
               .toList();
 
           final validInvoiceIssuer = selectedInvoiceIssuer != null &&
-                  employeeUsers
-                      .any((user) => user.userId == selectedInvoiceIssuer)
+              employeeUsers
+                  .any((user) => user.userId == selectedInvoiceIssuer)
               ? selectedInvoiceIssuer
               : null;
           final validUserId = selectedUserId != null &&
-                  customerUsers.any((user) => user.userId == selectedUserId)
+              customerUsers.any((user) => user.userId == selectedUserId)
               ? selectedUserId
               : null;
 
@@ -279,9 +280,9 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
             ...employeeUsers
                 .where((user) => user.userId != null && user.userId!.isNotEmpty)
                 .map((user) => DropdownMenuItem<String>(
-                      value: user.userId,
-                      child: Text(user.name ?? 'Unknown'),
-                    )),
+              value: user.userId,
+              child: Text(user.name ?? 'Unknown'),
+            )),
           ];
 
           final customerDropdownItems = [
@@ -289,9 +290,9 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
             ...customerUsers
                 .where((user) => user.userId != null && user.userId!.isNotEmpty)
                 .map((user) => DropdownMenuItem<String>(
-                      value: user.userId,
-                      child: Text(user.name ?? 'Unknown'),
-                    )),
+              value: user.userId,
+              child: Text(user.name ?? 'Unknown'),
+            )),
           ];
 
           return Column(
@@ -349,7 +350,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                       decoration: InputDecoration(
                         labelText: 'Filter by Invoice Type',
                         labelStyle:
-                            const TextStyle(color: AppColors.textSecondary),
+                        const TextStyle(color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
@@ -398,7 +399,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                       decoration: InputDecoration(
                         labelText: 'Filter by Payment Status',
                         labelStyle:
-                            const TextStyle(color: AppColors.textSecondary),
+                        const TextStyle(color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
@@ -453,7 +454,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                       decoration: InputDecoration(
                         labelText: 'Invoice Issuer',
                         labelStyle:
-                            const TextStyle(color: AppColors.textSecondary),
+                        const TextStyle(color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
@@ -496,7 +497,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                       decoration: InputDecoration(
                         labelText: 'Filter by Customer',
                         labelStyle:
-                            const TextStyle(color: AppColors.textSecondary),
+                        const TextStyle(color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
@@ -543,7 +544,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                       decoration: InputDecoration(
                         labelText: 'Filter by Store',
                         labelStyle:
-                            const TextStyle(color: AppColors.textSecondary),
+                        const TextStyle(color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
@@ -568,9 +569,9 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                         const DropdownMenuItem(
                             value: null, child: Text('All Stores')),
                         ...stores.map((store) => DropdownMenuItem(
-                              value: store.storeId,
-                              child: Text(store.name),
-                            )),
+                          value: store.storeId,
+                          child: Text(store.name),
+                        )),
                       ],
                       onChanged: (value) {
                         _adminInvoiceCubit.fetchInvoices(
@@ -598,7 +599,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                         labelText: 'Min Total Amount',
                         border: OutlineInputBorder(),
                         contentPadding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
                       keyboardType: TextInputType.number,
                       initialValue: minTotalAmount?.toString() ?? '',
@@ -625,7 +626,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                         labelText: 'Max Total Amount',
                         border: OutlineInputBorder(),
                         contentPadding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
                       keyboardType: TextInputType.number,
                       initialValue: maxTotalAmount?.toString() ?? '',
@@ -673,7 +674,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
   Widget _buildStatsCard(BuildContext context) {
     return BlocBuilder<AdminInvoiceCubit, AdminInvoiceState>(
       buildWhen: (previous, current) =>
-          current is AdminInvoiceListFetchLoading ||
+      current is AdminInvoiceListFetchLoading ||
           current is AdminInvoiceListFetchSuccess ||
           current is AdminInvoiceListFetchError,
       builder: (context, state) {
@@ -698,7 +699,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
           );
         }
         if (state is AdminInvoiceListFetchSuccess) {
-          final crossAxisCount = kIsWeb ? 7 :2 ;
+          final crossAxisCount = kIsWeb ? 7 : 2;
           return Card(
             elevation: 4,
             shape: RoundedRectangleBorder(
@@ -734,7 +735,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                         child: const Text(
                           'View',
                           style:
-                              TextStyle(fontSize: 12, color: AppColors.white),
+                          TextStyle(fontSize: 12, color: AppColors.white),
                         ),
                       ),
                     ],
@@ -833,6 +834,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
         return Icons.payments;
       case 'Pending Collection Amount':
         return Icons.warning;
+      case 'Partial Paid Outstanding':
+        return Icons.hourglass_bottom;
       default:
         return Icons.info;
     }
@@ -893,21 +896,21 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                       stat['value'],
                       valueColor: stat['color'],
                       valueWeight:
-                          stat['highlight'] == true ? FontWeight.bold : null,
+                      stat['highlight'] == true ? FontWeight.bold : null,
                       backgroundColor: stat['highlight'] == true
                           ? (stat['color'] as Color).withOpacity(0.1)
                           : null,
                       borderRadius: isFirst
                           ? const BorderRadius.only(
-                              topLeft: Radius.circular(12),
-                              topRight: Radius.circular(12),
-                            )
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12),
+                      )
                           : isLast
-                              ? const BorderRadius.only(
-                                  bottomLeft: Radius.circular(12),
-                                  bottomRight: Radius.circular(12),
-                                )
-                              : null,
+                          ? const BorderRadius.only(
+                        bottomLeft: Radius.circular(12),
+                        bottomRight: Radius.circular(12),
+                      )
+                          : null,
                     );
                   }).toList(),
                 ),
@@ -941,7 +944,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
   Widget _buildInvoiceGeneratedDateLabel() {
     return BlocBuilder<AdminInvoiceCubit, AdminInvoiceState>(
       buildWhen: (previous, current) =>
-          current is AdminInvoiceListFetchSuccess ||
+      current is AdminInvoiceListFetchSuccess ||
           current is AdminInvoiceListFetchLoading ||
           current is AdminInvoiceListFetchError,
       builder: (context, state) {
@@ -971,7 +974,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
   Widget _buildInvoiceList() {
     return BlocBuilder<AdminInvoiceCubit, AdminInvoiceState>(
       buildWhen: (previous, current) =>
-          current is AdminInvoiceListFetchLoading ||
+      current is AdminInvoiceListFetchLoading ||
           current is AdminInvoiceListFetchSuccess ||
           current is AdminInvoiceListFetchError,
       builder: (context, state) {
@@ -980,13 +983,13 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
             ..sort((a, b) => a == 'No Date'
                 ? 1
                 : b == 'No Date'
-                    ? -1
-                    : DateFormat('MMM dd, yyyy')
-                        .parse(b)
-                        .compareTo(DateFormat('MMM dd, yyyy').parse(a)));
+                ? -1
+                : DateFormat('MMM dd, yyyy')
+                .parse(b)
+                .compareTo(DateFormat('MMM dd, yyyy').parse(a)));
           return SliverList(
             delegate: SliverChildBuilderDelegate(
-              (context, index) {
+                  (context, index) {
                 final date = dates[index];
                 final invoices = state.groupedInvoices[date]!;
                 return StickyHeader(
@@ -994,7 +997,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                     width: double.infinity,
                     color: Theme.of(context).scaffoldBackgroundColor,
                     padding:
-                        const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                     child: Text(
                       date,
                       style: const TextStyle(
@@ -1007,7 +1010,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                   content: Column(
                     children: invoices
                         .map((invoice) =>
-                            _buildInvoiceCard(context, invoice, state))
+                        _buildInvoiceCard(context, invoice, state))
                         .toList(),
                   ),
                 );
@@ -1206,6 +1209,13 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                             ? FontWeight.bold
                             : null,
                       ),
+                      if (invoice.paymentStatus == 'Partial Paid')
+                        _buildTableRow(
+                          'Amount Received',
+                          'IQD ${(invoice.amountReceived ?? 0.0).toStringAsFixed(2)}',
+                          valueColor: Colors.green,
+                          backgroundColor: Colors.green.withOpacity(0.1),
+                        ),
                       _buildTableRow(
                         'Total',
                         'IQD ${invoice.totalAmount.toStringAsFixed(2)}',
@@ -1236,21 +1246,21 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
   }
 
   TableRow _buildTableRow(
-    String label,
-    String value, {
-    bool isBold = false,
-    FontWeight? valueWeight,
-    Color? valueColor = AppColors.textSecondary,
-    Color? backgroundColor,
-    BorderRadius? borderRadius,
-    int maxLines = 1,
-  }) {
+      String label,
+      String value, {
+        bool isBold = false,
+        FontWeight? valueWeight,
+        Color? valueColor = AppColors.textSecondary,
+        Color? backgroundColor,
+        BorderRadius? borderRadius,
+        int maxLines = 1,
+      }) {
     return TableRow(
       decoration: backgroundColor != null || borderRadius != null
           ? BoxDecoration(
-              color: backgroundColor,
-              borderRadius: borderRadius,
-            )
+        color: backgroundColor,
+        borderRadius: borderRadius,
+      )
           : null,
       children: [
         Padding(
@@ -1291,7 +1301,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
   Future<void> _showReceiveCashDialog(BuildContext context, Order invoice) async {
     final TextEditingController amountController = TextEditingController();
     final formKey = GlobalKey<FormState>();
-    bool isLoading = false; // Track loading state
+    bool isLoading = false;
 
     await showDialog(
       context: context,
@@ -1306,8 +1316,10 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Order ID: ${invoice.id}', style: const TextStyle(fontSize: 14)),
-                    Text('Invoice Number: ${invoice.billNumber ?? 'N/A'}', style: const TextStyle(fontSize: 14)),
+                    Text('Order ID: ${invoice.id}',
+                        style: const TextStyle(fontSize: 14)),
+                    Text('Invoice Number: ${invoice.billNumber ?? 'N/A'}',
+                        style: const TextStyle(fontSize: 14)),
                     Text(
                       'Outstanding: IQD ${(invoice.totalAmount - (invoice.amountReceived ?? 0.0)).toStringAsFixed(2)}',
                       style: const TextStyle(fontSize: 14),
@@ -1315,7 +1327,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: amountController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
                       decoration: const InputDecoration(
                         labelText: 'Amount',
                         border: OutlineInputBorder(),
@@ -1328,7 +1341,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                         if (amount == null || amount <= 0) {
                           return 'Enter a valid positive amount';
                         }
-                        final outstanding = invoice.totalAmount - (invoice.amountReceived ?? 0.0);
+                        final outstanding =
+                            invoice.totalAmount - (invoice.amountReceived ?? 0.0);
                         if (amount > outstanding) {
                           return 'Amount cannot exceed outstanding balance of IQD ${outstanding.toStringAsFixed(2)}';
                         }
@@ -1348,7 +1362,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
                       ? null
                       : () async {
                     if (formKey.currentState!.validate()) {
-                      setState(() => isLoading = true); // Show loading
+                      setState(() => isLoading = true);
                       final amount = double.parse(amountController.text);
                       await _processPayment(context, invoice, amount);
                       if (dialogContext.mounted) {
@@ -1375,7 +1389,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
     );
   }
 
-  Future<void> _processPayment(BuildContext context, Order invoice, double amount) async {
+  Future<void> _processPayment(
+      BuildContext context, Order invoice, double amount) async {
     final orderService = sl<IOrderService>();
     final ledgerCubit = sl<UserLedgerCubit>();
     final userInfo = await sl<AccountRepository>().getUserInfo();
@@ -1391,13 +1406,16 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
     final outstanding = invoice.totalAmount - currentAmountReceived;
     if (amount > outstanding) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Amount cannot exceed outstanding balance of IQD ${outstanding.toStringAsFixed(2)}')),
+        SnackBar(
+            content: Text(
+                'Amount cannot exceed outstanding balance of IQD ${outstanding.toStringAsFixed(2)}')),
       );
       return;
     }
 
     final newAmountReceived = currentAmountReceived + amount;
-    final paymentStatus = newAmountReceived >= invoice.totalAmount ? 'Paid' : 'Partial Paid';
+    final paymentStatus =
+    newAmountReceived >= invoice.totalAmount ? 'Paid' : 'Partial Paid';
 
     final updatedOrder = invoice.copyWith(
       amountReceived: newAmountReceived,
@@ -1455,7 +1473,8 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
 
     final receiptPdf = await _generateReceiptPdf(updatedOrder, amount);
 
-    await sl<Coordinator>().navigateToBillPdfPage(pdf: receiptPdf, billNumber: invoice.billNumber??'');
+    await sl<Coordinator>()
+        .navigateToBillPdfPage(pdf: receiptPdf, billNumber: invoice.billNumber ?? '');
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Payment received successfully')),
@@ -1466,6 +1485,7 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
       endDate: endDate,
     );
   }
+
   Future<pw.Document> _generateReceiptPdf(Order order, double amount) async {
     final pdf = pw.Document();
     final accountRepository = sl<AccountRepository>();

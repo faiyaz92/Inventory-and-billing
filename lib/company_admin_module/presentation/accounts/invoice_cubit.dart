@@ -9,7 +9,6 @@ import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
 import 'package:requirment_gathering_app/user_module/cart/services/iorder_service.dart';
-
 abstract class AdminInvoiceState {}
 
 class AdminInvoiceInitial extends AdminInvoiceState {}
@@ -157,7 +156,7 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
       List<Order> invoices, bool showTodayStats) {
     final totalInvoices = invoices.length;
     final totalAmount =
-        invoices.fold<double>(0.0, (sum, invoice) => sum + invoice.totalAmount);
+    invoices.fold<double>(0.0, (sum, invoice) => sum + invoice.totalAmount);
     final newInvoices = invoices
         .where((invoice) => _isToday(invoice.invoiceGeneratedDate))
         .length;
@@ -178,18 +177,24 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
         invoices.where((invoice) => invoice.invoiceType == 'Cash').length;
     final totalCollectedAmount = invoices
         .where((invoice) =>
-            invoice.paymentStatus == 'Paid' ||
-            invoice.paymentStatus == 'Partial Paid')
+    invoice.paymentStatus == 'Paid' ||
+        invoice.paymentStatus == 'Partial Paid')
         .fold<double>(
-            0.0, (sum, invoice) => sum + (invoice.amountReceived ?? 0.0));
+        0.0, (sum, invoice) => sum + (invoice.amountReceived ?? 0.0));
     final totalPendingAmount = invoices
         .where((invoice) =>
-            invoice.paymentStatus == 'Not Paid' ||
-            invoice.paymentStatus == 'Partial Paid')
+    invoice.paymentStatus == 'Not Paid' ||
+        invoice.paymentStatus == 'Partial Paid')
         .fold<double>(
-            0.0,
+        0.0,
             (sum, invoice) =>
-                sum + (invoice.totalAmount - (invoice.amountReceived ?? 0.0)));
+        sum + (invoice.totalAmount - (invoice.amountReceived ?? 0.0)));
+    final partialPaidOutstanding = invoices
+        .where((invoice) => invoice.paymentStatus == 'Partial Paid')
+        .fold<double>(
+        0.0,
+            (sum, invoice) =>
+        sum + (invoice.totalAmount - (invoice.amountReceived ?? 0.0)));
 
     var stats = <Map<String, dynamic>>[
       {
@@ -262,6 +267,13 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
         'color': Colors.red,
         'highlight': true
       },
+      {
+        'label': 'Partial Paid Outstanding',
+        'rawValue': partialPaidOutstanding,
+        'value': partialPaidOutstanding.toStringAsFixed(2),
+        'color': Colors.orange,
+        'highlight': true
+      },
     ];
 
     if (showTodayStats) {
@@ -283,24 +295,24 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
       'color': normalizedStatus == 'paid'
           ? Colors.green
           : normalizedStatus == 'partial paid'
-              ? Colors.orange
-              : Colors.red,
+          ? Colors.orange
+          : Colors.red,
       'backgroundColor': normalizedStatus == 'paid'
           ? Colors.green.withOpacity(0.1)
           : normalizedStatus == 'partial paid'
-              ? Colors.orange.withOpacity(0.1)
-              : Colors.red.withOpacity(0.1),
+          ? Colors.orange.withOpacity(0.1)
+          : Colors.red.withOpacity(0.1),
     };
   }
 
   String? getUserNameById(String? userId, List<UserInfo> users) {
     if (userId == null || userId.isEmpty) return null;
     return users
-            .firstWhere(
-              (user) => user.userId == userId,
-              orElse: () => UserInfo(userId: userId, userName: 'Unknown'),
-            )
-            .userName ??
+        .firstWhere(
+          (user) => user.userId == userId,
+      orElse: () => UserInfo(userId: userId, userName: 'Unknown'),
+    )
+        .userName ??
         'Unknown';
   }
 
@@ -331,15 +343,15 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
       );
       _allInvoices = invoices;
       final users =
-          await employeeServices.getUsersFromTenantCompany(storeId: storeId);
+      await employeeServices.getUsersFromTenantCompany(storeId: storeId);
       final stores = await storeService.getStores();
 
       List<Order> filteredInvoices = invoices;
       if (_searchQuery.isNotEmpty) {
         filteredInvoices = filteredInvoices
             .where((invoice) => (invoice.billNumber ?? '')
-                .toLowerCase()
-                .contains(_searchQuery.toLowerCase()))
+            .toLowerCase()
+            .contains(_searchQuery.toLowerCase()))
             .toList();
       }
 
@@ -397,13 +409,13 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
       if (_searchQuery.isNotEmpty) {
         filteredInvoices = filteredInvoices
             .where((invoice) => (invoice.billNumber ?? '')
-                .toLowerCase()
-                .contains(_searchQuery.toLowerCase()))
+            .toLowerCase()
+            .contains(_searchQuery.toLowerCase()))
             .toList();
       }
 
       final showTodayStats =
-          _shouldShowTodayStats(currentState.startDate, currentState.endDate);
+      _shouldShowTodayStats(currentState.startDate, currentState.endDate);
       emit(AdminInvoiceListFetchSuccess(
         invoices: filteredInvoices,
         users: currentState.users,
@@ -419,7 +431,7 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
         maxTotalAmount: currentState.maxTotalAmount,
         groupedInvoices: _groupInvoicesByDate(filteredInvoices),
         dateRangeLabel:
-            _formatDateRange(currentState.startDate, currentState.endDate),
+        _formatDateRange(currentState.startDate, currentState.endDate),
         statistics: _computeStatistics(filteredInvoices, showTodayStats),
         previousStatistics: currentState.previousStatistics,
         showTodayStats: showTodayStats,
@@ -436,7 +448,7 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
         invoice: invoice,
         users: users,
         normalizedPaymentStatus:
-            invoice.paymentStatus?.toLowerCase() ?? 'not paid',
+        invoice.paymentStatus?.toLowerCase() ?? 'not paid',
         subtotal: invoice.items
             .fold(0.0, (sum, item) => sum + (item.price * item.quantity)),
         totalTax: invoice.items.fold(0.0, (sum, item) => sum + item.taxAmount),
@@ -444,7 +456,7 @@ class AdminInvoiceCubit extends Cubit<AdminInvoiceState> {
             ? _fullDateFormatter.format(invoice.invoiceGeneratedDate!)
             : 'No Date',
         invoiceLastUpdatedByName:
-            getUserNameById(invoice.invoiceLastUpdatedBy, users),
+        getUserNameById(invoice.invoiceLastUpdatedBy, users),
       ));
     } catch (e) {
       emit(AdminInvoiceFetchError('Failed to fetch invoice: ${e.toString()}'));
