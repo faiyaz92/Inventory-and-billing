@@ -79,4 +79,15 @@ abstract class IFirestorePathProvider {
 
 
   DocumentReference getSinglePurchaseInvoiceRef(String companyId, String invoiceId) ;
+
+// --- START ACCOUNTING PATHS FOR SDK ---
+  CollectionReference getAccountingAccountLedger(String companyId);
+  DocumentReference getAccountingAccountLedgerRef(String companyId, String ledgerId);
+  CollectionReference getAccountingTransactionsRef(String companyId, String ledgerId);
+  CollectionReference getAccountingStoresCollectionRef(String companyId);
+  CollectionReference getAccountingStockCollectionRef(String companyId, String storeId);
+  CollectionReference getAccountingTransactionsCollectionRef(String companyId, String storeId);
+  DocumentReference getAccountingGeneralJournalRef(String companyId);
+  DocumentReference getAccountingJournalRef(String companyId, String storeId);
+// --- END ACCOUNTING PATHS FOR SDK ---
 }
