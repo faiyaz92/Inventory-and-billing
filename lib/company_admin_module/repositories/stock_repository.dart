@@ -1,28 +1,44 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/inventory/stock_model_dto.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_ledger_model.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/account_ledger_service.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/core_module/services/firestore_provider.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
+
+enum StoreType { store, warehouse, salesman }
 
 class StoreDto {
   final String storeId;
   final String name;
   final String createdBy;
   final DateTime createdAt;
+  final String? accountLedgerId;
+  final StoreType storeType;
 
   StoreDto({
     required this.storeId,
     required this.name,
     required this.createdBy,
     required this.createdAt,
+    this.accountLedgerId,
+    this.storeType = StoreType.store,
   });
 
   factory StoreDto.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return StoreDto(
       storeId: doc.id,
-      name: data['name'] as String,
-      createdBy: data['createdBy'] as String,
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      name: data['name'] as String? ?? '',
+      createdBy: data['createdBy'] as String? ?? '',
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      accountLedgerId: data['accountLedgerId'] as String?,
+      storeType: data['storeType'] != null
+          ? StoreType.values.firstWhere(
+            (e) => e.toString().split('.').last == data['storeType'],
+        orElse: () => StoreType.store,
+      )
+          : StoreType.store,
     );
   }
 
@@ -32,6 +48,8 @@ class StoreDto {
       'name': name,
       'createdBy': createdBy,
       'createdAt': Timestamp.fromDate(createdAt),
+      'accountLedgerId': accountLedgerId,
+      'storeType': storeType.toString().split('.').last,
     };
   }
 
@@ -40,12 +58,16 @@ class StoreDto {
     String? name,
     String? createdBy,
     DateTime? createdAt,
+    String? accountLedgerId,
+    StoreType? storeType,
   }) {
     return StoreDto(
       storeId: storeId ?? this.storeId,
       name: name ?? this.name,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
+      accountLedgerId: accountLedgerId ?? this.accountLedgerId,
+      storeType: storeType ?? this.storeType,
     );
   }
 }
@@ -65,15 +87,21 @@ abstract class StockRepository {
   Future<String> getDefaultStoreId(String companyId);
 
   Future<void> addStore(String companyId, StoreDto store);
+
+  Future<void> updateStore(String companyId, StoreDto store); // New method
+
+  Future<StoreDto?> getStoreByName(String companyId, String storeName); // New method
 }
 
 class StockRepositoryImpl implements StockRepository {
   final IFirestorePathProvider firestorePathProvider;
   final AccountRepository accountRepository;
+  final IAccountLedgerService accountLedgerService;
 
   StockRepositoryImpl({
     required this.firestorePathProvider,
     required this.accountRepository,
+    required this.accountLedgerService,
   });
 
   @override
@@ -132,6 +160,18 @@ class StockRepositoryImpl implements StockRepository {
   }
 
   @override
+  Future<StoreDto?> getStoreByName(String companyId, String storeName) async {
+    try {
+      final ref = firestorePathProvider.getStoresCollectionRef(companyId);
+      final snapshot = await ref.doc(storeName).get();
+      if (!snapshot.exists) return null;
+      return StoreDto.fromFirestore(snapshot);
+    } catch (e) {
+      throw Exception('Failed to fetch store by name: $e');
+    }
+  }
+
+  @override
   Future<StockDto?> getStockByProduct(
       String companyId, String storeId, String productId) async {
     try {
@@ -165,11 +205,19 @@ class StockRepositoryImpl implements StockRepository {
     if (stores.isEmpty) {
       final userInfo = await accountRepository.getUserInfo();
       final adminUserId = userInfo?.userId ?? 'system';
+      final ledgerId = await accountLedgerService.createLedger(AccountLedger(
+        totalOutstanding: 0,
+        promiseAmount: null,
+        promiseDate: null,
+        transactions: [],
+        entityType: UserType.Store,
+      ));
       final defaultStore = StoreDto(
         storeId: 'default',
         name: 'Default Store',
         createdBy: adminUserId,
         createdAt: DateTime.now(),
+        accountLedgerId: ledgerId,
       );
       await firestorePathProvider
           .getStoresCollectionRef(companyId)
@@ -187,6 +235,16 @@ class StockRepositoryImpl implements StockRepository {
       await ref.doc(store.name).set(store.toFirestore());
     } catch (e) {
       throw Exception('Failed to add store: $e');
+    }
+  }
+
+  @override
+  Future<void> updateStore(String companyId, StoreDto store) async {
+    try {
+      final ref = firestorePathProvider.getStoresCollectionRef(companyId);
+      await ref.doc(store.name).update(store.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to update store: $e');
     }
   }
 }

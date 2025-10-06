@@ -65,7 +65,7 @@ class StockCubit extends Cubit<StockState> {
     try {
       final existingStocks = await stockService.getStock(stock.storeId);
       final existingStock = existingStocks.firstWhere(
-        (item) => item.productId == stock.productId,
+            (item) => item.productId == stock.productId,
         orElse: () => StockModel(
           id: '${stock.productId}_${stock.storeId}',
           productId: stock.productId,
@@ -96,7 +96,7 @@ class StockCubit extends Cubit<StockState> {
         categoryId: product?.categoryId ?? existingStock.categoryId,
         subcategoryId: product?.subcategoryId ?? existingStock.subcategoryId,
         subcategoryName:
-            product?.subcategoryName ?? existingStock.subcategoryName,
+        product?.subcategoryName ?? existingStock.subcategoryName,
         tax: product?.tax ?? existingStock.tax,
       );
 
@@ -135,7 +135,7 @@ class StockCubit extends Cubit<StockState> {
     try {
       final stockItems = await stockService.getStock(stock.storeId);
       final existingStock = stockItems.firstWhere(
-        (item) => item.id == stock.id,
+            (item) => item.id == stock.id,
         orElse: () => stock,
       );
 
@@ -174,7 +174,6 @@ class StockCubit extends Cubit<StockState> {
         userId: userInfo['userId']!,
         remarks: remarks,
         productName: stock.name ?? '',
-
       );
       await transactionService.addTransaction(transaction);
 
@@ -185,12 +184,12 @@ class StockCubit extends Cubit<StockState> {
   }
 
   Future<void> updateStock(StockModel stock,
-      {Product? product, String? remarks}) async {
+      {Product? product, String? remarks, bool isReturn = false}) async {
     emit(StockLoading());
     try {
       final stockItems = await stockService.getStock(stock.storeId);
       final existingStock = stockItems.firstWhere(
-        (item) => item.id == stock.id,
+            (item) => item.id == stock.id,
         orElse: () => StockModel(
           id: stock.id,
           productId: stock.productId,
@@ -220,7 +219,7 @@ class StockCubit extends Cubit<StockState> {
         stock: null,
         category: product?.category ?? stock.category ?? existingStock.category,
         categoryId:
-            product?.categoryId ?? stock.categoryId ?? existingStock.categoryId,
+        product?.categoryId ?? stock.categoryId ?? existingStock.categoryId,
         subcategoryId: product?.subcategoryId ??
             stock.subcategoryId ??
             existingStock.subcategoryId,
@@ -231,13 +230,13 @@ class StockCubit extends Cubit<StockState> {
       );
       await stockService.updateStock(updatedStock);
 
-      if (quantityAdded > 0) {
+      if (quantityAdded != 0) {
         final userInfo = await _getCurrentUserInfo();
         final transaction = TransactionModel(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
-          type: 'add',
+          type: isReturn ? 'return' : 'add',
           productId: stock.productId,
-          quantity: quantityAdded,
+          quantity: quantityAdded.abs(),
           fromStoreId: stock.storeId,
           toStoreId: null,
           customerId: null,
@@ -246,7 +245,6 @@ class StockCubit extends Cubit<StockState> {
           userId: userInfo['userId']!,
           remarks: remarks,
           productName: stock.name ?? '',
-
         );
         await transactionService.addTransaction(transaction);
       }
@@ -281,7 +279,7 @@ class StockCubit extends Cubit<StockState> {
 
       final existingStock = await stockService.getStock(targetStoreId);
       final existingTargetStock = existingStock.firstWhere(
-        (item) => item.productId == stock.productId,
+            (item) => item.productId == stock.productId,
         orElse: () => StockModel(
           id: '${stock.productId}_$targetStoreId',
           productId: stock.productId,
@@ -312,7 +310,7 @@ class StockCubit extends Cubit<StockState> {
         categoryId: stock.categoryId ?? existingTargetStock.categoryId,
         subcategoryId: stock.subcategoryId ?? existingTargetStock.subcategoryId,
         subcategoryName:
-            stock.subcategoryName ?? existingTargetStock.subcategoryName,
+        stock.subcategoryName ?? existingTargetStock.subcategoryName,
         tax: stock.tax ?? existingTargetStock.tax,
       );
 
@@ -338,7 +336,6 @@ class StockCubit extends Cubit<StockState> {
         userId: userInfo['userId']!,
         remarks: remarks,
         productName: stock.name ?? '',
-
       );
       await transactionService.addTransaction(outTransaction);
 
@@ -355,7 +352,6 @@ class StockCubit extends Cubit<StockState> {
         userId: userInfo['userId']!,
         remarks: remarks,
         productName: stock.name ?? '',
-
       );
       await transactionService.addTransaction(receivedTransaction);
 
@@ -365,6 +361,142 @@ class StockCubit extends Cubit<StockState> {
     }
   }
 
+  Future<void> generateBill(
+      StockModel stock,
+      int quantity,
+      String customerId,
+      {String? remarks, bool isReturn = false}) async {
+    emit(StockLoading());
+    try {
+      final stockItems = await stockService.getStock(stock.storeId);
+      final existingStock = stockItems.firstWhere(
+            (item) => item.id == stock.id,
+        orElse: () => stock,
+      );
+
+      final updatedQuantity = isReturn
+          ? existingStock.quantity + quantity
+          : existingStock.quantity - quantity;
+
+      if (!isReturn && quantity > existingStock.quantity) {
+        throw Exception('Quantity to bill exceeds available stock');
+      }
+
+      final updatedStock = StockModel(
+        id: existingStock.id,
+        productId: existingStock.productId,
+        storeId: existingStock.storeId,
+        quantity: updatedQuantity,
+        lastUpdated: DateTime.now(),
+        name: existingStock.name,
+        price: existingStock.price,
+        stock: null,
+        category: existingStock.category,
+        categoryId: existingStock.categoryId,
+        subcategoryId: existingStock.subcategoryId,
+        subcategoryName: existingStock.subcategoryName,
+        tax: existingStock.tax,
+      );
+      await stockService.updateStock(updatedStock);
+
+      final userInfo = await _getCurrentUserInfo();
+      final billTransaction = TransactionModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        type: isReturn ? 'return' : 'bill',
+        productId: stock.productId,
+        quantity: quantity,
+        fromStoreId: stock.storeId,
+        toStoreId: null,
+        customerId: customerId,
+        timestamp: DateTime.now(),
+        userName: userInfo['userName']!,
+        userId: userInfo['userId']!,
+        remarks: remarks,
+        productName: stock.name ?? '',
+      );
+
+      await transactionService.addTransaction(billTransaction);
+
+      await fetchStock(stock.storeId);
+    } catch (e) {
+      emit(StockError(e.toString()));
+    }
+  }
+// In StockCubit class
+  Future<void> addStockBatch(List<StockModel> stocks, {List<Product>? products, String? remarks}) async {
+    emit(StockLoading());
+    try {
+      final userInfo = await _getCurrentUserInfo();
+      final storeId = stocks.isNotEmpty ? stocks.first.storeId : '';
+
+      for (int i = 0; i < stocks.length; i++) {
+        final stock = stocks[i];
+        final product = products != null && i < products.length ? products[i] : null;
+
+        final existingStocks = await stockService.getStock(stock.storeId);
+        final existingStock = existingStocks.firstWhere(
+              (item) => item.productId == stock.productId,
+          orElse: () => StockModel(
+            id: '${stock.productId}_${stock.storeId}',
+            productId: stock.productId,
+            storeId: stock.storeId,
+            quantity: 0,
+            lastUpdated: DateTime.now(),
+            name: product?.name,
+            price: product?.price,
+            stock: null,
+            category: product?.category,
+            categoryId: product?.categoryId,
+            subcategoryId: product?.subcategoryId,
+            subcategoryName: product?.subcategoryName,
+            tax: product?.tax,
+          ),
+        );
+
+        final updatedStock = StockModel(
+          id: existingStock.id,
+          productId: existingStock.productId,
+          storeId: existingStock.storeId,
+          quantity: existingStock.quantity + stock.quantity,
+          lastUpdated: DateTime.now(),
+          name: product?.name ?? existingStock.name,
+          price: product?.price ?? existingStock.price,
+          stock: null,
+          category: product?.category ?? existingStock.category,
+          categoryId: product?.categoryId ?? existingStock.categoryId,
+          subcategoryId: product?.subcategoryId ?? existingStock.subcategoryId,
+          subcategoryName: product?.subcategoryName ?? existingStock.subcategoryName,
+          tax: product?.tax ?? existingStock.tax,
+        );
+
+        if (existingStock.quantity == 0) {
+          await stockService.addStock(updatedStock);
+        } else {
+          await stockService.updateStock(updatedStock);
+        }
+
+        final transaction = TransactionModel(
+          id: DateTime.now().millisecondsSinceEpoch.toString() + '_$i',
+          type: 'add',
+          productId: stock.productId,
+          quantity: stock.quantity,
+          fromStoreId: stock.storeId,
+          toStoreId: null,
+          customerId: null,
+          timestamp: DateTime.now(),
+          userName: userInfo['userName']!,
+          userId: userInfo['userId']!,
+          remarks: remarks,
+          productName: stock.name ?? '',
+        );
+        await transactionService.addTransaction(transaction);
+      }
+
+      await fetchStock(storeId);
+    } catch (e) {
+      emit(StockError(e.toString()));
+    }
+  }
   Future<void> addStore(StoreDto store) async {
     emit(StockLoading());
     try {
@@ -373,5 +505,11 @@ class StockCubit extends Cubit<StockState> {
     } catch (e) {
       emit(StockError(e.toString()));
     }
+  }
+  double calculateStockValue(List<StockModel> stockItems) {
+    return stockItems.fold(0.0, (sum, item) {
+      final price = item.price ?? 0.0;
+      return sum + (price * item.quantity);
+    });
   }
 }

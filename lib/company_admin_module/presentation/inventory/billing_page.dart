@@ -1,6 +1,8 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart' show DateFormat;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:requirment_gathering_app/company_admin_module/data/inventory/stock_model.dart';
@@ -16,10 +18,12 @@ import 'package:requirment_gathering_app/core_module/service_locator/service_loc
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/custom_loading_dialog.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
+import 'package:requirment_gathering_app/super_admin_module/presentation/add_tenant_company/add_tenant_company_cubit.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_cubit.dart';
 import 'package:requirment_gathering_app/user_module/cart/services/iorder_service.dart';
+import 'package:workmanager/workmanager.dart' show Workmanager;
 
 @RoutePage()
 class BillingPage extends StatefulWidget {
@@ -41,7 +45,6 @@ class _BillingPageState extends State<BillingPage> {
   String? _selectedStoreId;
   String _selectedStatus = 'pending';
   UserInfo? _selectedCustomer;
-  String? _newCustomerLedgerId;
   final List<String> _statuses = [
     'pending',
     'processing',
@@ -49,541 +52,13 @@ class _BillingPageState extends State<BillingPage> {
     'completed'
   ];
   bool _isLoading = false;
-  String? _selectedBillType = 'Cash'; // Added bill type
+  String? _selectedBillType = 'Cash';
+  String? _existingBillNumber;
+  String? _selectedReturnMethod = 'Credit';
+  double? _discount;
 
   final StockCubit _stockCubit = sl<StockCubit>();
   final AdminOrderCubit _adminOrderCubit = sl<AdminOrderCubit>();
-
-  Widget _buildSelectionButtons(List<StockModel> products, List<StoreDto> stores) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _buildSelectionButton(
-          icon: Icons.person,
-          label: _selectedCustomer?.name ??
-              _selectedCustomer?.userName ??
-              'Select Customer',
-          onPressed: _showCustomerSelectionDialog,
-          hasError: _selectedCustomer == null,
-        ),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Expanded(
-              child: _buildSelectionButton(
-                icon: Icons.store,
-                label: _selectedStoreId != null
-                    ? stores
-                    .firstWhere(
-                        (store) => store.storeId == _selectedStoreId,
-                    orElse: () => StoreDto(
-                        name: 'Unknown',
-                        storeId: '',
-                        createdBy: '',
-                        createdAt: DateTime.now()))
-                    .name
-                    : 'Select Store',
-                onPressed: () => _showStoreSelectionDialog(stores),
-                hasError: _selectedStoreId == null,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _buildSelectionButton(
-                icon: Icons.inventory,
-                label: 'Add Products',
-                onPressed: () => _showProductSelectionDialog(products),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: DropdownButtonFormField<String>(
-              decoration: InputDecoration(
-                labelText: 'Bill Type',
-                labelStyle: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.black87),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none),
-                filled: true,
-                fillColor: Colors.grey[50],
-                contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              ),
-              value: _selectedBillType,
-              items: ['Cash', 'Credit'].map((type) {
-                return DropdownMenuItem(
-                  value: type,
-                  child: Text(type),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedBillType = value ?? 'Cash';
-                });
-              },
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _showCustomerSelectionDialog() async {
-    final userServices = sl<UserServices>();
-    final addUserCubit = sl<AddUserCubit>();
-    try {
-      final users = await userServices.getUsersFromTenantCompany();
-      final customerUsers =
-      users.where((u) => u.userType == UserType.Customer).toList();
-      showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        builder: (context) => MultiBlocProvider(
-          providers: [
-            BlocProvider.value(value: addUserCubit),
-          ],
-          child: DraggableScrollableSheet(
-            initialChildSize: 0.9,
-            minChildSize: 0.5,
-            maxChildSize: 0.9,
-            expand: false,
-            builder: (context, scrollController) => Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Select or Add Customer',
-                        style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: AppColors.primary),
-                        onPressed: () => Navigator.of(context).pop(),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: TextField(
-                    controller: _customerNameController,
-                    decoration: InputDecoration(
-                      labelText: 'New Customer Name',
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                      errorText: _customerNameController.text.isEmpty &&
-                          customerUsers.isEmpty
-                          ? 'Name is required'
-                          : null,
-                    ),
-                  ),
-                ),
-                BlocListener<AddUserCubit, AddUserState>(
-                  listener: (context, state) {
-                    if (state is AddUserSuccess) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Customer added successfully')),
-                      );
-                      setState(() {
-                        _isLoading = false;
-                      });
-                      Navigator.of(context).pop();
-                    } else if (state is AddUserFailure) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(state.error)),
-                      );
-                      setState(() {
-                        _isLoading = false;
-                      });
-                    }
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        if (_customerNameController.text.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Customer name is required')),
-                          );
-                          return;
-                        }
-                        setState(() => _isLoading = true);
-                        try {
-                          final companyId =
-                              (await sl<AccountRepository>().getUserInfo())
-                                  ?.companyId;
-                          final userInfo = UserInfo(
-                            name: _customerNameController.text.trim(),
-                            userType: UserType.Customer,
-                            companyId: companyId,
-                          );
-                          await addUserCubit.addUser(userInfo, '');
-                          final users =
-                          await userServices.getUsersFromTenantCompany();
-                          final newCustomer = users.firstWhere(
-                                (u) => u.name == userInfo.name,
-                            orElse: () => userInfo.copyWith(
-                                userId: DateTime.now()
-                                    .millisecondsSinceEpoch
-                                    .toString()),
-                          );
-                          setState(() {
-                            _selectedCustomer = newCustomer;
-                            _newCustomerLedgerId = newCustomer.accountLedgerId;
-                            _customerNameController.clear();
-                          });
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Failed to add customer: $e')),
-                          );
-                          setState(() => _isLoading = false);
-                        }
-                      },
-                      child: const Text('Add New Customer'),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: customerUsers.isEmpty
-                      ? const Center(child: Text('No customers available'))
-                      : ListView.builder(
-                    controller: scrollController,
-                    itemCount: customerUsers.length,
-                    itemBuilder: (context, index) {
-                      final user = customerUsers[index];
-                      return ListTile(
-                        title: Text(
-                          user.name ?? user.userName ?? 'Unknown',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text('ID: ${user.userId}'),
-                        onTap: () {
-                          setState(() {
-                            _selectedCustomer = user;
-                            _newCustomerLedgerId = user.accountLedgerId;
-                          });
-                          Navigator.of(context).pop();
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to fetch customers: $e')),
-      );
-    }
-  }
-
-  Future<void> _generateBill() async {
-    if (_cartItems.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cart is empty')),
-      );
-      return;
-    }
-    if (_selectedStoreId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a store')),
-      );
-      return;
-    }
-    if (_selectedCustomer == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a customer')),
-      );
-      return;
-    }
-    if (_selectedBillType == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a bill type')),
-      );
-      return;
-    }
-
-    setState(() => _isLoading = true);
-    try {
-      final orderService = sl<IOrderService>();
-      final ledgerCubit = sl<UserLedgerCubit>();
-      final userId = (await sl<AccountRepository>().getUserInfo())?.userId;
-      if (userId == null) {
-        throw Exception('User ID not found');
-      }
-
-      final stockState = _stockCubit.state;
-      if (stockState is StockLoaded) {
-        for (var item in _cartItems) {
-          final stock = stockState.stockItems.firstWhere(
-                (stock) =>
-            stock.productId == item.productId &&
-                stock.storeId == _selectedStoreId,
-            orElse: () => StockModel(
-              id: '${item.productId}_$_selectedStoreId',
-              productId: item.productId,
-              storeId: _selectedStoreId!,
-              quantity: 0,
-              lastUpdated: DateTime.now(),
-            ),
-          );
-          if (stock.quantity < item.quantity) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                  content: Text('Insufficient stock for ${item.productName}')),
-            );
-            setState(() => _isLoading = false);
-            return;
-          }
-        }
-
-        for (var item in _cartItems) {
-          final stock = stockState.stockItems.firstWhere(
-                (stock) =>
-            stock.productId == item.productId &&
-                stock.storeId == _selectedStoreId,
-          );
-          await _stockCubit.subtractStock(
-            stock,
-            item.quantity,
-            remarks:
-            'Stock deducted for bill generation (Order: ${widget.orderId ?? 'New'})',
-          );
-        }
-      } else if (stockState is StockError) {
-        throw Exception(stockState.error);
-      } else {
-        throw Exception('Stock data not loaded');
-      }
-
-      final totalAmount = _cartItems.fold<double>(
-        0.0,
-            (sum, item) => sum + (item.price * item.quantity) + item.taxAmount,
-      );
-
-      final billNumber = 'BILL-${DateTime.now().millisecondsSinceEpoch}';
-      Order order;
-      if (widget.orderId == null) {
-        order = Order(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          userId: _selectedCustomer!.userId!,
-          userName: _selectedCustomer!.name ??
-              _selectedCustomer!.userName ??
-              'Unknown',
-          items: _cartItems,
-          totalAmount: totalAmount,
-          status: _selectedStatus,
-          orderDate: DateTime.now(),
-          orderTakenBy: userId,
-          storeId: _selectedStoreId,
-          lastUpdatedBy: userId,
-          billNumber: billNumber,
-        );
-        await orderService.placeOrder(order);
-      } else {
-        order = Order(
-          id: widget.orderId!,
-          userId: _selectedCustomer!.userId!,
-          userName: _selectedCustomer!.name ??
-              _selectedCustomer!.userName ??
-              'Unknown',
-          items: _cartItems,
-          totalAmount: totalAmount,
-          status: _selectedStatus,
-          orderDate: DateTime.now(),
-          orderTakenBy: userId,
-          storeId: _selectedStoreId,
-          lastUpdatedBy: userId,
-          billNumber: billNumber,
-        );
-        await orderService.updateOrderStatus(widget.orderId!, _selectedStatus);
-        await orderService.updateOrder(order);
-      }
-
-      // Ledger entry logic (only if ledgerId exists)
-      final ledgerId = _selectedCustomer!.accountLedgerId;
-      if (ledgerId != null) {
-        // Debit entry for both Cash and Credit
-        await ledgerCubit.addTransaction(
-          ledgerId: ledgerId,
-          amount: totalAmount,
-          type: 'Debit',
-          billNumber: billNumber,
-          purpose: 'Purchase',
-          typeOfPurpose: _selectedBillType,
-          remarks: 'Bill generated for order ${order.id}',
-          userType: UserType.Customer,
-        );
-
-        // Credit entry for Cash only
-        if (_selectedBillType == 'Cash') {
-          await ledgerCubit.addTransaction(
-            ledgerId: ledgerId,
-            amount: totalAmount,
-            type: 'Credit',
-            billNumber: billNumber,
-            purpose: 'Payment',
-            typeOfPurpose: 'Cash',
-            remarks: 'Payment received for bill $billNumber',
-            userType: UserType.Customer,
-          );
-        }
-      } else {
-        print('No ledger ID found for customer: ${_selectedCustomer!.name}, skipping ledger entries');
-      }
-
-      final pdf = await _generatePdf(order);
-
-      await sl<Coordinator>()
-          .navigateToBillPdfPage(pdf: pdf, billNumber: billNumber);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bill generated successfully')),
-      );
-    } catch (e) {
-      print('Error in generateBill: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to generate bill: $e')),
-      );
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-  Widget _buildGenerateBillButton() {
-    return ElevatedButton(
-      onPressed: _generateBill,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        minimumSize: const Size(double.infinity, 50),
-      ),
-      child: const Text('Generate Bill'),
-    );
-  }
-
-  Widget _buildStatusSelector() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: DropdownButtonFormField<String>(
-          decoration: InputDecoration(
-            labelText: 'Order Status',
-            labelStyle: const TextStyle(
-                fontWeight: FontWeight.bold, color: Colors.black87),
-            border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none),
-            filled: true,
-            fillColor: Colors.grey[50],
-            contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            errorStyle: const TextStyle(color: Colors.red),
-          ),
-          value: _selectedStatus,
-          items: _statuses.map((status) {
-            return DropdownMenuItem(
-                value: status, child: Text(status.capitalize()));
-          }).toList(),
-          onChanged: (value) {
-            setState(() {
-              _selectedStatus = value ?? 'pending';
-            });
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCart() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Cart',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            if (_cartItems.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
-                  'No items in cart',
-                  style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
-                ),
-              )
-            else
-              ..._cartItems.asMap().entries.map((entry) {
-                final index = entry.key;
-                final item = entry.value;
-                return ListTile(
-                  contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  title: Text(item.productName,
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text(
-                    'Price: ₹${item.price.toStringAsFixed(2)} | Quantity: ${item.quantity} | Tax: ₹${item.taxAmount.toStringAsFixed(2)}',
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.remove, color: AppColors.primary),
-                        onPressed: () => _updateQuantity(item.productId, -1),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.add, color: AppColors.primary),
-                        onPressed: () => _updateQuantity(item.productId, 1),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-            const SizedBox(height: 8),
-            Text(
-              'Total: ₹${_cartItems.fold<double>(0.0, (sum, item) => sum + (item.price * item.quantity) + item.taxAmount).toStringAsFixed(2)}',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-
-
-
-
 
   @override
   void initState() {
@@ -637,18 +112,14 @@ class _BillingPageState extends State<BillingPage> {
     }
   }
 
-  void _searchProducts(String query, List<StockModel> products) {
-    setState(() {
-      _filteredProducts = query.isEmpty
-          ? products
-          : products.where((product) {
-              final name = product.name?.toLowerCase() ?? '';
-              return name.contains(query.toLowerCase());
-            }).toList();
-    });
-  }
-
   void _addToCart(StockModel product) {
+    if (_existingBillNumber != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Cannot add new items to an existing bill')),
+      );
+      return;
+    }
     setState(() {
       final existingItem = _cartItems.firstWhere(
         (item) => item.productId == product.productId,
@@ -657,14 +128,14 @@ class _BillingPageState extends State<BillingPage> {
           productName: product.name!,
           price: product.price!,
           quantity: 0,
-          taxRate: product.tax ?? 0.05,
+          taxRate: product.tax ?? 5,
           taxAmount: 0.0,
         ),
       );
       if (!_cartItems.contains(existingItem)) {
         _cartItems.add(existingItem.copyWith(
           quantity: 1,
-          taxAmount: product.price! * 1 * (product.tax ?? 0.05) / 100,
+          taxAmount: product.price! * 1 * (product.tax ?? 5) / 100,
         ));
       } else {
         _cartItems = _cartItems.map((item) {
@@ -685,7 +156,14 @@ class _BillingPageState extends State<BillingPage> {
     setState(() {
       _cartItems = _cartItems.map((item) {
         if (item.productId == productId) {
-          final newQuantity = (item.quantity + change).clamp(0, 100);
+          final newQuantity = (item.quantity + change).clamp(0, 9999999);
+          if (change > 0 && _existingBillNumber != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text('Cannot increase quantity for existing bill')),
+            );
+            return item;
+          }
           return item.copyWith(
             quantity: newQuantity,
             taxAmount: item.price * newQuantity * item.taxRate / 100,
@@ -694,102 +172,3006 @@ class _BillingPageState extends State<BillingPage> {
         return item;
       }).toList();
       _cartItems.removeWhere((item) => item.quantity == 0);
+      if (_cartItems.isEmpty) {
+        _discount = 0.0; // Reset discount when cart is empty
+      }
     });
   }
 
+  Future<void> _showQuantityInputDialog(String productId) async {
+    int quantity = 0;
+    final _formKey = GlobalKey<FormState>();
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: const Text('Set Quantity'),
+          content: Form(
+            key: _formKey,
+            child: TextFormField(
+              decoration: InputDecoration(
+                labelText: 'Enter Quantity',
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                filled: true,
+                fillColor: Colors.grey[100],
+              ),
+              keyboardType: TextInputType.number,
+              maxLength: 7,
+              onChanged: (value) => quantity = int.tryParse(value) ?? 0,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a quantity';
+                }
+                final parsedValue = int.tryParse(value);
+                if (parsedValue == null || parsedValue < 0) {
+                  return 'Please enter a valid quantity';
+                }
+                if (parsedValue > 9999999) {
+                  return 'Quantity cannot exceed 7 digits';
+                }
+                if (_existingBillNumber != null &&
+                    parsedValue >
+                        _cartItems
+                            .firstWhere((item) => item.productId == productId)
+                            .quantity) {
+                  return 'Cannot increase quantity for existing bill';
+                }
+                return null;
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              ),
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  setState(() {
+                    _cartItems = _cartItems.map((item) {
+                      if (item.productId == productId) {
+                        return item.copyWith(
+                          quantity: quantity,
+                          taxAmount: item.price * quantity * item.taxRate / 100,
+                        );
+                      }
+                      return item;
+                    }).toList();
+                    _cartItems.removeWhere((item) => item.quantity == 0);
+                    if (_cartItems.isEmpty) {
+                      _discount = 0.0; // Reset discount when cart is empty
+                    }
+                  });
+                  Navigator.pop(dialogContext);
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<bool> _showReviewDialog(Order order) async {
+    final double subtotal = order.items
+        .fold(0.0, (sum, item) => sum + (item.price * item.quantity));
+    final double totalTax =
+        order.items.fold(0.0, (sum, item) => sum + item.taxAmount);
+    final double total = subtotal + totalTax;
+    List<double> itemDiscounts =
+        order.items.map((item) => item.discountAmount).toList();
+    double additionalDiscount = _discount ?? order.discount ?? 0.0;
+    final TextEditingController discountController = TextEditingController(
+      text: additionalDiscount.toStringAsFixed(2),
+    );
+    final TextEditingController initialPaymentController =
+        TextEditingController(
+      text: _initialPayment?.toStringAsFixed(2) ?? '0.00',
+    );
+
+    // Detect screen width for mobile adjustments
+    final isMobile = MediaQuery.of(context).size.width < 600;
+
+    // Function to show discount input dialog
+    Future<void> _showDiscountDialog(BuildContext dialogContext, int index,
+        CartItem item, StateSetter setState) async {
+      final double perUnitDiscount =
+          item.quantity > 0 ? itemDiscounts[index] / item.quantity : 0.0;
+      final TextEditingController itemDiscountController =
+          TextEditingController(
+        text: perUnitDiscount.toStringAsFixed(2),
+      );
+      String? errorText;
+      final double itemTotalPerUnit =
+          item.price + (item.price * item.taxRate / 100);
+      final double itemTotal = itemTotalPerUnit * item.quantity;
+
+      await showDialog(
+        context: dialogContext,
+        builder: (context) => AlertDialog(
+          title: Text('Edit Discount for ${item.productName}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Unit Price: IQD ${item.price.toStringAsFixed(2)}',
+                style: const TextStyle(
+                    fontSize: 16, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Item Total (Qty × Price + Tax): IQD ${itemTotal.toStringAsFixed(2)}',
+                style: const TextStyle(
+                    fontSize: 16, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: itemDiscountController,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  labelText: 'Discount per Unit (IQD )',
+                  border: const OutlineInputBorder(),
+                  errorText: errorText,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
+                onChanged: (value) {
+                  final discPerUnit = double.tryParse(value) ?? 0.0;
+                  setState(() {
+                    if (discPerUnit < 0) {
+                      errorText = 'Discount cannot be negative';
+                    } else if (discPerUnit > itemTotalPerUnit) {
+                      errorText = 'Discount cannot exceed item total per unit';
+                    } else {
+                      errorText = null;
+                    }
+                  });
+                },
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                '(Total Discount = Quantity × Discount per Unit)',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final discPerUnit =
+                    double.tryParse(itemDiscountController.text) ?? 0.0;
+                if (discPerUnit < 0) {
+                  setState(() {
+                    errorText = 'Discount cannot be negative';
+                  });
+                  return;
+                }
+                if (discPerUnit > itemTotalPerUnit) {
+                  setState(() {
+                    errorText = 'Discount cannot exceed item total per unit';
+                  });
+                  return;
+                }
+                setState(() {
+                  itemDiscounts[index] = discPerUnit * item.quantity;
+                });
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text(
+                'Save',
+                style: TextStyle(color: AppColors.white),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return await showModalBottomSheet<bool>(
+          context: context,
+          isScrollControlled: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          backgroundColor: AppColors.white,
+          builder: (dialogContext) {
+            return StatefulBuilder(
+              builder: (context, setState) => Padding(
+                padding: const EdgeInsets.all(20),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            widget.orderId == null
+                                ? 'Order Summary'
+                                : 'Review Bill',
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.close,
+                              color: AppColors.textSecondary,
+                              size: 24,
+                            ),
+                            onPressed: () =>
+                                Navigator.pop(dialogContext, false),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Order Details',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              color: AppColors.textSecondary.withOpacity(0.3)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Table(
+                          border: TableBorder(
+                            verticalInside: BorderSide(
+                                color:
+                                    AppColors.textSecondary.withOpacity(0.3)),
+                            horizontalInside: BorderSide(
+                                color:
+                                    AppColors.textSecondary.withOpacity(0.3)),
+                          ),
+                          columnWidths: {
+                            0: FlexColumnWidth(isMobile ? 2.5 : 3),
+                            // Product
+                            1: const FlexColumnWidth(1),
+                            // Qty
+                            2: const FlexColumnWidth(1.2),
+                            // Subtotal
+                            3: const FlexColumnWidth(1.2),
+                            // Tax
+                            4: const FlexColumnWidth(1.5),
+                            // Discount (wider for tap target)
+                            5: const FlexColumnWidth(1.2),
+                            // Total
+                          },
+                          children: [
+                            TableRow(
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.05),
+                              ),
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 8,
+                                      horizontal: isMobile ? 8 : 12),
+                                  child: const Text(
+                                    'Product',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 8,
+                                      horizontal: isMobile ? 8 : 12),
+                                  child: const Text(
+                                    'Qty',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 8,
+                                      horizontal: isMobile ? 8 : 12),
+                                  child: const Text(
+                                    'Subtotal',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 8,
+                                      horizontal: isMobile ? 8 : 12),
+                                  child: const Text(
+                                    'Tax',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 8,
+                                      horizontal: isMobile ? 8 : 12),
+                                  child: const Text(
+                                    'Discount',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 8,
+                                      horizontal: isMobile ? 8 : 12),
+                                  child: const Text(
+                                    'Total',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            ...order.items.asMap().entries.map((entry) {
+                              final int index = entry.key;
+                              final item = entry.value;
+                              final double perUnitDiscount = item.quantity > 0
+                                  ? itemDiscounts[index] / item.quantity
+                                  : 0.0;
+                              final String discountText =
+                                  'IQD ${itemDiscounts[index].toStringAsFixed(2)} (${item.quantity} * ${perUnitDiscount.toStringAsFixed(2)})';
+                              return TableRow(
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 8,
+                                        horizontal: isMobile ? 8 : 12),
+                                    child: Text(
+                                      item.productName,
+                                      style: TextStyle(
+                                        fontSize: isMobile ? 14 : 16,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 8,
+                                        horizontal: isMobile ? 8 : 12),
+                                    child: Text(
+                                      '${item.quantity}',
+                                      textAlign: TextAlign.right,
+                                      style: TextStyle(
+                                        fontSize: isMobile ? 14 : 16,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 8,
+                                        horizontal: isMobile ? 8 : 12),
+                                    child: Text(
+                                      'IQD ${(item.price * item.quantity).toStringAsFixed(2)}',
+                                      textAlign: TextAlign.right,
+                                      style: TextStyle(
+                                        fontSize: isMobile ? 14 : 16,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 8,
+                                        horizontal: isMobile ? 8 : 12),
+                                    child: Text(
+                                      'IQD ${item.taxAmount.toStringAsFixed(2)}',
+                                      textAlign: TextAlign.right,
+                                      style: TextStyle(
+                                        fontSize: isMobile ? 14 : 16,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () => _showDiscountDialog(
+                                        dialogContext, index, item, setState),
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          vertical: 8,
+                                          horizontal: isMobile ? 8 : 12),
+                                      color: Colors.transparent,
+                                      // Ensures tap area is full cell
+                                      child: Text(
+                                        discountText,
+                                        textAlign: TextAlign.right,
+                                        style: TextStyle(
+                                          fontSize: isMobile ? 14 : 16,
+                                          color: AppColors.textSecondary,
+                                          decoration: TextDecoration
+                                              .underline, // Visual cue for tappable
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 8,
+                                        horizontal: isMobile ? 8 : 12),
+                                    child: Text(
+                                      'IQD ${((item.price * item.quantity) + item.taxAmount - itemDiscounts[index]).toStringAsFixed(2)}',
+                                      textAlign: TextAlign.right,
+                                      style: TextStyle(
+                                        fontSize: isMobile ? 14 : 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: discountController,
+                        decoration: InputDecoration(
+                          labelText: 'Additional Discount (IQD )',
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: isMobile ? 12 : 16,
+                            vertical: isMobile ? 12 : 16,
+                          ),
+                        ),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
+                        onChanged: (value) {
+                          setState(() {
+                            additionalDiscount = double.tryParse(value) ?? 0.0;
+                          });
+                        },
+                      ),
+                      if (_selectedBillType == 'Credit') ...[
+                        const SizedBox(height: 20),
+                        TextFormField(
+                          controller: initialPaymentController,
+                          decoration: InputDecoration(
+                            labelText: 'Initial Payment (IQD )',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                            filled: true,
+                            fillColor: Colors.grey[100],
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: isMobile ? 12 : 16,
+                              vertical: isMobile ? 12 : 16,
+                            ),
+                            errorText: double.tryParse(
+                                            initialPaymentController.text) !=
+                                        null &&
+                                    double.parse(
+                                            initialPaymentController.text) >
+                                        (total -
+                                            itemDiscounts.fold(0.0,
+                                                (sum, disc) => sum + disc) -
+                                            additionalDiscount)
+                                ? 'Initial payment cannot exceed final total'
+                                : null,
+                          ),
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
+                          onChanged: (value) {
+                            setState(() {
+                              _initialPayment = double.tryParse(value) ?? 0.0;
+                            });
+                          },
+                        ),
+                      ],
+                      const SizedBox(height: 20),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              color: AppColors.textSecondary.withOpacity(0.3)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Table(
+                          border: TableBorder(
+                            verticalInside: BorderSide(
+                                color:
+                                    AppColors.textSecondary.withOpacity(0.3)),
+                            horizontalInside: BorderSide(
+                                color:
+                                    AppColors.textSecondary.withOpacity(0.3)),
+                          ),
+                          columnWidths: const {
+                            0: FlexColumnWidth(3),
+                            1: FlexColumnWidth(2),
+                          },
+                          children: [
+                            TableRow(
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
+                                  child: Text(
+                                    'Subtotal (All Items)',
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 14 : 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
+                                  child: Text(
+                                    'IQD ${subtotal.toStringAsFixed(2)}',
+                                    textAlign: TextAlign.right,
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 14 : 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            TableRow(
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
+                                  child: Text(
+                                    'Total Tax',
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 14 : 16,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
+                                  child: Text(
+                                    'IQD ${totalTax.toStringAsFixed(2)}',
+                                    textAlign: TextAlign.right,
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 14 : 16,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            TableRow(
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
+                                  child: Text(
+                                    'Total',
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 14 : 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
+                                  child: Text(
+                                    'IQD ${total.toStringAsFixed(2)}',
+                                    textAlign: TextAlign.right,
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 14 : 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            TableRow(
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
+                                  child: Text(
+                                    'Item Discounts',
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 14 : 16,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
+                                  child: Text(
+                                    'IQD ${itemDiscounts.fold(0.0, (sum, disc) => sum + disc).toStringAsFixed(2)}',
+                                    textAlign: TextAlign.right,
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 14 : 16,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            TableRow(
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
+                                  child: Text(
+                                    'Additional Discount',
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 14 : 16,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
+                                  child: Text(
+                                    'IQD ${additionalDiscount.toStringAsFixed(2)}',
+                                    textAlign: TextAlign.right,
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 14 : 16,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            TableRow(
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.05),
+                                borderRadius: const BorderRadius.only(
+                                  bottomLeft: Radius.circular(12),
+                                  bottomRight: Radius.circular(12),
+                                ),
+                              ),
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
+                                  child: Text(
+                                    'Final Total',
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 16 : 18,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
+                                  child: Text(
+                                    'IQD ${(total - itemDiscounts.fold(0.0, (sum, disc) => sum + disc) - additionalDiscount).toStringAsFixed(2)}',
+                                    textAlign: TextAlign.right,
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 16 : 18,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            final sumItemDisc = itemDiscounts.fold(
+                                0.0, (sum, disc) => sum + disc);
+                            final finalTotal =
+                                total - sumItemDisc - additionalDiscount;
+
+                            // Validate item discounts
+                            for (int i = 0; i < order.items.length; i++) {
+                              final item = order.items[i];
+                              final itemTotal =
+                                  item.price * item.quantity + item.taxAmount;
+                              if (itemDiscounts[i] < 0) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        'Item discount cannot be negative'),
+                                    backgroundColor: AppColors.red,
+                                    behavior: SnackBarBehavior.floating,
+                                    margin: EdgeInsets.all(16),
+                                  ),
+                                );
+                                return;
+                              }
+                              if (itemDiscounts[i] > itemTotal) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        'Discount for ${item.productName} cannot exceed item total'),
+                                    backgroundColor: AppColors.red,
+                                    behavior: SnackBarBehavior.floating,
+                                    margin: const EdgeInsets.all(16),
+                                  ),
+                                );
+                                return;
+                              }
+                            }
+                            // Validate additional discount
+                            if (additionalDiscount < 0) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Invalid additional discount'),
+                                  backgroundColor: AppColors.red,
+                                  behavior: SnackBarBehavior.floating,
+                                  margin: EdgeInsets.all(16),
+                                ),
+                              );
+                              return;
+                            }
+                            final totalAfterItemDisc = total - sumItemDisc;
+                            if (additionalDiscount > totalAfterItemDisc) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      'Additional discount cannot exceed total after item discounts'),
+                                  backgroundColor: AppColors.red,
+                                  behavior: SnackBarBehavior.floating,
+                                  margin: EdgeInsets.all(16),
+                                ),
+                              );
+                              return;
+                            }
+                            // Validate initial payment
+                            if (_selectedBillType == 'Credit') {
+                              final initialPayment = double.tryParse(
+                                      initialPaymentController.text) ??
+                                  0.0;
+                              if (initialPayment < 0) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        'Initial payment cannot be negative'),
+                                    backgroundColor: AppColors.red,
+                                    behavior: SnackBarBehavior.floating,
+                                    margin: EdgeInsets.all(16),
+                                  ),
+                                );
+                                return;
+                              }
+                              if (initialPayment > finalTotal) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        'Initial payment cannot exceed final total'),
+                                    backgroundColor: AppColors.red,
+                                    behavior: SnackBarBehavior.floating,
+                                    margin: EdgeInsets.all(16),
+                                  ),
+                                );
+                                return;
+                              }
+                              _initialPayment = initialPayment;
+                            }
+                            // Update cart items with discounts
+                            setState(() {
+                              _cartItems =
+                                  order.items.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final item = entry.value;
+                                final discount = itemDiscounts[index];
+                                final itemTotal =
+                                    item.price * item.quantity + item.taxAmount;
+                                final discountPercentage = itemTotal > 0
+                                    ? (discount / itemTotal) * 100
+                                    : 0.0;
+                                return item.copyWith(
+                                  discountAmount: discount,
+                                  discountPercentage: discountPercentage,
+                                );
+                              }).toList();
+                              _discount =
+                                  additionalDiscount; // Store only additional discount
+                            });
+                            Navigator.pop(dialogContext, true);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                          child: const Text(
+                            'Confirm',
+                            style: TextStyle(
+                              color: AppColors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ) ??
+        false;
+  }
+
+  Widget _buildSelectionButtons(
+      List<StockModel> products, List<StoreDto> stores) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildSelectionButton(
+          icon: Icons.person,
+          label: _selectedCustomer?.name ??
+              _selectedCustomer?.userName ??
+              'Select Customer',
+          onPressed: _showCustomerSelectionDialog,
+          hasError: _selectedCustomer == null,
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Expanded(
+              child: _buildSelectionButton(
+                icon: Icons.store,
+                label: _selectedStoreId != null
+                    ? stores
+                        .firstWhere(
+                          (store) => store.storeId == _selectedStoreId,
+                          orElse: () => StoreDto(
+                            name: 'Unknown',
+                            storeId: '',
+                            createdBy: '',
+                            createdAt: DateTime.now(),
+                          ),
+                        )
+                        .name
+                    : 'Select Store',
+                onPressed: () => _showStoreSelectionDialog(stores),
+                hasError: _selectedStoreId == null,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildSelectionButton(
+                icon: Icons.inventory,
+                label: 'Add Products',
+                onPressed: () => _showProductSelectionDialog(products),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Card(
+          elevation: 4,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: DropdownButtonFormField<String>(
+              decoration: InputDecoration(
+                labelText: 'Bill Type',
+                labelStyle: const TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.black87),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none),
+                filled: true,
+                fillColor: Colors.grey[50],
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              ),
+              value: _selectedBillType,
+              items: ['Cash', 'Credit'].map((type) {
+                return DropdownMenuItem(
+                  value: type,
+                  child: Text(type),
+                );
+              }).toList(),
+              onChanged: _existingBillNumber == null
+                  ? (value) {
+                      setState(() {
+                        _selectedBillType = value ?? 'Cash';
+                      });
+                    }
+                  : null,
+            ),
+          ),
+        ),
+        if (_existingBillNumber != null && _selectedBillType == 'Cash') ...[
+          const SizedBox(height: 8),
+          Card(
+            elevation: 4,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: DropdownButtonFormField<String>(
+                decoration: InputDecoration(
+                  labelText: 'Return Method',
+                  labelStyle: const TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.black87),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none),
+                  filled: true,
+                  fillColor: Colors.grey[50],
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
+                value: _selectedReturnMethod,
+                items: ['Cash', 'Credit'].map((method) {
+                  return DropdownMenuItem(
+                    value: method,
+                    child: Text(method),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedReturnMethod = value ?? 'Credit';
+                  });
+                },
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  double? _initialPayment;
+  final TextEditingController _initialPaymentController =
+      TextEditingController();
+  Future<void> _generateBill() async {
+    if (_cartItems.isEmpty && _existingBillNumber == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Cart is empty')),
+      );
+      return;
+    }
+    if (_selectedStoreId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a store')),
+      );
+      return;
+    }
+    if (_selectedCustomer == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a customer')),
+      );
+      return;
+    }
+    if (_selectedBillType == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a bill type')),
+      );
+      return;
+    }
+
+    final double subtotal =
+    _cartItems.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
+    final double totalTax =
+    _cartItems.fold(0.0, (sum, item) => sum + item.taxAmount);
+    final double totalItemDiscount =
+    _cartItems.fold(0.0, (sum, item) => sum + item.discountAmount);
+    final double additionalDiscount = _discount ?? 0.0;
+    final double finalDiscount = totalItemDiscount + additionalDiscount;
+    final double totalAmount = subtotal + totalTax - finalDiscount;
+
+    // Handle initial payment validation and bill type adjustment
+    double initialPayment = 0.0;
+    String adjustedBillType = _selectedBillType ?? 'Cash';
+    if (_selectedBillType == 'Credit') {
+      initialPayment = double.tryParse(_initialPaymentController.text) ?? 0.0;
+      if (initialPayment < 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Initial payment cannot be negative')),
+        );
+        return;
+      }
+      if (initialPayment > totalAmount) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Initial payment cannot exceed total amount')),
+        );
+        return;
+      }
+      // If initial payment equals total amount, treat as Cash bill
+      if (initialPayment == totalAmount) {
+        adjustedBillType = 'Cash';
+        _initialPayment = totalAmount;
+      } else {
+        _initialPayment = initialPayment;
+      }
+    } else {
+      _initialPayment = totalAmount; // For Cash bills, initial payment is total
+    }
+
+    if (_discount == null && widget.orderId == null) {
+      _discount = 0.0;
+    }
+
+    final userInfo = await sl<AccountRepository>().getUserInfo();
+    final userId = userInfo?.userId;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User ID not found')),
+      );
+      return;
+    }
+
+    final customerLedgerId = _selectedCustomer!.accountLedgerId;
+    if (customerLedgerId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Customer ledger ID not found')),
+      );
+      return;
+    }
+
+    // Generate new invoice number for new bills
+    final billNumber = _existingBillNumber ??
+        await sl<IOrderService>()
+            .getNextInvoiceNumber(userInfo?.companyId ?? '');
+
+    // Create a temporary Order object for review dialog
+    Order tempOrder = Order(
+      id: widget.orderId ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      userId: _selectedCustomer!.userId!,
+      userName:
+      _selectedCustomer!.name ?? _selectedCustomer!.userName ?? 'Unknown',
+      items: _cartItems,
+      totalAmount: totalAmount,
+      status: _selectedStatus,
+      orderDate: DateTime.now(),
+      orderTakenBy: userId,
+      storeId: _selectedStoreId,
+      lastUpdatedBy: userId,
+      billNumber: billNumber,
+      discount: _discount,
+      invoiceLastUpdatedBy: userId,
+      invoiceGeneratedDate: DateTime.now(),
+      invoiceType: adjustedBillType, // Use adjusted bill type
+      paymentStatus: adjustedBillType == 'Cash'
+          ? 'Paid'
+          : (_initialPayment! > 0 ? 'Partial Paid' : 'Not Paid'),
+      amountReceived: adjustedBillType == 'Cash' ? totalAmount : _initialPayment,
+      paymentDetails: [
+        if (_initialPayment! > 0)
+          {
+            'date': DateTime.now(),
+            'amount': _initialPayment,
+            'method': 'Cash',
+          },
+      ],
+      slipNumber: null,
+      customerLedgerId: customerLedgerId,
+    );
+
+    final bool confirmed = await _showReviewDialog(tempOrder);
+    if (!confirmed) {
+      return;
+    }
+
+    // After review dialog, update calculations with any changes from dialog
+    final updatedSubtotal =
+    _cartItems.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
+    final updatedTotalTax =
+    _cartItems.fold(0.0, (sum, item) => sum + item.taxAmount);
+    final updatedTotalItemDiscount =
+    _cartItems.fold(0.0, (sum, item) => sum + item.discountAmount);
+    final updatedFinalDiscount = updatedTotalItemDiscount + (_discount ?? 0.0);
+    final updatedTotalAmount =
+        updatedSubtotal + updatedTotalTax - updatedFinalDiscount;
+
+    // Recalculate bill type and payment status after review dialog
+    if (adjustedBillType == 'Credit' && _initialPayment == updatedTotalAmount) {
+      adjustedBillType = 'Cash';
+      _initialPayment = updatedTotalAmount;
+    }
+
+    // Create final Order object with updated payment details
+    final order = tempOrder.copyWith(
+      items: _cartItems,
+      totalAmount: updatedTotalAmount,
+      discount: _discount,
+      invoiceType: adjustedBillType, // Use adjusted bill type
+      paymentStatus: adjustedBillType == 'Cash'
+          ? 'Paid'
+          : (_initialPayment! > 0 ? 'Partial Paid' : 'Not Paid'),
+      amountReceived:
+      adjustedBillType == 'Cash' ? updatedTotalAmount : _initialPayment,
+      paymentDetails: [
+        if (_initialPayment! > 0)
+          {
+            'date': DateTime.now(),
+            'amount': _initialPayment,
+            'method': 'Cash',
+          },
+      ],
+    );
+
+    setState(() => _isLoading = true);
+    try {
+      final orderService = sl<IOrderService>();
+      final ledgerCubit = sl<UserLedgerCubit>();
+
+      final stores =
+      await sl<StockRepository>().getStores(userInfo?.companyId ?? '');
+      final store = stores.firstWhere(
+            (store) => store.storeId == _selectedStoreId,
+        orElse: () => StoreDto(
+          storeId: _selectedStoreId!,
+          name: 'Unknown',
+          createdBy: '',
+          createdAt: DateTime.now(),
+          accountLedgerId: null,
+        ),
+      );
+      final storeLedgerId = store.accountLedgerId;
+      if (storeLedgerId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Store ledger ID not found')),
+        );
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      Order? existingInvoice;
+      try {
+        existingInvoice = await orderService.getInvoiceById(order.id);
+      } catch (e) {
+        existingInvoice = null;
+      }
+
+      Order? originalOrder;
+      double returnAmount = 0.0;
+      final Map<String, int> returnQuantities = {};
+
+      if (_existingBillNumber == null) {
+        if (_stockCubit.state is! StockLoaded) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Stock data not loaded')),
+          );
+          setState(() => _isLoading = false);
+          return;
+        }
+
+        for (var item in _cartItems) {
+          final stock = (_stockCubit.state as StockLoaded).stockItems.firstWhere(
+                (stock) =>
+            stock.productId == item.productId &&
+                stock.storeId == _selectedStoreId,
+            orElse: () => StockModel(
+              id: '${item.productId}_$_selectedStoreId',
+              productId: item.productId,
+              storeId: _selectedStoreId!,
+              quantity: 0,
+              lastUpdated: DateTime.now(),
+            ),
+          );
+          if (stock.quantity < item.quantity) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text('Insufficient stock for ${item.productName}')),
+            );
+            setState(() => _isLoading = false);
+            return;
+          }
+        }
+      } else if (widget.orderId != null) {
+        originalOrder = (await orderService.getOrderById(widget.orderId!))!;
+        returnAmount = originalOrder.totalAmount - updatedTotalAmount;
+
+        final processedProductIds = <String>{};
+        for (var item in originalOrder.items) {
+          if (processedProductIds.contains(item.productId)) continue;
+          processedProductIds.add(item.productId);
+
+          final currentItem = _cartItems.firstWhere(
+                (i) => i.productId == item.productId,
+            orElse: () => item.copyWith(quantity: 0),
+          );
+          final returnQuantity = item.quantity - currentItem.quantity;
+          if (returnQuantity > 0) {
+            final stock = _stockCubit.state is StockLoaded
+                ? (_stockCubit.state as StockLoaded).stockItems.firstWhere(
+                  (stock) =>
+              stock.productId == item.productId &&
+                  stock.storeId == _selectedStoreId,
+              orElse: () => StockModel(
+                id: '${item.productId}_$_selectedStoreId',
+                productId: item.productId,
+                storeId: _selectedStoreId!,
+                quantity: 0,
+                lastUpdated: DateTime.now(),
+              ),
+            )
+                : null;
+            if (stock == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content:
+                    Text('Stock data not found for ${item.productName}')),
+              );
+              setState(() => _isLoading = false);
+              return;
+            }
+            returnQuantities[item.productId] = returnQuantity;
+          }
+        }
+      }
+
+      final pdf = await _generatePdf(order);
+      await sl<Coordinator>()
+          .navigateToBillPdfPage(pdf: pdf, billNumber: billNumber);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_existingBillNumber == null
+              ? 'Bill generated successfully'
+              : 'Bill updated successfully'),
+        ),
+      );
+
+      await _saveDataInBackground(
+        order: order,
+        originalOrder: originalOrder,
+        existingInvoice: existingInvoice,
+        storeLedgerId: storeLedgerId,
+        customerLedgerId: customerLedgerId,
+        returnAmount: returnAmount,
+        returnQuantities: returnQuantities,
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to process bill: $e')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+
+  Future<void> _saveDataInBackground({
+    required Order order,
+    required Order? originalOrder,
+    required Order? existingInvoice,
+    required String storeLedgerId,
+    required String customerLedgerId,
+    required double returnAmount,
+    required Map<String, int> returnQuantities,
+  }) async {
+    Future<void>(() async {
+      try {
+        final orderService = sl<IOrderService>();
+        final ledgerCubit = sl<UserLedgerCubit>();
+
+        if (_existingBillNumber == null) {
+          // New bill saves
+          for (var item in _cartItems) {
+            final stock =
+                (_stockCubit.state as StockLoaded).stockItems.firstWhere(
+                      (stock) =>
+                          stock.productId == item.productId &&
+                          stock.storeId == _selectedStoreId,
+                      orElse: () => StockModel(
+                        id: '${item.productId}_$_selectedStoreId',
+                        productId: item.productId,
+                        storeId: _selectedStoreId!,
+                        quantity: 0,
+                        lastUpdated: DateTime.now(),
+                      ),
+                    );
+            await _stockCubit.generateBill(
+              stock,
+              item.quantity,
+              _selectedCustomer!.userId!,
+              remarks:
+                  'Bill generated for $_selectedBillType sale (Order: ${order.id})',
+            );
+          }
+
+          await ledgerCubit.addTransaction(
+            ledgerId: customerLedgerId,
+            amount: order.totalAmount,
+            type: 'Debit',
+            billNumber: order.billNumber,
+            purpose: 'Purchase',
+            typeOfPurpose: _selectedBillType,
+            remarks:
+                'Bill generated for order ${order.id} with discount ${order.discount?.toStringAsFixed(2) ?? '0.00'}',
+            userType: UserType.Customer,
+          );
+
+          if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
+            final paymentAmount = _selectedBillType == 'Cash'
+                ? order.totalAmount
+                : _initialPayment!;
+            await ledgerCubit.addTransaction(
+              ledgerId: customerLedgerId,
+              amount: paymentAmount,
+              type: 'Credit',
+              billNumber: order.billNumber,
+              purpose: 'Payment',
+              typeOfPurpose: 'Cash',
+              remarks: 'Payment received for bill ${order.billNumber}',
+              userType: UserType.Customer,
+            );
+          }
+
+          await ledgerCubit.addTransaction(
+            ledgerId: storeLedgerId,
+            amount: order.totalAmount,
+            type: 'Credit',
+            billNumber: order.billNumber,
+            purpose: 'Sale',
+            typeOfPurpose: _selectedBillType,
+            remarks:
+                'Sale for bill ${order.billNumber} to customer ${_selectedCustomer!.name ?? 'Unknown'}',
+            userType: UserType.Store,
+          );
+
+          if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
+            final paymentAmount = _selectedBillType == 'Cash'
+                ? order.totalAmount
+                : _initialPayment!;
+            await ledgerCubit.addTransaction(
+              ledgerId: storeLedgerId,
+              amount: paymentAmount,
+              type: 'Debit',
+              billNumber: order.billNumber,
+              purpose: 'Cash Received',
+              typeOfPurpose: 'Cash',
+              remarks: 'Cash received for bill ${order.billNumber}',
+              userType: UserType.Store,
+            );
+          }
+
+          await orderService.placeOrder(order);
+          if (existingInvoice == null) {
+            await orderService.placeInvoice(order);
+          }
+        } else {
+          // Update bill saves
+          final processedProductIds = <String>{};
+          for (var item in originalOrder!.items) {
+            if (processedProductIds.contains(item.productId)) continue;
+            processedProductIds.add(item.productId);
+
+            final returnQuantity = returnQuantities[item.productId] ?? 0;
+            if (returnQuantity > 0) {
+              final stock =
+                  (_stockCubit.state as StockLoaded).stockItems.firstWhere(
+                        (stock) =>
+                            stock.productId == item.productId &&
+                            stock.storeId == _selectedStoreId,
+                        orElse: () => StockModel(
+                          id: '${item.productId}_$_selectedStoreId',
+                          productId: item.productId,
+                          storeId: _selectedStoreId!,
+                          quantity: 0,
+                          lastUpdated: DateTime.now(),
+                        ),
+                      );
+              await _stockCubit.updateStock(
+                stock.copyWith(
+                  quantity: stock.quantity + returnQuantity,
+                  lastUpdated: DateTime.now(),
+                ),
+                remarks:
+                    'Return of $returnQuantity units of ${item.productName}',
+                isReturn: true,
+              );
+            }
+          }
+
+          if (returnAmount > 0) {
+            await ledgerCubit.addTransaction(
+              ledgerId: customerLedgerId,
+              amount: returnAmount,
+              type: 'Credit',
+              billNumber: order.billNumber,
+              purpose: 'Return',
+              typeOfPurpose: _selectedBillType,
+              remarks: 'Return for order ${widget.orderId}',
+              userType: UserType.Customer,
+            );
+            if (_selectedBillType == 'Cash' &&
+                _selectedReturnMethod == 'Cash') {
+              await ledgerCubit.addTransaction(
+                ledgerId: customerLedgerId,
+                amount: returnAmount,
+                type: 'Debit',
+                billNumber: order.billNumber,
+                purpose: 'Return Payment',
+                typeOfPurpose: 'Cash',
+                remarks:
+                    'Cash paid back for return for order ${widget.orderId}',
+                userType: UserType.Customer,
+              );
+            }
+          }
+
+          if (_cartItems.isNotEmpty) {
+            await ledgerCubit.addTransaction(
+              ledgerId: customerLedgerId,
+              amount: order.totalAmount,
+              type: 'Debit',
+              billNumber: order.billNumber,
+              purpose: 'Purchase',
+              typeOfPurpose: _selectedBillType,
+              remarks: 'Bill updated for order ${order.id}',
+              userType: UserType.Customer,
+            );
+            if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
+              final paymentAmount = _selectedBillType == 'Cash'
+                  ? order.totalAmount
+                  : _initialPayment!;
+              await ledgerCubit.addTransaction(
+                ledgerId: customerLedgerId,
+                amount: paymentAmount,
+                type: 'Credit',
+                billNumber: order.billNumber,
+                purpose: 'Payment',
+                typeOfPurpose: 'Cash',
+                remarks:
+                    'Payment received for updated bill ${order.billNumber}',
+                userType: UserType.Customer,
+              );
+            }
+          }
+
+          if (_cartItems.isNotEmpty) {
+            await ledgerCubit.addTransaction(
+              ledgerId: storeLedgerId,
+              amount: order.totalAmount,
+              type: 'Credit',
+              billNumber: order.billNumber,
+              purpose: 'Sale',
+              typeOfPurpose: _selectedBillType,
+              remarks: 'Updated sale for bill ${order.billNumber}',
+              userType: UserType.Store,
+            );
+            if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
+              final paymentAmount = _selectedBillType == 'Cash'
+                  ? order.totalAmount
+                  : _initialPayment!;
+              await ledgerCubit.addTransaction(
+                ledgerId: storeLedgerId,
+                amount: paymentAmount,
+                type: 'Debit',
+                billNumber: order.billNumber,
+                purpose: 'Cash Received',
+                typeOfPurpose: 'Cash',
+                remarks: 'Cash received for updated bill ${order.billNumber}',
+                userType: UserType.Store,
+              );
+            }
+          }
+
+          if (returnAmount > 0) {
+            await ledgerCubit.addTransaction(
+              ledgerId: storeLedgerId,
+              amount: returnAmount,
+              type: 'Debit',
+              billNumber: order.billNumber,
+              purpose: 'Return',
+              typeOfPurpose: _selectedBillType,
+              remarks: 'Return of stock for bill ${order.billNumber}',
+              userType: UserType.Store,
+            );
+            if (_selectedBillType == 'Cash' &&
+                _selectedReturnMethod == 'Cash') {
+              await ledgerCubit.addTransaction(
+                ledgerId: storeLedgerId,
+                amount: returnAmount,
+                type: 'Credit',
+                billNumber: order.billNumber,
+                purpose: 'Return Payment',
+                typeOfPurpose: 'Cash',
+                remarks:
+                    'Cash paid back for return for bill ${order.billNumber}',
+                userType: UserType.Store,
+              );
+            }
+          }
+
+          await orderService.updateOrderStatus(
+              widget.orderId!, _selectedStatus);
+          await orderService.updateOrder(order);
+          await orderService.updateInvoice(order);
+        }
+      } catch (e) {
+        // Handle background save error (e.g., log it or show a delayed notification)
+        debugPrint('Background save failed: $e');
+        // Optionally, use a global key or notification system to show error to user
+      }
+    });
+  }
+
+  Future<pw.Document> _generatePdf(Order order) async {
+    final pdf = pw.Document();
+    final accountRepository = sl<AccountRepository>();
+    final addTenantCompanyCubit = sl<AddTenantCompanyCubit>();
+
+    String companyName = 'Abc Pvt. Ltd.';
+    String issuerName = 'Unknown Issuer';
+    String companyAddress = '123 Business Street, City, Country';
+    String companyPhone = '';
+    String companyEmail = '';
+    String companyWebsite = '';
+    String currency = 'IQD ';
+    double customerTotalBalance = 0.0;
+
+    try {
+      final userInfo = await accountRepository.getUserInfo();
+      issuerName = userInfo?.name ?? userInfo?.userName ?? issuerName;
+      if (userInfo?.companyId != null) {
+        await addTenantCompanyCubit.getTenantCompanyById(userInfo!.companyId!);
+        final state = addTenantCompanyCubit.state;
+        if (state is TenantCompanyLoaded) {
+          final company = state.company;
+          companyName = company.name ?? companyName;
+          companyAddress = [
+            company.address ?? '',
+            company.city ?? '',
+            company.state ?? '',
+            company.zipCode ?? '',
+            company.country ?? ''
+          ].where((e) => e.isNotEmpty).join(', ');
+          companyPhone = company.mobileNumber ?? companyPhone;
+          companyEmail = company.email ?? companyEmail;
+        } else if (state is AddTenantCompanyError) {
+          debugPrint('Error fetching company details: ${state.message}');
+        }
+      }
+    } catch (e, stackTrace) {
+      debugPrint(
+          'Error fetching company or issuer details: $e\nStackTrace: $stackTrace');
+    }
+
+    final primaryColor = PdfColor.fromInt(AppColors.primary.value);
+    final textSecondaryColor = PdfColor.fromInt(AppColors.textSecondary.value);
+    const greyColor = PdfColors.grey300;
+    final regularFont = pw.Font.times();
+    final boldFont = pw.Font.timesBold();
+    const PdfColor rowBackgroundColor = PdfColor(.99, .99, .99, 1.0);
+
+    // Ensure non-negative values and handle nulls/NaN
+    final double subtotal = order.items.isEmpty
+        ? 0.0
+        : order.items.fold(
+            0.0,
+            (sum, item) {
+              final price = item.price ?? 0.0;
+              final quantity = item.quantity ?? 0;
+              final result = sum + (price * quantity);
+              return result.isNaN ? sum : result;
+            },
+          );
+    final double totalTax = order.items.isEmpty
+        ? 0.0
+        : order.items.fold(
+            0.0,
+            (sum, item) {
+              final tax = item.taxAmount ?? 0.0;
+              return tax.isNaN ? sum : sum + tax;
+            },
+          );
+    final double totalItemDiscount = order.items.isEmpty
+        ? 0.0
+        : order.items.fold(
+            0.0,
+            (sum, item) {
+              final discount = item.discountAmount ?? 0.0;
+              return discount.isNaN ? sum : sum + discount;
+            },
+          );
+    final double totalDiscount =
+        (totalItemDiscount.isNaN ? 0.0 : totalItemDiscount) +
+            ((order.discount ?? 0.0).isNaN ? 0.0 : (order.discount ?? 0.0));
+    final double totalAmount =
+        (order.totalAmount ?? 0.0).isNaN ? 0.0 : (order.totalAmount ?? 0.0);
+    final double amountReceived = (order.amountReceived ?? 0.0).isNaN
+        ? 0.0
+        : (order.amountReceived ?? 0.0);
+    final double outstandingAmount = totalAmount - amountReceived;
+    final double paymentsCredits = amountReceived;
+
+    final String billToAddress = [
+      _selectedCustomer?.name ?? order.userName ?? 'Unknown Customer',
+      if (_selectedCustomer?.businessName?.isNotEmpty ?? false)
+        _selectedCustomer!.businessName!,
+      if (_selectedCustomer?.address?.isNotEmpty ?? false)
+        _selectedCustomer!.address!,
+      if (_selectedCustomer?.mobileNumber?.isNotEmpty ?? false)
+        _selectedCustomer!.mobileNumber!,
+      if (_selectedCustomer?.email?.isNotEmpty ?? false)
+        _selectedCustomer!.email!,
+    ].where((e) => e.isNotEmpty).join('\n');
+
+    String formatNumber(double number) {
+      final absNumber = number.isNaN ? 0.0 : number.abs();
+      final prefix = number < 0 ? '-' : '';
+      return '$prefix$currency${absNumber.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
+    }
+
+    String formatDate(dynamic date) {
+      if (date == null) return 'N/A';
+      if (date is DateTime) {
+        return DateFormat('yyyy-MM-dd').format(date);
+      } else if (date is String && date.length >= 10) {
+        return date.substring(0, 10);
+      }
+      return 'N/A';
+    }
+
+    // Debug logging
+    print('Subtotal: $subtotal, isNaN: ${subtotal.isNaN}');
+    print('TotalTax: $totalTax, isNaN: ${totalTax.isNaN}');
+    print(
+        'TotalItemDiscount: $totalItemDiscount, isNaN: ${totalItemDiscount.isNaN}');
+    print('TotalDiscount: $totalDiscount, isNaN: ${totalDiscount.isNaN}');
+    print(
+        'OutstandingAmount: $outstandingAmount, isNaN: ${outstandingAmount.isNaN}');
+    print('PaymentsCredits: $paymentsCredits, isNaN: ${paymentsCredits.isNaN}');
+    print('TotalAmount: $totalAmount, isNaN: ${totalAmount.isNaN}');
+    order.items.asMap().entries.forEach((entry) {
+      final index = entry.key;
+      final item = entry.value;
+      final perUnitDisc = (item.quantity ?? 0) > 0
+          ? ((item.discountAmount ?? 0.0) / (item.quantity ?? 1))
+          : 0.0;
+      final amount = ((item.price ?? 0.0) * (item.quantity ?? 0)) +
+          (item.taxAmount ?? 0.0) -
+          (item.discountAmount ?? 0.0);
+      print('Item $index: price=${item.price}, quantity=${item.quantity}, '
+          'taxAmount=${item.taxAmount}, discountAmount=${item.discountAmount}, '
+          'discountPercentage=${item.discountPercentage}, '
+          'perUnitDisc=$perUnitDisc (isNaN: ${perUnitDisc.isNaN}), '
+          'amount=$amount (isNaN: ${amount.isNaN})');
+    });
+    if (order.paymentDetails != null && order.paymentDetails!.isNotEmpty) {
+      order.paymentDetails!.asMap().entries.forEach((entry) {
+        final index = entry.key;
+        final payment = entry.value;
+        final paymentAmount = payment['amount'] ?? 0.0;
+        print(
+            'Payment $index: amount=$paymentAmount, isNaN: ${paymentAmount.isNaN}, '
+            'date=${payment['date']}, method=${payment['method']}');
+      });
+    }
+
+    try {
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(40),
+          build: (context) => [
+            pw.Stack(
+              children: [
+                // Watermark first to ensure it's at the bottom layer
+                pw.Positioned(
+                  top: (PdfPageFormat.a4.height - 100) / 2,
+                  left: 0,
+                  right: 0,
+                  child: pw.Container(
+                    alignment: pw.Alignment.center,
+                    height: 100,
+                    child: pw.Watermark(
+                      angle: 45 * 3.14159 / 180,
+                      child: pw.Text(
+                        order.paymentStatus == 'Paid'
+                            ? 'PAID'
+                            : (order.amountReceived ?? 0) > 0
+                                ? 'PARTIALLY PAID'
+                                : 'NOT PAID',
+                        style: pw.TextStyle(
+                            font: boldFont,
+                            fontSize: 50,
+                            color: order.paymentStatus == 'Paid'
+                                ? const PdfColor.fromInt(0xFF008000) // Green
+                                : (order.amountReceived ?? 0) > 0
+                                    ? const PdfColor.fromInt(0xFFFFA500)
+                                    : const PdfColor.fromInt(0xFFFF0000) // Red
+                            ),
+                      ),
+                    ),
+                  ),
+                ),
+                // Invoice content on top
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
+                  children: [
+                    pw.Text(
+                      'Invoice',
+                      style: pw.TextStyle(
+                        font: boldFont,
+                        fontSize: 24,
+                        color: PdfColors.black,
+                      ),
+                    ),
+                    pw.SizedBox(height: 8),
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Expanded(
+                          flex: 4, // 40% width
+                          child: pw.Container(
+                            width: PdfPageFormat.a4.availableWidth * 0.4,
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Text(
+                                  companyName,
+                                  style: pw.TextStyle(
+                                    font: boldFont,
+                                    fontSize: 18,
+                                    color: primaryColor,
+                                  ),
+                                ),
+                                pw.SizedBox(height: 4),
+                                pw.Text(
+                                  companyAddress,
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                    color: textSecondaryColor,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: pw.TextOverflow.clip,
+                                ),
+                                if (companyPhone.isNotEmpty)
+                                  pw.Text(
+                                    companyPhone,
+                                    style: pw.TextStyle(
+                                      font: regularFont,
+                                      fontSize: 12,
+                                      color: textSecondaryColor,
+                                    ),
+                                  ),
+                                if (companyEmail.isNotEmpty)
+                                  pw.Text(
+                                    companyEmail,
+                                    style: pw.TextStyle(
+                                      font: regularFont,
+                                      fontSize: 12,
+                                      color: textSecondaryColor,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        pw.SizedBox(width: 16),
+                        pw.Expanded(
+                          flex: 3, // 36% width
+                          child: pw.Container(
+                            width: PdfPageFormat.a4.availableWidth * 0.36,
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.end,
+                              children: [
+                                pw.Table(
+                                  columnWidths: {
+                                    0: const pw.FixedColumnWidth(80),
+                                    1: const pw.FixedColumnWidth(100),
+                                  },
+                                  children: [
+                                    pw.TableRow(
+                                      children: [
+                                        pw.Text(
+                                          'Date',
+                                          style: pw.TextStyle(
+                                            font: boldFont,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        pw.Text(
+                                          formatDate(order.orderDate),
+                                          style: pw.TextStyle(
+                                            font: regularFont,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    pw.TableRow(
+                                      children: [
+                                        pw.Text(
+                                          'Invoice #',
+                                          style: pw.TextStyle(
+                                            font: boldFont,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        pw.Text(
+                                          order.billNumber ?? 'N/A',
+                                          style: pw.TextStyle(
+                                            font: regularFont,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    pw.TableRow(
+                                      children: [
+                                        pw.Text(
+                                          'Issuer',
+                                          style: pw.TextStyle(
+                                            font: boldFont,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        pw.Text(
+                                          issuerName,
+                                          style: pw.TextStyle(
+                                            font: regularFont,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    pw.SizedBox(height: 8),
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Expanded(
+                          child: pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text(
+                                'Bill To',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              pw.Container(
+                                decoration: pw.BoxDecoration(
+                                  border: pw.Border.all(color: greyColor),
+                                ),
+                                padding: const pw.EdgeInsets.all(8),
+                                child: pw.Text(
+                                  billToAddress,
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        pw.SizedBox(width: 16),
+                        pw.Expanded(
+                          child: pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text(
+                                'Terms',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              pw.Container(
+                                decoration: pw.BoxDecoration(
+                                  border: pw.Border.all(color: greyColor),
+                                ),
+                                padding: const pw.EdgeInsets.all(8),
+                                child: pw.Text(
+                                  order.invoiceType ?? '',
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    pw.SizedBox(height: 8),
+                    pw.Table(
+                      border: const pw.TableBorder(
+                        top: pw.BorderSide(color: greyColor, width: 1),
+                        bottom: pw.BorderSide(color: greyColor, width: 1),
+                        left: pw.BorderSide(color: greyColor, width: 1),
+                        right: pw.BorderSide(color: greyColor, width: 1),
+                        horizontalInside: pw.BorderSide.none,
+                        verticalInside:
+                            pw.BorderSide(color: greyColor, width: 1),
+                      ),
+                      children: [
+                        pw.TableRow(
+                          decoration:
+                              const pw.BoxDecoration(color: rowBackgroundColor),
+                          children: [
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
+                              child: pw.Text(
+                                'Item',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
+                              child: pw.Text(
+                                'Qty',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
+                              child: pw.Text(
+                                'Rate',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
+                              child: pw.Text(
+                                'Tax',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
+                              child: pw.Text(
+                                'Disc. Amt',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
+                              child: pw.Text(
+                                'Disc. per Unit',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
+                              child: pw.Text(
+                                'Disc. %',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
+                              child: pw.Text(
+                                'Amount',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        ...order.items.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final item = entry.value;
+                          final double perUnitDisc = (item.quantity ?? 0) > 0
+                              ? ((item.discountAmount ?? 0.0) /
+                                  (item.quantity ?? 1))
+                              : 0.0;
+                          final double amount =
+                              ((item.price ?? 0.0) * (item.quantity ?? 0)) +
+                                  (item.taxAmount ?? 0.0) -
+                                  (item.discountAmount ?? 0.0);
+                          final double discountPercentage =
+                              (item.discountPercentage ?? 0.0).isNaN
+                                  ? 0.0
+                                  : (item.discountPercentage ?? 0.0);
+                          return pw.TableRow(
+                            children: [
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  item.productName ?? 'N/A',
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  (item.quantity ?? 0).toString(),
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  (item.price ?? 0.0).toStringAsFixed(2),
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  (item.taxAmount ?? 0.0).toStringAsFixed(2),
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  (item.discountAmount ?? 0.0)
+                                      .toStringAsFixed(2),
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  perUnitDisc.isNaN
+                                      ? '0.00'
+                                      : perUnitDisc.toStringAsFixed(2),
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  discountPercentage.toStringAsFixed(2),
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  amount.isNaN
+                                      ? '0.00'
+                                      : amount.toStringAsFixed(2),
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }),
+                        ...List.generate(
+                          order.items.length < 10 ? 10 - order.items.length : 0,
+                          (index) => pw.TableRow(
+                            children: List.generate(
+                              8,
+                              (_) => pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  '',
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    pw.SizedBox(height: 16),
+                    pw.Align(
+                      alignment: pw.Alignment.centerRight,
+                      child: pw.Container(
+                        decoration: pw.BoxDecoration(
+                          border: pw.Border.all(color: greyColor, width: 1),
+                        ),
+                        child: pw.Row(
+                          mainAxisSize: pw.MainAxisSize.min,
+                          children: [
+                            pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    'Subtotal',
+                                    style: pw.TextStyle(
+                                      font: regularFont,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                                if (totalTax != 0 && !totalTax.isNaN)
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      'Total Tax',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                if (totalTax != 0 && !totalTax.isNaN)
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      'Total with Tax',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                if (totalItemDiscount != 0 &&
+                                    !totalItemDiscount.isNaN)
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      'Item Discounts',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                if (order.discount != null &&
+                                    order.discount != 0 &&
+                                    !(order.discount!.isNaN))
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      'Additional Discount',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    'Total',
+                                    style: pw.TextStyle(
+                                      font: boldFont,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    'Payments/Credits',
+                                    style: pw.TextStyle(
+                                      font: regularFont,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    'Balance Due',
+                                    style: pw.TextStyle(
+                                      font: boldFont,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            pw.SizedBox(width: 16),
+                            pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.end,
+                              children: [
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    formatNumber(subtotal),
+                                    style: pw.TextStyle(
+                                      font: regularFont,
+                                      fontSize: 12,
+                                    ),
+                                    textAlign: pw.TextAlign.right,
+                                  ),
+                                ),
+                                if (totalTax != 0 && !totalTax.isNaN)
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      '+${formatNumber(totalTax)}',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                      textAlign: pw.TextAlign.right,
+                                    ),
+                                  ),
+                                if (totalTax != 0 && !totalTax.isNaN)
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      formatNumber(subtotal + totalTax),
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                      textAlign: pw.TextAlign.right,
+                                    ),
+                                  ),
+                                if (totalItemDiscount != 0 &&
+                                    !totalItemDiscount.isNaN)
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      '-${formatNumber(totalItemDiscount)}',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                      textAlign: pw.TextAlign.right,
+                                    ),
+                                  ),
+                                if (order.discount != null &&
+                                    order.discount != 0 &&
+                                    !(order.discount!.isNaN))
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      '-${formatNumber(order.discount ?? 0.0)}',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                      textAlign: pw.TextAlign.right,
+                                    ),
+                                  ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    formatNumber(totalAmount),
+                                    style: pw.TextStyle(
+                                      font: boldFont,
+                                      fontSize: 12,
+                                    ),
+                                    textAlign: pw.TextAlign.right,
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    '-${formatNumber(paymentsCredits)}',
+                                    style: pw.TextStyle(
+                                      font: regularFont,
+                                      fontSize: 12,
+                                    ),
+                                    textAlign: pw.TextAlign.right,
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    formatNumber(outstandingAmount),
+                                    style: pw.TextStyle(
+                                      font: boldFont,
+                                      fontSize: 14,
+                                    ),
+                                    textAlign: pw.TextAlign.right,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    } catch (e, stackTrace) {
+      debugPrint('Error generating PDF: $e\nStackTrace: $stackTrace');
+      rethrow;
+    }
+
+    return pdf;
+  }
+
+  Widget _buildGenerateBillButton() {
+    return ElevatedButton(
+      onPressed: _generateBill,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        minimumSize: const Size(double.infinity, 50),
+      ),
+      child:
+          Text(_existingBillNumber == null ? 'Generate Bill' : 'Update Bill'),
+    );
+  }
+
+  Widget _buildStatusSelector() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: DropdownButtonFormField<String>(
+          decoration: InputDecoration(
+            labelText: 'Order Status',
+            labelStyle: const TextStyle(
+                fontWeight: FontWeight.bold, color: Colors.black87),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none),
+            filled: true,
+            fillColor: Colors.grey[50],
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            errorStyle: const TextStyle(color: Colors.red),
+          ),
+          value: _selectedStatus,
+          items: _statuses.map((status) {
+            return DropdownMenuItem(
+                value: status, child: Text(status.capitalize()));
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              _selectedStatus = value ?? 'pending';
+            });
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCart() {
+    final total = _cartItems.fold<double>(0.0,
+        (sum, item) => sum + (item.price * item.quantity) + item.taxAmount);
+    final finalTotal = total - (_discount ?? 0.0);
+
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Cart',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            if (_cartItems.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  'No items in cart',
+                  style:
+                      TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                ),
+              )
+            else
+              ..._cartItems.asMap().entries.map((entry) {
+                final item = entry.value;
+                return Card(
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.productName,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Price: IQD ${item.price.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Tax Rate: ${(item.taxRate).toStringAsFixed(0)}%',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Column(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: AppColors.white,
+                                    borderRadius: BorderRadius.circular(24),
+                                    border: Border.all(
+                                        color: AppColors.textSecondary
+                                            .withOpacity(0.3)),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.remove,
+                                          color: item.quantity > 0
+                                              ? AppColors.red
+                                              : AppColors.textSecondary,
+                                          size: 20,
+                                        ),
+                                        onPressed: () =>
+                                            _updateQuantity(item.productId, -1),
+                                      ),
+                                      SizedBox(
+                                        width: 48,
+                                        child: Text(
+                                          '${item.quantity}',
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.textPrimary,
+                                          ),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.add,
+                                          color: AppColors.green,
+                                          size: 20,
+                                        ),
+                                        onPressed: () =>
+                                            _updateQuantity(item.productId, 1),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    ElevatedButton(
+                                      onPressed: () => _showQuantityInputDialog(
+                                          item.productId),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.primary,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8)),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 4),
+                                      ),
+                                      child: const Text(
+                                        'Enter Manual Qty',
+                                        style: TextStyle(
+                                          color: AppColors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    ElevatedButton(
+                                      onPressed: item.quantity > 0
+                                          ? () {
+                                              setState(() {
+                                                _cartItems =
+                                                    _cartItems.map((cartItem) {
+                                                  if (cartItem.productId ==
+                                                      item.productId) {
+                                                    return cartItem.copyWith(
+                                                        quantity: 0,
+                                                        taxAmount: 0.0);
+                                                  }
+                                                  return cartItem;
+                                                }).toList();
+                                                _cartItems.removeWhere(
+                                                    (cartItem) =>
+                                                        cartItem.quantity == 0);
+                                                if (_cartItems.isEmpty) {
+                                                  _discount = 0.0;
+                                                }
+                                              });
+                                            }
+                                          : null,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.red,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8)),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 4),
+                                      ),
+                                      child: const Text(
+                                        'Clear',
+                                        style: TextStyle(
+                                          color: AppColors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        if (item.quantity > 0) ...[
+                          const SizedBox(height: 12),
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                  color:
+                                      AppColors.textSecondary.withOpacity(0.3)),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Table(
+                              border: TableBorder(
+                                verticalInside: BorderSide(
+                                    color: AppColors.textSecondary
+                                        .withOpacity(0.3)),
+                                horizontalInside: BorderSide(
+                                    color: AppColors.textSecondary
+                                        .withOpacity(0.3)),
+                              ),
+                              columnWidths: const {
+                                0: FlexColumnWidth(3),
+                                1: FlexColumnWidth(2),
+                              },
+                              children: [
+                                TableRow(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 8, horizontal: 12),
+                                      child: Text(
+                                        'Subtotal (IQD ${item.price.toStringAsFixed(2)} x ${item.quantity})',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 8, horizontal: 12),
+                                      child: Text(
+                                        'IQD ${(item.price * item.quantity).toStringAsFixed(2)}',
+                                        textAlign: TextAlign.right,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                TableRow(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 8, horizontal: 12),
+                                      child: Text(
+                                        'Tax (${(item.taxRate).toStringAsFixed(0)}%)',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 8, horizontal: 12),
+                                      child: Text(
+                                        'IQD ${item.taxAmount.toStringAsFixed(2)}',
+                                        textAlign: TextAlign.right,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                TableRow(
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withOpacity(0.05),
+                                    borderRadius: const BorderRadius.only(
+                                      bottomLeft: Radius.circular(12),
+                                      bottomRight: Radius.circular(12),
+                                    ),
+                                  ),
+                                  children: [
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          vertical: 8, horizontal: 12),
+                                      child: Text(
+                                        'Total',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 8, horizontal: 12),
+                                      child: Text(
+                                        'IQD ${((item.price * item.quantity) + item.taxAmount).toStringAsFixed(2)}',
+                                        textAlign: TextAlign.right,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            const SizedBox(height: 8),
+            if (_discount != null && _discount! > 0) ...[
+              Text(
+                'Discount: IQD ${_discount!.toStringAsFixed(2)}',
+                style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.green),
+              ),
+              const SizedBox(height: 8),
+            ],
+            Text(
+              'Total: IQD ${finalTotal.toStringAsFixed(2)}',
+              style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _searchProducts(String query, List<StockModel> products,
+      ValueNotifier<List<StockModel>> filteredProducts) {
+    debugPrint('Dialog: Searching for "$query"');
+    filteredProducts.value = query.isEmpty
+        ? List.from(products)
+        : products
+            .where((product) =>
+                product.name?.toLowerCase().contains(query.toLowerCase()) ??
+                false)
+            .toList();
+    debugPrint('Dialog: Filtered ${filteredProducts.value.length} products');
+  }
 
   void _showProductSelectionDialog(List<StockModel> products) {
     _productSearchController.clear();
-    _searchProducts('', products);
+    debugPrint('Dialog: Opening product selection dialog');
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (context) => DraggableScrollableSheet(
+      builder: (dialogContext) => DraggableScrollableSheet(
         initialChildSize: 0.9,
         minChildSize: 0.5,
         maxChildSize: 0.9,
         expand: false,
-        builder: (context, scrollController) => Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Select Products',
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: AppColors.primary),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: TextField(
-                controller: _productSearchController,
-                decoration: InputDecoration(
-                  labelText: 'Search Products',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                ),
-                onChanged: (query) => _searchProducts(query, products),
-              ),
-            ),
-            Expanded(
-              child: _filteredProducts.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'No products available',
+        builder: (dialogContext, scrollController) => StatefulBuilder(
+          builder: (dialogContext, setState) {
+            final ValueNotifier<List<StockModel>> filteredProducts =
+                ValueNotifier([]);
+            bool isDialogInitialized = false;
+
+            if (!isDialogInitialized &&
+                filteredProducts.value.isEmpty &&
+                products.isNotEmpty) {
+              setState(() {
+                filteredProducts.value = List.from(products);
+                isDialogInitialized = true;
+              });
+              debugPrint(
+                  'Dialog: Initialized filteredProducts with ${filteredProducts.value.length} items');
+            }
+
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Select Products',
                         style: TextStyle(
-                            fontSize: 16, color: AppColors.textSecondary),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
                       ),
-                    )
-                  : ListView.builder(
-                      controller: scrollController,
-                      itemCount: _filteredProducts.length,
-                      itemBuilder: (context, index) {
-                        final product = _filteredProducts[index];
-                        return Card(
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
-                            title: Text(
-                              product.name ?? 'Unknown',
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            subtitle: Text(
-                              'Price: ₹${product.price?.toStringAsFixed(2) ?? '0.00'} | Stock: ${product.quantity}',
-                            ),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.add,
-                                  color: AppColors.primary),
-                              onPressed: () => _addToCart(product),
-                            ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: AppColors.primary),
+                        onPressed: () {
+                          debugPrint('Dialog: Closing dialog');
+                          Navigator.of(dialogContext).pop();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 8.0),
+                  child: TextField(
+                    controller: _productSearchController,
+                    decoration: InputDecoration(
+                      labelText: 'Search Products',
+                      prefixIcon: const Icon(Icons.search,
+                          color: AppColors.textSecondary),
+                      hintStyle:
+                          const TextStyle(color: AppColors.textSecondary),
+                      filled: true,
+                      fillColor: AppColors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(
+                            color: AppColors.textSecondary, width: 0.3),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(
+                            color: AppColors.textSecondary, width: 0.3),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                    ),
+                    onChanged: (query) =>
+                        _searchProducts(query, products, filteredProducts),
+                  ),
+                ),
+                Expanded(
+                  child: ValueListenableBuilder<List<StockModel>>(
+                    valueListenable: filteredProducts,
+                    builder: (context, productsList, child) {
+                      if (productsList.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            'No products available',
+                            style: TextStyle(
+                                fontSize: 16, color: AppColors.textSecondary),
                           ),
                         );
-                      },
-                    ),
-            ),
-          ],
+                      }
+                      return ListView.builder(
+                        controller: scrollController,
+                        itemCount: productsList.length,
+                        itemBuilder: (context, index) {
+                          final product = productsList[index];
+                          return Card(
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              title: Text(
+                                product.name ?? 'Unknown',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Text(
+                                'Price: IQD ${product.price?.toStringAsFixed(2) ?? '0.00'} | Stock: ${product.quantity}',
+                              ),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.add,
+                                    color: AppColors.primary),
+                                onPressed: () {
+                                  _addToCart(product);
+                                  setState(() {
+                                    _productSearchController.clear();
+                                    filteredProducts.value =
+                                        List.from(products);
+                                  });
+                                  debugPrint(
+                                      'Dialog: Added product "${product.name}"');
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
-    );
+    ).whenComplete(() {
+      debugPrint('Dialog: Dialog closed');
+    });
   }
 
   void _showStoreSelectionDialog(List<StoreDto> stores) {
@@ -819,7 +3201,7 @@ class _BillingPageState extends State<BillingPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
+                  const Text(
                     'Select Store',
                     style: TextStyle(
                         fontSize: 18,
@@ -863,242 +3245,6 @@ class _BillingPageState extends State<BillingPage> {
         ),
       ),
     );
-  }
-
-  Future<pw.Document> _generatePdf(Order order) async {
-    final pdf = pw.Document();
-    final accountRepository = sl<AccountRepository>();
-
-    String companyName = 'Abc Pvt. Ltd.';
-    String issuerName = 'Unknown Issuer';
-    try {
-      final userInfo = await accountRepository.getUserInfo();
-      companyName = userInfo?.companyId ?? companyName;
-      issuerName = userInfo?.name ?? userInfo?.userName ?? issuerName;
-    } catch (e) {
-      print('Error fetching company or issuer name: $e');
-    }
-
-    final primaryColor = PdfColor.fromInt(AppColors.primary.value);
-    final textSecondaryColor = PdfColor.fromInt(AppColors.textSecondary.value);
-    final greyColor = PdfColors.grey300;
-
-    final regularFont = pw.Font.times();
-    final boldFont = pw.Font.timesBold();
-
-    pdf.addPage(
-      pw.MultiPage(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(40), // Increased margin for cleaner look
-        header: (context) => pw.Container(
-          padding: const pw.EdgeInsets.only(bottom: 12),
-          decoration: pw.BoxDecoration(
-            border: pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
-          ),
-          child: pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text(
-                    companyName,
-                    style: pw.TextStyle(
-                        font: boldFont, fontSize: 22, color: primaryColor), // Larger font
-                  ),
-                  pw.SizedBox(height: 4),
-                  pw.Text(
-                    '123 Business Street, City, Country',
-                    style: pw.TextStyle(
-                        font: regularFont, fontSize: 12, color: textSecondaryColor),
-                  ),
-                ],
-              ),
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.end,
-                children: [
-                  pw.Text(
-                    'INVOICE',
-                    style: pw.TextStyle(
-                        font: boldFont, fontSize: 28, color: primaryColor), // Larger header
-                  ),
-                  pw.SizedBox(height: 4),
-                  pw.Text(
-                    'Bill #: ${order.billNumber ?? 'N/A'}',
-                    style: pw.TextStyle(font: regularFont, fontSize: 14),
-                  ),
-                  pw.Text(
-                    'Date: ${order.orderDate.toString().substring(0, 10)}',
-                    style: pw.TextStyle(font: regularFont, fontSize: 14),
-                  ),
-                  pw.Text(
-                    'Issuer: $issuerName',
-                    style: pw.TextStyle(font: regularFont, fontSize: 14),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        build: (context) => [
-          pw.SizedBox(height: 24), // Increased spacing
-          pw.Text(
-            'Bill To:',
-            style: pw.TextStyle(
-                font: boldFont, fontSize: 18, color: PdfColors.black), // Larger font
-          ),
-          pw.SizedBox(height: 8),
-          pw.Text(
-            order.userName ?? 'Unknown Customer',
-            style: pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
-          ),
-          pw.Text(
-            'Store ID: ${order.storeId ?? 'N/A'}',
-            style: pw.TextStyle(
-                font: regularFont, fontSize: 12, color: textSecondaryColor),
-          ),
-          pw.SizedBox(height: 24),
-          pw.Text(
-            'Items',
-            style: pw.TextStyle(font: boldFont, fontSize: 18),
-          ),
-          pw.SizedBox(height: 12),
-          pw.Table(
-            border: pw.TableBorder.all(color: greyColor, width: 1),
-            columnWidths: {
-              0: const pw.FlexColumnWidth(3), // Product Name: Most flex
-              1: const pw.FlexColumnWidth(1), // Quantity: Least flex
-              2: const pw.FlexColumnWidth(1.5), // Unit Price
-              3: const pw.FlexColumnWidth(1.5), // Tax
-              4: const pw.FlexColumnWidth(2), // Total: Second-most flex
-            },
-            children: [
-              pw.TableRow(
-                decoration: pw.BoxDecoration(color: PdfColors.grey100),
-                children: [
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10), // Increased padding
-                    child: pw.Text('Product',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
-                  ),
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Qty',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
-                  ),
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Unit Price',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
-                  ),
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Tax',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
-                  ),
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Total',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
-                  ),
-                ],
-              ),
-              ...order.items.map((item) => pw.TableRow(
-                decoration: pw.BoxDecoration(
-                  border: pw.Border(bottom: pw.BorderSide(color: greyColor, width: 0.5)),
-                ),
-                children: [
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text(
-                      item.productName,
-                      style: pw.TextStyle(font: regularFont, fontSize: 12),
-                      softWrap: true,
-                    ),
-                  ),
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text(
-                      item.quantity.toString(),
-                      style: pw.TextStyle(font: regularFont, fontSize: 12),
-                      textAlign: pw.TextAlign.center,
-                    ),
-                  ),
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text(
-                      item.price.toStringAsFixed(2), // Removed ₹
-                      style: pw.TextStyle(font: regularFont, fontSize: 12),
-                      textAlign: pw.TextAlign.right,
-                    ),
-                  ),
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text(
-                      item.taxAmount.toStringAsFixed(2), // Removed ₹
-                      style: pw.TextStyle(font: regularFont, fontSize: 12),
-                      textAlign: pw.TextAlign.right,
-                    ),
-                  ),
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text(
-                      ((item.price * item.quantity) + item.taxAmount).toStringAsFixed(2), // Removed ₹
-                      style: pw.TextStyle(font: regularFont, fontSize: 12),
-                      textAlign: pw.TextAlign.right,
-                    ),
-                  ),
-                ],
-              )),
-            ],
-          ),
-          pw.SizedBox(height: 24),
-          pw.Container(
-            padding: const pw.EdgeInsets.all(12),
-            decoration: pw.BoxDecoration(
-              color: PdfColors.grey50,
-              border: pw.Border.all(color: greyColor, width: 1),
-            ),
-            child: pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.end,
-              children: [
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.end,
-                  children: [
-                    pw.Text(
-                      'Subtotal: ${order.items.fold<double>(0.0, (sum, item) => sum + (item.price * item.quantity)).toStringAsFixed(2)}', // Removed ₹
-                      style: pw.TextStyle(font: regularFont, fontSize: 14),
-                    ),
-                    pw.SizedBox(height: 8),
-                    pw.Text(
-                      'Total Tax: ${order.items.fold<double>(0.0, (sum, item) => sum + item.taxAmount).toStringAsFixed(2)}', // Removed ₹
-                      style: pw.TextStyle(font: regularFont, fontSize: 14),
-                    ),
-                    pw.SizedBox(height: 8),
-                    pw.Text(
-                      'Total Amount: ${order.totalAmount.toStringAsFixed(2)}', // Removed ₹
-                      style: pw.TextStyle(
-                          font: boldFont, fontSize: 16, color: primaryColor),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-        footer: (context) => pw.Container(
-          alignment: pw.Alignment.center,
-          padding: const pw.EdgeInsets.only(top: 12),
-          child: pw.Text(
-            'Generated by $companyName | Page ${context.pageNumber} of ${context.pagesCount}',
-            style: pw.TextStyle(
-                font: regularFont, fontSize: 10, color: textSecondaryColor),
-          ),
-        ),
-      ),
-    );
-
-    return pdf;
   }
 
   @override
@@ -1167,96 +3313,91 @@ class _BillingPageState extends State<BillingPage> {
             child: _isLoading
                 ? const CustomLoadingDialog(message: 'Loading...')
                 : SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: MediaQuery.of(context).size.height -
-                      MediaQuery.of(context).padding.top -
-                      kToolbarHeight,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: BlocListener<AdminOrderCubit, AdminOrderState>(
-                    listener: (context, state) {
-                      if (state is AdminOrderFetchSuccess &&
-                          widget.orderId != null) {
-                        setState(() {
-                          _cartItems = state.order.items;
-                          _selectedStatus = state.normalizedStatus;
-                          _selectedStoreId =
-                              state.order.storeId ?? _selectedStoreId;
-                          if (state.order.userId != null) {
-                            sl<UserServices>()
-                                .getUsersFromTenantCompany()
-                                .then((users) {
-                              final customer = users.firstWhere(
-                                    (u) => u.userId == state.order.userId,
-                                orElse: () => UserInfo(
-                                  userId: state.order.userId!,
-                                  userName:
-                                  state.order.userName ?? 'Unknown',
-                                ),
-                              );
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: MediaQuery.of(context).size.height -
+                            MediaQuery.of(context).padding.top -
+                            kToolbarHeight,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: BlocListener<AdminOrderCubit, AdminOrderState>(
+                          listener: (context, state) {
+                            if (state is AdminOrderFetchSuccess &&
+                                widget.orderId != null) {
                               setState(() {
-                                _selectedCustomer = customer;
-                                _newCustomerLedgerId =
-                                    customer.accountLedgerId;
+                                _cartItems = state.order.items;
+                                _selectedStatus = state.normalizedStatus;
+                                _selectedStoreId =
+                                    state.order.storeId ?? _selectedStoreId;
+                                _existingBillNumber = state.order.billNumber;
+                                _discount = state.order.discount;
+                                if (state.order.userId != null) {
+                                  sl<UserServices>()
+                                      .getUsersFromTenantCompany()
+                                      .then((users) {
+                                    final customer = users.firstWhere(
+                                      (u) => u.userId == state.order.userId,
+                                      orElse: () => UserInfo(
+                                        userId: state.order.userId!,
+                                        userName:
+                                            state.order.userName ?? 'Unknown',
+                                      ),
+                                    );
+                                    setState(() {
+                                      _selectedCustomer = customer;
+                                    });
+                                  });
+                                }
                               });
-                            });
-                          }
-                        });
-                        if (_selectedStoreId != null) {
-                          _stockCubit.fetchStock(_selectedStoreId!);
-                        }
-                      } else if (state is AdminOrderFetchError) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(state.message)),
-                        );
-                      }
-                    },
-                    child: BlocBuilder<StockCubit, StockState>(
-                      builder: (context, stockState) {
-                        final products = stockState is StockLoaded
-                            ? stockState.stockItems
-                            : <StockModel>[];
-                        final stores = stockState is StockLoaded
-                            ? stockState.stores
-                            : <StoreDto>[];
-                        if (stockState is StockError) {
-                          return Center(
-                              child: Text('Error: ${stockState.error}'));
-                        }
-                        if (_filteredProducts.isEmpty &&
-                            products.isNotEmpty) {
-                          _filteredProducts = products;
-                        }
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _buildSelectionButtons(products, stores),
-                            const SizedBox(height: 16),
-                            _buildCart(),
-                            const SizedBox(height: 16),
-                            _buildStatusSelector(),
-                            const SizedBox(height: 16),
-                            _buildGenerateBillButton(),
-                          ],
-                        );
-                      },
+                              if (_selectedStoreId != null) {
+                                _stockCubit.fetchStock(_selectedStoreId!);
+                              }
+                            } else if (state is AdminOrderFetchError) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(state.message)),
+                              );
+                            }
+                          },
+                          child: BlocBuilder<StockCubit, StockState>(
+                            builder: (context, stockState) {
+                              final products = stockState is StockLoaded
+                                  ? stockState.stockItems
+                                  : <StockModel>[];
+                              final stores = stockState is StockLoaded
+                                  ? stockState.stores
+                                  : <StoreDto>[];
+                              if (stockState is StockError) {
+                                return Center(
+                                    child: Text('Error: ${stockState.error}'));
+                              }
+                              if (_filteredProducts.isEmpty &&
+                                  products.isNotEmpty) {
+                                _filteredProducts = products;
+                              }
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  _buildSelectionButtons(products, stores),
+                                  const SizedBox(height: 16),
+                                  _buildCart(),
+                                  const SizedBox(height: 16),
+                                  _buildStatusSelector(),
+                                  const SizedBox(height: 16),
+                                  _buildGenerateBillButton(),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-            ),
           ),
         ),
       ),
     );
   }
-
-
-
-
-
 
   Widget _buildSelectionButton({
     required IconData icon,
@@ -1298,7 +3439,249 @@ class _BillingPageState extends State<BillingPage> {
     );
   }
 
+  Future<void> _showCustomerSelectionDialog() async {
+    final userServices = sl<UserServices>();
+    final addUserCubit = sl<AddUserCubit>();
+    final TextEditingController searchController = TextEditingController();
+    List<UserInfo> filteredCustomers = [];
+    List<UserInfo> allCustomers = [];
 
+    try {
+      final users = await userServices.getUsersFromTenantCompany();
+      allCustomers =
+          users.where((u) => u.userType == UserType.Customer).toList();
+      filteredCustomers = allCustomers;
+      await showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        builder: (context) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: addUserCubit),
+          ],
+          child: DraggableScrollableSheet(
+            initialChildSize: 0.9,
+            minChildSize: 0.5,
+            maxChildSize: 0.9,
+            expand: false,
+            builder: (context, scrollController) => StatefulBuilder(
+              builder: (context, setState) => Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Select or Add Customer',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        IconButton(
+                          icon:
+                              const Icon(Icons.close, color: AppColors.primary),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 8.0),
+                    child: TextField(
+                      controller: searchController,
+                      decoration: InputDecoration(
+                        hintText: 'Search Customers',
+                        hintStyle:
+                            const TextStyle(color: AppColors.textSecondary),
+                        prefixIcon: const Icon(Icons.search,
+                            color: AppColors.textSecondary),
+                        filled: true,
+                        fillColor: AppColors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                              color: AppColors.textSecondary.withOpacity(0.3)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                              color: AppColors.textSecondary.withOpacity(0.3)),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          if (value.isEmpty) {
+                            filteredCustomers = allCustomers;
+                          } else {
+                            filteredCustomers = allCustomers
+                                .where((customer) =>
+                                    (customer.name
+                                            ?.toLowerCase()
+                                            .contains(value.toLowerCase()) ??
+                                        false) ||
+                                    (customer.userName
+                                            ?.toLowerCase()
+                                            .contains(value.toLowerCase()) ??
+                                        false))
+                                .toList();
+                          }
+                        });
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 8.0),
+                    child: TextField(
+                      controller: _customerNameController,
+                      decoration: InputDecoration(
+                        labelText: 'New Customer Name',
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        errorText: _customerNameController.text.isEmpty &&
+                                filteredCustomers.isEmpty
+                            ? 'Name is required'
+                            : null,
+                      ),
+                    ),
+                  ),
+                  BlocListener<AddUserCubit, AddUserState>(
+                    listener: (context, state) {
+                      if (state is AddUserSuccess) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Customer added successfully')),
+                        );
+                        setState(() {
+                          _isLoading = false;
+                        });
+                        Navigator.of(context).pop();
+                      } else if (state is AddUserFailure) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(state.error)),
+                        );
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          if (_customerNameController.text.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Customer name is required')),
+                            );
+                            return;
+                          }
+                          setState(() => _isLoading = true);
+                          try {
+                            final companyId =
+                                (await sl<AccountRepository>().getUserInfo())
+                                    ?.companyId;
+                            final userInfo = UserInfo(
+                              name: _customerNameController.text.trim(),
+                              userType: UserType.Customer,
+                              companyId: companyId,
+                            );
+                            await sl<UserServices>()
+                                .addUserToCompany(userInfo, '');
+                            final users =
+                                await userServices.getUsersFromTenantCompany();
+                            final newCustomer = users.firstWhere(
+                              (u) => u.name == userInfo.name,
+                              orElse: () => userInfo.copyWith(
+                                userId: DateTime.now()
+                                    .millisecondsSinceEpoch
+                                    .toString(),
+                              ),
+                            );
+                            setState(() {
+                              _selectedCustomer = newCustomer;
+
+                              _customerNameController.clear();
+                            });
+                            allCustomers = users
+                                .where((u) => u.userType == UserType.Customer)
+                                .toList();
+                            filteredCustomers = allCustomers;
+                            searchController.clear();
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text('Failed to add customer: $e')),
+                            );
+                            setState(() => _isLoading = false);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12, horizontal: 8),
+                        ),
+                        child: const Text(
+                          'Add New Customer',
+                          style: TextStyle(
+                            color: AppColors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: filteredCustomers.isEmpty
+                        ? const Center(child: Text('No customers available'))
+                        : ListView.builder(
+                            controller: scrollController,
+                            itemCount: filteredCustomers.length,
+                            itemBuilder: (context, index) {
+                              final user = filteredCustomers[index];
+                              return ListTile(
+                                title: Text(
+                                  user.name ?? user.userName ?? 'Unknown',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                subtitle: Text('ID: ${user.userId}'),
+                                onTap: () {
+                                  setState(() {
+                                    _selectedCustomer = user;
+                                  });
+                                  Navigator.of(context).pop();
+                                },
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      // Update parent state after dialog closes
+      setState(() {});
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error')),
+      );
+    }
+  }
 
   @override
   void dispose() {

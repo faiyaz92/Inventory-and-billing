@@ -11,16 +11,25 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
   static const String usersCollection = 'users';
   static const String superAdmins = 'superAdmins';
   static const String companiesCollection = 'companies';
-  static const String tasksCollection =
-      'tasks'; // ✅ New Task Collection Constant
-  static const String productCollection =
-      'products'; // ✅ New Task Collection Constant
-  static const String users = 'users'; // ✅ New Task Collection Constant
+  static const String tasksCollection = 'tasks';
+  static const String productCollection = 'products';
+  static const String users = 'users';
   static const String categoriesCollection = 'categories';
   static const String subcategoriesCollection = 'subcategories';
   static const String accountLedgers = 'accountLedgers';
   static const String transactions = 'transactions';
-  static const String cartsCollection = 'carts'; // New Cart Collection Constant
+  static const String cartsCollection = 'carts';
+  static const String wishlistCollection = 'wishlists';
+  static const String ordersCollection = 'orders'; // New
+  static const String invoicesCollection = 'invoices'; // New
+// Accounting-specific collection names with 'accounting_' prefix
+  static const String accountingAccountLedgers = 'accounting_accountLedgers';
+  static const String accountingTransactions = 'accounting_transactions';
+  static const String accountingStores = 'accounting_stores';
+  static const String accountingStock = 'accounting_stock';
+  static const String accountingStoreTransactions = 'accounting_transactions';
+  static const String accountingGeneralJournal = 'accounting_generalJournal';
+  static const String accountingJournal = 'accounting_journal';
   FirestorePathProviderImpl(this._firestore);
 
   @override
@@ -57,7 +66,7 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
 
   @override
   CollectionReference getCommonUsersPath() {
-    return basePath.collection(users); // 🔥 Global users ke liye
+    return basePath.collection(users);
   }
 
   @override
@@ -66,11 +75,9 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
     return snapshot.exists;
   }
 
-  /// ✅ Now referring to `companies` as `customerCompany` in variables
   @override
   CollectionReference getCustomerCompanyRef(String companyId) {
-    return getTenantCompanyRef(companyId).collection(
-        companiesCollection); // 🔹 Actual collection name remains `companies`
+    return getTenantCompanyRef(companyId).collection(companiesCollection);
   }
 
   @override
@@ -79,13 +86,11 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
     return getCustomerCompanyRef(companyId).doc(customerCompanyId);
   }
 
-  /// ✅ Task Collection Under Tenant Company
   @override
   CollectionReference getTaskCollectionRef(String companyId) {
     return getTenantCompanyRef(companyId).collection(tasksCollection);
   }
 
-  /// ✅ Task Collection Under Tenant Company
   @override
   CollectionReference getProductCollectionRef(String companyId) {
     return getTenantCompanyRef(companyId).collection(productCollection);
@@ -96,7 +101,6 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
     return getTaskCollectionRef(companyId).doc(taskId);
   }
 
-  // 🔹 Path for Account Ledger
   @override
   DocumentReference getAccountLedgerRef(String companyId, String ledgerId) {
     return getTenantCompanyRef(companyId)
@@ -106,12 +110,11 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
 
   @override
   CollectionReference getAccountLedger(
-    String companyId,
-  ) {
+      String companyId,
+      ) {
     return getTenantCompanyRef(companyId).collection(accountLedgers);
   }
 
-// 🔹 Path for Transactions under a Ledger
   @override
   CollectionReference getTransactionsRef(String companyId, String ledgerId) {
     return getAccountLedgerRef(companyId, ledgerId).collection(transactions);
@@ -119,29 +122,25 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
 
   @override
   CollectionReference getCategoryCollectionRef(String companyId) {
-    // Category collection will be under each tenant company
-    return _firestore
-        .collection(rootPath) // Root path
-        .doc(companyDirectory) // Company directory
-        .collection(tenantCompanies) // Tenant companies collection
-        .doc(companyId) // Specific company document
-        .collection(categoriesCollection); // Categories subcollection
-  }
-
-  @override
-  CollectionReference getSubcategoryCollectionRef(String companyId) {
-    // Now the subcategories collection is at the company level, not under category.
     return _firestore
         .collection(rootPath)
         .doc(companyDirectory)
         .collection(tenantCompanies)
         .doc(companyId)
-        .collection(
-            subcategoriesCollection); // Top-level subcategories collection
+        .collection(categoriesCollection);
   }
 
   @override
-  // New paths for Stock and Inventory
+  CollectionReference getSubcategoryCollectionRef(String companyId) {
+    return _firestore
+        .collection(rootPath)
+        .doc(companyDirectory)
+        .collection(tenantCompanies)
+        .doc(companyId)
+        .collection(subcategoriesCollection);
+  }
+
+  @override
   CollectionReference getStoresCollectionRef(String companyId) => _firestore
       .collection(rootPath)
       .doc(companyDirectory)
@@ -153,24 +152,39 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
   CollectionReference getStockCollectionRef(String companyId, String storeId) =>
       getStoresCollectionRef(companyId).doc(storeId).collection('stock');
 
-  // '${getStoresCollectionRef(companyId)}/$storeId/stock';
-
   @override
   CollectionReference getTransactionsCollectionRef(
-          String companyId, String storeId) =>
+      String companyId, String storeId) =>
       getStoresCollectionRef(companyId).doc(storeId).collection('transactions');
-
-  // '${getStoresCollectionRef(companyId)}/$storeId/transactions';
 
   @override
   CollectionReference getOrdersCollectionRef(String companyId) {
     return _firestore
-        .collection(rootPath) // Root path
-        .doc(companyDirectory) // Company directory
-        .collection(tenantCompanies) // Tenant companies collection
-        .doc(companyId) // Specific company document
-        .collection('orders');
-    // return '/tenantCompanies/$companyId/orders';
+        .collection(rootPath)
+        .doc(companyDirectory)
+        .collection(tenantCompanies)
+        .doc(companyId)
+        .collection(ordersCollection);
+  }
+
+  @override
+  DocumentReference getSingleOrderRef(String companyId, String orderId) {
+    return getOrdersCollectionRef(companyId).doc(orderId);
+  }
+
+  @override
+  CollectionReference getInvoicesCollectionRef(String companyId) {
+    return _firestore
+        .collection(rootPath)
+        .doc(companyDirectory)
+        .collection(tenantCompanies)
+        .doc(companyId)
+        .collection(invoicesCollection);
+  }
+
+  @override
+  DocumentReference getSingleInvoiceRef(String companyId, String invoiceId) {
+    return getInvoicesCollectionRef(companyId).doc(invoiceId);
   }
 
   @override
@@ -183,13 +197,10 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
         .collection(cartsCollection);
   }
 
-  // Get a specific user's cart
   @override
   DocumentReference getUserCartRef(String companyId, String userId) {
     return getCartsCollectionRef(companyId).doc(userId);
   }
-
-  static const String wishlistCollection = 'wishlists';
 
   @override
   CollectionReference getWishlistCollectionRef(String companyId) {
@@ -274,8 +285,8 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
         .collection('settings')
         .doc('taxiBookingSettings');
   }
+
   @override
-// Visitor Counter Collection
   CollectionReference getVisitorCountersCollectionRef(String companyId) {
     return _firestore
         .collection(rootPath)
@@ -286,4 +297,82 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
         .doc('visitorCounters')
         .collection('daily');
   }
+  @override
+  CollectionReference getPurchaseOrdersCollectionRef(String companyId) {
+    return _firestore
+        .collection(rootPath)
+        .doc(companyDirectory)
+        .collection(tenantCompanies)
+        .doc(companyId)
+        .collection('purchase_orders');
+  }
+
+  @override
+  DocumentReference getSinglePurchaseOrderRef(String companyId, String orderId) {
+    return getPurchaseOrdersCollectionRef(companyId).doc(orderId);
+  }
+
+  @override
+  CollectionReference getPurchaseInvoicesCollectionRef(String companyId) {
+    return _firestore
+        .collection(rootPath)
+        .doc(companyDirectory)
+        .collection(tenantCompanies)
+        .doc(companyId)
+        .collection('purchase_invoices');
+  }
+
+  @override
+  DocumentReference getSinglePurchaseInvoiceRef(String companyId, String invoiceId) {
+    return getPurchaseInvoicesCollectionRef(companyId).doc(invoiceId);
+  }
+  // --- START ACCOUNTING PATHS FOR SDK ---
+  @override
+  CollectionReference getAccountingAccountLedger(String companyId) {
+    return getTenantCompanyRef(companyId).collection(accountingAccountLedgers);
+    // Path: Easy2Solutions/companyDirectory/tenantCompanies/{companyId}/accounting_accountLedgers
+  }
+
+  @override
+  DocumentReference getAccountingAccountLedgerRef(String companyId, String ledgerId) {
+    return getAccountingAccountLedger(companyId).doc(ledgerId);
+    // Path: Easy2Solutions/companyDirectory/tenantCompanies/{companyId}/accounting_accountLedgers/{ledgerId}
+  }
+
+  @override
+  CollectionReference getAccountingTransactionsRef(String companyId, String ledgerId) {
+    return getAccountingAccountLedgerRef(companyId, ledgerId).collection(accountingTransactions);
+    // Path: Easy2Solutions/companyDirectory/tenantCompanies/{companyId}/accounting_accountLedgers/{ledgerId}/accounting_transactions
+  }
+
+  @override
+  CollectionReference getAccountingStoresCollectionRef(String companyId) {
+    return getTenantCompanyRef(companyId).collection(accountingStores);
+    // Path: Easy2Solutions/companyDirectory/tenantCompanies/{companyId}/accounting_stores
+  }
+
+  @override
+  CollectionReference getAccountingStockCollectionRef(String companyId, String storeId) {
+    return getAccountingStoresCollectionRef(companyId).doc(storeId).collection(accountingStock);
+    // Path: Easy2Solutions/companyDirectory/tenantCompanies/{companyId}/accounting_stores/{storeId}/accounting_stock
+  }
+
+  @override
+  CollectionReference getAccountingTransactionsCollectionRef(String companyId, String storeId) {
+    return getAccountingStoresCollectionRef(companyId).doc(storeId).collection(accountingStoreTransactions);
+    // Path: Easy2Solutions/companyDirectory/tenantCompanies/{companyId}/accounting_stores/{storeId}/accounting_transactions
+  }
+
+  @override
+  DocumentReference getAccountingGeneralJournalRef(String companyId) {
+    return getTenantCompanyRef(companyId).collection(accountingGeneralJournal).doc('journal');
+    // Path: Easy2Solutions/companyDirectory/tenantCompanies/{companyId}/accounting_generalJournal/journal
+  }
+
+  @override
+  DocumentReference getAccountingJournalRef(String companyId, String storeId) {
+    return getAccountingStoresCollectionRef(companyId).doc(storeId).collection(accountingJournal).doc('journal');
+    // Path: Easy2Solutions/companyDirectory/tenantCompanies/{companyId}/accounting_stores/{storeId}/accounting_journal/journal
+  }
+// --- END ACCOUNTING PATHS FOR SDK ---
 }

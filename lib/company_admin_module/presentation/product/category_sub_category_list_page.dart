@@ -256,7 +256,7 @@ class _CategoriesWithSubcategoriesPageState
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                context.read<CategoryCubit>().fetchCategories();
+                _categoryCubit.fetchCategories();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryColor,
@@ -302,9 +302,9 @@ class _CategoriesWithSubcategoriesPageState
           ElevatedButton(
             onPressed: () {
               if (isCategory) {
-                context.read<CategoryCubit>().deleteCategory(item.id ?? '');
+                _categoryCubit.deleteCategory(item.id ?? '');
               } else {
-                context.read<CategoryCubit>().deleteSubcategory(categoryId!, item.id ?? '');
+                _categoryCubit.deleteSubcategory(categoryId!, item.id ?? '');
               }
               Navigator.pop(context);
             },

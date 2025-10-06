@@ -5,16 +5,17 @@ import 'package:requirment_gathering_app/company_admin_module/repositories/trans
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 
 abstract class TransactionService {
-  Future<List<TransactionModel>> getTransactions(
-      String storeId, {
-        String? userId,
-        String? fromStoreId,
-        String? toStoreId,
-        DateTime? startDate,
-        DateTime? endDate,
-        required int page,
-        required int pageSize,
-      });
+  Future<List<TransactionModel>> getTransactions(String storeId, {
+    String? type,
+    String? fromStoreId,
+    String? toStoreId,
+    String? userId,
+    String? customerId,
+    DateTime? startDate,
+    DateTime? endDate,
+    required int page,
+    required int pageSize,
+  });
 
   Future<void> createBilling(TransactionModel transaction);
 
@@ -33,67 +34,86 @@ class TransactionServiceImpl implements TransactionService {
   });
 
   @override
-  Future<List<TransactionModel>> getTransactions(
-      String storeId, {
-        String? userId,
-        String? fromStoreId,
-        String? toStoreId,
-        DateTime? startDate,
-        DateTime? endDate,
-        required int page,
-        required int pageSize,
-      }) async {
+  Future<List<TransactionModel>> getTransactions(String storeId, {
+    String? type,
+    String? fromStoreId,
+    String? toStoreId,
+    String? userId,
+    String? customerId,
+    DateTime? startDate,
+    DateTime? endDate,
+    required int page,
+    required int pageSize,
+  }) async {
     final userInfo = await accountRepository.getUserInfo();
     final companyId = userInfo?.companyId ?? '';
 
-    // Fetch transactions with pagination
+    print('Fetching transactions for storeId: $storeId, type: $type, '
+        'fromStoreId: $fromStoreId, toStoreId: $toStoreId, userId: $userId, '
+        'customerId: $customerId, startDate: $startDate, endDate: $endDate, '
+        'page: $page, pageSize: $pageSize');
+
+// Fetch transactions for the store with pagination
     final transactionDtos = await transactionRepository.getTransactions(
       companyId,
       storeId,
-      userId: userId,
-      fromStoreId: fromStoreId,
-      toStoreId: toStoreId,
-      startDate: startDate,
-      endDate: endDate,
       page: page,
       pageSize: pageSize,
+      startDate: startDate,
+      endDate: endDate,
     );
 
-    final allTransactions = transactionDtos.map((dto) => TransactionModel.fromDto(dto)).toList();
-    // Apply existing type-based filtering
+    final allTransactions = transactionDtos.map((dto) =>
+        TransactionModel.fromDto(dto)).toList();
+    print('Retrieved ${allTransactions.length} transactions before filtering: '
+        '${allTransactions.map((t) => "${t.id} (${t.type})").toList()}');
+
+// Filter transactions
     final filteredTransactions = allTransactions.where((transaction) {
-      bool isMatch = false;
-      if (transaction.type == 'out' ||
-          transaction.type == 'add' ||
-          transaction.type == 'billing') {
-        isMatch = transaction.fromStoreId == storeId;
-      } else if (transaction.type == 'received') {
-        isMatch = transaction.toStoreId == storeId;
+      bool isTypeMatch = type == null ||
+          transaction.type.toLowerCase() == type.toLowerCase();
+      bool isStoreMatch = transaction.type == 'received'
+          ? transaction.toStoreId == storeId
+          : transaction.fromStoreId == storeId;
+      bool isFromStoreMatch = fromStoreId == null ||
+          transaction.fromStoreId == fromStoreId;
+      bool isToStoreMatch = toStoreId == null ||
+          transaction.toStoreId == toStoreId;
+      bool isUserMatch = userId == null || transaction.userId == userId;
+      bool isCustomerMatch = customerId == null ||
+          transaction.customerId == customerId;
+      bool isDateMatch = (startDate == null ||
+          transaction.timestamp.isAfter(startDate) ||
+          transaction.timestamp.isAtSameMomentAs(startDate)) &&
+          (endDate == null || transaction.timestamp.isBefore(
+              endDate.add(const Duration(days: 1))) ||
+              transaction.timestamp.isAtSameMomentAs(endDate));
+
+      if (!isTypeMatch || !isStoreMatch || !isFromStoreMatch ||
+          !isToStoreMatch || !isUserMatch || !isCustomerMatch || !isDateMatch) {
+        print('Filtered out transaction ${transaction.id}: type=${transaction
+            .type}, '
+            'fromStoreId=${transaction.fromStoreId}, toStoreId=${transaction
+            .toStoreId}, '
+            'userId=${transaction.userId}, customerId=${transaction
+            .customerId}, '
+            'timestamp=${transaction.timestamp}, '
+            'isTypeMatch=$isTypeMatch, isStoreMatch=$isStoreMatch, '
+            'isFromStoreMatch=$isFromStoreMatch, isToStoreMatch=$isToStoreMatch, '
+            'isUserMatch=$isUserMatch, isCustomerMatch=$isCustomerMatch, '
+            'isDateMatch=$isDateMatch');
       }
 
-      // Apply additional filters
-      if (userId != null && transaction.userId != userId) {
-        isMatch = false;
-      }
-      if (fromStoreId != null && transaction.fromStoreId != fromStoreId) {
-        isMatch = false;
-      }
-      if (toStoreId != null && transaction.toStoreId != toStoreId) {
-        isMatch = false;
-      }
-      if (startDate != null && transaction.timestamp.isBefore(startDate)) {
-        isMatch = false;
-      }
-      if (endDate != null && transaction.timestamp.isAfter(endDate)) {
-        isMatch = false;
-      }
-      return isMatch;
+      return isTypeMatch && isStoreMatch && isFromStoreMatch &&
+          isToStoreMatch && isUserMatch && isCustomerMatch && isDateMatch;
     }).toList();
 
-    // Sort by timestamp descending
+    print('Total transactions after filtering: ${filteredTransactions.length}, '
+        'types: ${filteredTransactions.map((t) => t.type).toSet()}');
+
+// Sort by timestamp descending
     filteredTransactions.sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
-    print('Total transactions after filtering: ${filteredTransactions.length}');
     return filteredTransactions;
   }
 
@@ -104,9 +124,12 @@ class TransactionServiceImpl implements TransactionService {
     final userName = userInfo?.userName ?? 'Unknown User';
     final userId = userInfo?.userId ?? 'unknown';
 
-    // Reduce stock
+// Reduce stock
     final stock = await stockRepository.getStockByProduct(
-        companyId, transaction.fromStoreId, transaction.productId);
+      companyId,
+      transaction.fromStoreId,
+      transaction.productId,
+    );
     if (stock == null || stock.quantity < transaction.quantity) {
       throw Exception('Insufficient stock for billing');
     }
@@ -119,7 +142,7 @@ class TransactionServiceImpl implements TransactionService {
     );
     await stockRepository.updateStock(companyId, updatedStock.toDto());
 
-    // Record transaction with userName and userId
+// Record transaction with userName and userId
     final billingTransaction = TransactionModel(
       id: transaction.id,
       type: transaction.type,
@@ -130,7 +153,9 @@ class TransactionServiceImpl implements TransactionService {
       customerId: transaction.customerId,
       timestamp: transaction.timestamp,
       userName: userName,
-      userId: userId, productName: transaction.productName,
+      userId: userId,
+      productName: transaction.productName,
+      remarks: transaction.remarks,
     );
     await transactionRepository.addTransaction(
         companyId, billingTransaction.toDto());

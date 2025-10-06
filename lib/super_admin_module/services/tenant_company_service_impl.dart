@@ -58,4 +58,33 @@ class TenantCompanyServiceImpl implements TenantCompanyService {
   Future<void> addSuperAdmin() async {
     await _tenantCompanyRepository.addSuperAdmin();
   }
+
+  @override
+  Future<List<TenantCompany>> getTenantCompanies() async {
+    try {
+      final dtos = await _tenantCompanyRepository.getTenantCompanies();
+      return dtos.map((dto) => TenantCompany.fromDto(dto)).toList();
+    } catch (e) {
+      if (e.toString().contains('index')) {
+        print('Index issue detected in getTenantCompanies: $e');
+      }
+      throw Exception('Failed to fetch tenant companies: $e');
+    }
+  }
+
+  @override
+  Future<TenantCompany?> getTenantCompanyById(String companyId) async {
+    try {
+      final dto = await _tenantCompanyRepository.getTenantCompanyById(companyId);
+      if (dto == null) {
+        return null;
+      }
+      return TenantCompany.fromDto(dto);
+    } catch (e) {
+      if (e.toString().contains('index')) {
+        print('Index issue detected in getTenantCompanyById: $e');
+      }
+      throw Exception('Failed to fetch tenant company by ID: $e');
+    }
+  }
 }

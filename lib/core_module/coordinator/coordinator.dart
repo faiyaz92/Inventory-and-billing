@@ -4,8 +4,12 @@ import 'package:requirment_gathering_app/company_admin_module/data/product/categ
 import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/sub_category.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/task/task_model.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_page.dart';
+import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/tenant_company.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 import 'package:requirment_gathering_app/user_module/data/partner.dart';
 
 abstract class Coordinator {
@@ -86,7 +90,7 @@ abstract class Coordinator {
 
    Future<dynamic> navigateToAddStockPage() ;
    Future<dynamic> navigateToInventoryDashBoard() ;
-   Future<dynamic> navigateToStoresListPage() ;
+   Future<dynamic> navigateToStoresListPage({bool fromAccountPage = false}) ;
    Future<dynamic> navigateToAddStorePage() ;
    Future<dynamic> navigateToStoreDetailsPage(String? storeId) ;
    Future<dynamic> navigateToOverAllStockPage() ;
@@ -104,8 +108,7 @@ abstract class Coordinator {
   Future<dynamic> navigateToUserOrderDetailsPage(String? orderId);
   Future<dynamic> navigateToCartDashboard();
   Future<dynamic> navigateToSalesManOrderPage();
-  Future<dynamic> navigateToSimpleEmployeeList();
-  // New Navigation Methods
+  Future<dynamic> navigateToSimpleUserList({UserType? userType,Role? role}); // Updated line  // New Navigation Methods
   Future<dynamic> navigateToSalesmanOrderListPage();
   Future<dynamic> navigateToDeliveryManOrderListPage();
   Future<dynamic> navigateToStoreOrderListPage();
@@ -113,8 +116,13 @@ abstract class Coordinator {
   Future<dynamic> navigateToPerformanceDetailsPage({required String entityType, required String entityId,String? entityName});
   Future<dynamic> navigateToCompanyPerformancePage();
   Future<dynamic> navigateToProductPerformanceListPage();
-  Future<dynamic> navigateToUserLedgerPage({required UserInfo user});
+  Future<dynamic> navigateToUserLedgerPage({ UserInfo? user,StoreDto? store,TransactionType transactionType});
   Future<dynamic> navigateToBillingPage({String? orderId});
   Future<dynamic> navigateToBillPdfPage({required pw.Document pdf, required String billNumber});
-
+  Future<dynamic> navigateToAccountsDashboard(); // Add this line
+  Future<dynamic> navigateToInvoiceListPage();
+  Future<dynamic> navigateToAnalyticsPage();
+  Future<dynamic> navigateToQuickTransactionPage(String transactionType); // Add this line
+  Future<dynamic> navigateToPurchaseInvoicePanelPage();
+  Future<dynamic> navigateToDashboardStaticsPage();
 }

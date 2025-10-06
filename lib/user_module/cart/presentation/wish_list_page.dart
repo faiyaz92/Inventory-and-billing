@@ -134,7 +134,7 @@ class WishlistPage extends StatelessWidget {
                                       ),
                                     ),
                                     Text(
-                                      '₹${item.price}',
+                                      'IQD ${item.price}',
                                       style: const TextStyle(
                                         fontSize: 14,
                                         color: AppColors.textSecondary,

@@ -8,7 +8,9 @@ import 'package:requirment_gathering_app/core_module/service_locator/service_loc
 
 @RoutePage()
 class StoresListPage extends StatefulWidget {
-  const StoresListPage({Key? key}) : super(key: key);
+  final bool fromAccountsPage; // New flag to indicate navigation from accounts page
+
+  const StoresListPage({Key? key, this.fromAccountsPage = false}) : super(key: key);
 
   @override
   _StoresListPageState createState() => _StoresListPageState();
@@ -46,9 +48,6 @@ class _StoresListPageState extends State<StoresListPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Welcome Card
-
-                  // Stores List
                   Expanded(
                     child: BlocBuilder<StockCubit, StockState>(
                       builder: (context, state) {
@@ -145,9 +144,25 @@ class _StoresListPageState extends State<StoresListPage> {
                                     color: Colors.grey[600],
                                   ),
                                 ),
-                                trailing: Icon(
-                                  Icons.arrow_forward,
-                                  color: Theme.of(context).primaryColor,
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (widget.fromAccountsPage)
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.account_balance_wallet,
+                                          color: Theme.of(context).primaryColor,
+                                        ),
+                                        tooltip: 'View Ledger',
+                                        onPressed: () {
+                                          sl<Coordinator>().navigateToUserLedgerPage(store: store);
+                                        },
+                                      ),
+                                    Icon(
+                                      Icons.arrow_forward,
+                                      color: Theme.of(context).primaryColor,
+                                    ),
+                                  ],
                                 ),
                                 onTap: () {
                                   sl<Coordinator>().navigateToStoreDetailsPage(store.storeId);

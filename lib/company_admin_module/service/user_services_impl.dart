@@ -1,36 +1,53 @@
 import 'package:intl/intl.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/attendance/attendance_dto.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/attendance/attendance_model.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_ledger_model.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/account_ledger_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart'
     show UserServices;
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info_dto.dart';
-import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 import 'package:requirment_gathering_app/super_admin_module/repository/tenant_company_repository.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 
 class UserServiceImpl implements UserServices {
   final ITenantCompanyRepository _tenantCompanyRepository;
   final AccountRepository _accountRepository;
+  final IAccountLedgerService _accountLedgerService;
 
-  UserServiceImpl(this._tenantCompanyRepository, this._accountRepository);
+  UserServiceImpl(this._tenantCompanyRepository, this._accountRepository,
+      this._accountLedgerService);
 
   @override
-  Future<String> addUserToCompany(UserInfo userInfo, String password) async {
+  Future<UserInfo?> addUserToCompany(UserInfo userInfo, String password) async {
     try {
       final loggedInUserInfo = await _accountRepository.getUserInfo();
+
+      final ledgerId = await _accountLedgerService.createLedger(AccountLedger(
+        totalOutstanding: 0,
+        promiseAmount: null,
+        promiseDate: null,
+        transactions: [],
+        entityType: userInfo.userType,
+      ));
+
       final updatedUserInfo = userInfo.copyWith(
         companyId: loggedInUserInfo?.companyId ?? '',
         latitude: userInfo.latitude ?? 0.0,
         longitude: userInfo.longitude ?? 0.0,
         dailyWage: userInfo.dailyWage ?? 500.0,
         storeId: userInfo.storeId,
-        userType: userInfo.userType ?? UserType.Customer, // Default to Customer
+        userType: userInfo.userType ?? UserType.Customer,
+        accountLedgerId: ledgerId??''// Default to Customer
       );
-      print('UserServiceImpl addUserToCompany: userType = ${updatedUserInfo.userType?.name ?? "null"}');
+      print(
+          'UserServiceImpl addUserToCompany: userType = ${updatedUserInfo.userType?.name ?? "null"}');
       final json = updatedUserInfo.toJson();
-      print('UserServiceImpl addUserToCompany: Sending to Firestore = $json');
-      return await _tenantCompanyRepository.addUserToCompany(updatedUserInfo.toDto(), password);
+
+     final userId = await _tenantCompanyRepository.addUserToCompany(
+          updatedUserInfo.toDto(), password);
+       return updatedUserInfo.copyWith(userId: userId);
     } catch (e) {
       print('UserServiceImpl addUserToCompany error: $e');
       throw Exception('Failed to add user: ${e.toString()}');
@@ -47,7 +64,8 @@ class UserServiceImpl implements UserServices {
       }
 
       // Fetch existing user data from repository
-      final existingUser = await _tenantCompanyRepository.getUser(userInfo.userId!, companyId);
+      final existingUser =
+          await _tenantCompanyRepository.getUser(userInfo.userId!, companyId);
       if (existingUser == null) {
         throw Exception("User does not exist.");
       }
@@ -60,14 +78,19 @@ class UserServiceImpl implements UserServices {
         email: userInfo.email ?? existingUser.email,
         userName: userInfo.userName ?? existingUser.userName,
         role: userInfo.role ?? existingUser.role,
-        userType: userInfo.userType ?? existingUser.userType ?? UserType.Customer, // Default to Customer
+        userType:
+            userInfo.userType ?? existingUser.userType ?? UserType.Customer,
+        // Default to Customer
         latitude: userInfo.latitude ?? existingUser.latitude,
         longitude: userInfo.longitude ?? existingUser.longitude,
         dailyWage: userInfo.dailyWage ?? existingUser.dailyWage,
         storeId: userInfo.storeId ?? existingUser.storeId,
+        accountLedgerId:
+            userInfo.accountLedgerId ?? existingUser.accountLedgerId,
       );
 
-      print('UserServiceImpl updateUser: userType = ${updatedUserInfo.userType?.name ?? "null"}');
+      print(
+          'UserServiceImpl updateUser: userType = ${updatedUserInfo.userType?.name ?? "null"}');
       final json = updatedUserInfo.toMap();
       print('UserServiceImpl updateUser: Sending to Firestore = $json');
 
@@ -92,9 +115,11 @@ class UserServiceImpl implements UserServices {
         latitude: latitude,
         longitude: longitude,
         companyId: companyId,
-        userType: userInfo?.userType ?? UserType.Customer, // Preserve or default to Customer
+        userType: userInfo?.userType ??
+            UserType.Customer, // Preserve or default to Customer
       );
-      print('UserServiceImpl updateUserLocation: userType = ${updatedUserInfo.userType?.name ?? "null"}');
+      print(
+          'UserServiceImpl updateUserLocation: userType = ${updatedUserInfo.userType?.name ?? "null"}');
       await _tenantCompanyRepository.updateUserLocation(
         userInfo?.userId ?? '',
         companyId,
@@ -110,11 +135,13 @@ class UserServiceImpl implements UserServices {
   Future<List<UserInfo>> getUsersFromTenantCompany({String? storeId}) async {
     try {
       final userInfo = await _accountRepository.getUserInfo();
-      final userDtos = await _tenantCompanyRepository
-          .getUsersFromTenantCompany(userInfo?.companyId ?? '', storeId: storeId);
+      final userDtos = await _tenantCompanyRepository.getUsersFromTenantCompany(
+          userInfo?.companyId ?? '',
+          storeId: storeId);
       final users = userDtos.map((dto) {
         final user = UserInfo.fromDto(dto);
-        print('UserServiceImpl getUsersFromTenantCompany: userId = ${user.userId}, userType = ${user.userType?.name ?? "null"}');
+        print(
+            'UserServiceImpl getUsersFromTenantCompany: userId = ${user.userId}, userType = ${user.userType?.name ?? "null"}');
         return user;
       }).toList();
       return users;
@@ -128,7 +155,8 @@ class UserServiceImpl implements UserServices {
   Future<void> deleteUser(String userId) async {
     try {
       final userInfo = await _accountRepository.getUserInfo();
-      await _tenantCompanyRepository.deleteUser(userId, userInfo?.companyId ?? '');
+      await _tenantCompanyRepository.deleteUser(
+          userId, userInfo?.companyId ?? '');
     } catch (e) {
       print('UserServiceImpl deleteUser error: $e');
       throw Exception('Failed to delete user: ${e.toString()}');
@@ -156,11 +184,13 @@ class UserServiceImpl implements UserServices {
   }
 
   @override
-  Future<List<AttendanceModel>> getAttendance(String userId, String month) async {
+  Future<List<AttendanceModel>> getAttendance(
+      String userId, String month) async {
     try {
       final userInfo = await _accountRepository.getUserInfo();
       final companyId = userInfo?.companyId ?? '';
-      final attendanceDTOs = await _tenantCompanyRepository.getAttendance(userId, companyId, month);
+      final attendanceDTOs = await _tenantCompanyRepository.getAttendance(
+          userId, companyId, month);
       return attendanceDTOs.map((dto) {
         return AttendanceModel(
           date: DateFormat('dd-MM-yyyy').format(DateTime.parse(dto.date)),
@@ -174,11 +204,13 @@ class UserServiceImpl implements UserServices {
   }
 
   @override
-  Future<void> recordSalaryPayment(String userId, double amount, String month) async {
+  Future<void> recordSalaryPayment(
+      String userId, double amount, String month) async {
     try {
       final userInfo = await _accountRepository.getUserInfo();
       final companyId = userInfo?.companyId ?? '';
-      await _tenantCompanyRepository.recordSalaryPayment(userId, companyId, amount, month);
+      await _tenantCompanyRepository.recordSalaryPayment(
+          userId, companyId, amount, month);
     } catch (e) {
       print('UserServiceImpl recordSalaryPayment error: $e');
       throw Exception('Failed to record salary payment: ${e.toString()}');
@@ -186,11 +218,13 @@ class UserServiceImpl implements UserServices {
   }
 
   @override
-  Future<void> recordAdvanceSalary(String userId, double amount, String date) async {
+  Future<void> recordAdvanceSalary(
+      String userId, double amount, String date) async {
     try {
       final userInfo = await _accountRepository.getUserInfo();
       final companyId = userInfo?.companyId ?? '';
-      await _tenantCompanyRepository.recordAdvanceSalary(userId, companyId, amount, date);
+      await _tenantCompanyRepository.recordAdvanceSalary(
+          userId, companyId, amount, date);
     } catch (e) {
       print('UserServiceImpl recordAdvanceSalary error: $e');
       throw Exception('Failed to record advance salary: ${e.toString()}');
@@ -198,7 +232,8 @@ class UserServiceImpl implements UserServices {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getLedger(String userId, String? month) async {
+  Future<List<Map<String, dynamic>>> getLedger(
+      String userId, String? month) async {
     try {
       final userInfo = await _accountRepository.getUserInfo();
       final companyId = userInfo?.companyId ?? '';
@@ -214,18 +249,21 @@ class UserServiceImpl implements UserServices {
     try {
       final userInfo = await _accountRepository.getUserInfo();
       final companyId = userInfo?.companyId ?? '';
-      final salaryHistory = await _tenantCompanyRepository.getSalaryHistory(userId, companyId);
+      final salaryHistory =
+          await _tenantCompanyRepository.getSalaryHistory(userId, companyId);
       double unpaidTotal = salaryHistory
           .where((h) => !(h['paid'] as bool))
           .fold(0.0, (sum, h) => sum + (h['totalEarned'] as double));
 
       final currentMonth = DateTime.now().toIso8601String().substring(0, 7);
       final attendance = await getAttendance(userId, currentMonth);
-      final user = (await getUsersFromTenantCompany()).firstWhere((u) => u.userId == userId);
+      final user = (await getUsersFromTenantCompany())
+          .firstWhere((u) => u.userId == userId);
       final dailyWage = user.dailyWage ?? 500.0;
       int presentDays = attendance.where((a) => a.status == 'present').length;
       int halfDays = attendance.where((a) => a.status == 'half_day').length;
-      double currentMonthSalary = (presentDays * dailyWage) + (halfDays * dailyWage / 2);
+      double currentMonthSalary =
+          (presentDays * dailyWage) + (halfDays * dailyWage / 2);
 
       return unpaidTotal + currentMonthSalary;
     } catch (e) {
@@ -242,9 +280,13 @@ class UserServiceImpl implements UserServices {
           .where((e) => e['type'] == 'advance')
           .fold(0.0, (sum, e) => sum + (e['amount'] as double));
       final userInfo = await _accountRepository.getUserInfo();
-      final salaryHistory = await _tenantCompanyRepository.getSalaryHistory(userId, userInfo?.companyId ?? '');
-      double totalEarned = salaryHistory.fold(0.0, (sum, h) => sum + (h['totalEarned'] as double));
-      return totalAdvances - totalEarned > 0 ? totalAdvances - totalEarned : 0.0;
+      final salaryHistory = await _tenantCompanyRepository.getSalaryHistory(
+          userId, userInfo?.companyId ?? '');
+      double totalEarned = salaryHistory.fold(
+          0.0, (sum, h) => sum + (h['totalEarned'] as double));
+      return totalAdvances - totalEarned > 0
+          ? totalAdvances - totalEarned
+          : 0.0;
     } catch (e) {
       print('UserServiceImpl getAdvanceBalance error: $e');
       throw Exception('Failed to fetch advance balance: ${e.toString()}');

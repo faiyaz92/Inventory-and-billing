@@ -48,6 +48,22 @@ class AccountLedgerRouteArgs {
 }
 
 /// generated route for
+/// [AccountsDashboardPage]
+class AccountsDashboardRoute extends PageRouteInfo<void> {
+  const AccountsDashboardRoute({List<PageRouteInfo>? children})
+    : super(AccountsDashboardRoute.name, initialChildren: children);
+
+  static const String name = 'AccountsDashboardRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AccountsDashboardPage();
+    },
+  );
+}
+
+/// generated route for
 /// [AddCompanyPage]
 class AddCompanyRoute extends PageRouteInfo<AddCompanyRouteArgs> {
   AddCompanyRoute({Key? key, Partner? company, List<PageRouteInfo>? children})
@@ -394,6 +410,22 @@ class AddUserRouteArgs {
 }
 
 /// generated route for
+/// [AdminInvoicePanelPage]
+class AdminInvoicePanelRoute extends PageRouteInfo<void> {
+  const AdminInvoicePanelRoute({List<PageRouteInfo>? children})
+    : super(AdminInvoicePanelRoute.name, initialChildren: children);
+
+  static const String name = 'AdminInvoicePanelRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AdminInvoicePanelPage();
+    },
+  );
+}
+
+/// generated route for
 /// [AdminOrderDetailsPage]
 class AdminOrderDetailsRoute extends PageRouteInfo<AdminOrderDetailsRouteArgs> {
   AdminOrderDetailsRoute({
@@ -458,6 +490,22 @@ class AiCompanyListRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const AiCompanyListPage();
+    },
+  );
+}
+
+/// generated route for
+/// [AnalyticsPage]
+class AnalyticsRoute extends PageRouteInfo<void> {
+  const AnalyticsRoute({List<PageRouteInfo>? children})
+    : super(AnalyticsRoute.name, initialChildren: children);
+
+  static const String name = 'AnalyticsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AnalyticsPage();
     },
   );
 }
@@ -828,6 +876,22 @@ class DashboardRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DashboardStaticsPage]
+class DashboardStaticsRoute extends PageRouteInfo<void> {
+  const DashboardStaticsRoute({List<PageRouteInfo>? children})
+    : super(DashboardStaticsRoute.name, initialChildren: children);
+
+  static const String name = 'DashboardStaticsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DashboardStaticsPage();
+    },
+  );
+}
+
+/// generated route for
 /// [DeliveryManOrderListPage]
 class DeliveryManOrderListRoute extends PageRouteInfo<void> {
   const DeliveryManOrderListRoute({List<PageRouteInfo>? children})
@@ -1186,6 +1250,65 @@ class ProfileRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [PurchaseInvoicePanelPage]
+class PurchaseInvoicePanelRoute extends PageRouteInfo<void> {
+  const PurchaseInvoicePanelRoute({List<PageRouteInfo>? children})
+    : super(PurchaseInvoicePanelRoute.name, initialChildren: children);
+
+  static const String name = 'PurchaseInvoicePanelRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const PurchaseInvoicePanelPage();
+    },
+  );
+}
+
+/// generated route for
+/// [QuickTransactionPage]
+class QuickTransactionRoute extends PageRouteInfo<QuickTransactionRouteArgs> {
+  QuickTransactionRoute({
+    Key? key,
+    required String transactionType,
+    List<PageRouteInfo>? children,
+  }) : super(
+         QuickTransactionRoute.name,
+         args: QuickTransactionRouteArgs(
+           key: key,
+           transactionType: transactionType,
+         ),
+         initialChildren: children,
+       );
+
+  static const String name = 'QuickTransactionRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<QuickTransactionRouteArgs>();
+      return QuickTransactionPage(
+        key: args.key,
+        transactionType: args.transactionType,
+      );
+    },
+  );
+}
+
+class QuickTransactionRouteArgs {
+  const QuickTransactionRouteArgs({this.key, required this.transactionType});
+
+  final Key? key;
+
+  final String transactionType;
+
+  @override
+  String toString() {
+    return 'QuickTransactionRouteArgs{key: $key, transactionType: $transactionType}';
+  }
+}
+
+/// generated route for
 /// [SalesReportPage]
 class SalesReportRoute extends PageRouteInfo<void> {
   const SalesReportRoute({List<PageRouteInfo>? children})
@@ -1234,19 +1357,49 @@ class SalesmanOrderRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [SimpleEmployeesPage]
-class SimpleEmployeesRoute extends PageRouteInfo<void> {
-  const SimpleEmployeesRoute({List<PageRouteInfo>? children})
-    : super(SimpleEmployeesRoute.name, initialChildren: children);
+/// [SimpleUsersPage]
+class SimpleUsersRoute extends PageRouteInfo<SimpleUsersRouteArgs> {
+  SimpleUsersRoute({
+    Key? key,
+    UserType? userType,
+    Role? role,
+    List<PageRouteInfo>? children,
+  }) : super(
+         SimpleUsersRoute.name,
+         args: SimpleUsersRouteArgs(key: key, userType: userType, role: role),
+         initialChildren: children,
+       );
 
-  static const String name = 'SimpleEmployeesRoute';
+  static const String name = 'SimpleUsersRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const SimpleEmployeesPage();
+      final args = data.argsAs<SimpleUsersRouteArgs>(
+        orElse: () => const SimpleUsersRouteArgs(),
+      );
+      return SimpleUsersPage(
+        key: args.key,
+        userType: args.userType,
+        role: args.role,
+      );
     },
   );
+}
+
+class SimpleUsersRouteArgs {
+  const SimpleUsersRouteArgs({this.key, this.userType, this.role});
+
+  final Key? key;
+
+  final UserType? userType;
+
+  final Role? role;
+
+  @override
+  String toString() {
+    return 'SimpleUsersRouteArgs{key: $key, userType: $userType, role: $role}';
+  }
 }
 
 /// generated route for
@@ -1365,18 +1518,47 @@ class StoreOrderListRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [StoresListPage]
-class StoresListRoute extends PageRouteInfo<void> {
-  const StoresListRoute({List<PageRouteInfo>? children})
-    : super(StoresListRoute.name, initialChildren: children);
+class StoresListRoute extends PageRouteInfo<StoresListRouteArgs> {
+  StoresListRoute({
+    Key? key,
+    bool fromAccountsPage = false,
+    List<PageRouteInfo>? children,
+  }) : super(
+         StoresListRoute.name,
+         args: StoresListRouteArgs(
+           key: key,
+           fromAccountsPage: fromAccountsPage,
+         ),
+         initialChildren: children,
+       );
 
   static const String name = 'StoresListRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const StoresListPage();
+      final args = data.argsAs<StoresListRouteArgs>(
+        orElse: () => const StoresListRouteArgs(),
+      );
+      return StoresListPage(
+        key: args.key,
+        fromAccountsPage: args.fromAccountsPage,
+      );
     },
   );
+}
+
+class StoresListRouteArgs {
+  const StoresListRouteArgs({this.key, this.fromAccountsPage = false});
+
+  final Key? key;
+
+  final bool fromAccountsPage;
+
+  @override
+  String toString() {
+    return 'StoresListRouteArgs{key: $key, fromAccountsPage: $fromAccountsPage}';
+  }
 }
 
 /// generated route for
@@ -1485,11 +1667,18 @@ class TransactionsRoute extends PageRouteInfo<void> {
 class UserLedgerRoute extends PageRouteInfo<UserLedgerRouteArgs> {
   UserLedgerRoute({
     Key? key,
-    required UserInfo user,
+    UserInfo? user,
+    StoreDto? store,
+    TransactionType type = TransactionType.General,
     List<PageRouteInfo>? children,
   }) : super(
          UserLedgerRoute.name,
-         args: UserLedgerRouteArgs(key: key, user: user),
+         args: UserLedgerRouteArgs(
+           key: key,
+           user: user,
+           store: store,
+           type: type,
+         ),
          initialChildren: children,
        );
 
@@ -1498,22 +1687,38 @@ class UserLedgerRoute extends PageRouteInfo<UserLedgerRouteArgs> {
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      final args = data.argsAs<UserLedgerRouteArgs>();
-      return UserLedgerPage(key: args.key, user: args.user);
+      final args = data.argsAs<UserLedgerRouteArgs>(
+        orElse: () => const UserLedgerRouteArgs(),
+      );
+      return UserLedgerPage(
+        key: args.key,
+        user: args.user,
+        store: args.store,
+        type: args.type,
+      );
     },
   );
 }
 
 class UserLedgerRouteArgs {
-  const UserLedgerRouteArgs({this.key, required this.user});
+  const UserLedgerRouteArgs({
+    this.key,
+    this.user,
+    this.store,
+    this.type = TransactionType.General,
+  });
 
   final Key? key;
 
-  final UserInfo user;
+  final UserInfo? user;
+
+  final StoreDto? store;
+
+  final TransactionType type;
 
   @override
   String toString() {
-    return 'UserLedgerRouteArgs{key: $key, user: $user}';
+    return 'UserLedgerRouteArgs{key: $key, user: $user, store: $store, type: $type}';
   }
 }
 

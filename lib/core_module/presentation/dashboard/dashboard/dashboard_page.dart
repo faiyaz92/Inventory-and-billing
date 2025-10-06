@@ -7,7 +7,6 @@ import 'package:requirment_gathering_app/core_module/presentation/dashboard/home
 import 'package:requirment_gathering_app/core_module/presentation/login/profile_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
-import 'package:requirment_gathering_app/user_module/presentation/company_list/company_list_page.dart';
 
 @RoutePage()
 class DashboardPage extends StatefulWidget {
@@ -39,6 +38,7 @@ class _DashboardPageState extends State<DashboardPage> {
         child: Scaffold(
           appBar: CustomAppBar(
             title: "Dashboard",
+              automaticallyImplyLeading:false,
             actions: [
               IconButton(
                 icon: const Icon(Icons.logout),
@@ -53,7 +53,6 @@ class _DashboardPageState extends State<DashboardPage> {
             builder: (context, state) {
               final pages = [
                 const HomePage(),
-                const CompanyListPage(),
                 const ProfilePage(),
               ];
               final index = state is DashboardTabState ? state.index : 0;
@@ -70,10 +69,6 @@ class _DashboardPageState extends State<DashboardPage> {
                   BottomNavigationBarItem(
                     icon: Icon(Icons.home),
                     label: 'Home',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.business),
-                    label: 'Sites',
                   ),
                   BottomNavigationBarItem(
                     icon: Icon(Icons.person),

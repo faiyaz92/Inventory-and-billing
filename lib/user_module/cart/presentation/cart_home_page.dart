@@ -274,7 +274,7 @@ class _CartHomePageState extends State<CartHomePage> {
                                               ),
                                             ),
                                             Text(
-                                              '₹${product.price.toStringAsFixed(2)}',
+                                              'IQD ${product.price.toStringAsFixed(2)}',
                                               style: const TextStyle(
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.w500,

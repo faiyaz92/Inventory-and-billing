@@ -364,7 +364,7 @@ class _ProductTrendingListPageState extends State<ProductTrendingListPage> {
                       _buildTableRow('Order Count', '${salesData.orderCount}'),
                       _buildTableRow(
                         'Total',
-                        '₹${salesData.totalAmount.toStringAsFixed(2)}',
+                        'IQD ${salesData.totalAmount.toStringAsFixed(2)}',
                         isBold: true,
                         valueColor: AppColors.textPrimary,
                         backgroundColor: AppColors.primary.withOpacity(0.1),

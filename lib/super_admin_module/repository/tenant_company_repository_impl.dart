@@ -233,9 +233,12 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
           if (loggedInUserStoreId == null || loggedInUserStoreId.isEmpty) {
             throw Exception('Logged-in user has no store ID assigned.');
           }
-          querySnapshot = await usersRef
-              .where('storeId', isEqualTo: loggedInUserStoreId)
-              .get();
+          // querySnapshot = await usersRef
+          //     .where('storeId', isEqualTo: loggedInUserStoreId)
+          //     .get(); // TODO need to uncomment this
+
+          querySnapshot = await usersRef.get();  //TODO need to comment this
+
         }
       }
 
@@ -413,5 +416,21 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
       'paid': false,
       'timestamp': FieldValue.serverTimestamp(),
     });
+  }
+
+  @override
+  Future<TenantCompanyDto?> getTenantCompanyById(String companyId) async {
+    try {
+      final snapshot = await _firestoreProvider.getTenantCompanyRef(companyId).get();
+      if (!snapshot.exists) {
+        return null;
+      }
+      return TenantCompanyDto.fromFirestore(snapshot);
+    } catch (e) {
+      if (e.toString().contains('index')) {
+        print('Index issue detected in getTenantCompanyById: $e');
+      }
+      throw Exception('Failed to fetch tenant company by ID: $e');
+    }
   }
 }

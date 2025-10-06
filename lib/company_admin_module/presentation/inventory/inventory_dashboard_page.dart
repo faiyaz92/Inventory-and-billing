@@ -1,8 +1,11 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
+import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/home_cubit.dart';
 
 @RoutePage()
 class InventoryDashboardPage extends StatelessWidget {
@@ -10,146 +13,300 @@ class InventoryDashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: CustomAppBar(
-        title: 'Inventory Dashboard',
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => sl<Coordinator>().navigateToAddStockPage(),
-            tooltip: 'Add Stock',
-          ),
-        ],
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Theme.of(context).primaryColor.withOpacity(0.1),
-              Theme.of(context).primaryColor.withOpacity(0.3),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // GridView
-                Expanded(
-                  child: GridView.count(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    childAspectRatio: 1.0,
-                    children: [
-                      _buildDashboardCard(
-                        context,
-                        'Stock List',
-                        Icons.list,
-                        Colors.blue,
-                        () => sl<Coordinator>().navigateToStockListPage(),
-                      ),
+    // Define demo expiration date
+    final DateTime demoExpirationDate = DateTime(2025, 10, 10);
+    final bool isDemoExpired = DateTime.now().isAfter(demoExpirationDate);
 
-                      _buildDashboardCard(
-                        context,
-                        'Sales Report',
-                        Icons.bar_chart,
-                        Colors.purple,
-                        () => sl<Coordinator>().navigateToSalesReportPage(),
-                      ),
-                      _buildDashboardCard(
-                        context,
-                        'Transactions',
-                        Icons.account_balance,
-                        Colors.teal,
-                        () => sl<Coordinator>().navigateToTransactionsPage(),
-                      ),
-                      _buildDashboardCard(
-                        context,
-                        'Add Customer',
-                        Icons.person_add,
-                        Colors.red,
-                        () => sl<Coordinator>().navigateToAddUserPage(),
-                      ),
-                      _buildDashboardCard(
-                        context,
-                        'Store List',
-                        Icons.store,
-                        Colors.indigo,
-                        () => sl<Coordinator>().navigateToStoresListPage(),
-                      ),
-                      _buildDashboardCard(
-                        context,
-                        'Add Store',
-                        Icons.add_business,
-                        Colors.amber,
-                        () => sl<Coordinator>().navigateToAddStorePage(),
-                      ),
-                      _buildDashboardCard(
-                        context,
-                        'Over all stock',
-                        Icons.account_balance_wallet,
-                        Colors.green,
-                        () => sl<Coordinator>().navigateToOverAllStockPage(),
-                      ),
-                      _buildDashboardCard(
-                        context,
-                        'My Store',
-                        Icons.store,
-                        Colors.orangeAccent,
-                        () => sl<Coordinator>().navigateToStoreDetailsPage(
-                            ''), //no store id means own store id
-                      ),
-                      _buildDashboardCard(
-                        context,
-                        'Store attendance',
-                        Icons.people,
-                        Colors.green,
-                        () => sl<Coordinator>().navigateToAttendancePage(), //no store id means own store id
-                      ),
+    return BlocProvider(
+      create: (context) => sl<HomeCubit>()..fetchUserInfo(),
+      child: BlocBuilder<HomeCubit, HomeState>(
+        builder: (context, state) {
+          // If demo is expired, show purchase message
+          if (isDemoExpired) {
+            return Scaffold(
+              body: Center(
+                child: Card(
+                  elevation: 8,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  color: Colors.white,
+                  margin: const EdgeInsets.all(kIsWeb ? 32.0 : 16.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(kIsWeb ? 32.0 : 24.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.lock_outline,
+                          size: kIsWeb ? 64 : 48,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                        const SizedBox(height: kIsWeb ? 24 : 16),
+                        const Text(
+                          'Your free demo period has ended.',
+                          style: TextStyle(
+                            fontSize: kIsWeb ? 24 : 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: kIsWeb ? 12 : 8),
+                        const Text(
+                          'Please purchase a subscription to continue using the app.',
+                          style: TextStyle(
+                            fontSize: kIsWeb ? 18 : 16,
+                            color: Colors.black54,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: kIsWeb ? 32 : 24),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).primaryColor,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: kIsWeb ? 32.0 : 24.0,
+                              vertical: kIsWeb ? 16.0 : 12.0,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    'Contact support to purchase a subscription.'),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            'Purchase Now',
+                            style: TextStyle(fontSize: kIsWeb ? 18 : 16),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+
+          // Handle states
+          if (state is HomeLoading) {
+            return Scaffold(
+              appBar: CustomAppBar(
+                title: 'Inventory Dashboard',
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    tooltip: 'Add Stock',
+                    onPressed: () => sl<Coordinator>().navigateToAddStockPage(),
+                  ),
+                ],
+              ),
+              body: Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).primaryColor,
+                  ),
+                ),
+              ),
+            );
+          } else if (state is HomeLoaded) {
+            return Scaffold(
+              appBar: CustomAppBar(
+                title: 'Inventory Dashboard',
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    tooltip: 'Add Stock',
+                    onPressed: () => sl<Coordinator>().navigateToAddStockPage(),
+                  ),
+                ],
+              ),
+              body: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Theme.of(context).primaryColor.withOpacity(0.1),
+                      Theme.of(context).primaryColor.withOpacity(0.3),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-        ),
+                child: SafeArea(
+                  child: Padding(
+                    padding: EdgeInsets.all(kIsWeb ? 24.0 : 16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: GridView.count(
+                            crossAxisCount: kIsWeb ? 7 : 3,
+                            crossAxisSpacing: kIsWeb ? 16 : 12,
+                            mainAxisSpacing: kIsWeb ? 16 : 12,
+                            childAspectRatio: kIsWeb ? 1.0 : 1.0,
+                            children: _buildGridItems(context),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          } else if (state is HomeError) {
+            return Scaffold(
+              appBar: CustomAppBar(
+                title: 'Inventory Dashboard',
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    tooltip: 'Add Stock',
+                    onPressed: () => sl<Coordinator>().navigateToAddStockPage(),
+                  ),
+                ],
+              ),
+              body: Center(
+                child: Text(
+                  "Error: ${state.message}",
+                  style: const TextStyle(
+                    fontSize: kIsWeb ? 18 : 16,
+                    color: Colors.red,
+                  ),
+                ),
+              ),
+            );
+          }
+          return const Scaffold();
+        },
       ),
     );
   }
 
+  List<Widget> _buildGridItems(BuildContext context) {
+    return [
+      _buildDashboardCard(
+        context,
+        'Stock List',
+        Icons.list,
+        Colors.blue,
+            () => sl<Coordinator>().navigateToStockListPage(),
+      ),
+      _buildDashboardCard(
+        context,
+        'Sales Report',
+        Icons.bar_chart,
+        Colors.purple,
+            () => sl<Coordinator>().navigateToSalesReportPage(),
+      ),
+      _buildDashboardCard(
+        context,
+        'Transactions',
+        Icons.account_balance,
+        Colors.teal,
+            () => sl<Coordinator>().navigateToTransactionsPage(),
+      ),
+      _buildDashboardCard(
+        context,
+        'Add Customer',
+        Icons.person_add,
+        Colors.red,
+            () => sl<Coordinator>().navigateToAddUserPage(),
+      ),
+      _buildDashboardCard(
+        context,
+        'Store List',
+        Icons.store,
+        Colors.indigo,
+            () => sl<Coordinator>().navigateToStoresListPage(),
+      ),
+      _buildDashboardCard(
+        context,
+        'Add Store',
+        Icons.add_business,
+        Colors.amber,
+            () => sl<Coordinator>().navigateToAddStorePage(),
+      ),
+      _buildDashboardCard(
+        context,
+        'Overall Stock',
+        Icons.account_balance_wallet,
+        Colors.green,
+            () => sl<Coordinator>().navigateToOverAllStockPage(),
+      ),
+      _buildDashboardCard(
+        context,
+        'My Store',
+        Icons.store,
+        Colors.orangeAccent,
+            () => sl<Coordinator>().navigateToStoreDetailsPage(''),
+      ),
+      _buildDashboardCard(
+        context,
+        'Store Attendance',
+        Icons.people,
+        Colors.green,
+            () => sl<Coordinator>().navigateToAttendancePage(),
+      ),
+      _buildDashboardCard(
+        context,
+        'Add Stock',
+        Icons.inventory_2,
+        Colors.cyan,
+            () => sl<Coordinator>().navigateToAddStockPage(),
+      ),
+      _buildDashboardCard(
+        context,
+        'Purchase Invoices',
+        Icons.receipt_long,
+        Colors.cyan,
+            () => sl<Coordinator>().navigateToPurchaseInvoicePanelPage(),
+      ),
+    ];
+  }
+
   Widget _buildDashboardCard(
-    BuildContext context,
-    String title,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    return Card(
-      elevation: 4.0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: Colors.white,
-      child: InkWell(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+      BuildContext context,
+      String title,
+      IconData icon,
+      Color color,
+      VoidCallback onTap,
+      ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        color: Colors.grey[50], // Offwhite background
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 36, color: color),
-              const SizedBox(height: 8),
+              Icon(
+                icon,
+                size: kIsWeb ? 28 : 36,
+                color: color,
+              ),
+              const SizedBox(height: kIsWeb ? 12 : 8),
               Text(
                 title,
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: kIsWeb ? 16 : 14,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

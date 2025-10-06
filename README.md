@@ -82,7 +82,7 @@ Easy2Solutions (Root Collection)
 │   │   │   ├── tasks (Collection)  // 🔥 Task Management
 │   │   │   │   ├── {taskId} (Document)
 │   │   │   │   │   ├── title: "Follow-up for Pending Payment"
-│   │   │   │   │   ├── description: "Reminder to collect ₹15000 from XYZ Pvt Ltd."
+│   │   │   │   │   ├── description: "Reminder to collect IQD 15000 from XYZ Pvt Ltd."
 │   │   │   │   │   ├── assignedTo: "{adminUserId}"  // 🔹 Company Admin
 │   │   │   │   │   ├── createdBy: "{userId}"
 │   │   │   │   │   ├── status: "Pending/In Progress/Completed"

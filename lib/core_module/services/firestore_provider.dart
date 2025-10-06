@@ -39,35 +39,55 @@ abstract class IFirestorePathProvider {
   CollectionReference getCategoryCollectionRef(String companyId);
 
   CollectionReference getSubcategoryCollectionRef(
-    String companyId,
-  );
+      String companyId,
+      );
   CollectionReference getStoresCollectionRef(String companyId);
   CollectionReference getStockCollectionRef(String companyId, String storeId);
   CollectionReference getTransactionsCollectionRef(String companyId, String storeId);
 
   CollectionReference getOrdersCollectionRef(String companyId);
-  CollectionReference getCartsCollectionRef(String companyId); // New
-  DocumentReference getUserCartRef(String companyId, String userId); // New
+  DocumentReference getSingleOrderRef(String companyId, String orderId); // New
+  CollectionReference getInvoicesCollectionRef(String companyId); // New
+  DocumentReference getSingleInvoiceRef(String companyId, String invoiceId); // New
+  CollectionReference getCartsCollectionRef(String companyId);
+  DocumentReference getUserCartRef(String companyId, String userId);
   CollectionReference getWishlistCollectionRef(String companyId);
   DocumentReference getUserWishlistRef(String companyId, String userId);
 
   CollectionReference getTaxiBookingsCollectionRef(String companyId);
 
-// Taxi Types Collection
   CollectionReference getTaxiTypesCollectionRef(String companyId);
 
-// Trip Types Collection
-  CollectionReference getTripTypesCollectionRef(String companyId) ;
+  CollectionReference getTripTypesCollectionRef(String companyId);
 
-// Service Types Collection
-  CollectionReference getServiceTypesCollectionRef(String companyId) ;
+  CollectionReference getServiceTypesCollectionRef(String companyId);
 
-// Trip Statuses Collection
-  CollectionReference getTripStatusesCollectionRef(String companyId) ;
+  CollectionReference getTripStatusesCollectionRef(String companyId);
 
-// Taxi Booking Settings Document
-  DocumentReference getTaxiBookingSettingsRef(String companyId) ;
+  DocumentReference getTaxiBookingSettingsRef(String companyId);
 
-// Visitor Counter Collection
-  CollectionReference getVisitorCountersCollectionRef(String companyId) ;
+  CollectionReference getVisitorCountersCollectionRef(String companyId);
+
+
+  CollectionReference getPurchaseOrdersCollectionRef(String companyId);
+
+
+  DocumentReference getSinglePurchaseOrderRef(String companyId, String orderId) ;
+
+
+  CollectionReference getPurchaseInvoicesCollectionRef(String companyId);
+
+
+  DocumentReference getSinglePurchaseInvoiceRef(String companyId, String invoiceId) ;
+
+// --- START ACCOUNTING PATHS FOR SDK ---
+  CollectionReference getAccountingAccountLedger(String companyId);
+  DocumentReference getAccountingAccountLedgerRef(String companyId, String ledgerId);
+  CollectionReference getAccountingTransactionsRef(String companyId, String ledgerId);
+  CollectionReference getAccountingStoresCollectionRef(String companyId);
+  CollectionReference getAccountingStockCollectionRef(String companyId, String storeId);
+  CollectionReference getAccountingTransactionsCollectionRef(String companyId, String storeId);
+  DocumentReference getAccountingGeneralJournalRef(String companyId);
+  DocumentReference getAccountingJournalRef(String companyId, String storeId);
+// --- END ACCOUNTING PATHS FOR SDK ---
 }

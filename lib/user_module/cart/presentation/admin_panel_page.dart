@@ -32,7 +32,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
 
   @override
   void initState() {
-    _adminOrderCubit = sl<AdminOrderCubit>() /*..fetchOrders()*/;
+    _adminOrderCubit = sl<AdminOrderCubit>();
     _applyQuickFilter(_selectedFilter);
     super.initState();
   }
@@ -55,7 +55,6 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
         startDate = DateTime(startDate.year, startDate.month, startDate.day);
         endDate = startDate;
         break;
-
       case 'year':
         startDate = now.subtract(const Duration(days: 365));
         endDate = now;
@@ -77,8 +76,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
         endDate = now;
         break;
       default:
-        startDate =
-            now.subtract(const Duration(days: 90)); // Fallback to 3 months
+        startDate = now.subtract(const Duration(days: 90));
         endDate = now;
         break;
     }
@@ -135,13 +133,10 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Qucik filter',
-              style:
-                  defaultTextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              'Quick filter',
+              style: defaultTextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(
-              height: 12,
-            ),
+            const SizedBox(height: 12),
             Wrap(
               spacing: 8.0,
               runSpacing: 8.0,
@@ -153,8 +148,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                     filter['label'] as String,
                     style: TextStyle(
                       color: isSelected ? Colors.white : AppColors.textPrimary,
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                   selected: isSelected,
@@ -201,33 +195,50 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
           ),
           child: SafeArea(
             child: BlocBuilder<AdminOrderCubit, AdminOrderState>(
-                builder: (context, state) {
-              if (state is AdminOrderListFetchLoading) {
-                return const CustomLoadingDialog(message: 'Loading...');
-              } else if (state is AdminOrderListFetchSuccess) {
-                return CustomScrollView(
-                  slivers: [
-                    SliverPadding(
-                      padding: const EdgeInsets.all(16.0),
-                      sliver: SliverList(
-                        delegate: SliverChildListDelegate([
-                          _buildFilters(context),
-                          const SizedBox(height: 16),
-                          _buildStatsCard(context),
-                          const SizedBox(height: 16),
-                          _buildExpectedDeliveryLabel(),
-                          const SizedBox(height: 8),
-                        ]),
+              builder: (context, state) {
+                if (state is AdminOrderListFetchLoading) {
+                  return const CustomLoadingDialog(message: 'Loading...');
+                } else if (state is AdminOrderListFetchSuccess) {
+                  return CustomScrollView(
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.all(16.0),
+                        sliver: SliverList(
+                          delegate: SliverChildListDelegate([
+                            // Search Bar
+                            TextField(
+                              decoration: InputDecoration(
+                                hintText: 'Search by Order ID',
+                                prefixIcon: const Icon(Icons.search),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                filled: true,
+                                fillColor: AppColors.white,
+                              ),
+                              onChanged: (value) {
+                                _adminOrderCubit.filterOrdersById(value);
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            _buildFilters(context),
+                            const SizedBox(height: 16),
+                            _buildStatsCard(context),
+                            const SizedBox(height: 16),
+                            _buildExpectedDeliveryLabel(),
+                            const SizedBox(height: 8),
+                          ]),
+                        ),
                       ),
-                    ),
-                    _buildOrderList(),
-                  ],
-                );
-              } else if (state is AdminOrderListFetchError) {
-                return Center(child: Text('Error: ${state.message}'));
-              }
-              return const SizedBox.shrink();
-            }),
+                      _buildOrderList(),
+                    ],
+                  );
+                } else if (state is AdminOrderListFetchError) {
+                  return Center(child: Text('Error: ${state.message}'));
+                }
+                return const SizedBox.shrink();
+              },
+            ),
           ),
         ),
       ),
@@ -262,16 +273,13 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
           List<UserInfo> users = state.users;
           List<StoreDto> stores = state.stores;
 
-          // Filter employees for Taken By and Delivered By
           final employeeUsers = users
               .where((user) => user.userType == UserType.Employee)
               .toList();
-          // Filter customers for Customer filter
           final customerUsers = users
               .where((user) => user.userType == UserType.Customer)
               .toList();
 
-          // Validate selected values
           final validOrderTakenBy = selectedOrderTakenBy != null &&
               employeeUsers.any((user) => user.userId == selectedOrderTakenBy)
               ? selectedOrderTakenBy
@@ -285,7 +293,6 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
               ? selectedUserId
               : null;
 
-          // Dropdown items for employees
           final employeeDropdownItems = [
             const DropdownMenuItem<String>(value: null, child: Text('Select')),
             ...employeeUsers
@@ -296,7 +303,6 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
             )),
           ];
 
-          // Dropdown items for customers
           final customerDropdownItems = [
             const DropdownMenuItem<String>(value: null, child: Text('Select')),
             ...customerUsers
@@ -309,7 +315,6 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
 
           return Column(
             children: [
-              // Date Range Filters
               Row(
                 children: [
                   Expanded(
@@ -360,8 +365,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                         final dateRange = await showDateRangePicker(
                           context: context,
                           firstDate: DateTime(2020),
-                          lastDate:
-                          DateTime.now().add(const Duration(days: 365)),
+                          lastDate: DateTime.now().add(const Duration(days: 365)),
                           initialDateRange: DateTimeRange(
                             start: DateTime.now(),
                             end: DateTime.now().add(const Duration(days: 30)),
@@ -399,18 +403,15 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                 ],
               ),
               const SizedBox(height: 12),
-
               _buildQuickFilterChips(),
               const SizedBox(height: 12),
-              // Status and Clear Filters
               Row(
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       decoration: InputDecoration(
                         labelText: 'Filter by Status',
-                        labelStyle:
-                        const TextStyle(color: AppColors.textSecondary),
+                        labelStyle: const TextStyle(color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
@@ -432,16 +433,11 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                         style: TextStyle(color: AppColors.textSecondary),
                       ),
                       items: const [
-                        DropdownMenuItem(
-                            value: null, child: Text('All Statuses')),
-                        DropdownMenuItem(
-                            value: 'pending', child: Text('Pending')),
-                        DropdownMenuItem(
-                            value: 'processing', child: Text('Processing')),
-                        DropdownMenuItem(
-                            value: 'shipped', child: Text('Shipped')),
-                        DropdownMenuItem(
-                            value: 'completed', child: Text('Completed')),
+                        DropdownMenuItem(value: null, child: Text('All Statuses')),
+                        DropdownMenuItem(value: 'pending', child: Text('Pending')),
+                        DropdownMenuItem(value: 'processing', child: Text('Processing')),
+                        DropdownMenuItem(value: 'shipped', child: Text('Shipped')),
+                        DropdownMenuItem(value: 'completed', child: Text('Completed')),
                       ],
                       onChanged: (value) {
                         _adminOrderCubit.fetchOrders(
@@ -478,15 +474,13 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                 ],
               ),
               const SizedBox(height: 12),
-              // User-based Filters
               Row(
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       decoration: InputDecoration(
                         labelText: 'Taken By',
-                        labelStyle:
-                        const TextStyle(color: AppColors.textSecondary),
+                        labelStyle: const TextStyle(color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
@@ -530,8 +524,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                     child: DropdownButtonFormField<String>(
                       decoration: InputDecoration(
                         labelText: 'Delivered By',
-                        labelStyle:
-                        const TextStyle(color: AppColors.textSecondary),
+                        labelStyle: const TextStyle(color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
@@ -573,15 +566,13 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                 ],
               ),
               const SizedBox(height: 12),
-              // Store and Customer Filters
               Row(
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       decoration: InputDecoration(
                         labelText: 'Filter by Store',
-                        labelStyle:
-                        const TextStyle(color: AppColors.textSecondary),
+                        labelStyle: const TextStyle(color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
@@ -603,8 +594,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                         style: TextStyle(color: AppColors.textSecondary),
                       ),
                       items: [
-                        const DropdownMenuItem(
-                            value: null, child: Text('All Stores')),
+                        const DropdownMenuItem(value: null, child: Text('All Stores')),
                         ...stores.map((store) => DropdownMenuItem(
                           value: store.storeId,
                           child: Text(store.name),
@@ -632,8 +622,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                     child: DropdownButtonFormField<String>(
                       decoration: InputDecoration(
                         labelText: 'Filter by Customer',
-                        labelStyle:
-                        const TextStyle(color: AppColors.textSecondary),
+                        labelStyle: const TextStyle(color: AppColors.textSecondary),
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
@@ -675,7 +664,6 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                 ],
               ),
               const SizedBox(height: 12),
-              // Amount Filters
               Row(
                 children: [
                   Expanded(
@@ -683,8 +671,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                       decoration: const InputDecoration(
                         labelText: 'Min Total Amount',
                         border: OutlineInputBorder(),
-                        contentPadding:
-                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
                       keyboardType: TextInputType.number,
                       initialValue: minTotalAmount?.toString() ?? '',
@@ -712,8 +699,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                       decoration: const InputDecoration(
                         labelText: 'Max Total Amount',
                         border: OutlineInputBorder(),
-                        contentPadding:
-                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
                       keyboardType: TextInputType.number,
                       initialValue: maxTotalAmount?.toString() ?? '',
@@ -744,10 +730,11 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
       },
     );
   }
+
   Widget _buildStatsCard(BuildContext context) {
     return BlocBuilder<AdminOrderCubit, AdminOrderState>(
       buildWhen: (previous, current) =>
-          current is AdminOrderListFetchLoading ||
+      current is AdminOrderListFetchLoading ||
           current is AdminOrderListFetchSuccess ||
           current is AdminOrderListFetchError,
       builder: (context, state) {
@@ -806,8 +793,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                         ),
                         child: const Text(
                           'View',
-                          style:
-                              TextStyle(fontSize: 12, color: AppColors.white),
+                          style: TextStyle(fontSize: 12, color: AppColors.white),
                         ),
                       ),
                     ],
@@ -817,7 +803,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
+                    const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 4,
                       childAspectRatio: 3,
                       mainAxisSpacing: 8,
@@ -871,8 +857,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
     );
   }
 
-  void _showStatsDialog(
-      BuildContext context, AdminOrderListFetchSuccess state) {
+  void _showStatsDialog(BuildContext context, AdminOrderListFetchSuccess state) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -926,21 +911,21 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                       stat['value'],
                       valueColor: stat['color'],
                       valueWeight:
-                          stat['highlight'] == true ? FontWeight.bold : null,
+                      stat['highlight'] == true ? FontWeight.bold : null,
                       backgroundColor: stat['highlight'] == true
                           ? (stat['color'] as Color).withOpacity(0.1)
                           : null,
                       borderRadius: isFirst
                           ? const BorderRadius.only(
-                              topLeft: Radius.circular(12),
-                              topRight: Radius.circular(12),
-                            )
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12),
+                      )
                           : isLast
-                              ? const BorderRadius.only(
-                                  bottomLeft: Radius.circular(12),
-                                  bottomRight: Radius.circular(12),
-                                )
-                              : null,
+                          ? const BorderRadius.only(
+                        bottomLeft: Radius.circular(12),
+                        bottomRight: Radius.circular(12),
+                      )
+                          : null,
                     );
                   }).toList(),
                 ),
@@ -974,7 +959,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
   Widget _buildExpectedDeliveryLabel() {
     return BlocBuilder<AdminOrderCubit, AdminOrderState>(
       buildWhen: (previous, current) =>
-          current is AdminOrderListFetchSuccess ||
+      current is AdminOrderListFetchSuccess ||
           current is AdminOrderListFetchLoading ||
           current is AdminOrderListFetchError,
       builder: (context, state) {
@@ -1004,7 +989,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
   Widget _buildOrderList() {
     return BlocBuilder<AdminOrderCubit, AdminOrderState>(
       buildWhen: (previous, current) =>
-          current is AdminOrderListFetchLoading ||
+      current is AdminOrderListFetchLoading ||
           current is AdminOrderListFetchSuccess ||
           current is AdminOrderListFetchError,
       builder: (context, state) {
@@ -1015,7 +1000,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                 .compareTo(DateFormat('MMM dd, yyyy').parse(a)));
           return SliverList(
             delegate: SliverChildBuilderDelegate(
-              (context, index) {
+                  (context, index) {
                 final date = dates[index];
                 final orders = state.groupedOrders[date]!;
                 return StickyHeader(
@@ -1023,7 +1008,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                     width: double.infinity,
                     color: Theme.of(context).scaffoldBackgroundColor,
                     padding:
-                        const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                     child: Text(
                       date,
                       style: const TextStyle(
@@ -1104,9 +1089,11 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       minimumSize: const Size(40, 30),
                     ),
-                    child: const Text(
-                      'Create Bill',
-                      style: TextStyle(
+                    child: Text(
+                      order.billNumber == null || order.billNumber!.isEmpty
+                          ? 'Create Bill'
+                          : 'Update Bill',
+                      style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.white,
                       ),
@@ -1176,7 +1163,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                       ),
                       _buildTableRow(
                         'Total',
-                        '₹${order.totalAmount.toStringAsFixed(2)}',
+                        'IQD ${order.totalAmount.toStringAsFixed(2)}',
                         isBold: true,
                         valueColor: AppColors.textPrimary,
                         backgroundColor: AppColors.primary.withOpacity(0.1),
@@ -1195,22 +1182,23 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
       ),
     );
   }
+
   TableRow _buildTableRow(
-    String label,
-    String value, {
-    bool isBold = false,
-    FontWeight? valueWeight,
-    Color? valueColor = AppColors.textSecondary,
-    Color? backgroundColor,
-    BorderRadius? borderRadius,
-    int maxLines = 1,
-  }) {
+      String label,
+      String value, {
+        bool isBold = false,
+        FontWeight? valueWeight,
+        Color? valueColor = AppColors.textSecondary,
+        Color? backgroundColor,
+        BorderRadius? borderRadius,
+        int maxLines = 1,
+      }) {
     return TableRow(
       decoration: backgroundColor != null || borderRadius != null
           ? BoxDecoration(
-              color: backgroundColor,
-              borderRadius: borderRadius,
-            )
+        color: backgroundColor,
+        borderRadius: borderRadius,
+      )
           : null,
       children: [
         Padding(

@@ -1,30 +1,42 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_ledger_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/account_ledger_service.dart';
+import 'package:requirment_gathering_app/company_admin_module/service/stock_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/store_services.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
+import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
+import 'package:get_it/get_it.dart';
 
 class AddUserCubit extends Cubit<AddUserState> {
   final UserServices _companyOperationsService;
   final StoreService _storeService;
   final IAccountLedgerService _accountLedgerService;
+  final StockService _stockService;
+  final AccountRepository _accountRepository;
 
-  AddUserCubit(this._companyOperationsService, this._storeService, this._accountLedgerService)
-      : super(AddUserInitial());
+  AddUserCubit(
+      this._companyOperationsService,
+      this._storeService,
+      this._accountLedgerService,
+      this._stockService,
+      this._accountRepository,
+      ) : super(AddUserInitial());
 
   Future<void> addUser(UserInfo userInfo, String password) async {
     try {
       emit(AddUserLoading());
-      final users = await _companyOperationsService.getUsersFromTenantCompany();
 
-      // if (users.length >= 5) {
-      //   emit(AddUserFailure('Cannot add more than 5 users in the free version'));
-      //   return;
-      // }
-
-      // Validate mandatory fields for Employee
+      // Validate mandatory fields
+      if (userInfo.name == null || userInfo.name!.isEmpty) {
+        emit(AddUserFailure('Name is required for all user types'));
+        return;
+      }
+      if (userInfo.userType == null) {
+        emit(AddUserFailure('User type is required'));
+        return;
+      }
       if (userInfo.userType == UserType.Employee) {
         if (userInfo.email == null || userInfo.email!.isEmpty) {
           emit(AddUserFailure('Email is required for Employee'));
@@ -50,39 +62,45 @@ class AddUserCubit extends Cubit<AddUserState> {
           emit(AddUserFailure('Password must be at least 6 characters for Employee'));
           return;
         }
-      } else if (userInfo.name == null || userInfo.name!.isEmpty) {
-        emit(AddUserFailure('Name is required for all user types'));
-        return;
-      }
-
-      // Ensure userType is set
-      if (userInfo.userType == null) {
-        emit(AddUserFailure('User type is required'));
-        return;
+      } else if (userInfo.userType == UserType.Accounts) {
+        if (userInfo.accountType == null) {
+          emit(AddUserFailure('Account type is required for Accounts'));
+          return;
+        }
+        if (userInfo.storeId == null) {
+          emit(AddUserFailure('Store is required for Accounts'));
+          return;
+        }
+      } else if (userInfo.userType == UserType.Customer) {
+        if (userInfo.mobileNumber == null || userInfo.mobileNumber!.isEmpty) {
+          emit(AddUserFailure('Mobile number is required for Customer'));
+          return;
+        }
+        if (userInfo.businessName == null || userInfo.businessName!.isEmpty) {
+          emit(AddUserFailure('Business name is required for Customer'));
+          return;
+        }
+        if (userInfo.address == null || userInfo.address!.isEmpty) {
+          emit(AddUserFailure('Address is required for Customer'));
+          return;
+        }
       }
 
       // Fetch default store ID if not provided
       final storeId = userInfo.storeId ?? await _storeService.getDefaultStoreId();
       final updatedUserInfo = userInfo.copyWith(
-        storeId: storeId,
-        dailyWage: userInfo.dailyWage ?? 500.0,
+        storeId: (userInfo.userType == UserType.Employee || userInfo.userType == UserType.Accounts) ? storeId : null,
+        dailyWage: userInfo.userType == UserType.Employee ? (userInfo.dailyWage ?? 500.0) : null,
         userType: userInfo.userType ?? UserType.Employee,
       );
 
-      final userId = await _companyOperationsService.addUserToCompany(updatedUserInfo, password);
-      final newLedger = AccountLedger(
-        totalOutstanding: 0,
-        promiseAmount: null,
-        promiseDate: null,
-        transactions: [],
-      );
-      final ledgerId = await _accountLedgerService.createLedger(newLedger);
-      await _companyOperationsService.updateUser(
-        updatedUserInfo.copyWith(userId: userId, accountLedgerId: ledgerId),
-      );
+      final newUserInfo = await _companyOperationsService.addUserToCompany(updatedUserInfo, password);
+      if (userInfo.role == Role.SALES_MAN) {
+        print('ledger id >>>>> ${updatedUserInfo.accountLedgerId}');
+        await _stockService.addSalesmanAsStore(newUserInfo);
+      }
       emit(AddUserSuccess());
     } catch (e) {
-      // Ensure the error is a meaningful string
       emit(AddUserFailure('Failed to add user: ${e.toString()}'));
     }
   }
@@ -91,7 +109,30 @@ class AddUserCubit extends Cubit<AddUserState> {
     try {
       emit(AddUserLoading());
 
-      // Validate mandatory fields for Employee
+      // Fetch logged-in user info
+      final loggedInUser = await _accountRepository.getUserInfo();
+      if (loggedInUser == null) {
+        emit(AddUserFailure('Logged-in user information not found'));
+        return;
+      }
+
+      // Prevent company admin from changing their own role
+      if (loggedInUser.role == Role.COMPANY_ADMIN &&
+          userInfo.userId == loggedInUser.userId &&
+          userInfo.role != Role.COMPANY_ADMIN) {
+        emit(AddUserFailure('Company Admin cannot change their own role'));
+        return;
+      }
+
+      // Validate mandatory fields
+      if (userInfo.name == null || userInfo.name!.isEmpty) {
+        emit(AddUserFailure('Name is required for all user types'));
+        return;
+      }
+      if (userInfo.userType == null) {
+        emit(AddUserFailure('User type is required'));
+        return;
+      }
       if (userInfo.userType == UserType.Employee) {
         if (userInfo.email == null || userInfo.email!.isEmpty) {
           emit(AddUserFailure('Email is required for Employee'));
@@ -113,29 +154,41 @@ class AddUserCubit extends Cubit<AddUserState> {
           emit(AddUserFailure('Store is required for Employee'));
           return;
         }
-      } else if (userInfo.name == null || userInfo.name!.isEmpty) {
-        emit(AddUserFailure('Name is required for all user types'));
-        return;
-      }
-
-      // Ensure userType is set
-      if (userInfo.userType == null) {
-        emit(AddUserFailure('User type is required'));
-        return;
+      } else if (userInfo.userType == UserType.Accounts) {
+        if (userInfo.accountType == null) {
+          emit(AddUserFailure('Account type is required for Accounts'));
+          return;
+        }
+        if (userInfo.storeId == null) {
+          emit(AddUserFailure('Store is required for Accounts'));
+          return;
+        }
+      } else if (userInfo.userType == UserType.Customer) {
+        if (userInfo.mobileNumber == null || userInfo.mobileNumber!.isEmpty) {
+          emit(AddUserFailure('Mobile number is required for Customer'));
+          return;
+        }
+        if (userInfo.businessName == null || userInfo.businessName!.isEmpty) {
+          emit(AddUserFailure('Business name is required for Customer'));
+          return;
+        }
+        if (userInfo.address == null || userInfo.address!.isEmpty) {
+          emit(AddUserFailure('Address is required for Customer'));
+          return;
+        }
       }
 
       // Fetch default store ID if not provided
       final storeId = userInfo.storeId ?? await _storeService.getDefaultStoreId();
       final updatedUserInfo = userInfo.copyWith(
-        storeId: storeId,
-        dailyWage: userInfo.dailyWage ?? 500.0,
+        storeId: (userInfo.userType == UserType.Employee || userInfo.userType == UserType.Accounts) ? storeId : null,
+        dailyWage: userInfo.userType == UserType.Employee ? (userInfo.dailyWage ?? 500.0) : null,
         userType: userInfo.userType ?? UserType.Employee,
       );
 
       await _companyOperationsService.updateUser(updatedUserInfo);
       emit(AddUserSuccess());
     } catch (e) {
-      // Ensure the error is a meaningful string
       emit(AddUserFailure('Failed to update user: ${e.toString()}'));
     }
   }

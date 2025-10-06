@@ -255,7 +255,7 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                "Amount (₹)",
+                "Amount (IQD )",
                 style:
                     defaultTextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.right,
@@ -543,8 +543,8 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
                         children: [
                           Text(
                             txn?.type == "Debit"
-                                ? "Debit: ₹${txn?.amount}"
-                                : "Credit: ₹${txn?.amount}",
+                                ? "Debit: IQD ${txn?.amount}"
+                                : "Credit: IQD ${txn?.amount}",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,

@@ -299,7 +299,7 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
       },
       {
         'label': 'Total Amount',
-        'value': '₹${totalAmount.toStringAsFixed(2)}',
+        'value': 'IQD ${totalAmount.toStringAsFixed(2)}',
         'color': AppColors.textPrimary,
         'highlight': AppColors.green.withOpacity(0.3),
       },
@@ -461,7 +461,7 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                         getTitlesWidget: (value, meta) => Padding(
                           padding: const EdgeInsets.only(right: 8.0),
                           child: Text(
-                            '₹${value.toInt()}',
+                            'IQD ${value.toInt()}',
                             style: const TextStyle(fontSize: 12),
                             textAlign: TextAlign.right,
                           ),
@@ -542,7 +542,7 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                                   ? 'Week of ${date.day}/${date.month}/${date.year}'
                                   : '${date.month}/${date.year}';
                           return LineTooltipItem(
-                            '₹${spot.y.toStringAsFixed(2)}\n$dateText',
+                            'IQD ${spot.y.toStringAsFixed(2)}\n$dateText',
                             const TextStyle(color: Colors.white, fontSize: 12),
                           );
                         }
@@ -937,7 +937,7 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                       ),
                       _buildTableRow(
                         'Total',
-                        '₹${order.totalAmount.toStringAsFixed(2)}',
+                        'IQD ${order.totalAmount.toStringAsFixed(2)}',
                         isBold: true,
                         valueColor: AppColors.textPrimary,
                         backgroundColor: AppColors.primary.withOpacity(0.1),
@@ -1178,7 +1178,7 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                     padding: const EdgeInsets.symmetric(
                         vertical: 12, horizontal: 12),
                     child: Text(
-                      '₹${entry.value.toStringAsFixed(2)}',
+                      'IQD ${entry.value.toStringAsFixed(2)}',
                       style: const TextStyle(
                         fontSize: 18,
                         color: AppColors.textPrimary,

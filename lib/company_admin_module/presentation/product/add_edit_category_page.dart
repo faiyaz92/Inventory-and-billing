@@ -6,6 +6,8 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/produ
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/add_edit_category_state.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
+import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
+import 'package:requirment_gathering_app/core_module/utils/custom_loading_dialog.dart';
 
 @RoutePage()
 class AddEditCategoryPage extends StatefulWidget {
@@ -33,13 +35,19 @@ class _AddEditCategoryPageState extends State<AddEditCategoryPage> {
 
   void _saveCategory() {
     if (_formKey.currentState!.validate()) {
+      // Show custom loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const CustomLoadingDialog(message: 'Wait...'),
+      );
+
       final category = Category(name: _nameController.text);
       if (widget.category == null) {
         _categoryCubit.addCategory(category);
       } else {
         _categoryCubit.updateCategory(widget.category!.id ?? '', category);
       }
-      Navigator.pop(context);
     }
   }
 
@@ -49,10 +57,41 @@ class _AddEditCategoryPageState extends State<AddEditCategoryPage> {
       create: (_) => _categoryCubit,
       child: BlocListener<CategoryCubit, CategoryState>(
         listener: (context, state) {
+          // Close loading dialog if open
+          if (state is CategoryLoading) return; // Keep dialog open during loading
+          Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
+
           if (state is CategoryError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.errorMessage)),
+              SnackBar(
+                content: Text(
+                  state.errorMessage,
+                  style: const TextStyle(color: AppColors.white),
+                ),
+                backgroundColor: AppColors.red,
+                behavior: SnackBarBehavior.floating,
+                margin: const EdgeInsets.all(16),
+              ),
             );
+          } else if (state is CategoryLoaded) {
+            // Show success SnackBar and clear controller
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  widget.category == null
+                      ? 'Category added successfully'
+                      : 'Category updated successfully',
+                  style: const TextStyle(color: AppColors.white),
+                ),
+                backgroundColor: AppColors.green,
+                behavior: SnackBarBehavior.floating,
+                margin: const EdgeInsets.all(16),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+            if (widget.category == null) {
+              _nameController.clear(); // Clear controller only for add operation
+            }
           }
         },
         child: Scaffold(
@@ -94,6 +133,7 @@ class _AddEditCategoryPageState extends State<AddEditCategoryPage> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: TextFormField(
+                                textCapitalization: TextCapitalization.words,
                                 controller: _nameController,
                                 decoration: InputDecoration(
                                   labelText: 'Category Name',
