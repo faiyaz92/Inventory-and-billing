@@ -2,9 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/inventory/transaction_dto.dart';
 import 'package:requirment_gathering_app/core_module/services/firestore_provider.dart';
 
-/// Repository interface for managing transactions in Firestore.
 abstract class TransactionRepository {
-  /// Fetches all transactions for a specific store with optional filters.
   Future<List<TransactionDto>> getTransactions(
     String companyId,
     String storeId, {
@@ -17,18 +15,14 @@ abstract class TransactionRepository {
     required int pageSize,
   });
 
-  /// Adds a new transaction to Firestore.
   Future<void> addTransaction(String companyId, TransactionDto transaction);
 
-  /// Updates an existing transaction in Firestore.
   Future<void> updateTransaction(String companyId, TransactionDto transaction);
 
-  /// Deletes a transaction from Firestore.
   Future<void> deleteTransaction(
       String companyId, String storeId, String transactionId);
 }
 
-/// Implementation of TransactionRepository using Firestore.
 class TransactionRepositoryImpl implements TransactionRepository {
   final IFirestorePathProvider firestorePathProvider;
 
@@ -53,7 +47,6 @@ class TransactionRepositoryImpl implements TransactionRepository {
           firestorePathProvider.getTransactionsCollectionRef(companyId, storeId)
               as Query<Map<String, dynamic>>;
 
-// Apply filters
       if (userId != null) {
         query = query.where('userId', isEqualTo: userId);
       }
@@ -67,15 +60,12 @@ class TransactionRepositoryImpl implements TransactionRepository {
         query = query.where('timestamp', isGreaterThanOrEqualTo: startDate);
       }
       if (endDate != null) {
-// Include transactions up to the end of endDate
         query = query.where('timestamp',
             isLessThanOrEqualTo: endDate.add(const Duration(days: 1)));
       }
 
-// Apply sorting and pagination
       query = query.orderBy('timestamp', descending: true).limit(pageSize);
 
-// Handle pagination
       if (page > 1) {
         final lastSnapshot = await firestorePathProvider
             .getTransactionsCollectionRef(companyId, storeId)

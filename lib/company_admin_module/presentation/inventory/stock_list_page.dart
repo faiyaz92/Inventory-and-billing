@@ -16,7 +16,6 @@ import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 
-// Loading overlay widget for single loader
 class LoadingOverlay extends StatelessWidget {
   final bool isLoading;
   final Widget child;
@@ -845,7 +844,6 @@ class _StockListPageState extends State<StockListPage> {
                                 ),
                               );
 
-                              // Validate ledger IDs only for non-salesman entities
                               if (fromStore.storeType != StoreType.salesman &&
                                   fromStore.accountLedgerId == null) {
                                 setDialogState(() => isLoading = false);
@@ -886,7 +884,6 @@ class _StockListPageState extends State<StockListPage> {
                                   remarks: remarks,
                                 ));
 
-                                // Add credit entry for source store/warehouse (if not salesman)
                                 if (fromStore.storeType != StoreType.salesman &&
                                     fromStore.accountLedgerId != null) {
                                   saveFutures.add(ledgerCubit.addTransaction(
@@ -902,7 +899,6 @@ class _StockListPageState extends State<StockListPage> {
                                   ));
                                 }
 
-                                // Add debit entry for destination store/warehouse (if not salesman)
                                 if (toStore.storeType != StoreType.salesman &&
                                     toStore.accountLedgerId != null) {
                                   saveFutures.add(ledgerCubit.addTransaction(
@@ -1756,26 +1752,6 @@ class _StockListPageState extends State<StockListPage> {
                                               trailing: Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
-                                                  // IconButton(
-                                                  //   icon: Icon(
-                                                  //     Icons.add,
-                                                  //     color:
-                                                  //     Theme.of(context).primaryColor,
-                                                  //   ),
-                                                  //   onPressed: () =>
-                                                  //       _showAddStockDialog(context, stock),
-                                                  //   tooltip: 'Add Stock',
-                                                  // ),
-                                                  // IconButton(
-                                                  //   icon: Icon(
-                                                  //     Icons.remove,
-                                                  //     color:
-                                                  //     Theme.of(context).primaryColor,
-                                                  //   ),
-                                                  //   onPressed: () =>
-                                                  //       _showSubtractStockDialog(context, stock),
-                                                  //   tooltip: 'Subtract Stock',
-                                                  // ),
                                                   IconButton(
                                                     icon: Icon(
                                                       Icons.swap_horiz,

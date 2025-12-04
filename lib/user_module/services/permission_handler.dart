@@ -22,7 +22,6 @@ class PermissionHandler {
       return false;
     }
 
-    // Request background location (Android 10+, iOS Always)
     if (permission == LocationPermission.whileInUse) {
       permission = await Geolocator.requestPermission();
       if (permission != LocationPermission.always) {

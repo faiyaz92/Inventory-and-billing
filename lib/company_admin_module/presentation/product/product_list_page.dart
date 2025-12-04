@@ -40,7 +40,6 @@ class ProductListPage extends StatelessWidget {
                 children: [
                   Column(
                     children: [
-                      // Search bar row
                       TextField(
                         controller: _searchController,
                         decoration: InputDecoration(
@@ -69,7 +68,6 @@ class ProductListPage extends StatelessWidget {
                         },
                       ),
                       const SizedBox(height: 16),
-                      // Filter row (Category and Subcategory)
                       Row(
                         children: [
                           Expanded(

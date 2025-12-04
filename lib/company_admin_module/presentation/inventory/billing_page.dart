@@ -280,10 +280,8 @@ class _BillingPageState extends State<BillingPage> {
       text: _initialPayment?.toStringAsFixed(2) ?? '0.00',
     );
 
-    // Detect screen width for mobile adjustments
     final isMobile = MediaQuery.of(context).size.width < 600;
 
-    // Function to show discount input dialog
     Future<void> _showDiscountDialog(BuildContext dialogContext, int index,
         CartItem item, StateSetter setState) async {
       final double perUnitDiscount =
@@ -462,17 +460,11 @@ class _BillingPageState extends State<BillingPage> {
                           ),
                           columnWidths: {
                             0: FlexColumnWidth(isMobile ? 2.5 : 3),
-                            // Product
                             1: const FlexColumnWidth(1),
-                            // Qty
                             2: const FlexColumnWidth(1.2),
-                            // Subtotal
                             3: const FlexColumnWidth(1.2),
-                            // Tax
                             4: const FlexColumnWidth(1.5),
-                            // Discount (wider for tap target)
                             5: const FlexColumnWidth(1.2),
-                            // Total
                           },
                           children: [
                             TableRow(
@@ -629,7 +621,6 @@ class _BillingPageState extends State<BillingPage> {
                                           vertical: 8,
                                           horizontal: isMobile ? 8 : 12),
                                       color: Colors.transparent,
-                                      // Ensures tap area is full cell
                                       child: Text(
                                         discountText,
                                         textAlign: TextAlign.right,
@@ -940,7 +931,6 @@ class _BillingPageState extends State<BillingPage> {
                             final finalTotal =
                                 total - sumItemDisc - additionalDiscount;
 
-                            // Validate item discounts
                             for (int i = 0; i < order.items.length; i++) {
                               final item = order.items[i];
                               final itemTotal =
@@ -970,7 +960,6 @@ class _BillingPageState extends State<BillingPage> {
                                 return;
                               }
                             }
-                            // Validate additional discount
                             if (additionalDiscount < 0) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
@@ -995,7 +984,6 @@ class _BillingPageState extends State<BillingPage> {
                               );
                               return;
                             }
-                            // Validate initial payment
                             if (_selectedBillType == 'Credit') {
                               final initialPayment = double.tryParse(
                                       initialPaymentController.text) ??
@@ -1026,7 +1014,6 @@ class _BillingPageState extends State<BillingPage> {
                               }
                               _initialPayment = initialPayment;
                             }
-                            // Update cart items with discounts
                             setState(() {
                               _cartItems =
                                   order.items.asMap().entries.map((entry) {
@@ -1238,7 +1225,6 @@ class _BillingPageState extends State<BillingPage> {
     final double finalDiscount = totalItemDiscount + additionalDiscount;
     final double totalAmount = subtotal + totalTax - finalDiscount;
 
-    // Handle initial payment validation and bill type adjustment
     double initialPayment = 0.0;
     String adjustedBillType = _selectedBillType ?? 'Cash';
     if (_selectedBillType == 'Credit') {
@@ -1256,7 +1242,6 @@ class _BillingPageState extends State<BillingPage> {
         );
         return;
       }
-      // If initial payment equals total amount, treat as Cash bill
       if (initialPayment == totalAmount) {
         adjustedBillType = 'Cash';
         _initialPayment = totalAmount;
@@ -1288,12 +1273,10 @@ class _BillingPageState extends State<BillingPage> {
       return;
     }
 
-    // Generate new invoice number for new bills
     final billNumber = _existingBillNumber ??
         await sl<IOrderService>()
             .getNextInvoiceNumber(userInfo?.companyId ?? '');
 
-    // Create a temporary Order object for review dialog
     Order tempOrder = Order(
       id: widget.orderId ?? DateTime.now().millisecondsSinceEpoch.toString(),
       userId: _selectedCustomer!.userId!,
@@ -1332,7 +1315,6 @@ class _BillingPageState extends State<BillingPage> {
       return;
     }
 
-    // After review dialog, update calculations with any changes from dialog
     final updatedSubtotal =
     _cartItems.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
     final updatedTotalTax =
@@ -1343,13 +1325,11 @@ class _BillingPageState extends State<BillingPage> {
     final updatedTotalAmount =
         updatedSubtotal + updatedTotalTax - updatedFinalDiscount;
 
-    // Recalculate bill type and payment status after review dialog
     if (adjustedBillType == 'Credit' && _initialPayment == updatedTotalAmount) {
       adjustedBillType = 'Cash';
       _initialPayment = updatedTotalAmount;
     }
 
-    // Create final Order object with updated payment details
     final order = tempOrder.copyWith(
       items: _cartItems,
       totalAmount: updatedTotalAmount,
@@ -1527,7 +1507,6 @@ class _BillingPageState extends State<BillingPage> {
         final ledgerCubit = sl<UserLedgerCubit>();
 
         if (_existingBillNumber == null) {
-          // New bill saves
           for (var item in _cartItems) {
             final stock =
                 (_stockCubit.state as StockLoaded).stockItems.firstWhere(
@@ -1612,7 +1591,6 @@ class _BillingPageState extends State<BillingPage> {
             await orderService.placeInvoice(order);
           }
         } else {
-          // Update bill saves
           final processedProductIds = <String>{};
           for (var item in originalOrder!.items) {
             if (processedProductIds.contains(item.productId)) continue;
@@ -1762,9 +1740,7 @@ class _BillingPageState extends State<BillingPage> {
           await orderService.updateInvoice(order);
         }
       } catch (e) {
-        // Handle background save error (e.g., log it or show a delayed notification)
         debugPrint('Background save failed: $e');
-        // Optionally, use a global key or notification system to show error to user
       }
     });
   }
@@ -1817,7 +1793,6 @@ class _BillingPageState extends State<BillingPage> {
     final boldFont = pw.Font.timesBold();
     const PdfColor rowBackgroundColor = PdfColor(.99, .99, .99, 1.0);
 
-    // Ensure non-negative values and handle nulls/NaN
     final double subtotal = order.items.isEmpty
         ? 0.0
         : order.items.fold(
@@ -1886,7 +1861,6 @@ class _BillingPageState extends State<BillingPage> {
       return 'N/A';
     }
 
-    // Debug logging
     print('Subtotal: $subtotal, isNaN: ${subtotal.isNaN}');
     print('TotalTax: $totalTax, isNaN: ${totalTax.isNaN}');
     print(
@@ -1930,7 +1904,6 @@ class _BillingPageState extends State<BillingPage> {
           build: (context) => [
             pw.Stack(
               children: [
-                // Watermark first to ensure it's at the bottom layer
                 pw.Positioned(
                   top: (PdfPageFormat.a4.height - 100) / 2,
                   left: 0,
@@ -1959,7 +1932,6 @@ class _BillingPageState extends State<BillingPage> {
                     ),
                   ),
                 ),
-                // Invoice content on top
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.center,
                   children: [
@@ -3674,7 +3646,6 @@ class _BillingPageState extends State<BillingPage> {
           ),
         ),
       );
-      // Update parent state after dialog closes
       setState(() {});
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

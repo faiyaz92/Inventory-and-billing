@@ -17,7 +17,6 @@ import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart'
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_cubit.dart';
 import 'package:shimmer/shimmer.dart';
 
-// Model for aggregated product sales data
 class ProductSalesData {
   final String productId;
   final String productName;
@@ -320,13 +319,6 @@ class _ProductTrendingListPageState extends State<ProductTrendingListPage> {
                             color: AppColors.textPrimary,
                           ),
                         ),
-                        // Text(
-                        //   'Product ID: ${salesData.productId}',
-                        //   style: const TextStyle(
-                        //     fontSize: 14,
-                        //     color: AppColors.textSecondary,
-                        //   ),
-                        // ),
                       ],
                     ),
                   ),

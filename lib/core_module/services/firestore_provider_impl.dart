@@ -4,7 +4,6 @@ import 'package:requirment_gathering_app/core_module/services/firestore_provider
 class FirestorePathProviderImpl implements IFirestorePathProvider {
   final FirebaseFirestore _firestore;
 
-  /// 🔹 Define root path to avoid hardcoding
   static const String rootPath = 'Easy2Solutions';
   static const String companyDirectory = 'companyDirectory';
   static const String tenantCompanies = 'tenantCompanies';
@@ -22,7 +21,6 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
   static const String wishlistCollection = 'wishlists';
   static const String ordersCollection = 'orders'; // New
   static const String invoicesCollection = 'invoices'; // New
-// Accounting-specific collection names with 'accounting_' prefix
   static const String accountingAccountLedgers = 'accounting_accountLedgers';
   static const String accountingTransactions = 'accounting_transactions';
   static const String accountingStores = 'accounting_stores';
@@ -326,53 +324,43 @@ class FirestorePathProviderImpl implements IFirestorePathProvider {
   DocumentReference getSinglePurchaseInvoiceRef(String companyId, String invoiceId) {
     return getPurchaseInvoicesCollectionRef(companyId).doc(invoiceId);
   }
-  // --- START ACCOUNTING PATHS FOR SDK ---
   @override
   CollectionReference getAccountingAccountLedger(String companyId) {
     return getTenantCompanyRef(companyId).collection(accountingAccountLedgers);
-    // Path: Easy2Solutions/companyDirectory/tenantCompanies/{companyId}/accounting_accountLedgers
   }
 
   @override
   DocumentReference getAccountingAccountLedgerRef(String companyId, String ledgerId) {
     return getAccountingAccountLedger(companyId).doc(ledgerId);
-    // Path: Easy2Solutions/companyDirectory/tenantCompanies/{companyId}/accounting_accountLedgers/{ledgerId}
   }
 
   @override
   CollectionReference getAccountingTransactionsRef(String companyId, String ledgerId) {
     return getAccountingAccountLedgerRef(companyId, ledgerId).collection(accountingTransactions);
-    // Path: Easy2Solutions/companyDirectory/tenantCompanies/{companyId}/accounting_accountLedgers/{ledgerId}/accounting_transactions
   }
 
   @override
   CollectionReference getAccountingStoresCollectionRef(String companyId) {
     return getTenantCompanyRef(companyId).collection(accountingStores);
-    // Path: Easy2Solutions/companyDirectory/tenantCompanies/{companyId}/accounting_stores
   }
 
   @override
   CollectionReference getAccountingStockCollectionRef(String companyId, String storeId) {
     return getAccountingStoresCollectionRef(companyId).doc(storeId).collection(accountingStock);
-    // Path: Easy2Solutions/companyDirectory/tenantCompanies/{companyId}/accounting_stores/{storeId}/accounting_stock
   }
 
   @override
   CollectionReference getAccountingTransactionsCollectionRef(String companyId, String storeId) {
     return getAccountingStoresCollectionRef(companyId).doc(storeId).collection(accountingStoreTransactions);
-    // Path: Easy2Solutions/companyDirectory/tenantCompanies/{companyId}/accounting_stores/{storeId}/accounting_transactions
   }
 
   @override
   DocumentReference getAccountingGeneralJournalRef(String companyId) {
     return getTenantCompanyRef(companyId).collection(accountingGeneralJournal).doc('journal');
-    // Path: Easy2Solutions/companyDirectory/tenantCompanies/{companyId}/accounting_generalJournal/journal
   }
 
   @override
   DocumentReference getAccountingJournalRef(String companyId, String storeId) {
     return getAccountingStoresCollectionRef(companyId).doc(storeId).collection(accountingJournal).doc('journal');
-    // Path: Easy2Solutions/companyDirectory/tenantCompanies/{companyId}/accounting_stores/{storeId}/accounting_journal/journal
   }
-// --- END ACCOUNTING PATHS FOR SDK ---
 }

@@ -113,9 +113,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
     );
   }
 
-// Add this field to _PerformanceDetailsPageState
 
-// Add this method to _PerformanceDetailsPageState
   void _applyQuickFilter(String filter) {
     setState(() {
       _selectedFilter = filter;
@@ -161,7 +159,6 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
         );
   }
 
-// Replace _buildDateRangeCard in _PerformanceDetailsPageState with this
   Widget _buildDateRangeCard(BuildContext context) {
     final formatter = DateFormat('dd-MM-yyyy');
     final totalDays = dateRange.end.difference(dateRange.start).inDays + 1;
@@ -359,7 +356,6 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
     );
   }
 
-// Replace this method in _PerformanceDetailsPageState in performance_details_page.dart
 
   Widget _buildStatsCard(AdminOrderListFetchSuccess state) {
     if (widget.entityType == 'product') {
@@ -583,7 +579,6 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
     );
   }
 
-// Add these methods to _PerformanceDetailsPageState in performance_details_page.dart
 
   Widget _buildAverageOrderSaleAmountCard(AdminOrderListFetchSuccess state) {
     final averages = _calculateAverageOrderSaleAmount(state);
@@ -1512,7 +1507,6 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
   }
 
   Widget _buildOrdersCard(AdminOrderListFetchSuccess state) {
-    // Filter orders based on entity type
     final filteredOrders = state.orders.where((order) {
       switch (widget.entityType) {
         case 'product':
@@ -1530,7 +1524,6 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
       }
     }).toList();
 
-    // Group filtered orders by date
     final groupedOrders = <String, List<Order>>{};
     final formatter = DateFormat('MMM dd, yyyy');
     for (var order in filteredOrders) {
@@ -1803,9 +1796,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
       totalAmount = orders.fold(0.0, (sum, order) => sum + order.totalAmount);
     }
 
-    // Calculate daily average
     final dailyAvg = durationDays > 0 ? totalAmount / durationDays : 0.0;
-    // Derive weekly and monthly averages
     final weeklyAvg = dailyAvg * 7;
     final monthlyAvg = dailyAvg * 30;
 
@@ -1837,9 +1828,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
       orderCount = orders.length;
     }
 
-    // Calculate daily average
     final dailyAvg = durationDays > 0 ? orderCount / durationDays : 0.0;
-    // Derive weekly and monthly averages
     final weeklyAvg = dailyAvg * 7;
     final monthlyAvg = dailyAvg * 30;
 
@@ -1873,9 +1862,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
       }
     }
 
-    // Calculate daily average
     final dailyAvg = durationDays > 0 ? totalQuantity / durationDays : 0.0;
-    // Derive weekly and monthly averages
     final weeklyAvg = dailyAvg * 7;
     final monthlyAvg = dailyAvg * 30;
 
@@ -1891,7 +1878,6 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
 
     final productMap = <String, ProductSalesData>{};
 
-    // Filter orders by customer and aggregate products
     for (final order in orders) {
       if (order.userId == widget.entityId) {
         for (final cartItem in order.items) {
@@ -1918,7 +1904,6 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
       }
     }
 
-    // Sort by totalAmount (high to low)
     final productSalesList = productMap.values.toList()
       ..sort((a, b) => b.totalAmount.compareTo(a.totalAmount));
     return productSalesList;

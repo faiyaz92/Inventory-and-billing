@@ -107,7 +107,6 @@ Future<void> setupServiceLocator() async {
   _initAppNavigation();
 }
 
-/// **1. Initialize Firebase Dependencies**
 void _initFirebase() {
   sl.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);
   sl.registerLazySingleton<FirebaseFirestore>(() => FirebaseFirestore.instance);
@@ -115,27 +114,22 @@ void _initFirebase() {
       () => FirestorePathProviderImpl(sl<FirebaseFirestore>()));
 }
 
-/// **2. Initialize Repositories**
 void _initRepositories() {
-  // Account Repository
   sl.registerLazySingleton<AccountRepository>(() => AccountRepositoryImpl(
         sl<FirebaseAuth>(),
         sl<IFirestorePathProvider>(),
       ));
 
-  // Company Repository
   sl.registerFactory<CustomerCompanyRepository>(() =>
       CustomerCompanyRepositoryImpl(
           sl<IFirestorePathProvider>(), sl<AccountRepository>()));
 
-  // Company Setting Repository
   sl.registerLazySingleton<CompanySettingRepository>(
       () => CompanySettingRepositoryImpl(
             sl<IFirestorePathProvider>(),
             sl<AccountRepository>(),
           ));
 
-  // AI Company Repository
   sl.registerLazySingleton<AiCompanyListRepository>(
       () => AiCompanyListRepositoryImpl(sl<DioClientProvider>()));
 
@@ -150,7 +144,6 @@ void _initRepositories() {
       () => TaskRepositoryImpl(sl<IFirestorePathProvider>()));
   sl.registerLazySingleton<IAccountLedgerRepository>(
       () => AccountLedgerRepositoryImpl(sl<IFirestorePathProvider>()));
-  // Register Product Repository
   sl.registerLazySingleton<ProductRepository>(() => ProductRepositoryImpl(
       firestore: sl<FirebaseFirestore>(),
       firestorePathProvider: sl<IFirestorePathProvider>()));
@@ -158,7 +151,6 @@ void _initRepositories() {
         firestorePathProvider: sl<IFirestorePathProvider>(),
       ));
 
-  // Register Stock and Transaction Repositories
   sl.registerLazySingleton<StockRepository>(() => StockRepositoryImpl(
         firestorePathProvider: sl<IFirestorePathProvider>(),
         accountRepository: sl<AccountRepository>(),
@@ -177,14 +169,12 @@ void _initRepositories() {
         firestorePathProvider: sl<IFirestorePathProvider>(),
       ));
 
-  // Register Purchase Order Repository
   sl.registerLazySingleton<IPurchaseOrderRepository>(
       () => PurchaseOrderRepositoryImpl(
             firestorePathProvider: sl<IFirestorePathProvider>(),
           ));
 }
 
-/// **3. Initialize Services**
 void _initServices() {
   sl.registerLazySingleton<AuthService>(
       () => AuthServiceImpl(sl<AccountRepository>()));
@@ -219,7 +209,6 @@ void _initServices() {
           ));
   sl.registerLazySingleton<IUserService>(
       () => UserServiceImpl(sl<AccountRepository>()));
-  // Register Product Service
   sl.registerLazySingleton<ProductService>(() => ProductServiceImpl(
       sl<AccountRepository>(),
       productRepository: sl<ProductRepository>(),
@@ -266,19 +255,16 @@ void _initServices() {
     ),
   );
 
-  // Register Purchase Order Service
   sl.registerLazySingleton<PurchaseOrderService>(() => PurchaseOrderService(
         purchaseOrderRepository: sl<IPurchaseOrderRepository>(),
         accountRepository: sl<AccountRepository>(),
       ));
-  // In _initServices()
   sl.registerLazySingleton<IPurchaseOrderService>(() => PurchaseOrderService(
     purchaseOrderRepository: sl<IPurchaseOrderRepository>(),
     accountRepository: sl<AccountRepository>(),
   ));
 }
 
-/// **4. Initialize Cubits (State Management)**
 void _initCubits() {
   sl.registerFactory(
       () => LoginCubit(sl<AuthService>(), sl<TenantCompanyService>()));
@@ -296,12 +282,10 @@ void _initCubits() {
         sl<CustomerCompanyRepository>(),
       ));
 
-  // Register AddTenantCompanyCubit
   sl.registerFactory(() => AddTenantCompanyCubit(
         sl<TenantCompanyService>(),
       ));
 
-  // Register AddUserCubit for adding users
   sl.registerFactory(() => AddUserCubit(
         sl<UserServices>(),
         sl<StoreService>(),
@@ -377,7 +361,6 @@ void _initCubits() {
         employeeServices: sl<UserServices>(),
       ));
 
-  // Register AdminPurchaseCubit
   sl.registerFactory(() => AdminPurchaseCubit(
     purchaseOrderService: sl<IPurchaseOrderService>(),
     userServices: sl<UserServices>(),
@@ -385,7 +368,6 @@ void _initCubits() {
   ));
 }
 
-/// **5. Initialize App Navigation & Coordinator**
 void _initAppNavigation() {
   sl.registerLazySingleton<AppRouter>(() => AppRouter());
   sl.registerLazySingleton<Coordinator>(() => AppCoordinator(sl<AppRouter>()));

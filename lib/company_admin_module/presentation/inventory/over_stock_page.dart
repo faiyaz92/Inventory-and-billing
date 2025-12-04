@@ -55,7 +55,6 @@ class _OverallStockPageState extends State<OverallStockPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Search Bar
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: TextField(
@@ -63,7 +62,6 @@ class _OverallStockPageState extends State<OverallStockPage> {
                         print('Search input: $query'); // Debug: Log input
                         setState(() {
                           searchQuery = query.trim().toLowerCase();
-                          // Filter products locally
                           filteredProductStocks = overallStockCubit.state.productStocks.where((product) {
                             final productName = product.productName.toLowerCase();
                             final productId = product.productId.toLowerCase();
@@ -130,7 +128,6 @@ class _OverallStockPageState extends State<OverallStockPage> {
                             ),
                           );
                         }
-                        // Initialize filteredProductStocks on first success load
                         if (state is OverallStockSuccess && filteredProductStocks.isEmpty && searchQuery.isEmpty) {
                           filteredProductStocks = List.from(state.productStocks);
                         }

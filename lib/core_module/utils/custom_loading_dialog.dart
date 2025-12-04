@@ -6,7 +6,6 @@ class CustomLoadingDialog extends StatelessWidget {
 
   const CustomLoadingDialog({
     super.key,
-    // ignore: avoid_hardcoded_strings
     this.message = 'Loading...',
   });
 

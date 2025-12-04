@@ -32,28 +32,6 @@ class ProductMgtPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // SizedBox(
-                //   width: double.infinity,
-                //   child: Card(
-                //     elevation: 8,
-                //     shape: RoundedRectangleBorder(
-                //       borderRadius: BorderRadius.circular(16),
-                //     ),
-                //     color: Colors.white,
-                //     child: Padding(
-                //       padding: const EdgeInsets.all(kIsWeb ? 24.0 : 16.0),
-                //       child: Text(
-                //         'Welcome to Product Management',
-                //         style: TextStyle(
-                //           fontSize: kIsWeb ? 28 : 24,
-                //           fontWeight: FontWeight.bold,
-                //           color: Theme.of(context).primaryColor,
-                //         ),
-                //       ),
-                //     ),
-                //   ),
-                // ),
-                // const SizedBox(height: kIsWeb ? 32 : 24),
                 Expanded(
                   child: GridView.count(
                     crossAxisCount: kIsWeb ? 7 : 3,

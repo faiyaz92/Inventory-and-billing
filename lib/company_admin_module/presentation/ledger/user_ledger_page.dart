@@ -341,7 +341,6 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
                       ],
                     );
                   }
-                  // Handle initial state for OtherLedger when no destination is selected
                   if (widget.type == TransactionType.OtherLedger &&
                       _ledgerId == null) {
                     return const Center(
@@ -380,7 +379,6 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Filters for OtherLedger
                   if (widget.type == TransactionType.OtherLedger) ...[
                     DropdownButtonFormField<String>(
                       decoration: InputDecoration(
@@ -508,7 +506,6 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
                       ),
                     const SizedBox(height: 12),
                   ],
-                  // Source Account
                   widget.user == null &&
                       widget.store == null &&
                       widget.type != TransactionType.OtherLedger
@@ -628,7 +625,6 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
                         : null,
                   ),
                   const SizedBox(height: 12),
-                  // Destination Account
                   widget.type == TransactionType.Expense
                       ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1155,7 +1151,6 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
           lastDate: DateTime(2100),
         );
         if (picked != null) {
-          // TODO: Implement updatePromiseDate
         }
       },
     );
@@ -1169,8 +1164,6 @@ class _UserLedgerPageState extends State<UserLedgerPage> {
     final isAdminOrAccountant = _cachedUserInfo?.role == Role.COMPANY_ADMIN ||
         _cachedUserInfo?.role == Role.COMPANY_ACCOUNTANT;
 
-    // For "My Account" (widget.user == null, widget.store == null, and type == General)
-    // and user is Employee, only show buttons for COMPANY_ADMIN or COMPANY_ACCOUNTANT
     if (widget.user == null &&
         widget.store == null &&
         widget.type == TransactionType.General &&

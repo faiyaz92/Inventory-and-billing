@@ -36,9 +36,7 @@ class OrderCubit extends Cubit<OrderState> {
     emit(OrderLoading());
     try {
       final orders = await orderService.getOrdersByUser();
-      // Sort orders by orderDate in descending order (latest first)
       orders.sort((a, b) => b.orderDate.compareTo(a.orderDate));
-      // Apply date range filter if provided
       List<Order> filteredOrders = orders;
       if (startDate != null && endDate != null) {
         filteredOrders = orders.where((order) {

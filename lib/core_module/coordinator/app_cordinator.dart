@@ -46,7 +46,6 @@ class AppCoordinator implements Coordinator {
 
   @override
   void navigateToReportsPage() {
-    // _router.push(const ReportRoute());
   }
 
   @override
@@ -146,14 +145,12 @@ class AppCoordinator implements Coordinator {
     _router.push(const ProductMgtRoute());
   }
 
-  // 🔹 Add/Edit Category Navigation
   @override
   void navigateToAddEditCategoryPage({Category? category}) {
     _router.push(AddEditCategoryRoute(
         category: category)); // Navigate to Add/Edit Category page
   }
 
-  // 🔹 Add/Edit Subcategory Navigation
   @override
   void navigateToAddEditSubcategoryPage(
       {Subcategory? subcategory, required Category category}) {
@@ -190,73 +187,61 @@ class AppCoordinator implements Coordinator {
 
   @override
   Future navigateToEmployeeDetailsPage({String? userId}) {
-    // TODO: implement navigateToEmployeeDetailsPage
     return _router.push(EmployeeDetailsRoute(userId: userId ?? ''));
   }
 
   @override
   Future navigateToForgotPasswordPage() {
-    // TODO: implement navigateToForgotPasswordPage
     return _router.push(ForgotPasswordRoute());
   }
 
   @override
   Future navigateToAddCustomerPage() {
-    // TODO: implement navigateToAddCustomerPage
     throw UnimplementedError();
   }
 
   @override
   Future navigateToAddStockPage() {
-    // TODO: implement navigateToAddStockPage
     return _router.push(const AddStockRoute());
   }
 
   @override
   Future navigateToSalesReportPage() {
-    // TODO: implement navigateToSalesReportPage
     return _router.push(const SalesReportRoute());
   }
 
   @override
   Future navigateToStockListPage() {
-    // TODO: implement navigateToStockListPage
     return _router.push(const StockListRoute());
   }
 
   @override
   Future navigateToTransactionsPage() {
-    // TODO: implement navigateToTransactionsPage
     return _router.push(const TransactionsRoute());
   }
 
   @override
   Future navigateToInventoryDashBoard() {
-    // TODO: implement navigateToInventoryDashBoard
     return _router.push(const InventoryDashboardRoute());
   }
 
   @override
   Future navigateToStoresListPage({bool fromAccountPage = false}) {
-    // TODO: implement navigateToStoresListPage
     return _router.push(StoresListRoute(fromAccountsPage: fromAccountPage));
   }
 
   @override
   Future navigateToAddStorePage() {
-    // TODO: implement navigateToAddStorePagr
     return _router.push(const AddStoreRoute());
   }
 
   @override
   Future navigateToStoreDetailsPage(String? storeId) {
-    // TODO: implement navigateToStoreDetailsPage
     return _router.push(StoreDetailsRoute(storeId: storeId ?? ''));
   }
 
   @override
   Future navigateToOverAllStockPage() {
-    // TODO: implement navigateToOverAllStockPage
     return _router.push(const OverallStockRoute());
   }
 
@@ -277,13 +262,11 @@ class AppCoordinator implements Coordinator {
 
   @override
   Future<dynamic> navigateToSettingsPage() {
-    // _router.push(const SettingsRoute());
     return _router.push(const OrderListRoute());
   }
 
   @override
   Future<dynamic> navigateToShoppingCartEntryPage() {
-    // _router.push(const ShoppingCartEntryRoute());
     return _router.push(const OrderListRoute());
   }
 
@@ -319,13 +302,11 @@ class AppCoordinator implements Coordinator {
 
   @override
   Future navigateToCartDashboard() {
-    // TODO: implement navigateToCartDashboard
     return _router.push(const CartDashboardRoute());
   }
 
   @override
   Future navigateToSalesManOrderPage() {
-    // TODO: implement navigateToSalesManOrderPage
     return _router.push(const SalesmanOrderRoute());
   }
 
@@ -366,7 +347,6 @@ class AppCoordinator implements Coordinator {
   Future<dynamic> navigateToProductPerformanceListPage() =>
       _router.push(const ProductTrendingListRoute());
 
-  // File: core_module/coordinator/app_coordinator.dart
 
   @override
   Future<dynamic> navigateToBillingPage({String? orderId}) {
@@ -389,7 +369,6 @@ class AppCoordinator implements Coordinator {
       {UserInfo? user,
       StoreDto? store,
       TransactionType transactionType = TransactionType.General}) {
-    // TODO: implement navigateToUserLedgerPage
     return _router
         .push(UserLedgerRoute(user: user, store: store, type: transactionType));
   }

@@ -232,10 +232,6 @@ class PreviewOrderPage extends StatelessWidget {
                                                 TableRow(
                                                   decoration: BoxDecoration(
                                                     color: AppColors.primary.withOpacity(0.1),
-                                                    // borderRadius: const BorderRadius.only(
-                                                    //   bottomLeft: Radius.circular(12),
-                                                    //   bottomRight: Radius.circular(12),
-                                                    // ),
                                                   ),
                                                   children: [
                                                     Padding(

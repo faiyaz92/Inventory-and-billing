@@ -16,7 +16,6 @@ import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppLabels.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 
-// Loading overlay widget for single loader
 class LoadingOverlay extends StatelessWidget {
   final bool isLoading;
   final Widget child;
@@ -841,7 +840,6 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                           ),
                         );
 
-                        // Validate ledger IDs only for non-salesman entities
                         if (fromStore.storeType != StoreType.salesman &&
                             fromStore.accountLedgerId == null) {
                           setDialogState(() => isLoading = false);
@@ -882,7 +880,6 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                             remarks: remarks,
                           ));
 
-                          // Add credit entry for source store/warehouse (if not salesman)
                           if (fromStore.storeType !=
                               StoreType.salesman &&
                               fromStore.accountLedgerId != null) {
@@ -899,7 +896,6 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                             ));
                           }
 
-                          // Add debit entry for destination store/warehouse (if not salesman)
                           if (toStore.storeType !=
                               StoreType.salesman &&
                               toStore.accountLedgerId != null) {
@@ -953,7 +949,6 @@ class _StoreDetailsPageState extends State<StoreDetailsPage> {
                             Navigator.pop(dialogContext);
                           } catch (e) {
                             setDialogState(() => isLoading = false);
-                            // Do not pop dialog on error when not generating PDF
                           }
                         }
                       }

@@ -422,7 +422,6 @@ class StockCubit extends Cubit<StockState> {
       emit(StockError(e.toString()));
     }
   }
-// In StockCubit class
   Future<void> addStockBatch(List<StockModel> stocks, {List<Product>? products, String? remarks}) async {
     emit(StockLoading());
     try {

@@ -26,7 +26,6 @@ class TenantCompany {
     this.address,
   });
 
-  /// 🔹 Convert DTO to TenantCompany Model
   factory TenantCompany.fromDto(TenantCompanyDto dto) {
     return TenantCompany(
       id: dto.companyId,
@@ -42,7 +41,6 @@ class TenantCompany {
     );
   }
 
-  /// 🔹 Convert TenantCompany to DTO
   TenantCompanyDto toDto() {
     return TenantCompanyDto(
       companyId: id,

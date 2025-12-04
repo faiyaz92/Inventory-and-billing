@@ -29,15 +29,12 @@ class _SplashScreenPageState extends State<SplashScreenPage>
     super.initState();
     print('SplashScreen: initState started');
     splashCubit = sl<SplashCubit>();
-// Initialize permissions only on non-web platforms
     if (!kIsWeb) {
       print('SplashScreen: Initializing permissions and services (non-web)');
-      // _initializePermissionsAndService();
     } else {
       print('SplashScreen: Skipping permissions and services on web');
     }
     _startSplashDelay();
-// Start fade-in animation
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) {
         setState(() {

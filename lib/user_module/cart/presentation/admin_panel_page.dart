@@ -205,7 +205,6 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                         padding: const EdgeInsets.all(16.0),
                         sliver: SliverList(
                           delegate: SliverChildListDelegate([
-                            // Search Bar
                             TextField(
                               decoration: InputDecoration(
                                 hintText: 'Search by Order ID',

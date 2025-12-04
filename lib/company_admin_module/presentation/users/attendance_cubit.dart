@@ -14,10 +14,8 @@ class AttendanceCubit extends Cubit<AttendanceState> {
   Future<void> fetchUsers({String? date}) async {
     try {
       emit(AttendanceLoading());
-      // Fetch all users and filter for employees only
       final allUsers = await _employeeServices.getUsersFromTenantCompany();
       final employees = allUsers.where((user) => user.userType == UserType.Employee).toList();
-      // Fetch attendance for the given date (or today) for employees
       final dateToFetch = date ?? DateFormat('dd-MM-yyyy').format(DateTime.now());
       final attendanceMap = await _fetchAttendanceForUsers(employees, dateToFetch);
       emit(AttendanceLoaded(users: employees, attendance: attendanceMap));
@@ -30,10 +28,8 @@ class AttendanceCubit extends Cubit<AttendanceState> {
     final attendanceMap = <String, AttendanceModel>{};
     final month = DateFormat('yyyy-MM').format(DateFormat('dd-MM-yyyy').parse(date));
     for (var user in users) {
-      // Only process users with a valid userId and of type Employee
       if (user.userId != null && user.userType == UserType.Employee) {
         final attendanceList = await _employeeServices.getAttendance(user.userId!, month);
-        // Find attendance for the specific date
         final attendance = attendanceList.firstWhere(
               (a) => a.date == date,
           orElse: () => AttendanceModel(date: date, status: 'absent'), // Default to absent if no record
@@ -47,7 +43,6 @@ class AttendanceCubit extends Cubit<AttendanceState> {
   Future<void> markAttendance(String userId, AttendanceModel attendance) async {
     try {
       await _employeeServices.markAttendance(userId, attendance);
-      // Update attendance map with the new status
       final currentState = state as AttendanceLoaded;
       final updatedAttendance = Map<String, AttendanceModel>.from(currentState.attendance);
       updatedAttendance[userId] = attendance;
@@ -63,7 +58,6 @@ class AttendanceCubit extends Cubit<AttendanceState> {
   Future<void> fetchAttendance(String date) async {
     try {
       emit(AttendanceLoading());
-      // Fetch all users and filter for employees only
       final allUsers = await _employeeServices.getUsersFromTenantCompany();
       final employees = allUsers.where((user) => user.userType == UserType.Employee).toList();
       final attendanceMap = await _fetchAttendanceForUsers(employees, date);

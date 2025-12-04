@@ -36,7 +36,6 @@ class OrderListPage extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  // Date Range Filter
                   BlocBuilder<OrderCubit, OrderState>(
                     builder: (context, state) {
                       return Row(
@@ -93,7 +92,6 @@ class OrderListPage extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: 16),
-                  // Order List
                   Expanded(
                     child: BlocBuilder<OrderCubit, OrderState>(
                       builder: (context, state) {

@@ -69,14 +69,12 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
 
         if (widget.product == null) {
           await _cubit.addProduct(product);
-          // Clear form for adding another product
           _nameController.clear();
           _priceController.clear();
           _taxController.clear();
           _cubit.resetSelections(); // Reset category and subcategory
         } else {
           await _cubit.updateProduct(product);
-          // Navigate back only for edit mode
           sl<Coordinator>().navigateBack(isUpdated: true);
         }
 
@@ -131,7 +129,6 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // Product Name
                           Container(
                             decoration: BoxDecoration(
                               color: Colors.grey[50],
@@ -161,7 +158,6 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          // Price
                           Container(
                             decoration: BoxDecoration(
                               color: Colors.grey[50],
@@ -195,7 +191,6 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          // Tax
                           Container(
                             decoration: BoxDecoration(
                               color: Colors.grey[50],
@@ -229,7 +224,6 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          // Category Dropdown
                           BlocBuilder<AdminProductCubit, ProductState>(
                             buildWhen: (previous, current) =>
                             current is CategoriesLoaded,
@@ -287,7 +281,6 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                             },
                           ),
                           const SizedBox(height: 16),
-                          // Subcategory Dropdown
                           BlocBuilder<AdminProductCubit, ProductState>(
                             buildWhen: (previous, current) =>
                             current is SubcategoriesLoaded,
@@ -347,7 +340,6 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                             },
                           ),
                           const SizedBox(height: 24),
-                          // Save Button
                           ElevatedButton(
                             onPressed: _isSaving ? null : _saveProduct,
                             style: ElevatedButton.styleFrom(

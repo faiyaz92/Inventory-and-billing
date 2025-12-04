@@ -87,7 +87,6 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Company Name
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -113,7 +112,6 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
                     );
                   },
                 ),
-                // Address
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -137,7 +135,6 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
                     );
                   },
                 ),
-                // Email
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -161,7 +158,6 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
                     );
                   },
                 ),
-                // Contact Number
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -187,7 +183,6 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
                     );
                   },
                 ),
-                // Contact Persons
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -206,7 +201,6 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
                     );
                   },
                 ),
-                // Business Type Dropdown
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -233,7 +227,6 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
                     );
                   },
                 ),
-                // Country Dropdown
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -260,7 +253,6 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
                     );
                   },
                 ),
-                // City Dropdown
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -292,7 +284,6 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
                     );
                   },
                 ),
-                // Interest Level Dropdown
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -311,7 +302,6 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
                     );
                   },
                 ),
-                // Priority Dropdown
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -338,7 +328,6 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
                     );
                   },
                 ),
-                // Assigned To Dropdown
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -364,7 +353,6 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
                     );
                   },
                 ),
-                // Description
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -390,7 +378,6 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
                   },
                 ),
                 const SizedBox(height: 16),
-                // Save Button
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is SavingState || previous is SavingState,

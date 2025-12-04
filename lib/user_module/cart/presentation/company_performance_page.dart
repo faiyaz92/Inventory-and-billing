@@ -224,17 +224,12 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
 
-// In _CompanyPerformancePageState, update the build method's Column children:
                         children: [
-                          // _buildTitleCard(context),
-                          // const SizedBox(height: 16),
                           _buildDateRangeCard(context),
                           const SizedBox(height: 16),
                           _buildQuickFilterChips(),
                           const SizedBox(height: 16),
                           _buildStatsCard(state),
-                          // Average Sale Amount
-                          // Average Order Count
                           const SizedBox(height: 16),
                           _buildGraphCard(state),
 
@@ -1115,9 +1110,7 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
     final totalAmount =
         orders.fold(0.0, (sum, order) => sum + order.totalAmount);
 
-    // Calculate daily average
     final dailyAvg = durationDays > 0 ? totalAmount / durationDays : 0.0;
-    // Derive weekly and monthly averages
     final weeklyAvg = dailyAvg * 7;
     final monthlyAvg = dailyAvg * 30;
 
@@ -1207,9 +1200,7 @@ class _CompanyPerformancePageState extends State<CompanyPerformancePage> {
 
     final totalOrders = orders.length;
 
-    // Calculate daily average
     final dailyAvg = durationDays > 0 ? totalOrders / durationDays : 0.0;
-    // Derive weekly and monthly averages
     final weeklyAvg = dailyAvg * 7;
     final monthlyAvg = dailyAvg * 30;
 

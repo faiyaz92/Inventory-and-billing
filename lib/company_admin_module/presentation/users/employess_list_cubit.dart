@@ -12,7 +12,6 @@ class EmployeeCubit extends Cubit<EmployeesState> {
     try {
       emit(UserListLoading());
       final allUsers = await _employeeServices.getUsersFromTenantCompany();
-      // Filter users to include only those with UserType.Employee
       final employees = allUsers.where((user) {
         final isEmployee = user.userType == UserType.Employee;
         print('EmployeeCubit fetchUsers: userId = ${user.userId}, userType = ${user.userType?.name ?? "null"}, isEmployee = $isEmployee');

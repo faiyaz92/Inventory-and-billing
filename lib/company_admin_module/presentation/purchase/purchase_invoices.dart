@@ -1032,8 +1032,6 @@ class _PurchaseInvoicePanelPageState extends State<PurchaseInvoicePanelPage> {
       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
       child: InkWell(
         onTap: () {
-          // Navigate to purchase order details page if needed
-          // sl<Coordinator>().navigateToPurchaseOrderDetailsPage(order.id);
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(

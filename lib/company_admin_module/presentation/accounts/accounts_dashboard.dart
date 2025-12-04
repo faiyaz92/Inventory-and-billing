@@ -16,7 +16,6 @@ class AccountsDashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Define demo expiration date
     final DateTime demoExpirationDate = DateTime(2025, 10, 10);
     final bool isDemoExpired = DateTime.now().isAfter(demoExpirationDate);
 
@@ -24,7 +23,6 @@ class AccountsDashboardPage extends StatelessWidget {
       create: (context) => sl<HomeCubit>()..fetchUserInfo(),
       child: BlocBuilder<HomeCubit, HomeState>(
         builder: (context, state) {
-          // If demo is expired, show purchase message
           if (isDemoExpired) {
             return Scaffold(
               body: Center(
@@ -98,7 +96,6 @@ class AccountsDashboardPage extends StatelessWidget {
             );
           }
 
-          // Handle states
           if (state is HomeLoading) {
             return Scaffold(
               appBar: const CustomAppBar(
@@ -221,7 +218,6 @@ class AccountsDashboardPage extends StatelessWidget {
       Colors.green,
     ];
 
-    // Define icons for each UserType
     final iconMap = {
       UserType.Employee: Icons.person,
       UserType.Supplier: Icons.local_shipping,

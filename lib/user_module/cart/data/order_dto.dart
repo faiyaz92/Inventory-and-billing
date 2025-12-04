@@ -1,4 +1,3 @@
-// Updated CartItemDto to include discountAmount and discountPercentage
 import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
 
@@ -76,7 +75,6 @@ class CartItemDto {
   }
 }
 
-// Updated OrderDto to handle updated CartItemDto
 class OrderDto {
   final String id;
   final String userId;

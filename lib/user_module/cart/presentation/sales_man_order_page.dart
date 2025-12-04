@@ -618,7 +618,6 @@ class SalesmanOrderPage extends StatelessWidget {
             Map.from(cubit.itemDiscounts); // Local copy for state updates
         final isMobile = MediaQuery.of(context).size.width < 600;
 
-// Function to show discount input dialog
         Future<void> _showDiscountDialog(
             BuildContext dialogContext,
             String productId,
@@ -784,17 +783,11 @@ class SalesmanOrderPage extends StatelessWidget {
                       ),
                       columnWidths: {
                         0: FlexColumnWidth(isMobile ? 2.5 : 3),
-                        // Product
                         1: FlexColumnWidth(1),
-                        // Qty
                         2: FlexColumnWidth(1.2),
-                        // Subtotal
                         3: FlexColumnWidth(1.2),
-                        // Tax
                         4: FlexColumnWidth(1.5),
-                        // Discount (wider for tap target)
                         5: FlexColumnWidth(1.2),
-                        // Total
                       },
                       children: [
                         TableRow(
@@ -1166,7 +1159,6 @@ class SalesmanOrderPage extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-// Validate item discounts
                         for (var product in state.filteredProducts) {
                           final quantity =
                               state.productQuantities[product.id] ?? 0;
@@ -1204,7 +1196,6 @@ class SalesmanOrderPage extends StatelessWidget {
                             return;
                           }
                         }
-// Validate additional discount
                         if (cubit.discount < 0) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(

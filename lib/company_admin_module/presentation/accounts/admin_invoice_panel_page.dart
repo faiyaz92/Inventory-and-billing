@@ -1036,7 +1036,6 @@ class _AdminInvoicePanelPageState extends State<AdminInvoicePanelPage> {
       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
       child: InkWell(
         onTap: () {
-          // sl<Coordinator>().navigateToAdminInvoiceDetailsPage(invoice.id);
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(

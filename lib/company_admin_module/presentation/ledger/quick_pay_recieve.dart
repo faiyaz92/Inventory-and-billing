@@ -281,9 +281,7 @@ class _QuickTransactionPageState extends State<QuickTransactionPage> {
     final isReceiveMode = widget.transactionType.toLowerCase() == 'receive';
     final transactionId = 'quick_${DateTime.now().millisecondsSinceEpoch}';
 
-    // Ledger entries based on transaction type
     if (isReceiveMode) {
-      // Receive: Credit source user (reduces liability), Debit logged-in user (increases cash)
       await ledgerCubit.addTransaction(
         ledgerId: sourceLedgerId,
         amount: amount,
@@ -307,7 +305,6 @@ class _QuickTransactionPageState extends State<QuickTransactionPage> {
         userType: userInfo?.userType ?? UserType.Employee,
       );
     } else {
-      // Pay: Credit logged-in user (reduces cash), Debit source user (increases liability)
       await ledgerCubit.addTransaction(
         ledgerId: loggedInUserLedgerId,
         amount: amount,
@@ -332,11 +329,9 @@ class _QuickTransactionPageState extends State<QuickTransactionPage> {
       );
     }
 
-    // Generate receipt
     final receiptPdf =
     await _generateReceiptPdf(selectedUser, amount, transactionId, isReceiveMode);
 
-    // Navigate to receipt PDF page
     await sl<Coordinator>().navigateToBillPdfPage(
       pdf: receiptPdf,
       billNumber: transactionId,
@@ -346,7 +341,6 @@ class _QuickTransactionPageState extends State<QuickTransactionPage> {
       SnackBar(content: Text('Transaction ${isReceiveMode ? 'received' : 'paid'} successfully')),
     );
 
-    // Clear form
     setState(() {
       _amountController.clear();
       _selectedUserId = null;

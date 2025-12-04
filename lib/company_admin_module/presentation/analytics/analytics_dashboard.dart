@@ -13,7 +13,6 @@ class AnalyticsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Define demo expiration date
     final DateTime demoExpirationDate = DateTime(2025, 10, 10);
     final bool isDemoExpired = DateTime.now().isAfter(demoExpirationDate);
 
@@ -21,7 +20,6 @@ class AnalyticsPage extends StatelessWidget {
       create: (context) => sl<HomeCubit>()..fetchUserInfo(),
       child: BlocBuilder<HomeCubit, HomeState>(
         builder: (context, state) {
-          // If demo is expired, show purchase message
           if (isDemoExpired) {
             return Scaffold(
               body: Center(
@@ -95,7 +93,6 @@ class AnalyticsPage extends StatelessWidget {
             );
           }
 
-          // Handle states
           if (state is HomeLoading) {
             return Scaffold(
               appBar: CustomAppBar(

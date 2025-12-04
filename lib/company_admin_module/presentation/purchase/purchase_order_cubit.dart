@@ -330,7 +330,6 @@ class AdminPurchaseCubit extends Cubit<AdminPurchaseState> {
       await userServices.getUsersFromTenantCompany(storeId: storeId);
       final stores = await storeService.getStores();
 
-      // Sort purchase orders by date (descending)
       purchaseOrders.sort((a, b) => (b.invoiceGeneratedDate ?? b.orderDate)
           .compareTo(a.invoiceGeneratedDate ?? a.orderDate));
 
@@ -363,7 +362,6 @@ class AdminPurchaseCubit extends Cubit<AdminPurchaseState> {
     _searchQuery = query;
     if (state is AdminPurchaseListFetchSuccess) {
       final currentState = state as AdminPurchaseListFetchSuccess;
-      // Trigger fetchPurchaseOrders with the updated search query
       fetchPurchaseOrders(
         startDate: currentState.startDate,
         endDate: currentState.endDate,

@@ -470,7 +470,6 @@ class _AccountLedgerPageState extends State<AccountLedgerPage> {
           lastDate: DateTime(2100),
         );
         if (picked != null) {
-          // TODO: Implement updatePromiseDate
         }
       },
     );

@@ -3,7 +3,6 @@ import 'package:equatable/equatable.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/inventory/stock_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/stock_service.dart';
 
-// Abstract OverallStockState
 abstract class OverallStockState extends Equatable {
   final List<ProductStock> productStocks;
   final List<ProductStock> filteredProductStocks;
@@ -44,7 +43,6 @@ abstract class OverallStockState extends Equatable {
   ];
 }
 
-// Initial state
 class OverallStockInitial extends OverallStockState {
   const OverallStockInitial()
       : super(
@@ -61,7 +59,6 @@ class OverallStockInitial extends OverallStockState {
   );
 }
 
-// Loading state
 class OverallStockLoading extends OverallStockState {
   const OverallStockLoading({
     required super.productStocks,
@@ -76,7 +73,6 @@ class OverallStockLoading extends OverallStockState {
   }) : super(isLoading: true);
 }
 
-// Success state
 class OverallStockSuccess extends OverallStockState {
   const OverallStockSuccess({
     required super.productStocks,
@@ -90,7 +86,6 @@ class OverallStockSuccess extends OverallStockState {
   }) : super(isLoading: false, error: null);
 }
 
-// Error state
 class OverallStockError extends OverallStockState {
   const OverallStockError({
     required super.productStocks,
@@ -144,7 +139,6 @@ class OverallStockCubit extends Cubit<OverallStockState> {
       availableSubcategories: state.availableSubcategories,
     ));
     try {
-      // Fetch all stores
       final stores = await stockService.getStores();
       final storeNames = {for (var store in stores) store.storeId: store.name};
       final allStockItems = <StockModel>[];
@@ -153,7 +147,6 @@ class OverallStockCubit extends Cubit<OverallStockState> {
         allStockItems.addAll(stockItems);
       }
 
-      // Aggregate stock by product and calculate total stock value
       final productStocks = <ProductStock>[];
       final Map<String, ProductStock> productMap = {};
       double totalStockValue = 0.0;
@@ -179,7 +172,6 @@ class OverallStockCubit extends Cubit<OverallStockState> {
       }
       productStocks.addAll(productMap.values);
 
-      // Extract unique categories and subcategories
       final categories = productStocks
           .map((p) => p.category)
           .where((c) => c != null)

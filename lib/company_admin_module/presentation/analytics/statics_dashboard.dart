@@ -294,7 +294,6 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Overall Stock Value Section
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -392,7 +391,6 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
                       },
                     ),
                     const SizedBox(height: 24),
-                    // Sales Statistics Section
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -553,7 +551,6 @@ class _DashboardStaticsPageState extends State<DashboardStaticsPage> {
                       },
                     ),
                     const SizedBox(height: 24),
-                    // Purchase Statistics Section
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [

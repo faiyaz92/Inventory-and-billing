@@ -111,7 +111,6 @@ class FiltersSection extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            // Business Type Dropdown (Added below Interest Level and Priority)
             Row(
               children: [
                 Expanded(
