@@ -14,7 +14,6 @@ class CompanySettingState extends Equatable {
     this.errorMessage,
   });
 
-  // Factory for initial state
   factory CompanySettingState.initial() {
     return CompanySettingState(
       settings: CompanySettingsUi.initial(),
@@ -24,7 +23,6 @@ class CompanySettingState extends Equatable {
     );
   }
 
-  // CopyWith method for immutability
   CompanySettingState copyWith({
     CompanySettingsUi? settings,
     bool? isLoading,

@@ -11,7 +11,6 @@ class CategoryDTO {
     this.description,
   });
 
-  // Convert Firestore DocumentSnapshot to CategoryDTO
   factory CategoryDTO.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
 
@@ -22,7 +21,6 @@ class CategoryDTO {
     );
   }
 
-  // Convert Category Model to CategoryDTO (for Firestore write)
   Map<String, dynamic> toFirestore() {
     return {
       'id': id,  // Include id in Firestore mapping (nullable)

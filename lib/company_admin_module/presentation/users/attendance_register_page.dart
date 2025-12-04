@@ -55,7 +55,6 @@ class AttendanceRegisterBodyState extends State<AttendanceRegisterBody> {
     _focusedDate = DateTime.now(); // Start with current month displayed
   }
 
-  // Check if the selected date is editable (today or last 3 days)
   bool _isDateEditable(DateTime date) {
     final today = DateTime.now();
     final earliestEditable = today.subtract(const Duration(days: 3));
@@ -63,7 +62,6 @@ class AttendanceRegisterBodyState extends State<AttendanceRegisterBody> {
         (date.day <= today.day || date.month != today.month || date.year != today.year);
   }
 
-  // Map status to highlight color
   Color _getStatusColor(String status) {
     switch (status) {
       case 'present':
@@ -101,7 +99,6 @@ class AttendanceRegisterBodyState extends State<AttendanceRegisterBody> {
       body: SingleChildScrollView(
         child: Column(
             children: [
-        // Calendar Widget
         Card(
         margin: const EdgeInsets.all(12.0),
         elevation: 3.0,
@@ -118,7 +115,6 @@ class AttendanceRegisterBodyState extends State<AttendanceRegisterBody> {
                 _selectedDate = selectedDay; // Update selected date
                 _focusedDate = focusedDay; // Update displayed month/year
               });
-              // Fetch attendance for the selected date
               context.read<AttendanceCubit>().fetchAttendance(_dateFormat.format(selectedDay));
             },
             calendarFormat: CalendarFormat.month,
@@ -151,7 +147,6 @@ class AttendanceRegisterBodyState extends State<AttendanceRegisterBody> {
           ),
         ),
       ),
-      // Employee List as DataTable
       BlocConsumer<AttendanceCubit, AttendanceState>(
         listener: (context, state) {
           if (state is AttendanceError) {
@@ -163,7 +158,6 @@ class AttendanceRegisterBodyState extends State<AttendanceRegisterBody> {
               ),
             );
           } else if (state is AttendanceLoaded) {
-            // Update _attendanceStatus with fetched attendance data
             setState(() {
               _attendanceStatus.clear();
               state.attendance.forEach((userId, attendance) {
@@ -299,14 +293,12 @@ class AttendanceRegisterBodyState extends State<AttendanceRegisterBody> {
     );
   }
 }
-// Extension to capitalize strings
 extension StringExtension on String {
   String capitalize() {
     return "${this[0].toUpperCase}${substring(1)}";
   }
 }
 
-// Custom CircleDecoration for TableCalendar
 class CircleDecoration extends Decoration {
   final Color color;
 

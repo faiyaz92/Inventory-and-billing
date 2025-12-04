@@ -229,20 +229,20 @@ class AdminOrderDetailsPage extends StatelessWidget {
               if (state.orderDeliveredByName != null)
                 _buildTableRow('Delivered By', state.orderDeliveredByName!),
               _buildTableRow('Subtotal (All Items)',
-                  '₹${state.subtotal.toStringAsFixed(2)}',
+                  'IQD ${state.subtotal.toStringAsFixed(2)}',
                   valueWeight: FontWeight.w500,
                   valueColor: AppColors.textPrimary),
               _buildTableRow(
-                  'Total Tax', '₹${state.totalTax.toStringAsFixed(2)}'),
+                  'Total Tax', 'IQD ${state.totalTax.toStringAsFixed(2)}'),
               if (state.order.discount != null && state.order.discount! > 0)
                 _buildTableRow(
                   'Discount',
-                  '-₹${state.order.discount!.toStringAsFixed(2)}',
+                  '-IQD ${state.order.discount!.toStringAsFixed(2)}',
                   valueColor: AppColors.textSecondary,
                 ),
               _buildTableRow(
                 'Total',
-                '₹${state.order.totalAmount.toStringAsFixed(2)}',
+                'IQD ${state.order.totalAmount.toStringAsFixed(2)}',
                 isBold: true,
                 valueColor: AppColors.textPrimary,
                 backgroundColor: AppColors.primary.withOpacity(0.2),
@@ -495,18 +495,18 @@ class AdminOrderDetailsPage extends StatelessWidget {
                 },
                 children: [
                   _buildTableRow(
-                    'Subtotal (₹${item.price} x ${item.quantity})',
-                    '₹${(item.price * item.quantity).toStringAsFixed(2)}',
+                    'Subtotal (IQD ${item.price} x ${item.quantity})',
+                    'IQD ${(item.price * item.quantity).toStringAsFixed(2)}',
                     valueWeight: FontWeight.w500,
                     valueColor: AppColors.textPrimary,
                   ),
                   _buildTableRow(
                     'Tax (${(item.taxRate * 100).toStringAsFixed(0)}%)',
-                    '₹${item.taxAmount.toStringAsFixed(2)}',
+                    'IQD ${item.taxAmount.toStringAsFixed(2)}',
                   ),
                   _buildTableRow(
                     'Total',
-                    '₹${((item.price * item.quantity) + item.taxAmount).toStringAsFixed(2)}',
+                    'IQD ${((item.price * item.quantity) + item.taxAmount).toStringAsFixed(2)}',
                     isBold: true,
                     valueColor: AppColors.textPrimary,
                     backgroundColor: AppColors.primary.withOpacity(0.2),

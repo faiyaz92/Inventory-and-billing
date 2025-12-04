@@ -2,8 +2,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf/widgets.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/accounts/accounts_dashboard.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/accounts/admin_invoice_panel_page.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/analytics/analytics_dashboard.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/analytics/statics_dashboard.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/bill_pdf.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/billing_page.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/quick_pay_recieve.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/category.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart';
@@ -27,6 +31,7 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/produ
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/category_sub_category_list_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/dashboard/product_mgt_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/product/product_list_page.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/purchase/purchase_invoices.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/tasks/add_edit_task.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/tasks/task_list_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/add_company_user_page.dart';
@@ -34,6 +39,7 @@ import 'package:requirment_gathering_app/company_admin_module/presentation/users
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/employee_details_view.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/employee_list_page.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/simple_user_list.dart';
+import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/dashboard/dashboard_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/dashboard/home/home_page.dart';
 import 'package:requirment_gathering_app/core_module/presentation/login/forgot_password_page.dart';
@@ -45,6 +51,7 @@ import 'package:requirment_gathering_app/super_admin_module/data/tenant_company.
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/presentation/add_tenant_company/add_tenant_company_page.dart';
 import 'package:requirment_gathering_app/super_admin_module/presentation/dashboard/super_admin_page.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_details_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_panel_page.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/cart_dashboard_page.dart';
@@ -144,5 +151,10 @@ class AppRouter extends RootStackRouter {
             AutoRoute(page: BillingRoute.page, path: '/billing'),
             AutoRoute(page: BillPdfRoute.page, path: '/bill-pdf'),
             AutoRoute(page: AccountsDashboardRoute.page, path: '/accounts-dashboard'), // New route
+            AutoRoute(page: AdminInvoicePanelRoute.page, path: '/invoice-list'),
+            AutoRoute(page: AnalyticsRoute.page, path: '/analytics'),
+            AutoRoute(page: QuickTransactionRoute.page, path: '/quick-transaction'),
+            AutoRoute(page: PurchaseInvoicePanelRoute.page, path: '/purchase-invoice-panel'),
+            AutoRoute(page: DashboardStaticsRoute.page, path: '/dashboard-statics'),// Add this line
       ];
 }

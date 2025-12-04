@@ -35,7 +35,8 @@ class CartService implements ICartService {
     final companyId = await _getCompanyId();
     final userId = await _getUserId();
     final items = await cartRepository.getCart(companyId, userId);
-    final existingItemIndex = items.indexWhere((item) => item.productId == product.id);
+    final existingItemIndex =
+        items.indexWhere((item) => item.productId == product.id);
     final subtotal = product.price * quantity;
     final taxAmount = subtotal * product.taxRate;
 
@@ -51,6 +52,8 @@ class CartService implements ICartService {
         quantity: newQuantity,
         taxRate: product.taxRate,
         taxAmount: newTaxAmount,
+        discountAmount: items[existingItemIndex].discountAmount,
+        discountPercentage: items[existingItemIndex].discountPercentage,
       );
     } else {
       items.add(CartItem(
@@ -60,7 +63,42 @@ class CartService implements ICartService {
         quantity: quantity,
         taxRate: product.taxRate,
         taxAmount: taxAmount,
+        discountAmount: 0.0,
+        discountPercentage: 0.0,
       ));
+    }
+    await cartRepository.saveCart(companyId, userId, items);
+  }
+
+  @override
+  Future<void> addCartItem(CartItem cartItem) async {
+    final companyId = await _getCompanyId();
+    final userId = await _getUserId();
+    final items = await cartRepository.getCart(companyId, userId);
+    final existingItemIndex =
+        items.indexWhere((item) => item.productId == cartItem.productId);
+
+    if (existingItemIndex != -1) {
+      final existingItem = items[existingItemIndex];
+      final newQuantity = existingItem.quantity + cartItem.quantity;
+      final newSubtotal = cartItem.price * newQuantity;
+      final newTaxAmount = newSubtotal * cartItem.taxRate;
+      final newDiscountAmount = cartItem.discountAmount; // Use new discount
+      final newDiscountPercentage = newSubtotal + newTaxAmount > 0
+          ? (newDiscountAmount / (newSubtotal + newTaxAmount)) * 100
+          : 0.0;
+      items[existingItemIndex] = CartItem(
+        productId: cartItem.productId,
+        productName: cartItem.productName,
+        price: cartItem.price,
+        quantity: newQuantity,
+        taxRate: cartItem.taxRate,
+        taxAmount: newTaxAmount,
+        discountAmount: newDiscountAmount,
+        discountPercentage: newDiscountPercentage,
+      );
+    } else {
+      items.add(cartItem);
     }
     await cartRepository.saveCart(companyId, userId, items);
   }
@@ -78,6 +116,11 @@ class CartService implements ICartService {
         final item = items[index];
         final subtotal = item.price * quantity;
         final taxAmount = subtotal * item.taxRate;
+        final discountAmount =
+            item.discountAmount; // Preserve existing discount
+        final discountPercentage = subtotal + taxAmount > 0
+            ? (discountAmount / (subtotal + taxAmount)) * 100
+            : 0.0;
         items[index] = CartItem(
           productId: item.productId,
           productName: item.productName,
@@ -85,11 +128,14 @@ class CartService implements ICartService {
           quantity: quantity,
           taxRate: item.taxRate,
           taxAmount: taxAmount,
+          discountAmount: discountAmount,
+          discountPercentage: discountPercentage,
         );
       }
       await cartRepository.saveCart(companyId, userId, items);
     }
   }
+
   @override
   Future<void> removeFromCart(String productId) async {
     final companyId = await _getCompanyId();
@@ -104,11 +150,16 @@ class CartService implements ICartService {
     final companyId = await _getCompanyId();
     final userId = await _getUserId();
     final items = await cartRepository.getCart(companyId, userId);
-    double total = 0.0;
+    double subtotal = 0.0;
+    double totalTax = 0.0;
+    double totalDiscount = 0.0;
     for (var item in items) {
-      total += item.price * item.quantity;
+      final itemSubtotal = item.price * item.quantity;
+      subtotal += itemSubtotal;
+      totalTax += item.taxAmount;
+      totalDiscount += item.discountAmount;
     }
-    return total;
+    return subtotal + totalTax - totalDiscount;
   }
 
   @override
@@ -124,12 +175,25 @@ class CartService implements ICartService {
     final userId = await _getUserId();
     final items = await cartRepository.getCart(companyId, userId);
     final userInfo = await accountRepository.getUserInfo();
+    final subtotal =
+        items.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
+    final totalTax = items.fold(0.0, (sum, item) => sum + item.taxAmount);
+    final totalItemDiscounts =
+        items.fold(0.0, (sum, item) => sum + item.discountAmount);
+    final additionalDiscount =
+        items.isNotEmpty && items.first.discountAmount > 0
+            ? items.first.discountAmount // Use Order.discount if provided
+            : 0.0;
+    final totalAmount =
+        subtotal + totalTax - (totalItemDiscounts + additionalDiscount);
+
     final order = Order(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       userId: userId,
       userName: userInfo?.name ?? 'Unknown',
       items: items,
-      totalAmount: items.fold(0.0, (sum, item) => sum + (item.price * item.quantity) + item.taxAmount),
+      totalAmount: totalAmount,
+      discount: additionalDiscount > 0 ? additionalDiscount : null,
       status: 'pending',
       orderDate: DateTime.now(),
     );

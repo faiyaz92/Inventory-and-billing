@@ -58,7 +58,6 @@ class EmployeeDetailsBodyState extends State<EmployeeDetailsBody> {
           if (state is EmployeeDetailsLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is EmployeeDetailsLoaded) {
-            // Calculate attendance counts
             final presentCount = state.attendance
                 .where((a) => a.status.toLowerCase() == 'present')
                 .length;
@@ -117,7 +116,7 @@ class EmployeeDetailsBodyState extends State<EmployeeDetailsBody> {
                             ),
                           ),
                           subtitle: Text(
-                            'Advance Balance: ₹${state.advanceBalance.toStringAsFixed(2)}',
+                            'Advance Balance: IQD ${state.advanceBalance.toStringAsFixed(2)}',
                             style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                           ),
                         ),
@@ -131,7 +130,6 @@ class EmployeeDetailsBodyState extends State<EmployeeDetailsBody> {
                         ),
                       ),
                       const SizedBox(height: 8.0),
-                      // Attendance Summary Card
                       Card(
                         elevation: 4.0,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
@@ -343,7 +341,7 @@ class EmployeeDetailsBodyState extends State<EmployeeDetailsBody> {
                                     Padding(
                                       padding: const EdgeInsets.all(8.0),
                                       child: Text(
-                                        '₹${(record['amount'] as double).toStringAsFixed(2)}',
+                                        'IQD ${(record['amount'] as double).toStringAsFixed(2)}',
                                         style: TextStyle(fontSize: 14, color: Colors.grey[900]),
                                         textAlign: TextAlign.right,
                                       ),
@@ -467,7 +465,7 @@ class EmployeeDetailsBodyState extends State<EmployeeDetailsBody> {
           controller: controller,
           keyboardType: TextInputType.number,
           decoration: InputDecoration(
-            labelText: 'Amount (₹)',
+            labelText: 'Amount (IQD )',
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.0),
             ),

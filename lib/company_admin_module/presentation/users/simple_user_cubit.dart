@@ -4,7 +4,6 @@ import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart'
 import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 
-// Reusing the same EmployeesState classes from the original EmployeeCubit
 abstract class EmployeesState {}
 
 class UserListInitial extends EmployeesState {}
@@ -49,7 +48,6 @@ class SimpleUserCubit extends Cubit<EmployeesState> {
 
     List<UserInfo> filteredUsers = allUsers;
 
-    // Apply search filter
     if (this.searchQuery.isNotEmpty) {
       final query = this.searchQuery.toLowerCase();
       filteredUsers = filteredUsers.where((user) {
@@ -59,12 +57,10 @@ class SimpleUserCubit extends Cubit<EmployeesState> {
       }).toList();
     }
 
-    // Apply user type filter
     if (this.selectedUserType != null) {
       filteredUsers = filteredUsers.where((user) => user.userType == this.selectedUserType).toList();
     }
 
-    // Apply role filter if Employee is selected
     if (this.selectedUserType == UserType.Employee && this.selectedRole != null) {
       filteredUsers = filteredUsers.where((user) => user.role == this.selectedRole).toList();
     }

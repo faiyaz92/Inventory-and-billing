@@ -32,6 +32,8 @@ class TransactionCubit extends Cubit<TransactionState> {
     String? toStoreId,
     String? userId,
     String? customerId,
+    DateTime? startDate,
+    DateTime? endDate,
     required int page,
     required int pageSize,
   }) async {
@@ -46,11 +48,12 @@ class TransactionCubit extends Cubit<TransactionState> {
         toStoreId: toStoreId,
         userId: userId,
         customerId: customerId,
+        startDate: startDate,
+        endDate: endDate,
         page: page,
         pageSize: pageSize,
       );
 
-      // Sort transactions by timestamp (latest first)
       transactions.sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
       if (page == 1) {

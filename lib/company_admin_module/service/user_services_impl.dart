@@ -63,14 +63,12 @@ class UserServiceImpl implements UserServices {
         throw Exception("User ID is missing. Cannot update user.");
       }
 
-      // Fetch existing user data from repository
       final existingUser =
           await _tenantCompanyRepository.getUser(userInfo.userId!, companyId);
       if (existingUser == null) {
         throw Exception("User does not exist.");
       }
 
-      // Merge provided userInfo with existing data
       final updatedUserInfo = UserInfoDto(
         userId: userInfo.userId ?? existingUser.userId,
         companyId: existingUser.companyId,
@@ -80,7 +78,6 @@ class UserServiceImpl implements UserServices {
         role: userInfo.role ?? existingUser.role,
         userType:
             userInfo.userType ?? existingUser.userType ?? UserType.Customer,
-        // Default to Customer
         latitude: userInfo.latitude ?? existingUser.latitude,
         longitude: userInfo.longitude ?? existingUser.longitude,
         dailyWage: userInfo.dailyWage ?? existingUser.dailyWage,

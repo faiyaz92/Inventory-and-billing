@@ -1,4 +1,3 @@
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
 import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
@@ -10,7 +9,6 @@ import 'package:requirment_gathering_app/user_module/cart/presentation/cart_cubi
 import 'package:requirment_gathering_app/user_module/cart/presentation/order_cubit.dart';
 import 'package:requirment_gathering_app/user_module/cart/services/i_user_product_service.dart';
 
-// State for SalesmanOrderCubit
 abstract class SalesmanOrderState {}
 
 class SalesmanOrderInitial extends SalesmanOrderState {}
@@ -49,14 +47,14 @@ SalesmanOrderError(this.message);
 
 class SalesmanOrderPlaced extends SalesmanOrderState {}
 
-// Cubit for handling salesman order logic
 class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
 final UserServices employeeServices;
 final IUserProductService productService;
 final AccountRepository accountRepository;
 final CartCubit cartCubit;
 final OrderCubit orderCubit;
-double discount = 0.0; // Default to 0.0, will be nullable in Order
+double discount = 0.0; // Additional discount
+Map<String, double> itemDiscounts = {}; // Item-wise discounts
 
 SalesmanOrderCubit({
 required this.employeeServices,
@@ -84,6 +82,7 @@ _customers = _customers.where((user) => user.userType == UserType.Customer).toLi
 _products = await productService.getProducts();
 _filteredProducts = _products;
 _productQuantities = {for (var product in _products) product.id: 0};
+itemDiscounts = {for (var product in _products) product.id: 0.0};
 
 emit(SalesmanOrderLoaded(
 customers: _customers,
@@ -161,7 +160,21 @@ searchQuery: _searchQuery,
 }
 
 void setDiscount(double discount) {
-this.discount = discount.clamp(0, calculateOverallTotal());
+this.discount = discount.clamp(0, double.maxFinite);
+emit(SalesmanOrderLoaded(
+customers: _customers,
+products: _products,
+filteredProducts: _filteredProducts,
+productQuantities: _productQuantities,
+selectedCustomer: _selectedCustomer,
+searchQuery: _searchQuery,
+));
+}
+
+void setItemDiscounts(Map<String, double> discounts) {
+discounts.forEach((productId, disc) {
+itemDiscounts[productId] = disc.clamp(0, double.maxFinite);
+});
 emit(SalesmanOrderLoaded(
 customers: _customers,
 products: _products,
@@ -233,7 +246,9 @@ return calculateOverallSubtotal() + calculateOverallTax();
 }
 
 double calculateFinalTotal() {
-return calculateOverallTotal() - (discount > 0 ? discount : 0);
+final totalItemDiscounts =
+itemDiscounts.values.fold<double>(0.0, (sum, disc) => sum + disc);
+return calculateOverallTotal() - (totalItemDiscounts + (discount > 0 ? discount : 0));
 }
 
 Future<void> placeOrder() async {
@@ -244,10 +259,25 @@ return;
 
 emit(SalesmanOrderLoading(dialogMessage: 'Wait...'));
 try {
+await cartCubit.clearCart();
 for (var product in _products) {
 final quantity = _productQuantities[product.id]!;
 if (quantity > 0) {
-await cartCubit.addToCart(product, quantity);
+final discountAmount = itemDiscounts[product.id] ?? 0.0;
+final itemTotal = calculateProductTotal(product.id);
+final discountPercentage =
+itemTotal > 0 ? (discountAmount / itemTotal) * 100 : 0.0;
+final cartItem = CartItem(
+productId: product.id,
+productName: product.name,
+price: product.price,
+quantity: quantity,
+taxRate: product.taxRate,
+taxAmount: calculateProductTax(product.id),
+discountAmount: discountAmount,
+discountPercentage: discountPercentage,
+);
+await cartCubit.addToCartWithDiscount(cartItem);
 }
 }
 
@@ -262,7 +292,7 @@ userId: _selectedCustomer!.userId!,
 userName: _selectedCustomer!.name ?? 'Unknown',
 items: items,
 totalAmount: totalAmount,
-discount: discount > 0 ? discount : null, // Set to null if discount is 0
+discount: discount > 0 ? discount : null,
 status: 'pending',
 orderDate: DateTime.now(),
 orderTakenBy: salesmanId,

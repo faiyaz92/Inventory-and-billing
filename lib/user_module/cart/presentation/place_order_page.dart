@@ -172,7 +172,7 @@ class PreviewOrderPage extends StatelessWidget {
                                                       child: Align(
                                                         alignment: Alignment.centerLeft,
                                                         child: Text(
-                                                          'Subtotal (₹${item.price} x ${item.quantity})',
+                                                          'Subtotal (IQD ${item.price} x ${item.quantity})',
                                                           style: const TextStyle(
                                                             fontSize: 14,
                                                             color: AppColors.textSecondary,
@@ -186,7 +186,7 @@ class PreviewOrderPage extends StatelessWidget {
                                                       child: Align(
                                                         alignment: Alignment.centerRight,
                                                         child: Text(
-                                                          '₹${cubit.calculateProductSubtotal(item).toStringAsFixed(2)}',
+                                                          'IQD ${cubit.calculateProductSubtotal(item).toStringAsFixed(2)}',
                                                           style: const TextStyle(
                                                             fontSize: 14,
                                                             color: AppColors.textPrimary,
@@ -219,7 +219,7 @@ class PreviewOrderPage extends StatelessWidget {
                                                       child: Align(
                                                         alignment: Alignment.centerRight,
                                                         child: Text(
-                                                          '₹${item.taxAmount.toStringAsFixed(2)}',
+                                                          'IQD ${item.taxAmount.toStringAsFixed(2)}',
                                                           style: const TextStyle(
                                                             fontSize: 14,
                                                             color: AppColors.textSecondary,
@@ -232,10 +232,6 @@ class PreviewOrderPage extends StatelessWidget {
                                                 TableRow(
                                                   decoration: BoxDecoration(
                                                     color: AppColors.primary.withOpacity(0.1),
-                                                    // borderRadius: const BorderRadius.only(
-                                                    //   bottomLeft: Radius.circular(12),
-                                                    //   bottomRight: Radius.circular(12),
-                                                    // ),
                                                   ),
                                                   children: [
                                                     Padding(
@@ -259,7 +255,7 @@ class PreviewOrderPage extends StatelessWidget {
                                                       child: Align(
                                                         alignment: Alignment.centerRight,
                                                         child: Text(
-                                                          '₹${cubit.calculateProductTotal(item).toStringAsFixed(2)}',
+                                                          'IQD ${cubit.calculateProductTotal(item).toStringAsFixed(2)}',
                                                           style: const TextStyle(
                                                             fontSize: 14,
                                                             color: AppColors.textPrimary,
@@ -361,7 +357,7 @@ class PreviewOrderPage extends StatelessWidget {
                                                 child: Align(
                                                   alignment: Alignment.centerRight,
                                                   child: Text(
-                                                    '₹${subtotal.toStringAsFixed(2)}',
+                                                    'IQD ${subtotal.toStringAsFixed(2)}',
                                                     style: const TextStyle(
                                                       fontSize: 18,
                                                       fontWeight: FontWeight.bold,
@@ -394,7 +390,7 @@ class PreviewOrderPage extends StatelessWidget {
                                                 child: Align(
                                                   alignment: Alignment.centerRight,
                                                   child: Text(
-                                                    '₹${totalTax.toStringAsFixed(2)}',
+                                                    'IQD ${totalTax.toStringAsFixed(2)}',
                                                     style: const TextStyle(
                                                       fontSize: 16,
                                                       color: AppColors.textSecondary,
@@ -434,7 +430,7 @@ class PreviewOrderPage extends StatelessWidget {
                                                 child: Align(
                                                   alignment: Alignment.centerRight,
                                                   child: Text(
-                                                    '₹${totalWithTax.toStringAsFixed(2)}',
+                                                    'IQD ${totalWithTax.toStringAsFixed(2)}',
                                                     style: const TextStyle(
                                                       fontSize: 20,
                                                       fontWeight: FontWeight.bold,

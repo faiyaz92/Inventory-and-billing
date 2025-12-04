@@ -29,7 +29,6 @@ class TaskCubit extends Cubit<TaskState> {
       this.accountRepository,
       ) : super(TaskInitial());
 
-  /// Load Task Settings (Statuses)
   Future<void> loadTaskSettings() async {
     try {
       final settingsResult = await _companyService.getSettings();
@@ -45,7 +44,6 @@ class TaskCubit extends Cubit<TaskState> {
     }
   }
 
-  /// Fetch Tasks & Set Logged-in User as Default Filter (only on first load)
   Future<void> fetchTasks({bool isNeedToShow = true}) async {
     try {
       selectedUserName = null;
@@ -54,14 +52,12 @@ class TaskCubit extends Cubit<TaskState> {
       }
       final userInfo = await accountRepository.getUserInfo();
       allTasks = await _taskService.getAllTasks();
-      // Filter users to only include employees
       users = (await _companyOperationsService.getUsersFromTenantCompany())
           .where((user) => user.userType == UserType.Employee)
           .toList();
 
       print('fetchTasks: Filtered users to employees only, count = ${users.length}, user IDs = ${users.map((u) => u.userId).toList()}');
 
-      // Set selectedUserName to current user only if not already set and user is an employee
       if (selectedUserName == null && userInfo?.userId != null && userInfo?.userType == UserType.Employee) {
         final currentUser = users.firstWhere(
               (user) => user.userId == userInfo?.userId,
@@ -82,7 +78,6 @@ class TaskCubit extends Cubit<TaskState> {
     }
   }
 
-  /// Filter Tasks by Assigned User & Date
   void filterTasks({String? userName, DateTime? startDate, DateTime? endDate}) {
     selectedUserName = userName ?? selectedUserName;
     selectedStartDate = startDate;
@@ -91,7 +86,6 @@ class TaskCubit extends Cubit<TaskState> {
     emit(TaskLoaded(_filterTasks(), users));
   }
 
-  /// Filter Logic (By User & Date)
   List<TaskModel> _filterTasks() {
     return allTasks
         .where((task) {
@@ -108,7 +102,6 @@ class TaskCubit extends Cubit<TaskState> {
       ..sort(_sortTasks);
   }
 
-  /// Custom Sorting Logic
   int _sortTasks(TaskModel a, TaskModel b) {
     final statusA = a.status ?? 'pending';
     final statusB = b.status ?? 'pending';
@@ -127,7 +120,6 @@ class TaskCubit extends Cubit<TaskState> {
     }
   }
 
-  /// Add Task
   Future<void> addTask(TaskModel task) async {
     try {
       emit(TaskLoading());
@@ -135,7 +127,6 @@ class TaskCubit extends Cubit<TaskState> {
       final currentUserId = currentUserInfo?.userId ?? '';
       final currentUserName = currentUserInfo?.userName ?? "Unknown";
 
-      // Verify assignedTo is an employee
       final assignedUser = users.firstWhere(
             (user) => user.userId == task.assignedTo,
         orElse: () => UserInfo(userName: "Unknown User", userType: UserType.Employee),
@@ -162,7 +153,6 @@ class TaskCubit extends Cubit<TaskState> {
     }
   }
 
-  /// Update Task
   Future<void> updateTask(String? taskId, TaskModel task) async {
     try {
       emit(TaskLoading());
@@ -170,7 +160,6 @@ class TaskCubit extends Cubit<TaskState> {
       final currentUserId = currentUserInfo?.userId ?? '';
       final currentUserName = currentUserInfo?.userName ?? "Unknown";
 
-      // Verify assignedTo is an employee
       final assignedUser = users.firstWhere(
             (user) => user.userId == task.assignedTo,
         orElse: () => UserInfo(userName: "Unknown User", userType: UserType.Employee),
@@ -196,7 +185,6 @@ class TaskCubit extends Cubit<TaskState> {
     }
   }
 
-  /// Delete Task
   Future<void> deleteTask(String taskId) async {
     try {
       emit(TaskLoading());
@@ -207,14 +195,12 @@ class TaskCubit extends Cubit<TaskState> {
     }
   }
 
-  /// Filter Tasks by Assigned User Name
   void filterTasksByUser(String? userName) {
     selectedUserName = userName ?? "All Users";
     print('filterTasksByUser: selectedUserName = $selectedUserName');
     emit(TaskLoaded(_filterTasks(), users));
   }
 
-  /// Get Unique Statuses
   List<String> getUniqueStatuses(List<TaskModel> tasks) {
     return tasks
         .map((task) => task.status ?? 'pending')
@@ -222,7 +208,6 @@ class TaskCubit extends Cubit<TaskState> {
         .toList();
   }
 
-  /// Get User Name from ID
   String _getUserNameById(String userId, List<UserInfo> users) {
     final user = users.firstWhere(
           (user) => user.userId == userId && user.userType == UserType.Employee,

@@ -32,7 +32,6 @@ class AdminProductCubit extends Cubit<ProductState> {
       categoryList = categories;
       print('loadCategories: Fetched ${categories.length} categories: ${categories.map((c) => c.name).toList()}');
 
-      // Check for duplicate category names
       final nameCounts = <String, int>{};
       for (var cat in categories) {
         if (cat.name != null) {
@@ -174,7 +173,6 @@ class AdminProductCubit extends Cubit<ProductState> {
     print('filterProducts: Starting with allProducts.length=${allProducts.length}, '
         'searchQuery="$searchQuery", categoryId=$selectedCategoryId, subcategoryId=$selectedSubcategoryId');
 
-    // Log product and category ID alignment
     print('Product categoryIds: ${allProducts.map((p) => p.categoryId).toSet()}');
     print('Category IDs: ${categoryList.map((c) => c.id).toSet()}');
 
@@ -241,5 +239,14 @@ class AdminProductCubit extends Cubit<ProductState> {
       print('loadProducts error: $e');
       emit(ProductError(message: 'Failed to load products: $e'));
     }
+  }
+
+  void resetSelections() {
+    selectedCategoryId = null;
+    selectedCategoryName = null;
+    selectedSubcategoryId = null;
+    selectedSubcategoryName = null;
+    subcategoryList = []; // Clear subcategory list to ensure dropdown is empty
+    emit(CategoriesLoaded(categories: categoryList, selectedCategory: null));
   }
 }

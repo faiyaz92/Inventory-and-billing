@@ -72,7 +72,6 @@ class _AddStorePageState extends State<AddStorePage> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Store added successfully')),
                           );
-                          // sl<Coordinator>().navigateBack(isUpdated: true);
                         } else if (state is StockError) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(

@@ -314,7 +314,7 @@ class _SalesmanOrderListPageState extends State<SalesmanOrderListPage> {
                       _buildTableRow('Orders', '${orders.length}'),
                       _buildTableRow(
                         'Total',
-                        '₹${totalAmount.toStringAsFixed(2)}',
+                        'IQD ${totalAmount.toStringAsFixed(2)}',
                         isBold: true,
                         valueColor: AppColors.textPrimary,
                         backgroundColor: AppColors.primary.withOpacity(0.1),

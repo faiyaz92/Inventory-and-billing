@@ -61,8 +61,8 @@ class _LedgerListView extends StatelessWidget {
                   child: ListTile(
                     title: Text(
                       txn?.type == "Debit"
-                          ? "Debited ₹${txn?.amount}"
-                          : "Credited ₹${txn?.amount}",
+                          ? "Debited IQD ${txn?.amount}"
+                          : "Credited IQD ${txn?.amount}",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -102,7 +102,6 @@ class _LedgerListView extends StatelessWidget {
     );
   }
 
-  /// 🔥 **Delete Confirmation Dialog**
   void _showDeleteConfirmation(BuildContext context, String companyId,
       String customerCompanyId, transaction) {
     showDialog(
@@ -118,7 +117,6 @@ class _LedgerListView extends StatelessWidget {
                 child: const Text("Cancel")),
             TextButton(
               onPressed: () {
-                // Call delete function in the cubit
                 context
                     .read<AccountLedgerCubit>()
                     .deleteTransaction(companyId,transaction);

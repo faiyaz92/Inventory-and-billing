@@ -66,14 +66,14 @@ class CheckoutPage extends StatelessWidget {
                               ),
                             ),
                             subtitle: Text(
-                              '₹${item.price} x ${item.quantity}',
+                              'IQD ${item.price} x ${item.quantity}',
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: AppColors.textSecondary,
                               ),
                             ),
                             trailing: Text(
-                              '₹${item.price * item.quantity}',
+                              'IQD ${item.price * item.quantity}',
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: AppColors.textPrimary,
@@ -90,7 +90,7 @@ class CheckoutPage extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Total: ₹${context.read<CartCubit>().totalAmount}',
+                          'Total: IQD ${context.read<CartCubit>().totalAmount}',
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,

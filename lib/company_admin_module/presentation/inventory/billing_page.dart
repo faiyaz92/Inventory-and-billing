@@ -1,6 +1,8 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart' show DateFormat;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:requirment_gathering_app/company_admin_module/data/inventory/stock_model.dart';
@@ -16,10 +18,12 @@ import 'package:requirment_gathering_app/core_module/service_locator/service_loc
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/core_module/utils/custom_loading_dialog.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
+import 'package:requirment_gathering_app/super_admin_module/presentation/add_tenant_company/add_tenant_company_cubit.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 import 'package:requirment_gathering_app/user_module/cart/data/order_model.dart';
 import 'package:requirment_gathering_app/user_module/cart/presentation/admin_order_cubit.dart';
 import 'package:requirment_gathering_app/user_module/cart/services/iorder_service.dart';
+import 'package:workmanager/workmanager.dart' show Workmanager;
 
 @RoutePage()
 class BillingPage extends StatefulWidget {
@@ -260,14 +264,134 @@ class _BillingPageState extends State<BillingPage> {
   }
 
   Future<bool> _showReviewDialog(Order order) async {
-    final TextEditingController discountController = TextEditingController(
-      text: (_discount ?? order.discount ?? 0.0).toStringAsFixed(2),
-    );
     final double subtotal = order.items
         .fold(0.0, (sum, item) => sum + (item.price * item.quantity));
     final double totalTax =
         order.items.fold(0.0, (sum, item) => sum + item.taxAmount);
     final double total = subtotal + totalTax;
+    List<double> itemDiscounts =
+        order.items.map((item) => item.discountAmount).toList();
+    double additionalDiscount = _discount ?? order.discount ?? 0.0;
+    final TextEditingController discountController = TextEditingController(
+      text: additionalDiscount.toStringAsFixed(2),
+    );
+    final TextEditingController initialPaymentController =
+        TextEditingController(
+      text: _initialPayment?.toStringAsFixed(2) ?? '0.00',
+    );
+
+    final isMobile = MediaQuery.of(context).size.width < 600;
+
+    Future<void> _showDiscountDialog(BuildContext dialogContext, int index,
+        CartItem item, StateSetter setState) async {
+      final double perUnitDiscount =
+          item.quantity > 0 ? itemDiscounts[index] / item.quantity : 0.0;
+      final TextEditingController itemDiscountController =
+          TextEditingController(
+        text: perUnitDiscount.toStringAsFixed(2),
+      );
+      String? errorText;
+      final double itemTotalPerUnit =
+          item.price + (item.price * item.taxRate / 100);
+      final double itemTotal = itemTotalPerUnit * item.quantity;
+
+      await showDialog(
+        context: dialogContext,
+        builder: (context) => AlertDialog(
+          title: Text('Edit Discount for ${item.productName}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Unit Price: IQD ${item.price.toStringAsFixed(2)}',
+                style: const TextStyle(
+                    fontSize: 16, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Item Total (Qty × Price + Tax): IQD ${itemTotal.toStringAsFixed(2)}',
+                style: const TextStyle(
+                    fontSize: 16, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: itemDiscountController,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  labelText: 'Discount per Unit (IQD )',
+                  border: const OutlineInputBorder(),
+                  errorText: errorText,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
+                onChanged: (value) {
+                  final discPerUnit = double.tryParse(value) ?? 0.0;
+                  setState(() {
+                    if (discPerUnit < 0) {
+                      errorText = 'Discount cannot be negative';
+                    } else if (discPerUnit > itemTotalPerUnit) {
+                      errorText = 'Discount cannot exceed item total per unit';
+                    } else {
+                      errorText = null;
+                    }
+                  });
+                },
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                '(Total Discount = Quantity × Discount per Unit)',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final discPerUnit =
+                    double.tryParse(itemDiscountController.text) ?? 0.0;
+                if (discPerUnit < 0) {
+                  setState(() {
+                    errorText = 'Discount cannot be negative';
+                  });
+                  return;
+                }
+                if (discPerUnit > itemTotalPerUnit) {
+                  setState(() {
+                    errorText = 'Discount cannot exceed item total per unit';
+                  });
+                  return;
+                }
+                setState(() {
+                  itemDiscounts[index] = discPerUnit * item.quantity;
+                });
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text(
+                'Save',
+                style: TextStyle(color: AppColors.white),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return await showModalBottomSheet<bool>(
           context: context,
@@ -334,12 +458,13 @@ class _BillingPageState extends State<BillingPage> {
                                 color:
                                     AppColors.textSecondary.withOpacity(0.3)),
                           ),
-                          columnWidths: const {
-                            0: FlexColumnWidth(3),
-                            1: FlexColumnWidth(1),
-                            2: FlexColumnWidth(1),
-                            3: FlexColumnWidth(1),
-                            4: FlexColumnWidth(1),
+                          columnWidths: {
+                            0: FlexColumnWidth(isMobile ? 2.5 : 3),
+                            1: const FlexColumnWidth(1),
+                            2: const FlexColumnWidth(1.2),
+                            3: const FlexColumnWidth(1.2),
+                            4: const FlexColumnWidth(1.5),
+                            5: const FlexColumnWidth(1.2),
                           },
                           children: [
                             TableRow(
@@ -347,10 +472,11 @@ class _BillingPageState extends State<BillingPage> {
                                 color: AppColors.primary.withOpacity(0.05),
                               ),
                               children: [
-                                const Padding(
+                                Padding(
                                   padding: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  child: Text(
+                                      vertical: 8,
+                                      horizontal: isMobile ? 8 : 12),
+                                  child: const Text(
                                     'Product',
                                     style: TextStyle(
                                       fontSize: 14,
@@ -359,10 +485,11 @@ class _BillingPageState extends State<BillingPage> {
                                     ),
                                   ),
                                 ),
-                                const Padding(
+                                Padding(
                                   padding: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  child: Text(
+                                      vertical: 8,
+                                      horizontal: isMobile ? 8 : 12),
+                                  child: const Text(
                                     'Qty',
                                     style: TextStyle(
                                       fontSize: 14,
@@ -371,10 +498,11 @@ class _BillingPageState extends State<BillingPage> {
                                     ),
                                   ),
                                 ),
-                                const Padding(
+                                Padding(
                                   padding: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  child: Text(
+                                      vertical: 8,
+                                      horizontal: isMobile ? 8 : 12),
+                                  child: const Text(
                                     'Subtotal',
                                     style: TextStyle(
                                       fontSize: 14,
@@ -383,10 +511,11 @@ class _BillingPageState extends State<BillingPage> {
                                     ),
                                   ),
                                 ),
-                                const Padding(
+                                Padding(
                                   padding: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  child: Text(
+                                      vertical: 8,
+                                      horizontal: isMobile ? 8 : 12),
+                                  child: const Text(
                                     'Tax',
                                     style: TextStyle(
                                       fontSize: 14,
@@ -395,10 +524,24 @@ class _BillingPageState extends State<BillingPage> {
                                     ),
                                   ),
                                 ),
-                                const Padding(
+                                Padding(
                                   padding: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
-                                  child: Text(
+                                      vertical: 8,
+                                      horizontal: isMobile ? 8 : 12),
+                                  child: const Text(
+                                    'Discount',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 8,
+                                      horizontal: isMobile ? 8 : 12),
+                                  child: const Text(
                                     'Total',
                                     style: TextStyle(
                                       fontSize: 14,
@@ -409,70 +552,104 @@ class _BillingPageState extends State<BillingPage> {
                                 ),
                               ],
                             ),
-                            ...order.items.map((item) => TableRow(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 8, horizontal: 12),
-                                      child: Text(
-                                        item.productName,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: AppColors.textPrimary,
-                                        ),
+                            ...order.items.asMap().entries.map((entry) {
+                              final int index = entry.key;
+                              final item = entry.value;
+                              final double perUnitDiscount = item.quantity > 0
+                                  ? itemDiscounts[index] / item.quantity
+                                  : 0.0;
+                              final String discountText =
+                                  'IQD ${itemDiscounts[index].toStringAsFixed(2)} (${item.quantity} * ${perUnitDiscount.toStringAsFixed(2)})';
+                              return TableRow(
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 8,
+                                        horizontal: isMobile ? 8 : 12),
+                                    child: Text(
+                                      item.productName,
+                                      style: TextStyle(
+                                        fontSize: isMobile ? 14 : 16,
+                                        color: AppColors.textPrimary,
                                       ),
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 8, horizontal: 12),
-                                      child: Text(
-                                        '${item.quantity}',
-                                        textAlign: TextAlign.right,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: AppColors.textPrimary,
-                                        ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 8,
+                                        horizontal: isMobile ? 8 : 12),
+                                    child: Text(
+                                      '${item.quantity}',
+                                      textAlign: TextAlign.right,
+                                      style: TextStyle(
+                                        fontSize: isMobile ? 14 : 16,
+                                        color: AppColors.textPrimary,
                                       ),
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 8, horizontal: 12),
-                                      child: Text(
-                                        '₹${(item.price * item.quantity).toStringAsFixed(2)}',
-                                        textAlign: TextAlign.right,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: AppColors.textPrimary,
-                                        ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 8,
+                                        horizontal: isMobile ? 8 : 12),
+                                    child: Text(
+                                      'IQD ${(item.price * item.quantity).toStringAsFixed(2)}',
+                                      textAlign: TextAlign.right,
+                                      style: TextStyle(
+                                        fontSize: isMobile ? 14 : 16,
+                                        color: AppColors.textPrimary,
                                       ),
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 8, horizontal: 12),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 8,
+                                        horizontal: isMobile ? 8 : 12),
+                                    child: Text(
+                                      'IQD ${item.taxAmount.toStringAsFixed(2)}',
+                                      textAlign: TextAlign.right,
+                                      style: TextStyle(
+                                        fontSize: isMobile ? 14 : 16,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () => _showDiscountDialog(
+                                        dialogContext, index, item, setState),
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          vertical: 8,
+                                          horizontal: isMobile ? 8 : 12),
+                                      color: Colors.transparent,
                                       child: Text(
-                                        '₹${item.taxAmount.toStringAsFixed(2)}',
+                                        discountText,
                                         textAlign: TextAlign.right,
-                                        style: const TextStyle(
-                                          fontSize: 14,
+                                        style: TextStyle(
+                                          fontSize: isMobile ? 14 : 16,
                                           color: AppColors.textSecondary,
+                                          decoration: TextDecoration
+                                              .underline, // Visual cue for tappable
                                         ),
                                       ),
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 8, horizontal: 12),
-                                      child: Text(
-                                        '₹${((item.price * item.quantity) + item.taxAmount).toStringAsFixed(2)}',
-                                        textAlign: TextAlign.right,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.textPrimary,
-                                        ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 8,
+                                        horizontal: isMobile ? 8 : 12),
+                                    child: Text(
+                                      'IQD ${((item.price * item.quantity) + item.taxAmount - itemDiscounts[index]).toStringAsFixed(2)}',
+                                      textAlign: TextAlign.right,
+                                      style: TextStyle(
+                                        fontSize: isMobile ? 14 : 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textPrimary,
                                       ),
                                     ),
-                                  ],
-                                )),
+                                  ),
+                                ],
+                              );
+                            }),
                           ],
                         ),
                       ),
@@ -480,20 +657,59 @@ class _BillingPageState extends State<BillingPage> {
                       TextField(
                         controller: discountController,
                         decoration: InputDecoration(
-                          labelText: 'Discount (₹)',
+                          labelText: 'Additional Discount (IQD )',
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8)),
                           filled: true,
                           fillColor: Colors.grey[100],
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: isMobile ? 12 : 16,
+                            vertical: isMobile ? 12 : 16,
+                          ),
                         ),
-                        keyboardType: TextInputType.number,
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         onChanged: (value) {
-                          final discount = double.tryParse(value) ?? 0.0;
                           setState(() {
-                            _discount = discount;
+                            additionalDiscount = double.tryParse(value) ?? 0.0;
                           });
                         },
                       ),
+                      if (_selectedBillType == 'Credit') ...[
+                        const SizedBox(height: 20),
+                        TextFormField(
+                          controller: initialPaymentController,
+                          decoration: InputDecoration(
+                            labelText: 'Initial Payment (IQD )',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                            filled: true,
+                            fillColor: Colors.grey[100],
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: isMobile ? 12 : 16,
+                              vertical: isMobile ? 12 : 16,
+                            ),
+                            errorText: double.tryParse(
+                                            initialPaymentController.text) !=
+                                        null &&
+                                    double.parse(
+                                            initialPaymentController.text) >
+                                        (total -
+                                            itemDiscounts.fold(0.0,
+                                                (sum, disc) => sum + disc) -
+                                            additionalDiscount)
+                                ? 'Initial payment cannot exceed final total'
+                                : null,
+                          ),
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
+                          onChanged: (value) {
+                            setState(() {
+                              _initialPayment = double.tryParse(value) ?? 0.0;
+                            });
+                          },
+                        ),
+                      ],
                       const SizedBox(height: 20),
                       Container(
                         decoration: BoxDecoration(
@@ -517,26 +733,28 @@ class _BillingPageState extends State<BillingPage> {
                           children: [
                             TableRow(
                               children: [
-                                const Padding(
+                                Padding(
                                   padding: EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 16),
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
                                   child: Text(
                                     'Subtotal (All Items)',
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: isMobile ? 14 : 16,
                                       fontWeight: FontWeight.w600,
                                       color: AppColors.textPrimary,
                                     ),
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 16),
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
                                   child: Text(
-                                    '₹${subtotal.toStringAsFixed(2)}',
+                                    'IQD ${subtotal.toStringAsFixed(2)}',
                                     textAlign: TextAlign.right,
-                                    style: const TextStyle(
-                                      fontSize: 16,
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 14 : 16,
                                       fontWeight: FontWeight.w600,
                                       color: AppColors.textPrimary,
                                     ),
@@ -546,25 +764,27 @@ class _BillingPageState extends State<BillingPage> {
                             ),
                             TableRow(
                               children: [
-                                const Padding(
+                                Padding(
                                   padding: EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 16),
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
                                   child: Text(
                                     'Total Tax',
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: isMobile ? 14 : 16,
                                       color: AppColors.textSecondary,
                                     ),
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 16),
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
                                   child: Text(
-                                    '₹${totalTax.toStringAsFixed(2)}',
+                                    'IQD ${totalTax.toStringAsFixed(2)}',
                                     textAlign: TextAlign.right,
-                                    style: const TextStyle(
-                                      fontSize: 16,
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 14 : 16,
                                       color: AppColors.textSecondary,
                                     ),
                                   ),
@@ -573,26 +793,28 @@ class _BillingPageState extends State<BillingPage> {
                             ),
                             TableRow(
                               children: [
-                                const Padding(
+                                Padding(
                                   padding: EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 16),
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
                                   child: Text(
                                     'Total',
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: isMobile ? 14 : 16,
                                       fontWeight: FontWeight.w600,
                                       color: AppColors.textPrimary,
                                     ),
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 16),
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
                                   child: Text(
-                                    '₹${total.toStringAsFixed(2)}',
+                                    'IQD ${total.toStringAsFixed(2)}',
                                     textAlign: TextAlign.right,
-                                    style: const TextStyle(
-                                      fontSize: 16,
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 14 : 16,
                                       fontWeight: FontWeight.w600,
                                       color: AppColors.textPrimary,
                                     ),
@@ -602,25 +824,56 @@ class _BillingPageState extends State<BillingPage> {
                             ),
                             TableRow(
                               children: [
-                                const Padding(
+                                Padding(
                                   padding: EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 16),
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
                                   child: Text(
-                                    'Discount',
+                                    'Item Discounts',
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: isMobile ? 14 : 16,
                                       color: AppColors.textSecondary,
                                     ),
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 16),
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
                                   child: Text(
-                                    '₹${(_discount ?? order.discount ?? 0.0).toStringAsFixed(2)}',
+                                    'IQD ${itemDiscounts.fold(0.0, (sum, disc) => sum + disc).toStringAsFixed(2)}',
                                     textAlign: TextAlign.right,
-                                    style: const TextStyle(
-                                      fontSize: 16,
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 14 : 16,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            TableRow(
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
+                                  child: Text(
+                                    'Additional Discount',
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 14 : 16,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
+                                  child: Text(
+                                    'IQD ${additionalDiscount.toStringAsFixed(2)}',
+                                    textAlign: TextAlign.right,
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 14 : 16,
                                       color: AppColors.textSecondary,
                                     ),
                                   ),
@@ -636,26 +889,28 @@ class _BillingPageState extends State<BillingPage> {
                                 ),
                               ),
                               children: [
-                                const Padding(
+                                Padding(
                                   padding: EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 16),
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
                                   child: Text(
                                     'Final Total',
                                     style: TextStyle(
-                                      fontSize: 18,
+                                      fontSize: isMobile ? 16 : 18,
                                       fontWeight: FontWeight.w700,
                                       color: AppColors.textPrimary,
                                     ),
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 16),
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: isMobile ? 12 : 16),
                                   child: Text(
-                                    '₹${(total - (_discount ?? order.discount ?? 0.0)).toStringAsFixed(2)}',
+                                    'IQD ${(total - itemDiscounts.fold(0.0, (sum, disc) => sum + disc) - additionalDiscount).toStringAsFixed(2)}',
                                     textAlign: TextAlign.right,
-                                    style: const TextStyle(
-                                      fontSize: 18,
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 16 : 18,
                                       fontWeight: FontWeight.w700,
                                       color: AppColors.textPrimary,
                                     ),
@@ -671,15 +926,44 @@ class _BillingPageState extends State<BillingPage> {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {
-                            final discount =
-                                double.tryParse(discountController.text) ?? 0.0;
-                            if (discount < 0) {
+                            final sumItemDisc = itemDiscounts.fold(
+                                0.0, (sum, disc) => sum + disc);
+                            final finalTotal =
+                                total - sumItemDisc - additionalDiscount;
+
+                            for (int i = 0; i < order.items.length; i++) {
+                              final item = order.items[i];
+                              final itemTotal =
+                                  item.price * item.quantity + item.taxAmount;
+                              if (itemDiscounts[i] < 0) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        'Item discount cannot be negative'),
+                                    backgroundColor: AppColors.red,
+                                    behavior: SnackBarBehavior.floating,
+                                    margin: EdgeInsets.all(16),
+                                  ),
+                                );
+                                return;
+                              }
+                              if (itemDiscounts[i] > itemTotal) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        'Discount for ${item.productName} cannot exceed item total'),
+                                    backgroundColor: AppColors.red,
+                                    behavior: SnackBarBehavior.floating,
+                                    margin: const EdgeInsets.all(16),
+                                  ),
+                                );
+                                return;
+                              }
+                            }
+                            if (additionalDiscount < 0) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text(
-                                    'Invalid discount',
-                                    style: TextStyle(color: AppColors.white),
-                                  ),
+                                  content: Text('Invalid additional discount'),
                                   backgroundColor: AppColors.red,
                                   behavior: SnackBarBehavior.floating,
                                   margin: EdgeInsets.all(16),
@@ -687,30 +971,74 @@ class _BillingPageState extends State<BillingPage> {
                               );
                               return;
                             }
-                            if (discount > total) {
+                            final totalAfterItemDisc = total - sumItemDisc;
+                            if (additionalDiscount > totalAfterItemDisc) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(
-                                    'Discount cannot exceed total',
-                                    style: TextStyle(color: AppColors.white),
-                                  ),
+                                      'Additional discount cannot exceed total after item discounts'),
                                   backgroundColor: AppColors.red,
                                   behavior: SnackBarBehavior.floating,
                                   margin: EdgeInsets.all(16),
                                 ),
                               );
                               return;
+                            }
+                            if (_selectedBillType == 'Credit') {
+                              final initialPayment = double.tryParse(
+                                      initialPaymentController.text) ??
+                                  0.0;
+                              if (initialPayment < 0) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        'Initial payment cannot be negative'),
+                                    backgroundColor: AppColors.red,
+                                    behavior: SnackBarBehavior.floating,
+                                    margin: EdgeInsets.all(16),
+                                  ),
+                                );
+                                return;
+                              }
+                              if (initialPayment > finalTotal) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        'Initial payment cannot exceed final total'),
+                                    backgroundColor: AppColors.red,
+                                    behavior: SnackBarBehavior.floating,
+                                    margin: EdgeInsets.all(16),
+                                  ),
+                                );
+                                return;
+                              }
+                              _initialPayment = initialPayment;
                             }
                             setState(() {
-                              _discount = discount;
+                              _cartItems =
+                                  order.items.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final item = entry.value;
+                                final discount = itemDiscounts[index];
+                                final itemTotal =
+                                    item.price * item.quantity + item.taxAmount;
+                                final discountPercentage = itemTotal > 0
+                                    ? (discount / itemTotal) * 100
+                                    : 0.0;
+                                return item.copyWith(
+                                  discountAmount: discount,
+                                  discountPercentage: discountPercentage,
+                                );
+                              }).toList();
+                              _discount =
+                                  additionalDiscount; // Store only additional discount
                             });
                             Navigator.pop(dialogContext, true);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                                borderRadius: BorderRadius.circular(12)),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
                           child: const Text(
@@ -733,6 +1061,134 @@ class _BillingPageState extends State<BillingPage> {
         false;
   }
 
+  Widget _buildSelectionButtons(
+      List<StockModel> products, List<StoreDto> stores) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildSelectionButton(
+          icon: Icons.person,
+          label: _selectedCustomer?.name ??
+              _selectedCustomer?.userName ??
+              'Select Customer',
+          onPressed: _showCustomerSelectionDialog,
+          hasError: _selectedCustomer == null,
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Expanded(
+              child: _buildSelectionButton(
+                icon: Icons.store,
+                label: _selectedStoreId != null
+                    ? stores
+                        .firstWhere(
+                          (store) => store.storeId == _selectedStoreId,
+                          orElse: () => StoreDto(
+                            name: 'Unknown',
+                            storeId: '',
+                            createdBy: '',
+                            createdAt: DateTime.now(),
+                          ),
+                        )
+                        .name
+                    : 'Select Store',
+                onPressed: () => _showStoreSelectionDialog(stores),
+                hasError: _selectedStoreId == null,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildSelectionButton(
+                icon: Icons.inventory,
+                label: 'Add Products',
+                onPressed: () => _showProductSelectionDialog(products),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Card(
+          elevation: 4,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: DropdownButtonFormField<String>(
+              decoration: InputDecoration(
+                labelText: 'Bill Type',
+                labelStyle: const TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.black87),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none),
+                filled: true,
+                fillColor: Colors.grey[50],
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              ),
+              value: _selectedBillType,
+              items: ['Cash', 'Credit'].map((type) {
+                return DropdownMenuItem(
+                  value: type,
+                  child: Text(type),
+                );
+              }).toList(),
+              onChanged: _existingBillNumber == null
+                  ? (value) {
+                      setState(() {
+                        _selectedBillType = value ?? 'Cash';
+                      });
+                    }
+                  : null,
+            ),
+          ),
+        ),
+        if (_existingBillNumber != null && _selectedBillType == 'Cash') ...[
+          const SizedBox(height: 8),
+          Card(
+            elevation: 4,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: DropdownButtonFormField<String>(
+                decoration: InputDecoration(
+                  labelText: 'Return Method',
+                  labelStyle: const TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.black87),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none),
+                  filled: true,
+                  fillColor: Colors.grey[50],
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
+                value: _selectedReturnMethod,
+                items: ['Cash', 'Credit'].map((method) {
+                  return DropdownMenuItem(
+                    value: method,
+                    child: Text(method),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedReturnMethod = value ?? 'Credit';
+                  });
+                },
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  double? _initialPayment;
+  final TextEditingController _initialPaymentController =
+      TextEditingController();
   Future<void> _generateBill() async {
     if (_cartItems.isEmpty && _existingBillNumber == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -759,161 +1215,148 @@ class _BillingPageState extends State<BillingPage> {
       return;
     }
 
-    // Initialize discount for fresh orders
-    if (_discount == null && widget.orderId == null) {
-      setState(() {
-        _discount = 0.0;
-      });
-    }
-
-    // Set discount to 0 if cart is empty (full return)
-    if (_cartItems.isEmpty) {
-      setState(() {
-        _discount = 0.0;
-      });
-    }
-
     final double subtotal =
     _cartItems.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
     final double totalTax =
     _cartItems.fold(0.0, (sum, item) => sum + item.taxAmount);
-    final double totalAmount = subtotal + totalTax - (_discount ?? 0.0);
+    final double totalItemDiscount =
+    _cartItems.fold(0.0, (sum, item) => sum + item.discountAmount);
+    final double additionalDiscount = _discount ?? 0.0;
+    final double finalDiscount = totalItemDiscount + additionalDiscount;
+    final double totalAmount = subtotal + totalTax - finalDiscount;
 
-    // Create a temporary Order object for review dialog
-    Order tempOrder;
-    if (_existingBillNumber != null && widget.orderId != null) {
-      final state = _adminOrderCubit.state;
-      if (state is AdminOrderFetchSuccess) {
-        tempOrder = state.order.copyWith(
-          items: _cartItems,
-          totalAmount: totalAmount,
-          status: _selectedStatus,
-          orderDate: DateTime.now(),
-          storeId: _selectedStoreId,
-          billNumber: _existingBillNumber,
-          discount: _discount ?? state.order.discount ?? 0.0,
+    double initialPayment = 0.0;
+    String adjustedBillType = _selectedBillType ?? 'Cash';
+    if (_selectedBillType == 'Credit') {
+      initialPayment = double.tryParse(_initialPaymentController.text) ?? 0.0;
+      if (initialPayment < 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Initial payment cannot be negative')),
         );
+        return;
+      }
+      if (initialPayment > totalAmount) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Initial payment cannot exceed total amount')),
+        );
+        return;
+      }
+      if (initialPayment == totalAmount) {
+        adjustedBillType = 'Cash';
+        _initialPayment = totalAmount;
       } else {
-        tempOrder = Order(
-          id: widget.orderId!,
-          userId: _selectedCustomer!.userId!,
-          userName: _selectedCustomer!.name ??
-              _selectedCustomer!.userName ??
-              'Unknown',
-          items: _cartItems,
-          totalAmount: totalAmount,
-          status: _selectedStatus,
-          orderDate: DateTime.now(),
-          orderTakenBy: (await sl<AccountRepository>().getUserInfo())?.userId,
-          storeId: _selectedStoreId,
-          lastUpdatedBy: (await sl<AccountRepository>().getUserInfo())?.userId,
-          billNumber: _existingBillNumber,
-          discount: _discount ?? 0.0,
-        );
+        _initialPayment = initialPayment;
       }
     } else {
-      tempOrder = Order(
-        id: widget.orderId ?? DateTime.now().millisecondsSinceEpoch.toString(),
-        userId: _selectedCustomer!.userId!,
-        userName:
-        _selectedCustomer!.name ?? _selectedCustomer!.userName ?? 'Unknown',
-        items: _cartItems,
-        totalAmount: totalAmount,
-        status: _selectedStatus,
-        orderDate: DateTime.now(),
-        orderTakenBy: (await sl<AccountRepository>().getUserInfo())?.userId,
-        storeId: _selectedStoreId,
-        lastUpdatedBy: (await sl<AccountRepository>().getUserInfo())?.userId,
-        billNumber: 'BILL-${DateTime.now().millisecondsSinceEpoch}',
-        discount: _discount ?? 0.0,
-      );
+      _initialPayment = totalAmount; // For Cash bills, initial payment is total
     }
 
-    // Show review dialog before generating bill
+    if (_discount == null && widget.orderId == null) {
+      _discount = 0.0;
+    }
+
+    final userInfo = await sl<AccountRepository>().getUserInfo();
+    final userId = userInfo?.userId;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User ID not found')),
+      );
+      return;
+    }
+
+    final customerLedgerId = _selectedCustomer!.accountLedgerId;
+    if (customerLedgerId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Customer ledger ID not found')),
+      );
+      return;
+    }
+
+    final billNumber = _existingBillNumber ??
+        await sl<IOrderService>()
+            .getNextInvoiceNumber(userInfo?.companyId ?? '');
+
+    Order tempOrder = Order(
+      id: widget.orderId ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      userId: _selectedCustomer!.userId!,
+      userName:
+      _selectedCustomer!.name ?? _selectedCustomer!.userName ?? 'Unknown',
+      items: _cartItems,
+      totalAmount: totalAmount,
+      status: _selectedStatus,
+      orderDate: DateTime.now(),
+      orderTakenBy: userId,
+      storeId: _selectedStoreId,
+      lastUpdatedBy: userId,
+      billNumber: billNumber,
+      discount: _discount,
+      invoiceLastUpdatedBy: userId,
+      invoiceGeneratedDate: DateTime.now(),
+      invoiceType: adjustedBillType, // Use adjusted bill type
+      paymentStatus: adjustedBillType == 'Cash'
+          ? 'Paid'
+          : (_initialPayment! > 0 ? 'Partial Paid' : 'Not Paid'),
+      amountReceived: adjustedBillType == 'Cash' ? totalAmount : _initialPayment,
+      paymentDetails: [
+        if (_initialPayment! > 0)
+          {
+            'date': DateTime.now(),
+            'amount': _initialPayment,
+            'method': 'Cash',
+          },
+      ],
+      slipNumber: null,
+      customerLedgerId: customerLedgerId,
+    );
+
     final bool confirmed = await _showReviewDialog(tempOrder);
     if (!confirmed) {
       return;
     }
 
-    // Recreate Order object with updated discount after dialog confirmation
-    Order order;
-    final updatedTotalAmount = subtotal + totalTax - (_discount ?? 0.0);
-    if (_existingBillNumber != null && widget.orderId != null) {
-      final state = _adminOrderCubit.state;
-      if (state is AdminOrderFetchSuccess) {
-        order = state.order.copyWith(
-          items: _cartItems,
-          totalAmount: updatedTotalAmount,
-          status: _selectedStatus,
-          orderDate: DateTime.now(),
-          storeId: _selectedStoreId,
-          billNumber: _existingBillNumber,
-          discount: _discount ?? state.order.discount ?? 0.0,
-        );
-      } else {
-        order = Order(
-          id: widget.orderId!,
-          userId: _selectedCustomer!.userId!,
-          userName: _selectedCustomer!.name ??
-              _selectedCustomer!.userName ??
-              'Unknown',
-          items: _cartItems,
-          totalAmount: updatedTotalAmount,
-          status: _selectedStatus,
-          orderDate: DateTime.now(),
-          orderTakenBy: (await sl<AccountRepository>().getUserInfo())?.userId,
-          storeId: _selectedStoreId,
-          lastUpdatedBy: (await sl<AccountRepository>().getUserInfo())?.userId,
-          billNumber: _existingBillNumber,
-          discount: _discount ?? 0.0,
-        );
-      }
-    } else {
-      order = Order(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        userId: _selectedCustomer!.userId!,
-        userName:
-        _selectedCustomer!.name ?? _selectedCustomer!.userName ?? 'Unknown',
-        items: _cartItems,
-        totalAmount: updatedTotalAmount,
-        status: _selectedStatus,
-        orderDate: DateTime.now(),
-        orderTakenBy: (await sl<AccountRepository>().getUserInfo())?.userId,
-        storeId: _selectedStoreId,
-        lastUpdatedBy: (await sl<AccountRepository>().getUserInfo())?.userId,
-        billNumber: 'BILL-${DateTime.now().millisecondsSinceEpoch}',
-        discount: _discount ?? 0.0,
-      );
+    final updatedSubtotal =
+    _cartItems.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
+    final updatedTotalTax =
+    _cartItems.fold(0.0, (sum, item) => sum + item.taxAmount);
+    final updatedTotalItemDiscount =
+    _cartItems.fold(0.0, (sum, item) => sum + item.discountAmount);
+    final updatedFinalDiscount = updatedTotalItemDiscount + (_discount ?? 0.0);
+    final updatedTotalAmount =
+        updatedSubtotal + updatedTotalTax - updatedFinalDiscount;
+
+    if (adjustedBillType == 'Credit' && _initialPayment == updatedTotalAmount) {
+      adjustedBillType = 'Cash';
+      _initialPayment = updatedTotalAmount;
     }
+
+    final order = tempOrder.copyWith(
+      items: _cartItems,
+      totalAmount: updatedTotalAmount,
+      discount: _discount,
+      invoiceType: adjustedBillType, // Use adjusted bill type
+      paymentStatus: adjustedBillType == 'Cash'
+          ? 'Paid'
+          : (_initialPayment! > 0 ? 'Partial Paid' : 'Not Paid'),
+      amountReceived:
+      adjustedBillType == 'Cash' ? updatedTotalAmount : _initialPayment,
+      paymentDetails: [
+        if (_initialPayment! > 0)
+          {
+            'date': DateTime.now(),
+            'amount': _initialPayment,
+            'method': 'Cash',
+          },
+      ],
+    );
 
     setState(() => _isLoading = true);
     try {
       final orderService = sl<IOrderService>();
       final ledgerCubit = sl<UserLedgerCubit>();
-      final userInfo = await sl<AccountRepository>().getUserInfo();
-      final userId = userInfo?.userId;
-      if (userId == null) {
-        throw Exception('User ID not found');
-      }
 
-      final stockState = _stockCubit.state;
-      final billNumber = _existingBillNumber ??
-          'BILL-${DateTime.now().millisecondsSinceEpoch}';
-      final customerLedgerId = _selectedCustomer!.accountLedgerId;
-
-      // Validate customer ledger ID
-      if (customerLedgerId == null) {
-        print('No ledger ID found for customer: ${_selectedCustomer!.name}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Customer ledger ID not found. Cannot process bill.')),
-        );
-        setState(() => _isLoading = false);
-        return;
-      }
-
-      // Fetch store's ledger ID
-      final stores = await sl<StockRepository>().getStores(userInfo?.companyId ?? '');
+      final stores =
+      await sl<StockRepository>().getStores(userInfo?.companyId ?? '');
       final store = stores.firstWhere(
             (store) => store.storeId == _selectedStoreId,
         orElse: () => StoreDto(
@@ -925,24 +1368,27 @@ class _BillingPageState extends State<BillingPage> {
         ),
       );
       final storeLedgerId = store.accountLedgerId;
-
-      // Validate store ledger ID
       if (storeLedgerId == null) {
-        print('No ledger ID found for store: ${store.name}');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Store ledger ID not found. Cannot process bill.')),
+          const SnackBar(content: Text('Store ledger ID not found')),
         );
         setState(() => _isLoading = false);
         return;
       }
 
-      print('Processing bill: billNumber=$billNumber, cartItems=${_cartItems.length}, totalAmount=$updatedTotalAmount, discount=${_discount ?? 0.0}, store=${store.name}');
+      Order? existingInvoice;
+      try {
+        existingInvoice = await orderService.getInvoiceById(order.id);
+      } catch (e) {
+        existingInvoice = null;
+      }
+
+      Order? originalOrder;
+      double returnAmount = 0.0;
+      final Map<String, int> returnQuantities = {};
 
       if (_existingBillNumber == null) {
-        // New order: Validate and update stock
-        if (stockState is! StockLoaded) {
-          print('Stock state is not StockLoaded: ${stockState.runtimeType}');
+        if (_stockCubit.state is! StockLoaded) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Stock data not loaded')),
           );
@@ -951,7 +1397,7 @@ class _BillingPageState extends State<BillingPage> {
         }
 
         for (var item in _cartItems) {
-          final stock = stockState.stockItems.firstWhere(
+          final stock = (_stockCubit.state as StockLoaded).stockItems.firstWhere(
                 (stock) =>
             stock.productId == item.productId &&
                 stock.storeId == _selectedStoreId,
@@ -963,7 +1409,6 @@ class _BillingPageState extends State<BillingPage> {
               lastUpdated: DateTime.now(),
             ),
           );
-          print('Validating stock for ${item.productName}: available=${stock.quantity}, required=${item.quantity}, stockId=${stock.id}');
           if (stock.quantity < item.quantity) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -973,273 +1418,50 @@ class _BillingPageState extends State<BillingPage> {
             return;
           }
         }
+      } else if (widget.orderId != null) {
+        originalOrder = (await orderService.getOrderById(widget.orderId!))!;
+        returnAmount = originalOrder.totalAmount - updatedTotalAmount;
 
-        // Update stock for new order
-        for (var item in _cartItems) {
-          final stock = stockState.stockItems.firstWhere(
-                (stock) =>
-            stock.productId == item.productId &&
-                stock.storeId == _selectedStoreId,
-            orElse: () => StockModel(
-              id: '${item.productId}_$_selectedStoreId',
-              productId: item.productId,
-              storeId: _selectedStoreId!,
-              quantity: 0,
-              lastUpdated: DateTime.now(),
-            ),
+        final processedProductIds = <String>{};
+        for (var item in originalOrder.items) {
+          if (processedProductIds.contains(item.productId)) continue;
+          processedProductIds.add(item.productId);
+
+          final currentItem = _cartItems.firstWhere(
+                (i) => i.productId == item.productId,
+            orElse: () => item.copyWith(quantity: 0),
           );
-          print('Generating bill for ${item.productName}, quantity=${item.quantity}, stockId=${stock.id}, currentStock=${stock.quantity}');
-          await _stockCubit.generateBill(
-            stock,
-            item.quantity,
-            _selectedCustomer!.userId!,
-            remarks:
-            'Bill generated for $_selectedBillType sale (Order: ${order.id})',
-          );
-        }
-
-        // Customer ledger entries (unchanged)
-        await ledgerCubit.addTransaction(
-          ledgerId: customerLedgerId,
-          amount: updatedTotalAmount,
-          type: 'Debit',
-          billNumber: billNumber,
-          purpose: 'Purchase',
-          typeOfPurpose: _selectedBillType,
-          remarks: 'Bill generated for order ${order.id} with discount ₹${(_discount ?? 0.0).toStringAsFixed(2)}',
-          userType: UserType.Customer,
-        );
-
-        if (_selectedBillType == 'Cash') {
-          await ledgerCubit.addTransaction(
-            ledgerId: customerLedgerId,
-            amount: updatedTotalAmount,
-            type: 'Credit',
-            billNumber: billNumber,
-            purpose: 'Payment',
-            typeOfPurpose: 'Cash',
-            remarks: 'Payment received for bill $billNumber with discount ₹${(_discount ?? 0.0).toStringAsFixed(2)}',
-            userType: UserType.Customer,
-          );
-        }
-
-        // Store ledger entries for new order
-        // Credit for sale (stock liability transferred to customer)
-        await ledgerCubit.addTransaction(
-          ledgerId: storeLedgerId,
-          amount: updatedTotalAmount,
-          type: 'Credit',
-          billNumber: billNumber,
-          purpose: 'Sale',
-          typeOfPurpose: _selectedBillType,
-          remarks: 'Sale of stock for bill $billNumber to customer ${_selectedCustomer!.name ?? 'Unknown'} with discount ₹${(_discount ?? 0.0).toStringAsFixed(2)}',
-          userType: UserType.Store,
-        );
-
-        if (_selectedBillType == 'Cash') {
-          // Debit for cash received
-          await ledgerCubit.addTransaction(
-            ledgerId: storeLedgerId,
-            amount: updatedTotalAmount,
-            type: 'Debit',
-            billNumber: billNumber,
-            purpose: 'Cash Received',
-            typeOfPurpose: 'Cash',
-            remarks: 'Cash received for bill $billNumber from customer ${_selectedCustomer!.name ?? 'Unknown'}',
-            userType: UserType.Store,
-          );
-        }
-
-        order = order.copyWith(billNumber: billNumber);
-        await orderService.placeOrder(order);
-      } else {
-        // Existing order: Handle returns and update
-        if (widget.orderId != null) {
-          final originalOrder = (await orderService.getOrderById(widget.orderId!))!;
-          // Calculate return amount as difference between original and updated total
-          final returnAmount = originalOrder.totalAmount - updatedTotalAmount;
-
-          // Track processed items to prevent duplicates
-          final processedProductIds = <String>{};
-          print('Starting return processing for order ${widget.orderId}, originalItems=${originalOrder.items.length}, currentItems=${_cartItems.length}');
-
-          // Update stock for returned items
-          for (var item in originalOrder.items) {
-            if (processedProductIds.contains(item.productId)) {
-              print('Skipping duplicate item ${item.productName}, productId=${item.productId}');
-              continue;
-            }
-            processedProductIds.add(item.productId);
-
-            final currentItem = _cartItems.firstWhere(
-                  (i) => i.productId == item.productId,
-              orElse: () => item.copyWith(quantity: 0),
-            );
-            final returnQuantity = item.quantity - currentItem.quantity;
-            if (returnQuantity > 0) {
-              final stock = stockState is StockLoaded
-                  ? stockState.stockItems.firstWhere(
-                    (stock) =>
-                stock.productId == item.productId &&
-                    stock.storeId == _selectedStoreId,
-                orElse: () => StockModel(
-                  id: '${item.productId}_$_selectedStoreId',
-                  productId: item.productId,
-                  storeId: _selectedStoreId!,
-                  quantity: 0,
-                  lastUpdated: DateTime.now(),
-                ),
-              )
-                  : null;
-              if (stock == null) {
-                print('Stock not found for ${item.productName}, productId=${item.productId}, storeId=$_selectedStoreId');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                      content:
-                      Text('Stock data not found for ${item.productName}')),
-                );
-                setState(() => _isLoading = false);
-                return;
-              }
-              print('Returning stock for ${item.productName}, returnQuantity=$returnQuantity, stockId=${stock.id}, currentStock=${stock.quantity}, newStock=${stock.quantity + returnQuantity}');
-              await _stockCubit.updateStock(
-                stock.copyWith(
-                  quantity: stock.quantity + returnQuantity,
-                  lastUpdated: DateTime.now(),
-                ),
-                remarks: 'Return of $returnQuantity units of ${item.productName}',
-                isReturn: true,
+          final returnQuantity = item.quantity - currentItem.quantity;
+          if (returnQuantity > 0) {
+            final stock = _stockCubit.state is StockLoaded
+                ? (_stockCubit.state as StockLoaded).stockItems.firstWhere(
+                  (stock) =>
+              stock.productId == item.productId &&
+                  stock.storeId == _selectedStoreId,
+              orElse: () => StockModel(
+                id: '${item.productId}_$_selectedStoreId',
+                productId: item.productId,
+                storeId: _selectedStoreId!,
+                quantity: 0,
+                lastUpdated: DateTime.now(),
+              ),
+            )
+                : null;
+            if (stock == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content:
+                    Text('Stock data not found for ${item.productName}')),
               );
-              print('Stock updated for ${item.productName}, newStock=${stock.quantity + returnQuantity}');
-            } else {
-              print('No return for ${item.productName}, returnQuantity=$returnQuantity');
+              setState(() => _isLoading = false);
+              return;
             }
+            returnQuantities[item.productId] = returnQuantity;
           }
-          print('Completed return processing, processed ${processedProductIds.length} items');
-
-          // Customer ledger entry for return (unchanged)
-          final totalOriginalQuantity = originalOrder.items.fold<int>(
-              0, (sum, item) => sum + item.quantity);
-          final totalCurrentQuantity =
-          _cartItems.fold<int>(0, (sum, item) => sum + item.quantity);
-          if (totalOriginalQuantity > totalCurrentQuantity && returnAmount > 0) {
-            await ledgerCubit.addTransaction(
-              ledgerId: customerLedgerId,
-              amount: returnAmount,
-              type: 'Credit',
-              billNumber: billNumber,
-              purpose: 'Return',
-              typeOfPurpose: _selectedBillType,
-              remarks:
-              'Return for order ${widget.orderId} (credited ₹${returnAmount.toStringAsFixed(2)} after discount ₹${(_discount ?? 0.0).toStringAsFixed(2)})',
-              userType: UserType.Customer,
-            );
-            if (_selectedBillType == 'Cash' && _selectedReturnMethod == 'Cash') {
-              await ledgerCubit.addTransaction(
-                ledgerId: customerLedgerId,
-                amount: returnAmount,
-                type: 'Debit',
-                billNumber: billNumber,
-                purpose: 'Return Payment',
-                typeOfPurpose: 'Cash',
-                remarks:
-                'Cash paid back for return for order ${widget.orderId} (₹${returnAmount.toStringAsFixed(2)})',
-                userType: UserType.Customer,
-              );
-            }
-          }
-
-          // Customer ledger entries for updated order (unchanged)
-          if (_cartItems.isNotEmpty) {
-            await ledgerCubit.addTransaction(
-              ledgerId: customerLedgerId,
-              amount: updatedTotalAmount,
-              type: 'Debit',
-              billNumber: billNumber,
-              purpose: 'Purchase',
-              typeOfPurpose: _selectedBillType,
-              remarks: 'Bill updated for order ${order.id} with discount ₹${(_discount ?? 0.0).toStringAsFixed(2)}',
-              userType: UserType.Customer,
-            );
-            if (_selectedBillType == 'Cash') {
-              await ledgerCubit.addTransaction(
-                ledgerId: customerLedgerId,
-                amount: updatedTotalAmount,
-                type: 'Credit',
-                billNumber: billNumber,
-                purpose: 'Payment',
-                typeOfPurpose: 'Cash',
-                remarks: 'Payment received for updated bill $billNumber with discount ₹${(_discount ?? 0.0).toStringAsFixed(2)}',
-                userType: UserType.Customer,
-              );
-            }
-          }
-
-          // Store ledger entries for updated order
-          if (_cartItems.isNotEmpty) {
-            // Credit for sale (stock liability transferred to customer)
-            await ledgerCubit.addTransaction(
-              ledgerId: storeLedgerId,
-              amount: updatedTotalAmount,
-              type: 'Credit',
-              billNumber: billNumber,
-              purpose: 'Sale',
-              typeOfPurpose: _selectedBillType,
-              remarks: 'Updated sale for bill $billNumber to customer ${_selectedCustomer!.name ?? 'Unknown'} with discount ₹${(_discount ?? 0.0).toStringAsFixed(2)}',
-              userType: UserType.Store,
-            );
-
-            if (_selectedBillType == 'Cash') {
-              // Debit for cash received
-              await ledgerCubit.addTransaction(
-                ledgerId: storeLedgerId,
-                amount: updatedTotalAmount,
-                type: 'Debit',
-                billNumber: billNumber,
-                purpose: 'Cash Received',
-                typeOfPurpose: 'Cash',
-                remarks: 'Cash received for updated bill $billNumber from customer ${_selectedCustomer!.name ?? 'Unknown'}',
-                userType: UserType.Store,
-              );
-            }
-          }
-
-          // Store ledger entries for return (if any items were returned)
-          if (totalOriginalQuantity > totalCurrentQuantity && returnAmount > 0) {
-            // Debit for returned stock (store takes back stock liability)
-            await ledgerCubit.addTransaction(
-              ledgerId: storeLedgerId,
-              amount: returnAmount,
-              type: 'Debit',
-              billNumber: billNumber,
-              purpose: 'Return',
-              typeOfPurpose: _selectedBillType,
-              remarks: 'Return of stock for bill $billNumber (debited ₹${returnAmount.toStringAsFixed(2)})',
-              userType: UserType.Store,
-            );
-
-            if (_selectedBillType == 'Cash' && _selectedReturnMethod == 'Cash') {
-              // Credit for cash paid back
-              await ledgerCubit.addTransaction(
-                ledgerId: storeLedgerId,
-                amount: returnAmount,
-                type: 'Credit',
-                billNumber: billNumber,
-                purpose: 'Return Payment',
-                typeOfPurpose: 'Cash',
-                remarks: 'Cash paid back for return for bill $billNumber (₹${returnAmount.toStringAsFixed(2)})',
-                userType: UserType.Store,
-              );
-            }
-          }
-
-          await orderService.updateOrderStatus(widget.orderId!, _selectedStatus);
-          await orderService.updateOrder(order);
         }
       }
 
       final pdf = await _generatePdf(order);
-
       await sl<Coordinator>()
           .navigateToBillPdfPage(pdf: pdf, billNumber: billNumber);
 
@@ -1250,15 +1472,1130 @@ class _BillingPageState extends State<BillingPage> {
               : 'Bill updated successfully'),
         ),
       );
+
+      await _saveDataInBackground(
+        order: order,
+        originalOrder: originalOrder,
+        existingInvoice: existingInvoice,
+        storeLedgerId: storeLedgerId,
+        customerLedgerId: customerLedgerId,
+        returnAmount: returnAmount,
+        returnQuantities: returnQuantities,
+      );
     } catch (e) {
-      print('Error in generateBill: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to process bill: $e')),
       );
     } finally {
       setState(() => _isLoading = false);
     }
-  }  Widget _buildGenerateBillButton() {
+  }
+
+
+  Future<void> _saveDataInBackground({
+    required Order order,
+    required Order? originalOrder,
+    required Order? existingInvoice,
+    required String storeLedgerId,
+    required String customerLedgerId,
+    required double returnAmount,
+    required Map<String, int> returnQuantities,
+  }) async {
+    Future<void>(() async {
+      try {
+        final orderService = sl<IOrderService>();
+        final ledgerCubit = sl<UserLedgerCubit>();
+
+        if (_existingBillNumber == null) {
+          for (var item in _cartItems) {
+            final stock =
+                (_stockCubit.state as StockLoaded).stockItems.firstWhere(
+                      (stock) =>
+                          stock.productId == item.productId &&
+                          stock.storeId == _selectedStoreId,
+                      orElse: () => StockModel(
+                        id: '${item.productId}_$_selectedStoreId',
+                        productId: item.productId,
+                        storeId: _selectedStoreId!,
+                        quantity: 0,
+                        lastUpdated: DateTime.now(),
+                      ),
+                    );
+            await _stockCubit.generateBill(
+              stock,
+              item.quantity,
+              _selectedCustomer!.userId!,
+              remarks:
+                  'Bill generated for $_selectedBillType sale (Order: ${order.id})',
+            );
+          }
+
+          await ledgerCubit.addTransaction(
+            ledgerId: customerLedgerId,
+            amount: order.totalAmount,
+            type: 'Debit',
+            billNumber: order.billNumber,
+            purpose: 'Purchase',
+            typeOfPurpose: _selectedBillType,
+            remarks:
+                'Bill generated for order ${order.id} with discount ${order.discount?.toStringAsFixed(2) ?? '0.00'}',
+            userType: UserType.Customer,
+          );
+
+          if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
+            final paymentAmount = _selectedBillType == 'Cash'
+                ? order.totalAmount
+                : _initialPayment!;
+            await ledgerCubit.addTransaction(
+              ledgerId: customerLedgerId,
+              amount: paymentAmount,
+              type: 'Credit',
+              billNumber: order.billNumber,
+              purpose: 'Payment',
+              typeOfPurpose: 'Cash',
+              remarks: 'Payment received for bill ${order.billNumber}',
+              userType: UserType.Customer,
+            );
+          }
+
+          await ledgerCubit.addTransaction(
+            ledgerId: storeLedgerId,
+            amount: order.totalAmount,
+            type: 'Credit',
+            billNumber: order.billNumber,
+            purpose: 'Sale',
+            typeOfPurpose: _selectedBillType,
+            remarks:
+                'Sale for bill ${order.billNumber} to customer ${_selectedCustomer!.name ?? 'Unknown'}',
+            userType: UserType.Store,
+          );
+
+          if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
+            final paymentAmount = _selectedBillType == 'Cash'
+                ? order.totalAmount
+                : _initialPayment!;
+            await ledgerCubit.addTransaction(
+              ledgerId: storeLedgerId,
+              amount: paymentAmount,
+              type: 'Debit',
+              billNumber: order.billNumber,
+              purpose: 'Cash Received',
+              typeOfPurpose: 'Cash',
+              remarks: 'Cash received for bill ${order.billNumber}',
+              userType: UserType.Store,
+            );
+          }
+
+          await orderService.placeOrder(order);
+          if (existingInvoice == null) {
+            await orderService.placeInvoice(order);
+          }
+        } else {
+          final processedProductIds = <String>{};
+          for (var item in originalOrder!.items) {
+            if (processedProductIds.contains(item.productId)) continue;
+            processedProductIds.add(item.productId);
+
+            final returnQuantity = returnQuantities[item.productId] ?? 0;
+            if (returnQuantity > 0) {
+              final stock =
+                  (_stockCubit.state as StockLoaded).stockItems.firstWhere(
+                        (stock) =>
+                            stock.productId == item.productId &&
+                            stock.storeId == _selectedStoreId,
+                        orElse: () => StockModel(
+                          id: '${item.productId}_$_selectedStoreId',
+                          productId: item.productId,
+                          storeId: _selectedStoreId!,
+                          quantity: 0,
+                          lastUpdated: DateTime.now(),
+                        ),
+                      );
+              await _stockCubit.updateStock(
+                stock.copyWith(
+                  quantity: stock.quantity + returnQuantity,
+                  lastUpdated: DateTime.now(),
+                ),
+                remarks:
+                    'Return of $returnQuantity units of ${item.productName}',
+                isReturn: true,
+              );
+            }
+          }
+
+          if (returnAmount > 0) {
+            await ledgerCubit.addTransaction(
+              ledgerId: customerLedgerId,
+              amount: returnAmount,
+              type: 'Credit',
+              billNumber: order.billNumber,
+              purpose: 'Return',
+              typeOfPurpose: _selectedBillType,
+              remarks: 'Return for order ${widget.orderId}',
+              userType: UserType.Customer,
+            );
+            if (_selectedBillType == 'Cash' &&
+                _selectedReturnMethod == 'Cash') {
+              await ledgerCubit.addTransaction(
+                ledgerId: customerLedgerId,
+                amount: returnAmount,
+                type: 'Debit',
+                billNumber: order.billNumber,
+                purpose: 'Return Payment',
+                typeOfPurpose: 'Cash',
+                remarks:
+                    'Cash paid back for return for order ${widget.orderId}',
+                userType: UserType.Customer,
+              );
+            }
+          }
+
+          if (_cartItems.isNotEmpty) {
+            await ledgerCubit.addTransaction(
+              ledgerId: customerLedgerId,
+              amount: order.totalAmount,
+              type: 'Debit',
+              billNumber: order.billNumber,
+              purpose: 'Purchase',
+              typeOfPurpose: _selectedBillType,
+              remarks: 'Bill updated for order ${order.id}',
+              userType: UserType.Customer,
+            );
+            if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
+              final paymentAmount = _selectedBillType == 'Cash'
+                  ? order.totalAmount
+                  : _initialPayment!;
+              await ledgerCubit.addTransaction(
+                ledgerId: customerLedgerId,
+                amount: paymentAmount,
+                type: 'Credit',
+                billNumber: order.billNumber,
+                purpose: 'Payment',
+                typeOfPurpose: 'Cash',
+                remarks:
+                    'Payment received for updated bill ${order.billNumber}',
+                userType: UserType.Customer,
+              );
+            }
+          }
+
+          if (_cartItems.isNotEmpty) {
+            await ledgerCubit.addTransaction(
+              ledgerId: storeLedgerId,
+              amount: order.totalAmount,
+              type: 'Credit',
+              billNumber: order.billNumber,
+              purpose: 'Sale',
+              typeOfPurpose: _selectedBillType,
+              remarks: 'Updated sale for bill ${order.billNumber}',
+              userType: UserType.Store,
+            );
+            if (_selectedBillType == 'Cash' || _initialPayment! > 0) {
+              final paymentAmount = _selectedBillType == 'Cash'
+                  ? order.totalAmount
+                  : _initialPayment!;
+              await ledgerCubit.addTransaction(
+                ledgerId: storeLedgerId,
+                amount: paymentAmount,
+                type: 'Debit',
+                billNumber: order.billNumber,
+                purpose: 'Cash Received',
+                typeOfPurpose: 'Cash',
+                remarks: 'Cash received for updated bill ${order.billNumber}',
+                userType: UserType.Store,
+              );
+            }
+          }
+
+          if (returnAmount > 0) {
+            await ledgerCubit.addTransaction(
+              ledgerId: storeLedgerId,
+              amount: returnAmount,
+              type: 'Debit',
+              billNumber: order.billNumber,
+              purpose: 'Return',
+              typeOfPurpose: _selectedBillType,
+              remarks: 'Return of stock for bill ${order.billNumber}',
+              userType: UserType.Store,
+            );
+            if (_selectedBillType == 'Cash' &&
+                _selectedReturnMethod == 'Cash') {
+              await ledgerCubit.addTransaction(
+                ledgerId: storeLedgerId,
+                amount: returnAmount,
+                type: 'Credit',
+                billNumber: order.billNumber,
+                purpose: 'Return Payment',
+                typeOfPurpose: 'Cash',
+                remarks:
+                    'Cash paid back for return for bill ${order.billNumber}',
+                userType: UserType.Store,
+              );
+            }
+          }
+
+          await orderService.updateOrderStatus(
+              widget.orderId!, _selectedStatus);
+          await orderService.updateOrder(order);
+          await orderService.updateInvoice(order);
+        }
+      } catch (e) {
+        debugPrint('Background save failed: $e');
+      }
+    });
+  }
+
+  Future<pw.Document> _generatePdf(Order order) async {
+    final pdf = pw.Document();
+    final accountRepository = sl<AccountRepository>();
+    final addTenantCompanyCubit = sl<AddTenantCompanyCubit>();
+
+    String companyName = 'Abc Pvt. Ltd.';
+    String issuerName = 'Unknown Issuer';
+    String companyAddress = '123 Business Street, City, Country';
+    String companyPhone = '';
+    String companyEmail = '';
+    String companyWebsite = '';
+    String currency = 'IQD ';
+    double customerTotalBalance = 0.0;
+
+    try {
+      final userInfo = await accountRepository.getUserInfo();
+      issuerName = userInfo?.name ?? userInfo?.userName ?? issuerName;
+      if (userInfo?.companyId != null) {
+        await addTenantCompanyCubit.getTenantCompanyById(userInfo!.companyId!);
+        final state = addTenantCompanyCubit.state;
+        if (state is TenantCompanyLoaded) {
+          final company = state.company;
+          companyName = company.name ?? companyName;
+          companyAddress = [
+            company.address ?? '',
+            company.city ?? '',
+            company.state ?? '',
+            company.zipCode ?? '',
+            company.country ?? ''
+          ].where((e) => e.isNotEmpty).join(', ');
+          companyPhone = company.mobileNumber ?? companyPhone;
+          companyEmail = company.email ?? companyEmail;
+        } else if (state is AddTenantCompanyError) {
+          debugPrint('Error fetching company details: ${state.message}');
+        }
+      }
+    } catch (e, stackTrace) {
+      debugPrint(
+          'Error fetching company or issuer details: $e\nStackTrace: $stackTrace');
+    }
+
+    final primaryColor = PdfColor.fromInt(AppColors.primary.value);
+    final textSecondaryColor = PdfColor.fromInt(AppColors.textSecondary.value);
+    const greyColor = PdfColors.grey300;
+    final regularFont = pw.Font.times();
+    final boldFont = pw.Font.timesBold();
+    const PdfColor rowBackgroundColor = PdfColor(.99, .99, .99, 1.0);
+
+    final double subtotal = order.items.isEmpty
+        ? 0.0
+        : order.items.fold(
+            0.0,
+            (sum, item) {
+              final price = item.price ?? 0.0;
+              final quantity = item.quantity ?? 0;
+              final result = sum + (price * quantity);
+              return result.isNaN ? sum : result;
+            },
+          );
+    final double totalTax = order.items.isEmpty
+        ? 0.0
+        : order.items.fold(
+            0.0,
+            (sum, item) {
+              final tax = item.taxAmount ?? 0.0;
+              return tax.isNaN ? sum : sum + tax;
+            },
+          );
+    final double totalItemDiscount = order.items.isEmpty
+        ? 0.0
+        : order.items.fold(
+            0.0,
+            (sum, item) {
+              final discount = item.discountAmount ?? 0.0;
+              return discount.isNaN ? sum : sum + discount;
+            },
+          );
+    final double totalDiscount =
+        (totalItemDiscount.isNaN ? 0.0 : totalItemDiscount) +
+            ((order.discount ?? 0.0).isNaN ? 0.0 : (order.discount ?? 0.0));
+    final double totalAmount =
+        (order.totalAmount ?? 0.0).isNaN ? 0.0 : (order.totalAmount ?? 0.0);
+    final double amountReceived = (order.amountReceived ?? 0.0).isNaN
+        ? 0.0
+        : (order.amountReceived ?? 0.0);
+    final double outstandingAmount = totalAmount - amountReceived;
+    final double paymentsCredits = amountReceived;
+
+    final String billToAddress = [
+      _selectedCustomer?.name ?? order.userName ?? 'Unknown Customer',
+      if (_selectedCustomer?.businessName?.isNotEmpty ?? false)
+        _selectedCustomer!.businessName!,
+      if (_selectedCustomer?.address?.isNotEmpty ?? false)
+        _selectedCustomer!.address!,
+      if (_selectedCustomer?.mobileNumber?.isNotEmpty ?? false)
+        _selectedCustomer!.mobileNumber!,
+      if (_selectedCustomer?.email?.isNotEmpty ?? false)
+        _selectedCustomer!.email!,
+    ].where((e) => e.isNotEmpty).join('\n');
+
+    String formatNumber(double number) {
+      final absNumber = number.isNaN ? 0.0 : number.abs();
+      final prefix = number < 0 ? '-' : '';
+      return '$prefix$currency${absNumber.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
+    }
+
+    String formatDate(dynamic date) {
+      if (date == null) return 'N/A';
+      if (date is DateTime) {
+        return DateFormat('yyyy-MM-dd').format(date);
+      } else if (date is String && date.length >= 10) {
+        return date.substring(0, 10);
+      }
+      return 'N/A';
+    }
+
+    print('Subtotal: $subtotal, isNaN: ${subtotal.isNaN}');
+    print('TotalTax: $totalTax, isNaN: ${totalTax.isNaN}');
+    print(
+        'TotalItemDiscount: $totalItemDiscount, isNaN: ${totalItemDiscount.isNaN}');
+    print('TotalDiscount: $totalDiscount, isNaN: ${totalDiscount.isNaN}');
+    print(
+        'OutstandingAmount: $outstandingAmount, isNaN: ${outstandingAmount.isNaN}');
+    print('PaymentsCredits: $paymentsCredits, isNaN: ${paymentsCredits.isNaN}');
+    print('TotalAmount: $totalAmount, isNaN: ${totalAmount.isNaN}');
+    order.items.asMap().entries.forEach((entry) {
+      final index = entry.key;
+      final item = entry.value;
+      final perUnitDisc = (item.quantity ?? 0) > 0
+          ? ((item.discountAmount ?? 0.0) / (item.quantity ?? 1))
+          : 0.0;
+      final amount = ((item.price ?? 0.0) * (item.quantity ?? 0)) +
+          (item.taxAmount ?? 0.0) -
+          (item.discountAmount ?? 0.0);
+      print('Item $index: price=${item.price}, quantity=${item.quantity}, '
+          'taxAmount=${item.taxAmount}, discountAmount=${item.discountAmount}, '
+          'discountPercentage=${item.discountPercentage}, '
+          'perUnitDisc=$perUnitDisc (isNaN: ${perUnitDisc.isNaN}), '
+          'amount=$amount (isNaN: ${amount.isNaN})');
+    });
+    if (order.paymentDetails != null && order.paymentDetails!.isNotEmpty) {
+      order.paymentDetails!.asMap().entries.forEach((entry) {
+        final index = entry.key;
+        final payment = entry.value;
+        final paymentAmount = payment['amount'] ?? 0.0;
+        print(
+            'Payment $index: amount=$paymentAmount, isNaN: ${paymentAmount.isNaN}, '
+            'date=${payment['date']}, method=${payment['method']}');
+      });
+    }
+
+    try {
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(40),
+          build: (context) => [
+            pw.Stack(
+              children: [
+                pw.Positioned(
+                  top: (PdfPageFormat.a4.height - 100) / 2,
+                  left: 0,
+                  right: 0,
+                  child: pw.Container(
+                    alignment: pw.Alignment.center,
+                    height: 100,
+                    child: pw.Watermark(
+                      angle: 45 * 3.14159 / 180,
+                      child: pw.Text(
+                        order.paymentStatus == 'Paid'
+                            ? 'PAID'
+                            : (order.amountReceived ?? 0) > 0
+                                ? 'PARTIALLY PAID'
+                                : 'NOT PAID',
+                        style: pw.TextStyle(
+                            font: boldFont,
+                            fontSize: 50,
+                            color: order.paymentStatus == 'Paid'
+                                ? const PdfColor.fromInt(0xFF008000) // Green
+                                : (order.amountReceived ?? 0) > 0
+                                    ? const PdfColor.fromInt(0xFFFFA500)
+                                    : const PdfColor.fromInt(0xFFFF0000) // Red
+                            ),
+                      ),
+                    ),
+                  ),
+                ),
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
+                  children: [
+                    pw.Text(
+                      'Invoice',
+                      style: pw.TextStyle(
+                        font: boldFont,
+                        fontSize: 24,
+                        color: PdfColors.black,
+                      ),
+                    ),
+                    pw.SizedBox(height: 8),
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Expanded(
+                          flex: 4, // 40% width
+                          child: pw.Container(
+                            width: PdfPageFormat.a4.availableWidth * 0.4,
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Text(
+                                  companyName,
+                                  style: pw.TextStyle(
+                                    font: boldFont,
+                                    fontSize: 18,
+                                    color: primaryColor,
+                                  ),
+                                ),
+                                pw.SizedBox(height: 4),
+                                pw.Text(
+                                  companyAddress,
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                    color: textSecondaryColor,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: pw.TextOverflow.clip,
+                                ),
+                                if (companyPhone.isNotEmpty)
+                                  pw.Text(
+                                    companyPhone,
+                                    style: pw.TextStyle(
+                                      font: regularFont,
+                                      fontSize: 12,
+                                      color: textSecondaryColor,
+                                    ),
+                                  ),
+                                if (companyEmail.isNotEmpty)
+                                  pw.Text(
+                                    companyEmail,
+                                    style: pw.TextStyle(
+                                      font: regularFont,
+                                      fontSize: 12,
+                                      color: textSecondaryColor,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        pw.SizedBox(width: 16),
+                        pw.Expanded(
+                          flex: 3, // 36% width
+                          child: pw.Container(
+                            width: PdfPageFormat.a4.availableWidth * 0.36,
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.end,
+                              children: [
+                                pw.Table(
+                                  columnWidths: {
+                                    0: const pw.FixedColumnWidth(80),
+                                    1: const pw.FixedColumnWidth(100),
+                                  },
+                                  children: [
+                                    pw.TableRow(
+                                      children: [
+                                        pw.Text(
+                                          'Date',
+                                          style: pw.TextStyle(
+                                            font: boldFont,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        pw.Text(
+                                          formatDate(order.orderDate),
+                                          style: pw.TextStyle(
+                                            font: regularFont,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    pw.TableRow(
+                                      children: [
+                                        pw.Text(
+                                          'Invoice #',
+                                          style: pw.TextStyle(
+                                            font: boldFont,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        pw.Text(
+                                          order.billNumber ?? 'N/A',
+                                          style: pw.TextStyle(
+                                            font: regularFont,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    pw.TableRow(
+                                      children: [
+                                        pw.Text(
+                                          'Issuer',
+                                          style: pw.TextStyle(
+                                            font: boldFont,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        pw.Text(
+                                          issuerName,
+                                          style: pw.TextStyle(
+                                            font: regularFont,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    pw.SizedBox(height: 8),
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Expanded(
+                          child: pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text(
+                                'Bill To',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              pw.Container(
+                                decoration: pw.BoxDecoration(
+                                  border: pw.Border.all(color: greyColor),
+                                ),
+                                padding: const pw.EdgeInsets.all(8),
+                                child: pw.Text(
+                                  billToAddress,
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        pw.SizedBox(width: 16),
+                        pw.Expanded(
+                          child: pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text(
+                                'Terms',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              pw.Container(
+                                decoration: pw.BoxDecoration(
+                                  border: pw.Border.all(color: greyColor),
+                                ),
+                                padding: const pw.EdgeInsets.all(8),
+                                child: pw.Text(
+                                  order.invoiceType ?? '',
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    pw.SizedBox(height: 8),
+                    pw.Table(
+                      border: const pw.TableBorder(
+                        top: pw.BorderSide(color: greyColor, width: 1),
+                        bottom: pw.BorderSide(color: greyColor, width: 1),
+                        left: pw.BorderSide(color: greyColor, width: 1),
+                        right: pw.BorderSide(color: greyColor, width: 1),
+                        horizontalInside: pw.BorderSide.none,
+                        verticalInside:
+                            pw.BorderSide(color: greyColor, width: 1),
+                      ),
+                      children: [
+                        pw.TableRow(
+                          decoration:
+                              const pw.BoxDecoration(color: rowBackgroundColor),
+                          children: [
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
+                              child: pw.Text(
+                                'Item',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
+                              child: pw.Text(
+                                'Qty',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
+                              child: pw.Text(
+                                'Rate',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
+                              child: pw.Text(
+                                'Tax',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
+                              child: pw.Text(
+                                'Disc. Amt',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
+                              child: pw.Text(
+                                'Disc. per Unit',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
+                              child: pw.Text(
+                                'Disc. %',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            pw.Container(
+                              height: 18,
+                              padding: const pw.EdgeInsets.all(2),
+                              child: pw.Text(
+                                'Amount',
+                                style: pw.TextStyle(
+                                  font: boldFont,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        ...order.items.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final item = entry.value;
+                          final double perUnitDisc = (item.quantity ?? 0) > 0
+                              ? ((item.discountAmount ?? 0.0) /
+                                  (item.quantity ?? 1))
+                              : 0.0;
+                          final double amount =
+                              ((item.price ?? 0.0) * (item.quantity ?? 0)) +
+                                  (item.taxAmount ?? 0.0) -
+                                  (item.discountAmount ?? 0.0);
+                          final double discountPercentage =
+                              (item.discountPercentage ?? 0.0).isNaN
+                                  ? 0.0
+                                  : (item.discountPercentage ?? 0.0);
+                          return pw.TableRow(
+                            children: [
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  item.productName ?? 'N/A',
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  (item.quantity ?? 0).toString(),
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  (item.price ?? 0.0).toStringAsFixed(2),
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  (item.taxAmount ?? 0.0).toStringAsFixed(2),
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  (item.discountAmount ?? 0.0)
+                                      .toStringAsFixed(2),
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  perUnitDisc.isNaN
+                                      ? '0.00'
+                                      : perUnitDisc.toStringAsFixed(2),
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  discountPercentage.toStringAsFixed(2),
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  amount.isNaN
+                                      ? '0.00'
+                                      : amount.toStringAsFixed(2),
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }),
+                        ...List.generate(
+                          order.items.length < 10 ? 10 - order.items.length : 0,
+                          (index) => pw.TableRow(
+                            children: List.generate(
+                              8,
+                              (_) => pw.Container(
+                                height: 18,
+                                padding: const pw.EdgeInsets.all(2),
+                                child: pw.Text(
+                                  '',
+                                  style: pw.TextStyle(
+                                    font: regularFont,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    pw.SizedBox(height: 16),
+                    pw.Align(
+                      alignment: pw.Alignment.centerRight,
+                      child: pw.Container(
+                        decoration: pw.BoxDecoration(
+                          border: pw.Border.all(color: greyColor, width: 1),
+                        ),
+                        child: pw.Row(
+                          mainAxisSize: pw.MainAxisSize.min,
+                          children: [
+                            pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    'Subtotal',
+                                    style: pw.TextStyle(
+                                      font: regularFont,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                                if (totalTax != 0 && !totalTax.isNaN)
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      'Total Tax',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                if (totalTax != 0 && !totalTax.isNaN)
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      'Total with Tax',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                if (totalItemDiscount != 0 &&
+                                    !totalItemDiscount.isNaN)
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      'Item Discounts',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                if (order.discount != null &&
+                                    order.discount != 0 &&
+                                    !(order.discount!.isNaN))
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      'Additional Discount',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    'Total',
+                                    style: pw.TextStyle(
+                                      font: boldFont,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    'Payments/Credits',
+                                    style: pw.TextStyle(
+                                      font: regularFont,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    'Balance Due',
+                                    style: pw.TextStyle(
+                                      font: boldFont,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            pw.SizedBox(width: 16),
+                            pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.end,
+                              children: [
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    formatNumber(subtotal),
+                                    style: pw.TextStyle(
+                                      font: regularFont,
+                                      fontSize: 12,
+                                    ),
+                                    textAlign: pw.TextAlign.right,
+                                  ),
+                                ),
+                                if (totalTax != 0 && !totalTax.isNaN)
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      '+${formatNumber(totalTax)}',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                      textAlign: pw.TextAlign.right,
+                                    ),
+                                  ),
+                                if (totalTax != 0 && !totalTax.isNaN)
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      formatNumber(subtotal + totalTax),
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                      textAlign: pw.TextAlign.right,
+                                    ),
+                                  ),
+                                if (totalItemDiscount != 0 &&
+                                    !totalItemDiscount.isNaN)
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      '-${formatNumber(totalItemDiscount)}',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                      textAlign: pw.TextAlign.right,
+                                    ),
+                                  ),
+                                if (order.discount != null &&
+                                    order.discount != 0 &&
+                                    !(order.discount!.isNaN))
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(4),
+                                    child: pw.Text(
+                                      '-${formatNumber(order.discount ?? 0.0)}',
+                                      style: pw.TextStyle(
+                                        font: regularFont,
+                                        fontSize: 12,
+                                      ),
+                                      textAlign: pw.TextAlign.right,
+                                    ),
+                                  ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    formatNumber(totalAmount),
+                                    style: pw.TextStyle(
+                                      font: boldFont,
+                                      fontSize: 12,
+                                    ),
+                                    textAlign: pw.TextAlign.right,
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    '-${formatNumber(paymentsCredits)}',
+                                    style: pw.TextStyle(
+                                      font: regularFont,
+                                      fontSize: 12,
+                                    ),
+                                    textAlign: pw.TextAlign.right,
+                                  ),
+                                ),
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(4),
+                                  child: pw.Text(
+                                    formatNumber(outstandingAmount),
+                                    style: pw.TextStyle(
+                                      font: boldFont,
+                                      fontSize: 14,
+                                    ),
+                                    textAlign: pw.TextAlign.right,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    } catch (e, stackTrace) {
+      debugPrint('Error generating PDF: $e\nStackTrace: $stackTrace');
+      rethrow;
+    }
+
+    return pdf;
+  }
+
+  Widget _buildGenerateBillButton() {
     return ElevatedButton(
       onPressed: _generateBill,
       style: ElevatedButton.styleFrom(
@@ -1364,7 +2701,7 @@ class _BillingPageState extends State<BillingPage> {
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    'Price: ₹${item.price.toStringAsFixed(2)}',
+                                    'Price: IQD ${item.price.toStringAsFixed(2)}',
                                     style: const TextStyle(
                                       fontSize: 14,
                                       color: AppColors.textSecondary,
@@ -1528,7 +2865,7 @@ class _BillingPageState extends State<BillingPage> {
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 8, horizontal: 12),
                                       child: Text(
-                                        'Subtotal (₹${item.price.toStringAsFixed(2)} x ${item.quantity})',
+                                        'Subtotal (IQD ${item.price.toStringAsFixed(2)} x ${item.quantity})',
                                         style: const TextStyle(
                                           fontSize: 14,
                                           color: AppColors.textSecondary,
@@ -1539,7 +2876,7 @@ class _BillingPageState extends State<BillingPage> {
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 8, horizontal: 12),
                                       child: Text(
-                                        '₹${(item.price * item.quantity).toStringAsFixed(2)}',
+                                        'IQD ${(item.price * item.quantity).toStringAsFixed(2)}',
                                         textAlign: TextAlign.right,
                                         style: const TextStyle(
                                           fontSize: 14,
@@ -1567,7 +2904,7 @@ class _BillingPageState extends State<BillingPage> {
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 8, horizontal: 12),
                                       child: Text(
-                                        '₹${item.taxAmount.toStringAsFixed(2)}',
+                                        'IQD ${item.taxAmount.toStringAsFixed(2)}',
                                         textAlign: TextAlign.right,
                                         style: const TextStyle(
                                           fontSize: 14,
@@ -1602,7 +2939,7 @@ class _BillingPageState extends State<BillingPage> {
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 8, horizontal: 12),
                                       child: Text(
-                                        '₹${((item.price * item.quantity) + item.taxAmount).toStringAsFixed(2)}',
+                                        'IQD ${((item.price * item.quantity) + item.taxAmount).toStringAsFixed(2)}',
                                         textAlign: TextAlign.right,
                                         style: const TextStyle(
                                           fontSize: 14,
@@ -1625,7 +2962,7 @@ class _BillingPageState extends State<BillingPage> {
             const SizedBox(height: 8),
             if (_discount != null && _discount! > 0) ...[
               Text(
-                'Discount: ₹${_discount!.toStringAsFixed(2)}',
+                'Discount: IQD ${_discount!.toStringAsFixed(2)}',
                 style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -1634,7 +2971,7 @@ class _BillingPageState extends State<BillingPage> {
               const SizedBox(height: 8),
             ],
             Text(
-              'Total: ₹${finalTotal.toStringAsFixed(2)}',
+              'Total: IQD ${finalTotal.toStringAsFixed(2)}',
               style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -1776,7 +3113,7 @@ class _BillingPageState extends State<BillingPage> {
                                     fontWeight: FontWeight.bold),
                               ),
                               subtitle: Text(
-                                'Price: ₹${product.price?.toStringAsFixed(2) ?? '0.00'} | Stock: ${product.quantity}',
+                                'Price: IQD ${product.price?.toStringAsFixed(2) ?? '0.00'} | Stock: ${product.quantity}',
                               ),
                               trailing: IconButton(
                                 icon: const Icon(Icons.add,
@@ -1882,258 +3219,6 @@ class _BillingPageState extends State<BillingPage> {
     );
   }
 
-  Future<pw.Document> _generatePdf(Order order) async {
-    final pdf = pw.Document();
-    final accountRepository = sl<AccountRepository>();
-
-    String companyName = 'Abc Pvt. Ltd.';
-    String issuerName = 'Unknown Issuer';
-    try {
-      final userInfo = await accountRepository.getUserInfo();
-      companyName = userInfo?.companyId ?? companyName;
-      issuerName = userInfo?.name ?? userInfo?.userName ?? issuerName;
-    } catch (e) {
-      print('Error fetching company or issuer name: $e');
-    }
-
-    final primaryColor = PdfColor.fromInt(AppColors.primary.value);
-    final textSecondaryColor = PdfColor.fromInt(AppColors.textSecondary.value);
-    final greyColor = PdfColors.grey300;
-
-    final regularFont = pw.Font.times();
-    final boldFont = pw.Font.timesBold();
-
-    final double subtotal = order.items
-        .fold(0.0, (sum, item) => sum + (item.price * item.quantity));
-    final double totalTax =
-        order.items.fold(0.0, (sum, item) => sum + item.taxAmount);
-
-    pdf.addPage(
-      pw.MultiPage(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(40),
-        header: (context) => pw.Container(
-          padding: const pw.EdgeInsets.only(bottom: 12),
-          decoration: pw.BoxDecoration(
-            border:
-                pw.Border(bottom: pw.BorderSide(width: 3, color: primaryColor)),
-          ),
-          child: pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text(
-                    companyName,
-                    style: pw.TextStyle(
-                        font: boldFont, fontSize: 22, color: primaryColor),
-                  ),
-                  pw.SizedBox(height: 4),
-                  pw.Text(
-                    '123 Business Street, City, Country',
-                    style: pw.TextStyle(
-                        font: regularFont,
-                        fontSize: 12,
-                        color: textSecondaryColor),
-                  ),
-                ],
-              ),
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.end,
-                children: [
-                  pw.Text(
-                    'INVOICE',
-                    style: pw.TextStyle(
-                        font: boldFont, fontSize: 28, color: primaryColor),
-                  ),
-                  pw.SizedBox(height: 4),
-                  pw.Text(
-                    'Bill #: ${order.billNumber ?? 'N/A'}',
-                    style: pw.TextStyle(font: regularFont, fontSize: 14),
-                  ),
-                  pw.Text(
-                    'Date: ${order.orderDate.toString().substring(0, 10)}',
-                    style: pw.TextStyle(font: regularFont, fontSize: 14),
-                  ),
-                  pw.Text(
-                    'Issuer: $issuerName',
-                    style: pw.TextStyle(font: regularFont, fontSize: 14),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        build: (context) => [
-          pw.SizedBox(height: 24),
-          pw.Text(
-            'Bill To:',
-            style: pw.TextStyle(
-                font: boldFont, fontSize: 18, color: PdfColors.black),
-          ),
-          pw.SizedBox(height: 8),
-          pw.Text(
-            order.userName ?? 'Unknown Customer',
-            style:
-                pw.TextStyle(font: boldFont, fontSize: 16, color: primaryColor),
-          ),
-          pw.Text(
-            'Store ID: ${order.storeId ?? 'N/A'}',
-            style: pw.TextStyle(
-                font: regularFont, fontSize: 12, color: textSecondaryColor),
-          ),
-          pw.SizedBox(height: 24),
-          pw.Text(
-            'Items',
-            style: pw.TextStyle(font: boldFont, fontSize: 18),
-          ),
-          pw.SizedBox(height: 12),
-          pw.Table(
-            border: pw.TableBorder.all(color: greyColor, width: 1),
-            columnWidths: {
-              0: const pw.FlexColumnWidth(3),
-              1: const pw.FlexColumnWidth(1),
-              2: const pw.FlexColumnWidth(1.5),
-              3: const pw.FlexColumnWidth(1.5),
-              4: const pw.FlexColumnWidth(2),
-            },
-            children: [
-              pw.TableRow(
-                decoration: const pw.BoxDecoration(color: PdfColors.grey100),
-                children: [
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Product',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
-                  ),
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Qty',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
-                  ),
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Unit Price',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
-                  ),
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Tax',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
-                  ),
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(10),
-                    child: pw.Text('Total',
-                        style: pw.TextStyle(font: boldFont, fontSize: 13)),
-                  ),
-                ],
-              ),
-              ...order.items.map((item) => pw.TableRow(
-                    decoration: pw.BoxDecoration(
-                      border: pw.Border(
-                          bottom: pw.BorderSide(color: greyColor, width: 0.5)),
-                    ),
-                    children: [
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(10),
-                        child: pw.Text(
-                          item.productName,
-                          style: pw.TextStyle(font: regularFont, fontSize: 12),
-                          softWrap: true,
-                        ),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(10),
-                        child: pw.Text(
-                          item.quantity.toString(),
-                          style: pw.TextStyle(font: regularFont, fontSize: 12),
-                          textAlign: pw.TextAlign.center,
-                        ),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(10),
-                        child: pw.Text(
-                          item.price.toStringAsFixed(2),
-                          style: pw.TextStyle(font: regularFont, fontSize: 12),
-                          textAlign: pw.TextAlign.right,
-                        ),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(10),
-                        child: pw.Text(
-                          item.taxAmount.toStringAsFixed(2),
-                          style: pw.TextStyle(font: regularFont, fontSize: 12),
-                          textAlign: pw.TextAlign.right,
-                        ),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(10),
-                        child: pw.Text(
-                          ((item.price * item.quantity) + item.taxAmount)
-                              .toStringAsFixed(2),
-                          style: pw.TextStyle(font: regularFont, fontSize: 12),
-                          textAlign: pw.TextAlign.right,
-                        ),
-                      ),
-                    ],
-                  )),
-            ],
-          ),
-          pw.SizedBox(height: 24),
-          pw.Container(
-            padding: const pw.EdgeInsets.all(12),
-            decoration: pw.BoxDecoration(
-              color: PdfColors.grey50,
-              border: pw.Border.all(color: greyColor, width: 1),
-            ),
-            child: pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.end,
-              children: [
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.end,
-                  children: [
-                    pw.Text(
-                      'Subtotal: ₹${subtotal.toStringAsFixed(2)}',
-                      style: pw.TextStyle(font: regularFont, fontSize: 14),
-                    ),
-                    pw.SizedBox(height: 8),
-                    pw.Text(
-                      'Total Tax: ₹${totalTax.toStringAsFixed(2)}',
-                      style: pw.TextStyle(font: regularFont, fontSize: 14),
-                    ),
-                    pw.SizedBox(height: 8),
-                    pw.Text(
-                      'Discount: ₹${(order.discount ?? 0.0).toStringAsFixed(2)}',
-                      style: pw.TextStyle(font: regularFont, fontSize: 14),
-                    ),
-                    pw.SizedBox(height: 8),
-                    pw.Text(
-                      'Total Amount: ₹${order.totalAmount.toStringAsFixed(2)}',
-                      style: pw.TextStyle(
-                          font: boldFont, fontSize: 16, color: primaryColor),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-        footer: (context) => pw.Container(
-          alignment: pw.Alignment.center,
-          padding: const pw.EdgeInsets.only(top: 12),
-          child: pw.Text(
-            'Generated by $companyName | Page ${context.pageNumber} of ${context.pagesCount}',
-            style: pw.TextStyle(
-                font: regularFont, fontSize: 10, color: textSecondaryColor),
-          ),
-        ),
-      ),
-    );
-
-    return pdf;
-  }
-
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -2233,7 +3318,6 @@ class _BillingPageState extends State<BillingPage> {
                                     );
                                     setState(() {
                                       _selectedCustomer = customer;
-
                                     });
                                   });
                                 }
@@ -2327,131 +3411,6 @@ class _BillingPageState extends State<BillingPage> {
     );
   }
 
-  Widget _buildSelectionButtons(
-      List<StockModel> products, List<StoreDto> stores) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _buildSelectionButton(
-          icon: Icons.person,
-          label: _selectedCustomer?.name ??
-              _selectedCustomer?.userName ??
-              'Select Customer',
-          onPressed: _showCustomerSelectionDialog,
-          hasError: _selectedCustomer == null,
-        ),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Expanded(
-              child: _buildSelectionButton(
-                icon: Icons.store,
-                label: _selectedStoreId != null
-                    ? stores
-                        .firstWhere(
-                          (store) => store.storeId == _selectedStoreId,
-                          orElse: () => StoreDto(
-                            name: 'Unknown',
-                            storeId: '',
-                            createdBy: '',
-                            createdAt: DateTime.now(),
-                          ),
-                        )
-                        .name
-                    : 'Select Store',
-                onPressed: () => _showStoreSelectionDialog(stores),
-                hasError: _selectedStoreId == null,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _buildSelectionButton(
-                icon: Icons.inventory,
-                label: 'Add Products',
-                onPressed: () => _showProductSelectionDialog(products),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Card(
-          elevation: 4,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: DropdownButtonFormField<String>(
-              decoration: InputDecoration(
-                labelText: 'Bill Type',
-                labelStyle: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.black87),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none),
-                filled: true,
-                fillColor: Colors.grey[50],
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              ),
-              value: _selectedBillType,
-              items: ['Cash', 'Credit'].map((type) {
-                return DropdownMenuItem(
-                  value: type,
-                  child: Text(type),
-                );
-              }).toList(),
-              onChanged: _existingBillNumber == null
-                  ? (value) {
-                      setState(() {
-                        _selectedBillType = value ?? 'Cash';
-                      });
-                    }
-                  : null,
-            ),
-          ),
-        ),
-        if (_existingBillNumber != null && _selectedBillType == 'Cash') ...[
-          const SizedBox(height: 8),
-          Card(
-            elevation: 4,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: DropdownButtonFormField<String>(
-                decoration: InputDecoration(
-                  labelText: 'Return Method',
-                  labelStyle: const TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.black87),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none),
-                  filled: true,
-                  fillColor: Colors.grey[50],
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                ),
-                value: _selectedReturnMethod,
-                items: ['Cash', 'Credit'].map((method) {
-                  return DropdownMenuItem(
-                    value: method,
-                    child: Text(method),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedReturnMethod = value ?? 'Credit';
-                  });
-                },
-              ),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
   Future<void> _showCustomerSelectionDialog() async {
     final userServices = sl<UserServices>();
     final addUserCubit = sl<AddUserCubit>();
@@ -2497,7 +3456,7 @@ class _BillingPageState extends State<BillingPage> {
                         ),
                         IconButton(
                           icon:
-                          const Icon(Icons.close, color: AppColors.primary),
+                              const Icon(Icons.close, color: AppColors.primary),
                           onPressed: () => Navigator.of(context).pop(),
                         ),
                       ],
@@ -2511,7 +3470,7 @@ class _BillingPageState extends State<BillingPage> {
                       decoration: InputDecoration(
                         hintText: 'Search Customers',
                         hintStyle:
-                        const TextStyle(color: AppColors.textSecondary),
+                            const TextStyle(color: AppColors.textSecondary),
                         prefixIcon: const Icon(Icons.search,
                             color: AppColors.textSecondary),
                         filled: true,
@@ -2536,14 +3495,14 @@ class _BillingPageState extends State<BillingPage> {
                           } else {
                             filteredCustomers = allCustomers
                                 .where((customer) =>
-                            (customer.name
-                                ?.toLowerCase()
-                                .contains(value.toLowerCase()) ??
-                                false) ||
-                                (customer.userName
-                                    ?.toLowerCase()
-                                    .contains(value.toLowerCase()) ??
-                                    false))
+                                    (customer.name
+                                            ?.toLowerCase()
+                                            .contains(value.toLowerCase()) ??
+                                        false) ||
+                                    (customer.userName
+                                            ?.toLowerCase()
+                                            .contains(value.toLowerCase()) ??
+                                        false))
                                 .toList();
                           }
                         });
@@ -2560,7 +3519,7 @@ class _BillingPageState extends State<BillingPage> {
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8)),
                         errorText: _customerNameController.text.isEmpty &&
-                            filteredCustomers.isEmpty
+                                filteredCustomers.isEmpty
                             ? 'Name is required'
                             : null,
                       ),
@@ -2610,9 +3569,9 @@ class _BillingPageState extends State<BillingPage> {
                             await sl<UserServices>()
                                 .addUserToCompany(userInfo, '');
                             final users =
-                            await userServices.getUsersFromTenantCompany();
+                                await userServices.getUsersFromTenantCompany();
                             final newCustomer = users.firstWhere(
-                                  (u) => u.name == userInfo.name,
+                              (u) => u.name == userInfo.name,
                               orElse: () => userInfo.copyWith(
                                 userId: DateTime.now()
                                     .millisecondsSinceEpoch
@@ -2641,7 +3600,8 @@ class _BillingPageState extends State<BillingPage> {
                           backgroundColor: AppColors.primary,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12, horizontal: 8),
                         ),
                         child: const Text(
                           'Add New Customer',
@@ -2659,26 +3619,26 @@ class _BillingPageState extends State<BillingPage> {
                     child: filteredCustomers.isEmpty
                         ? const Center(child: Text('No customers available'))
                         : ListView.builder(
-                      controller: scrollController,
-                      itemCount: filteredCustomers.length,
-                      itemBuilder: (context, index) {
-                        final user = filteredCustomers[index];
-                        return ListTile(
-                          title: Text(
-                            user.name ?? user.userName ?? 'Unknown',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold),
+                            controller: scrollController,
+                            itemCount: filteredCustomers.length,
+                            itemBuilder: (context, index) {
+                              final user = filteredCustomers[index];
+                              return ListTile(
+                                title: Text(
+                                  user.name ?? user.userName ?? 'Unknown',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                subtitle: Text('ID: ${user.userId}'),
+                                onTap: () {
+                                  setState(() {
+                                    _selectedCustomer = user;
+                                  });
+                                  Navigator.of(context).pop();
+                                },
+                              );
+                            },
                           ),
-                          subtitle: Text('ID: ${user.userId}'),
-                          onTap: () {
-                            setState(() {
-                              _selectedCustomer = user;
-                            });
-                            Navigator.of(context).pop();
-                          },
-                        );
-                      },
-                    ),
                   ),
                 ],
               ),
@@ -2686,7 +3646,6 @@ class _BillingPageState extends State<BillingPage> {
           ),
         ),
       );
-      // Update parent state after dialog closes
       setState(() {});
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -2694,6 +3653,7 @@ class _BillingPageState extends State<BillingPage> {
       );
     }
   }
+
   @override
   void dispose() {
     _searchController.dispose();

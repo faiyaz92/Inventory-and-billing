@@ -15,6 +15,18 @@ class AddTenantCompanyError extends AddTenantCompanyState {
   AddTenantCompanyError(this.message);
 }
 
+class TenantCompaniesLoaded extends AddTenantCompanyState {
+  final List<TenantCompany> companies;
+  TenantCompaniesLoaded(this.companies);
+}
+
+class TenantCompanyLoaded extends AddTenantCompanyState {
+  final TenantCompany company;
+  TenantCompanyLoaded(this.company);
+}
+
+class TenantCompanyNotFound extends AddTenantCompanyState {}
+
 class AddTenantCompanyCubit extends Cubit<AddTenantCompanyState> {
   final TenantCompanyService _tenantCompanyService;
 
@@ -41,6 +53,30 @@ class AddTenantCompanyCubit extends Cubit<AddTenantCompanyState> {
     try {
       await _tenantCompanyService.updateTenantCompany(company);
       emit(AddTenantCompanyUpdated());
+    } catch (e) {
+      emit(AddTenantCompanyError(e.toString()));
+    }
+  }
+
+  Future<void> getTenantCompanies() async {
+    emit(AddTenantCompanyLoading());
+    try {
+      final companies = await _tenantCompanyService.getTenantCompanies();
+      emit(TenantCompaniesLoaded(companies));
+    } catch (e) {
+      emit(AddTenantCompanyError(e.toString()));
+    }
+  }
+
+  Future<void> getTenantCompanyById(String companyId) async {
+    emit(AddTenantCompanyLoading());
+    try {
+      final company = await _tenantCompanyService.getTenantCompanyById(companyId);
+      if (company == null) {
+        emit(TenantCompanyNotFound());
+      } else {
+        emit(TenantCompanyLoaded(company));
+      }
     } catch (e) {
       emit(AddTenantCompanyError(e.toString()));
     }

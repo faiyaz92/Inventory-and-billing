@@ -113,9 +113,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
     );
   }
 
-// Add this field to _PerformanceDetailsPageState
 
-// Add this method to _PerformanceDetailsPageState
   void _applyQuickFilter(String filter) {
     setState(() {
       _selectedFilter = filter;
@@ -161,7 +159,6 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
         );
   }
 
-// Replace _buildDateRangeCard in _PerformanceDetailsPageState with this
   Widget _buildDateRangeCard(BuildContext context) {
     final formatter = DateFormat('dd-MM-yyyy');
     final totalDays = dateRange.end.difference(dateRange.start).inDays + 1;
@@ -359,7 +356,6 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
     );
   }
 
-// Replace this method in _PerformanceDetailsPageState in performance_details_page.dart
 
   Widget _buildStatsCard(AdminOrderListFetchSuccess state) {
     if (widget.entityType == 'product') {
@@ -385,7 +381,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
         },
         {
           'label': 'Total Amount',
-          'value': '₹${totalAmount.toStringAsFixed(2)}',
+          'value': 'IQD ${totalAmount.toStringAsFixed(2)}',
           'color': AppColors.textPrimary,
           'highlight': AppColors.green.withOpacity(0.3),
         },
@@ -492,7 +488,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
       },
       {
         'label': 'Total Amount',
-        'value': '₹${totalAmount.toStringAsFixed(2)}',
+        'value': 'IQD ${totalAmount.toStringAsFixed(2)}',
         'color': AppColors.textPrimary,
         'highlight': AppColors.green.withOpacity(0.3),
       },
@@ -583,7 +579,6 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
     );
   }
 
-// Add these methods to _PerformanceDetailsPageState in performance_details_page.dart
 
   Widget _buildAverageOrderSaleAmountCard(AdminOrderListFetchSuccess state) {
     final averages = _calculateAverageOrderSaleAmount(state);
@@ -633,7 +628,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                     child: Text(
-                      '₹${entry.value.toStringAsFixed(2)}',
+                      'IQD ${entry.value.toStringAsFixed(2)}',
                       style: const TextStyle(
                         fontSize: 18,
                         color: AppColors.textPrimary,
@@ -861,7 +856,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
                         getTitlesWidget: (value, meta) => Padding(
                           padding: const EdgeInsets.only(right: 8.0),
                           child: Text(
-                            '₹${value.toInt()}',
+                            'IQD ${value.toInt()}',
                             style: const TextStyle(fontSize: 12),
                             textAlign: TextAlign.right,
                           ),
@@ -942,7 +937,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
                                   ? 'Week of ${date.day}/${date.month}/${date.year}'
                                   : '${date.month}/${date.year}';
                           return LineTooltipItem(
-                            '₹${spot.y.toStringAsFixed(2)}\n$dateText',
+                            'IQD ${spot.y.toStringAsFixed(2)}\n$dateText',
                             const TextStyle(color: Colors.white, fontSize: 12),
                           );
                         }
@@ -1492,7 +1487,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
                       ),
                       _buildTableRow(
                         'Total',
-                        '₹${order.totalAmount.toStringAsFixed(2)}',
+                        'IQD ${order.totalAmount.toStringAsFixed(2)}',
                         isBold: true,
                         valueColor: AppColors.textPrimary,
                         backgroundColor: AppColors.primary.withOpacity(0.1),
@@ -1512,7 +1507,6 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
   }
 
   Widget _buildOrdersCard(AdminOrderListFetchSuccess state) {
-    // Filter orders based on entity type
     final filteredOrders = state.orders.where((order) {
       switch (widget.entityType) {
         case 'product':
@@ -1530,7 +1524,6 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
       }
     }).toList();
 
-    // Group filtered orders by date
     final groupedOrders = <String, List<Order>>{};
     final formatter = DateFormat('MMM dd, yyyy');
     for (var order in filteredOrders) {
@@ -1803,9 +1796,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
       totalAmount = orders.fold(0.0, (sum, order) => sum + order.totalAmount);
     }
 
-    // Calculate daily average
     final dailyAvg = durationDays > 0 ? totalAmount / durationDays : 0.0;
-    // Derive weekly and monthly averages
     final weeklyAvg = dailyAvg * 7;
     final monthlyAvg = dailyAvg * 30;
 
@@ -1837,9 +1828,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
       orderCount = orders.length;
     }
 
-    // Calculate daily average
     final dailyAvg = durationDays > 0 ? orderCount / durationDays : 0.0;
-    // Derive weekly and monthly averages
     final weeklyAvg = dailyAvg * 7;
     final monthlyAvg = dailyAvg * 30;
 
@@ -1873,9 +1862,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
       }
     }
 
-    // Calculate daily average
     final dailyAvg = durationDays > 0 ? totalQuantity / durationDays : 0.0;
-    // Derive weekly and monthly averages
     final weeklyAvg = dailyAvg * 7;
     final monthlyAvg = dailyAvg * 30;
 
@@ -1891,7 +1878,6 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
 
     final productMap = <String, ProductSalesData>{};
 
-    // Filter orders by customer and aggregate products
     for (final order in orders) {
       if (order.userId == widget.entityId) {
         for (final cartItem in order.items) {
@@ -1918,7 +1904,6 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
       }
     }
 
-    // Sort by totalAmount (high to low)
     final productSalesList = productMap.values.toList()
       ..sort((a, b) => b.totalAmount.compareTo(a.totalAmount));
     return productSalesList;
@@ -1977,7 +1962,7 @@ class _PerformanceDetailsPageState extends State<PerformanceDetailsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Total Amount: ₹${salesData.totalAmount.toStringAsFixed(2)}',
+                        'Total Amount: IQD ${salesData.totalAmount.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontSize: 14,
                           color: AppColors.textSecondary,

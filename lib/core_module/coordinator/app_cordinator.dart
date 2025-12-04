@@ -3,10 +3,13 @@ import 'package:requirment_gathering_app/company_admin_module/data/product/categ
 import 'package:requirment_gathering_app/company_admin_module/data/product/product_model.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/sub_category.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/task/task_model.dart';
+import 'package:requirment_gathering_app/company_admin_module/presentation/ledger/user_ledger_page.dart';
+import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
 import 'package:requirment_gathering_app/core_module/app_router/app_router.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/tenant_company.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
 import 'package:requirment_gathering_app/user_module/data/partner.dart';
 
@@ -43,7 +46,6 @@ class AppCoordinator implements Coordinator {
 
   @override
   void navigateToReportsPage() {
-    // _router.push(const ReportRoute());
   }
 
   @override
@@ -143,14 +145,12 @@ class AppCoordinator implements Coordinator {
     _router.push(const ProductMgtRoute());
   }
 
-  // 🔹 Add/Edit Category Navigation
   @override
   void navigateToAddEditCategoryPage({Category? category}) {
     _router.push(AddEditCategoryRoute(
         category: category)); // Navigate to Add/Edit Category page
   }
 
-  // 🔹 Add/Edit Subcategory Navigation
   @override
   void navigateToAddEditSubcategoryPage(
       {Subcategory? subcategory, required Category category}) {
@@ -187,73 +187,61 @@ class AppCoordinator implements Coordinator {
 
   @override
   Future navigateToEmployeeDetailsPage({String? userId}) {
-    // TODO: implement navigateToEmployeeDetailsPage
     return _router.push(EmployeeDetailsRoute(userId: userId ?? ''));
   }
 
   @override
   Future navigateToForgotPasswordPage() {
-    // TODO: implement navigateToForgotPasswordPage
     return _router.push(ForgotPasswordRoute());
   }
 
   @override
   Future navigateToAddCustomerPage() {
-    // TODO: implement navigateToAddCustomerPage
     throw UnimplementedError();
   }
 
   @override
   Future navigateToAddStockPage() {
-    // TODO: implement navigateToAddStockPage
     return _router.push(const AddStockRoute());
   }
 
   @override
   Future navigateToSalesReportPage() {
-    // TODO: implement navigateToSalesReportPage
     return _router.push(const SalesReportRoute());
   }
 
   @override
   Future navigateToStockListPage() {
-    // TODO: implement navigateToStockListPage
     return _router.push(const StockListRoute());
   }
 
   @override
   Future navigateToTransactionsPage() {
-    // TODO: implement navigateToTransactionsPage
     return _router.push(const TransactionsRoute());
   }
 
   @override
   Future navigateToInventoryDashBoard() {
-    // TODO: implement navigateToInventoryDashBoard
     return _router.push(const InventoryDashboardRoute());
   }
 
   @override
-  Future navigateToStoresListPage() {
-    // TODO: implement navigateToStoresListPage
-    return _router.push(const StoresListRoute());
+  Future navigateToStoresListPage({bool fromAccountPage = false}) {
+    return _router.push(StoresListRoute(fromAccountsPage: fromAccountPage));
   }
 
   @override
   Future navigateToAddStorePage() {
-    // TODO: implement navigateToAddStorePagr
     return _router.push(const AddStoreRoute());
   }
 
   @override
   Future navigateToStoreDetailsPage(String? storeId) {
-    // TODO: implement navigateToStoreDetailsPage
     return _router.push(StoreDetailsRoute(storeId: storeId ?? ''));
   }
 
   @override
   Future navigateToOverAllStockPage() {
-    // TODO: implement navigateToOverAllStockPage
     return _router.push(const OverallStockRoute());
   }
 
@@ -274,13 +262,11 @@ class AppCoordinator implements Coordinator {
 
   @override
   Future<dynamic> navigateToSettingsPage() {
-    // _router.push(const SettingsRoute());
     return _router.push(const OrderListRoute());
   }
 
   @override
   Future<dynamic> navigateToShoppingCartEntryPage() {
-    // _router.push(const ShoppingCartEntryRoute());
     return _router.push(const OrderListRoute());
   }
 
@@ -316,19 +302,17 @@ class AppCoordinator implements Coordinator {
 
   @override
   Future navigateToCartDashboard() {
-    // TODO: implement navigateToCartDashboard
     return _router.push(const CartDashboardRoute());
   }
 
   @override
   Future navigateToSalesManOrderPage() {
-    // TODO: implement navigateToSalesManOrderPage
     return _router.push(const SalesmanOrderRoute());
   }
 
   @override
-  Future navigateToSimpleUserList({UserType? userType}) {
-    return _router.push(SimpleUsersRoute(userType: userType));
+  Future navigateToSimpleUserList({UserType? userType,Role? role}) {
+    return _router.push(SimpleUsersRoute(userType: userType,role: role));
   }
 
   @override
@@ -348,9 +332,10 @@ class AppCoordinator implements Coordinator {
       _router.push(const CustomerOrderListRoute());
 
   @override
-  Future<dynamic> navigateToPerformanceDetailsPage({required String entityType,
-    required String entityId,
-    String? entityName}) =>
+  Future<dynamic> navigateToPerformanceDetailsPage(
+          {required String entityType,
+          required String entityId,
+          String? entityName}) =>
       _router.push(PerformanceDetailsRoute(
           entityType: entityType, entityId: entityId, entityName: entityName));
 
@@ -362,11 +347,6 @@ class AppCoordinator implements Coordinator {
   Future<dynamic> navigateToProductPerformanceListPage() =>
       _router.push(const ProductTrendingListRoute());
 
-  // File: core_module/coordinator/app_coordinator.dart
-  @override
-  Future<dynamic> navigateToUserLedgerPage({required UserInfo user}) {
-    return _router.push(UserLedgerRoute(user: user));
-  }
 
   @override
   Future<dynamic> navigateToBillingPage({String? orderId}) {
@@ -378,8 +358,40 @@ class AppCoordinator implements Coordinator {
       {required pw.Document pdf, required String billNumber}) {
     return _router.push(BillPdfRoute(pdf: pdf, billNumber: billNumber));
   }
+
   @override
   Future navigateToAccountsDashboard() {
     return _router.push(const AccountsDashboardRoute());
+  }
+
+  @override
+  Future navigateToUserLedgerPage(
+      {UserInfo? user,
+      StoreDto? store,
+      TransactionType transactionType = TransactionType.General}) {
+    return _router
+        .push(UserLedgerRoute(user: user, store: store, type: transactionType));
+  }
+
+  @override
+  Future<dynamic> navigateToInvoiceListPage() {
+    return _router.push(const AdminInvoicePanelRoute());
+  }
+
+  @override
+  Future<dynamic> navigateToAnalyticsPage() {
+    return _router.push(const AnalyticsRoute());
+  }
+  @override
+  Future<dynamic> navigateToQuickTransactionPage(String transactionType) {
+    return _router.push(QuickTransactionRoute(transactionType: transactionType));
+  }
+  @override
+  Future<dynamic> navigateToPurchaseInvoicePanelPage() {
+    return _router.push(const PurchaseInvoicePanelRoute());
+  }
+  @override
+  Future<dynamic> navigateToDashboardStaticsPage() {
+    return _router.push(const DashboardStaticsRoute());
   }
 }

@@ -86,7 +86,6 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Company Name
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -112,7 +111,6 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                     );
                   },
                 ),
-                // Address
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -136,7 +134,6 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                     );
                   },
                 ),
-                // Email
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -160,7 +157,6 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                     );
                   },
                 ),
-                // Contact Number
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -186,7 +182,6 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                     );
                   },
                 ),
-                // Contact Persons
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -205,7 +200,6 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                     );
                   },
                 ),
-                // Business Type Dropdown
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -232,7 +226,6 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                     );
                   },
                 ),
-                // Country Dropdown
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -259,7 +252,6 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                     );
                   },
                 ),
-                // City Dropdown
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -291,7 +283,6 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                     );
                   },
                 ),
-                // Source Dropdown
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -318,7 +309,6 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                     );
                   },
                 ),
-                // Email Sent Radio
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -336,7 +326,6 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                     );
                   },
                 ),
-                // Replied Radio
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -355,7 +344,6 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                     );
                   },
                 ),
-                // Interest Level Dropdown
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -374,7 +362,6 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                     );
                   },
                 ),
-                // Priority Dropdown
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -401,7 +388,6 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                     );
                   },
                 ),
-                // Assigned To Dropdown
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -427,7 +413,6 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                     );
                   },
                 ),
-                // Verified On Chips
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -454,7 +439,6 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                     );
                   },
                 ),
-                // Website Link
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -480,7 +464,6 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                     );
                   },
                 ),
-                // LinkedIn Link
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -506,7 +489,6 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                     );
                   },
                 ),
-                // Clutch Link
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -532,7 +514,6 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                     );
                   },
                 ),
-                // GoodFirm Link
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -558,7 +539,6 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                     );
                   },
                 ),
-                // Description
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is CompanyDataState &&
@@ -584,7 +564,6 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
                   },
                 ),
                 const SizedBox(height: 16),
-                // Save Button
                 BlocBuilder<PartnerCubit, CompanyState>(
                   buildWhen: (previous, current) =>
                       current is SavingState || previous is SavingState,

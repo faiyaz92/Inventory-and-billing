@@ -16,7 +16,6 @@ class DioClientProvider {
     ),
   );
 
-  // Method to perform POST request
   Future<Response> post(String endpoint, Map<String, dynamic> data) async {
     try {
       final response = await _dio.post(endpoint, data: data);
@@ -26,6 +25,5 @@ class DioClientProvider {
     }
   }
 
-  // Access to Dio instance if needed
   Dio get dio => _dio;
 }

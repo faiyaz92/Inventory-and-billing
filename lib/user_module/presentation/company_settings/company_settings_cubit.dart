@@ -180,7 +180,6 @@ class CompanySettingCubit extends Cubit<CompanySettingState> {
     await _updateSettings(state.settings.copyWith(countryCityMap: updatedMap));
   }
 
-  // New: Manage Purposes and Types
   Future<void> addPurpose(String purpose, BuildContext context) async {
     if (state.settings.purposeTypeMap.containsKey(purpose)) {
       _showSnackbar(context, "Purpose '$purpose' already exists.");

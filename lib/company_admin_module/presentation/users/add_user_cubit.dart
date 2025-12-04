@@ -3,25 +3,31 @@ import 'package:requirment_gathering_app/company_admin_module/service/account_le
 import 'package:requirment_gathering_app/company_admin_module/service/stock_service.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/store_services.dart';
 import 'package:requirment_gathering_app/company_admin_module/service/user_services.dart';
+import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/roles.dart';
 import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
+import 'package:get_it/get_it.dart';
 
 class AddUserCubit extends Cubit<AddUserState> {
   final UserServices _companyOperationsService;
   final StoreService _storeService;
   final IAccountLedgerService _accountLedgerService;
   final StockService _stockService;
+  final AccountRepository _accountRepository;
 
-  AddUserCubit(this._companyOperationsService, this._storeService,
-      this._accountLedgerService, this._stockService)
-      : super(AddUserInitial());
+  AddUserCubit(
+      this._companyOperationsService,
+      this._storeService,
+      this._accountLedgerService,
+      this._stockService,
+      this._accountRepository,
+      ) : super(AddUserInitial());
 
   Future<void> addUser(UserInfo userInfo, String password) async {
     try {
       emit(AddUserLoading());
 
-      // Validate mandatory fields
       if (userInfo.name == null || userInfo.name!.isEmpty) {
         emit(AddUserFailure('Name is required for all user types'));
         return;
@@ -79,7 +85,6 @@ class AddUserCubit extends Cubit<AddUserState> {
         }
       }
 
-      // Fetch default store ID if not provided
       final storeId = userInfo.storeId ?? await _storeService.getDefaultStoreId();
       final updatedUserInfo = userInfo.copyWith(
         storeId: (userInfo.userType == UserType.Employee || userInfo.userType == UserType.Accounts) ? storeId : null,
@@ -102,7 +107,19 @@ class AddUserCubit extends Cubit<AddUserState> {
     try {
       emit(AddUserLoading());
 
-      // Validate mandatory fields
+      final loggedInUser = await _accountRepository.getUserInfo();
+      if (loggedInUser == null) {
+        emit(AddUserFailure('Logged-in user information not found'));
+        return;
+      }
+
+      if (loggedInUser.role == Role.COMPANY_ADMIN &&
+          userInfo.userId == loggedInUser.userId &&
+          userInfo.role != Role.COMPANY_ADMIN) {
+        emit(AddUserFailure('Company Admin cannot change their own role'));
+        return;
+      }
+
       if (userInfo.name == null || userInfo.name!.isEmpty) {
         emit(AddUserFailure('Name is required for all user types'));
         return;
@@ -156,7 +173,6 @@ class AddUserCubit extends Cubit<AddUserState> {
         }
       }
 
-      // Fetch default store ID if not provided
       final storeId = userInfo.storeId ?? await _storeService.getDefaultStoreId();
       final updatedUserInfo = userInfo.copyWith(
         storeId: (userInfo.userType == UserType.Employee || userInfo.userType == UserType.Accounts) ? storeId : null,

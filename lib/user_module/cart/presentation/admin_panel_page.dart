@@ -205,7 +205,6 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                         padding: const EdgeInsets.all(16.0),
                         sliver: SliverList(
                           delegate: SliverChildListDelegate([
-                            // Search Bar
                             TextField(
                               decoration: InputDecoration(
                                 hintText: 'Search by Order ID',
@@ -1163,7 +1162,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
                       ),
                       _buildTableRow(
                         'Total',
-                        '₹${order.totalAmount.toStringAsFixed(2)}',
+                        'IQD ${order.totalAmount.toStringAsFixed(2)}',
                         isBold: true,
                         valueColor: AppColors.textPrimary,
                         backgroundColor: AppColors.primary.withOpacity(0.1),

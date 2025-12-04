@@ -5,22 +5,18 @@ import 'package:requirment_gathering_app/user_module/cart/services/i_cart_servic
 import 'package:requirment_gathering_app/user_module/cart/services/i_user_product_service.dart';
 import 'package:requirment_gathering_app/user_module/cart/services/i_wishlist_service.dart';
 
-// Abstract base state
 abstract class ProductState {
   const ProductState();
 }
 
-// Initial state
 class ProductInitial extends ProductState {
   const ProductInitial();
 }
 
-// Loading state
 class ProductLoading extends ProductState {
   const ProductLoading();
 }
 
-// Loaded state
 class ProductLoaded extends ProductState {
   final List<UserProduct> products;
   final List<UserProduct> wishlistItems;
@@ -33,13 +29,11 @@ class ProductLoaded extends ProductState {
   });
 }
 
-// Error state
 class ProductError extends ProductState {
   final String message;
   const ProductError(this.message);
 }
 
-// Optimistic cart added state
 class OptimisticCartAdded extends ProductState {
   final List<UserProduct> products;
   final List<UserProduct> wishlistItems;
@@ -52,7 +46,6 @@ class OptimisticCartAdded extends ProductState {
   });
 }
 
-// Optimistic cart updated state
 class OptimisticCartUpdated extends ProductState {
   final List<UserProduct> products;
   final List<UserProduct> wishlistItems;
@@ -65,7 +58,6 @@ class OptimisticCartUpdated extends ProductState {
   });
 }
 
-// Optimistic wishlist toggled state
 class OptimisticWishlistToggled extends ProductState {
   final List<UserProduct> products;
   final List<UserProduct> wishlistItems;
@@ -177,7 +169,6 @@ class ProductCubit extends Cubit<ProductState> {
       final currentState = state as ProductLoaded;
       final previousCartItems = List<CartItem>.from(currentState.cartItems);
 
-      // Optimistic update: Add item locally
       final newItem = CartItem(
         productId: product.id,
         productName: product.name,
@@ -191,14 +182,12 @@ class ProductCubit extends Cubit<ProductState> {
         newItem,
       ];
 
-      // Update UI immediately
       emit(OptimisticCartAdded(
         products: currentState.products,
         wishlistItems: currentState.wishlistItems,
         cartItems: updatedCartItems,
       ));
 
-      // Call Firestore in background with try-catch
       try {
         await cartService.addToCart(product, quantity);
         final updatedItems = await cartService.getItems();
@@ -208,7 +197,6 @@ class ProductCubit extends Cubit<ProductState> {
           cartItems: updatedItems,
         ));
       } catch (e) {
-        // Rollback on failure
         emit(ProductLoaded(
           products: currentState.products,
           wishlistItems: currentState.wishlistItems,
@@ -224,7 +212,6 @@ class ProductCubit extends Cubit<ProductState> {
       final currentState = state as ProductLoaded;
       final previousCartItems = List<CartItem>.from(currentState.cartItems);
 
-      // Optimistic update: Update quantity locally
       final updatedCartItems = currentState.cartItems.map((item) {
         if (item.productId == productId) {
           return CartItem(
@@ -239,18 +226,15 @@ class ProductCubit extends Cubit<ProductState> {
         return item;
       }).toList();
 
-      // Remove item if quantity is 0
       final filteredCartItems =
       updatedCartItems.where((item) => item.quantity > 0).toList();
 
-      // Update UI immediately
       emit(OptimisticCartUpdated(
         products: currentState.products,
         wishlistItems: currentState.wishlistItems,
         cartItems: filteredCartItems,
       ));
 
-      // Call Firestore in background with try-catch
       try {
         if (newQuantity <= 0) {
           await cartService.removeFromCart(productId);
@@ -264,7 +248,6 @@ class ProductCubit extends Cubit<ProductState> {
           cartItems: updatedItems,
         ));
       } catch (e) {
-        // Rollback on failure
         emit(ProductLoaded(
           products: currentState.products,
           wishlistItems: currentState.wishlistItems,
@@ -280,19 +263,16 @@ class ProductCubit extends Cubit<ProductState> {
       final currentState = state as ProductLoaded;
       final previousWishlistItems = List<UserProduct>.from(currentState.wishlistItems);
 
-      // Optimistic update: Toggle wishlist locally
       final updatedWishlistItems = currentState.wishlistItems.any((item) => item.id == product.id)
           ? currentState.wishlistItems.where((item) => item.id != product.id).toList()
           : [...currentState.wishlistItems, product];
 
-      // Update UI immediately
       emit(OptimisticWishlistToggled(
         products: currentState.products,
         wishlistItems: updatedWishlistItems,
         cartItems: currentState.cartItems,
       ));
 
-      // Call Firestore in background with try-catch
       try {
         final isInWishlist = currentState.wishlistItems.any((item) => item.id == product.id);
         if (isInWishlist) {
@@ -307,7 +287,6 @@ class ProductCubit extends Cubit<ProductState> {
           cartItems: currentState.cartItems,
         ));
       } catch (e) {
-        // Rollback on failure
         emit(ProductLoaded(
           products: currentState.products,
           wishlistItems: previousWishlistItems,
