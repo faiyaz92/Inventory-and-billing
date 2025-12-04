@@ -2,12 +2,12 @@ import 'package:auto_route/annotations.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/inventory/store_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/presentation/users/add_user_cubit.dart';
 import 'package:requirment_gathering_app/company_admin_module/repositories/stock_repository.dart';
 import 'package:requirment_gathering_app/core_module/coordinator/coordinator.dart';
 import 'package:requirment_gathering_app/core_module/presentation/widget/custom_appbar.dart';
+import 'package:requirment_gathering_app/core_module/repository/account_repository.dart';
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
 import 'package:requirment_gathering_app/core_module/utils/AppColor.dart';
 import 'package:requirment_gathering_app/super_admin_module/data/user_info.dart';
@@ -45,7 +45,6 @@ class _AddUserView extends StatefulWidget {
   State<_AddUserView> createState() => _AddUserViewState();
 }
 
-
 class _AddUserViewState extends State<_AddUserView> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController nameController = TextEditingController();
@@ -53,26 +52,52 @@ class _AddUserViewState extends State<_AddUserView> {
   final TextEditingController userNameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController dailyWageController = TextEditingController();
+  final TextEditingController mobileNumberController = TextEditingController();
+  final TextEditingController businessNameController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
   Role? _selectedRole;
   String? _selectedStoreId;
   UserType? _selectedUserType;
+  AccountType? _selectedAccountType;
   bool isEditing = false;
+  UserInfo? loggedInUser;
 
   @override
   void initState() {
     super.initState();
+    _fetchLoggedInUser();
     if (widget.user != null) {
       isEditing = true;
       nameController.text = widget.user?.name ?? '';
       emailController.text = widget.user?.email ?? '';
       userNameController.text = widget.user?.userName ?? '';
       dailyWageController.text = widget.user?.dailyWage?.toString() ?? '500.0';
+      mobileNumberController.text = widget.user?.mobileNumber ?? '';
+      businessNameController.text = widget.user?.businessName ?? '';
+      addressController.text = widget.user?.address ?? '';
       _selectedRole = widget.user?.role;
       _selectedStoreId = widget.user?.storeId;
-      _selectedUserType = widget.user?.userType ?? UserType.Employee; // Default to Employee
-      print('initState (editing): _selectedStoreId = $_selectedStoreId, _selectedUserType = $_selectedUserType');
+      _selectedUserType = widget.user?.userType ?? UserType.Employee;
+      _selectedAccountType = widget.user?.accountType;
+      print('initState (editing): _selectedStoreId = $_selectedStoreId, _selectedUserType = $_selectedUserType, _selectedAccountType = $_selectedAccountType');
+    } else {
+      _fetchLoggedInUser().then((_) {
+        if (loggedInUser?.role == Role.SALES_MAN && loggedInUser?.userType == UserType.Employee) {
+          setState(() {
+            _selectedUserType = UserType.Customer;
+          });
+          print('initState: Defaulted _selectedUserType to Customer for SALES_MAN');
+        }
+      });
     }
-    print('AddUserView initState: _selectedStoreId = $_selectedStoreId, _selectedUserType = $_selectedUserType, isEditing = $isEditing');
+    print('AddUserView initState: _selectedStoreId = $_selectedStoreId, _selectedUserType = $_selectedUserType, _selectedAccountType = $_selectedAccountType, isEditing = $isEditing');
+  }
+
+  Future<void> _fetchLoggedInUser() async {
+    final accountRepository = sl<AccountRepository>();
+    loggedInUser = await accountRepository.getUserInfo();
+    setState(() {});
+    print('Fetched loggedInUser: userId = ${loggedInUser?.userId}, role = ${loggedInUser?.role}');
   }
 
   @override
@@ -82,6 +107,9 @@ class _AddUserViewState extends State<_AddUserView> {
     userNameController.dispose();
     passwordController.dispose();
     dailyWageController.dispose();
+    mobileNumberController.dispose();
+    businessNameController.dispose();
+    addressController.dispose();
     super.dispose();
   }
 
@@ -91,10 +119,14 @@ class _AddUserViewState extends State<_AddUserView> {
     userNameController.clear();
     passwordController.clear();
     dailyWageController.clear();
+    mobileNumberController.clear();
+    businessNameController.clear();
+    addressController.clear();
     setState(() {
       _selectedRole = null;
       _selectedStoreId = null;
       _selectedUserType = null;
+      _selectedAccountType = null;
     });
   }
 
@@ -124,6 +156,12 @@ class _AddUserViewState extends State<_AddUserView> {
 
   @override
   Widget build(BuildContext context) {
+    final isSelfEditing = isEditing &&
+        loggedInUser != null &&
+        widget.user?.userId == loggedInUser?.userId;
+    final isCompanyAdmin = loggedInUser?.role == Role.COMPANY_ADMIN;
+    final isSalesMan = loggedInUser?.role == Role.SALES_MAN && loggedInUser?.userType == UserType.Employee;
+
     return Scaffold(
       appBar: CustomAppBar(
         title: isEditing ? "Edit User" : "Add User",
@@ -160,7 +198,7 @@ class _AddUserViewState extends State<_AddUserView> {
                 ),
                 child: BlocListener<StoreCubit, StoreState>(
                   listener: (context, storeState) {
-                    if (storeState is StoreLoaded && !isEditing && _selectedStoreId == null) {
+                    if (storeState is StoreLoaded && !isEditing && _selectedStoreId == null && (_selectedUserType == UserType.Employee || _selectedUserType == UserType.Accounts)) {
                       final validStoreId = storeState.stores.any((store) => store.storeId == storeState.defaultStoreId)
                           ? storeState.defaultStoreId
                           : storeState.stores.isNotEmpty
@@ -170,7 +208,7 @@ class _AddUserViewState extends State<_AddUserView> {
                         setState(() {
                           _selectedStoreId = validStoreId;
                         });
-                        print('BlocListener: Set _selectedStoreId = $_selectedStoreId for adding');
+                        print('BlocListener: Set _selectedStoreId = $_selectedStoreId for adding ${_selectedUserType}');
                       }
                     }
                     print('StoreCubit state: $storeState');
@@ -202,18 +240,22 @@ class _AddUserViewState extends State<_AddUserView> {
                             print('BlocBuilder: _selectedStoreId = $_selectedStoreId, stores = ${stores.map((s) => s.storeId).toList()}, defaultStoreId = $defaultStoreId');
                           }
 
+                          final availableUserTypes = isSalesMan && !isEditing
+                              ? [UserType.Customer]
+                              : UserType.values;
+
                           return Form(
                             key: _formKey,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Full Name Field
                                 Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 12.0),
                                   child: TextFormField(
                                     controller: nameController,
+                                    textCapitalization: TextCapitalization.words,
                                     decoration: InputDecoration(
-                                      labelText: "Full Name",
+                                      labelText: _selectedUserType == UserType.Accounts ? "Account Name" : "Full Name",
                                       labelStyle: TextStyle(
                                         color: Theme.of(context).primaryColor,
                                         fontSize: 16.0,
@@ -235,126 +277,48 @@ class _AddUserViewState extends State<_AddUserView> {
                                     ),
                                     style: const TextStyle(fontSize: 16.0),
                                     validator: (value) =>
-                                    value!.isEmpty ? "Name is required" : null,
+                                    value!.isEmpty ? (_selectedUserType == UserType.Accounts ? "Account name is required" : "Name is required") : null,
                                   ),
                                 ),
-                                // Email Field
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                                  child: TextFormField(
-                                    controller: emailController,
-                                    decoration: InputDecoration(
-                                      labelText: "Email",
-                                      labelStyle: TextStyle(
-                                        color: Theme.of(context).primaryColor,
-                                        fontSize: 16.0,
+                                if (_selectedUserType == UserType.Employee)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                    child: TextFormField(
+                                      controller: emailController,
+                                      decoration: InputDecoration(
+                                        labelText: "Email",
+                                        labelStyle: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                          fontSize: 16.0,
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.grey[100],
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                        ),
                                       ),
-                                      filled: true,
-                                      fillColor: Colors.grey[100],
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Colors.grey[400]!),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Colors.grey[400]!),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                                      ),
-                                    ),
-                                    keyboardType: TextInputType.emailAddress,
-                                    style: const TextStyle(fontSize: 16.0),
-                                    validator: (value) {
-                                      if (_selectedUserType == UserType.Employee && (value == null || value.isEmpty)) {
-                                        return "Email is required for Employee";
-                                      }
-                                      if (value != null && value.isNotEmpty && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                                        return "Enter a valid email";
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                                // Username Field
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                                  child: TextFormField(
-                                    controller: userNameController,
-                                    decoration: InputDecoration(
-                                      labelText: "Username",
-                                      labelStyle: TextStyle(
-                                        color: Theme.of(context).primaryColor,
-                                        fontSize: 16.0,
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.grey[100],
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Colors.grey[400]!),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Colors.grey[400]!),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                                      ),
-                                    ),
-                                    style: const TextStyle(fontSize: 16.0),
-                                    validator: (value) {
-                                      if (_selectedUserType == UserType.Employee && (value == null || value.isEmpty)) {
-                                        return "Username is required for Employee";
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                                // Daily Wage Field
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                                  child: TextFormField(
-                                    controller: dailyWageController,
-                                    decoration: InputDecoration(
-                                      labelText: "Daily Wage",
-                                      labelStyle: TextStyle(
-                                        color: Theme.of(context).primaryColor,
-                                        fontSize: 16.0,
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.grey[100],
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Colors.grey[400]!),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Colors.grey[400]!),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                                      ),
-                                    ),
-                                    keyboardType: TextInputType.number,
-                                    style: const TextStyle(fontSize: 16.0),
-                                    validator: (value) {
-                                      if (_selectedUserType == UserType.Employee) {
+                                      keyboardType: TextInputType.emailAddress,
+                                      style: const TextStyle(fontSize: 16.0),
+                                      validator: (value) {
                                         if (value == null || value.isEmpty) {
-                                          return "Daily wage is required for Employee";
+                                          return "Email is required for Employee";
                                         }
-                                        final wage = double.tryParse(value);
-                                        if (wage == null || wage <= 0) {
-                                          return "Enter a valid wage";
+                                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                                          return "Enter a valid email";
                                         }
-                                      }
-                                      return null;
-                                    },
+                                        return null;
+                                      },
+                                    ),
                                   ),
-                                ),
-                                // UserType Dropdown
                                 Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 12.0),
                                   child: DropdownButtonFormField<UserType>(
@@ -380,7 +344,7 @@ class _AddUserViewState extends State<_AddUserView> {
                                         borderSide: BorderSide(color: Theme.of(context).primaryColor),
                                       ),
                                     ),
-                                    items: UserType.values.map((userType) {
+                                    items: availableUserTypes.map((userType) {
                                       return DropdownMenuItem(
                                         value: userType,
                                         child: Text(
@@ -389,10 +353,34 @@ class _AddUserViewState extends State<_AddUserView> {
                                         ),
                                       );
                                     }).toList(),
-                                    onChanged: (value) {
+                                    onChanged: isEditing && _selectedUserType != null
+                                        ? null
+                                        : (value) {
                                       setState(() {
                                         _selectedUserType = value;
-                                        print('UserType Dropdown onChanged: _selectedUserType = $_selectedUserType');
+                                        if (value == UserType.Customer) {
+                                          userNameController.clear();
+                                          dailyWageController.clear();
+                                          passwordController.clear();
+                                          _selectedRole = null;
+                                          _selectedStoreId = null;
+                                          _selectedAccountType = null;
+                                        } else if (value == UserType.Accounts) {
+                                          emailController.clear();
+                                          userNameController.clear();
+                                          dailyWageController.clear();
+                                          passwordController.clear();
+                                          mobileNumberController.clear();
+                                          businessNameController.clear();
+                                          addressController.clear();
+                                          _selectedRole = null;
+                                        } else {
+                                          mobileNumberController.clear();
+                                          businessNameController.clear();
+                                          addressController.clear();
+                                          _selectedAccountType = null;
+                                        }
+                                        print('UserType Dropdown onChanged: _selectedUserType = $_selectedUserType, _selectedAccountType = $_selectedAccountType');
                                       });
                                     },
                                     validator: (value) =>
@@ -400,58 +388,53 @@ class _AddUserViewState extends State<_AddUserView> {
                                     style: const TextStyle(fontSize: 16.0, color: Colors.black),
                                   ),
                                 ),
-                                // Role Dropdown
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                                  child: DropdownButtonFormField<Role>(
-                                    value: _selectedRole,
-                                    decoration: InputDecoration(
-                                      labelText: "Select Role",
-                                      labelStyle: TextStyle(
-                                        color: Theme.of(context).primaryColor,
-                                        fontSize: 16.0,
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.grey[100],
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Colors.grey[400]!),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Colors.grey[400]!),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                                      ),
-                                    ),
-                                    items: Role.values.map((role) {
-                                      return DropdownMenuItem(
-                                        value: role,
-                                        child: Text(
-                                          role.name.toUpperCase(),
-                                          style: const TextStyle(fontSize: 16.0, color: Colors.black),
+                                if (_selectedUserType == UserType.Accounts)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                    child: DropdownButtonFormField<AccountType>(
+                                      value: _selectedAccountType,
+                                      decoration: InputDecoration(
+                                        labelText: "Select Account Type",
+                                        labelStyle: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                          fontSize: 16.0,
                                         ),
-                                      );
-                                    }).toList(),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _selectedRole = value;
-                                        print('Role Dropdown onChanged: _selectedRole = $_selectedRole');
-                                      });
-                                    },
-                                    validator: (value) {
-                                      if (_selectedUserType == UserType.Employee && value == null) {
-                                        return "Role is required for Employee";
-                                      }
-                                      return null;
-                                    },
-                                    style: const TextStyle(fontSize: 16.0, color: Colors.black),
+                                        filled: true,
+                                        fillColor: Colors.grey[100],
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                        ),
+                                      ),
+                                      items: AccountType.values.map((accountType) {
+                                        return DropdownMenuItem(
+                                          value: accountType,
+                                          child: Text(
+                                            accountType.name,
+                                            style: const TextStyle(fontSize: 16.0, color: Colors.black),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _selectedAccountType = value;
+                                          print('AccountType Dropdown onChanged: _selectedAccountType = $_selectedAccountType');
+                                        });
+                                      },
+                                      validator: (value) =>
+                                      value == null ? "Account Type is required for Accounts" : null,
+                                      style: const TextStyle(fontSize: 16.0, color: Colors.black),
+                                    ),
                                   ),
-                                ),
-                                // Store Dropdown
-                                if (storeState is StoreLoaded && stores.length > 1)
+                                if ((_selectedUserType == UserType.Employee || _selectedUserType == UserType.Accounts) && storeState is StoreLoaded && stores.length >= 1)
                                   Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 12.0),
                                     child: DropdownButtonFormField<String>(
@@ -494,22 +477,21 @@ class _AddUserViewState extends State<_AddUserView> {
                                         });
                                       },
                                       validator: (value) {
-                                        if (_selectedUserType == UserType.Employee && value == null) {
-                                          return "Store is required for Employee";
+                                        if (value == null) {
+                                          return "Store is required for ${_selectedUserType!.name}";
                                         }
                                         return null;
                                       },
                                       style: const TextStyle(fontSize: 16.0, color: Colors.black),
                                     ),
                                   ),
-                                // Password Field
-                                if (!isEditing)
+                                if (_selectedUserType == UserType.Customer) ...[
                                   Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 12.0),
                                     child: TextFormField(
-                                      controller: passwordController,
+                                      controller: mobileNumberController,
                                       decoration: InputDecoration(
-                                        labelText: "Password",
+                                        labelText: "Mobile Number",
                                         labelStyle: TextStyle(
                                           color: Theme.of(context).primaryColor,
                                           fontSize: 16.0,
@@ -529,16 +511,245 @@ class _AddUserViewState extends State<_AddUserView> {
                                           borderSide: BorderSide(color: Theme.of(context).primaryColor),
                                         ),
                                       ),
-                                      obscureText: true,
+                                      keyboardType: TextInputType.phone,
                                       style: const TextStyle(fontSize: 16.0),
                                       validator: (value) {
-                                        if (_selectedUserType == UserType.Employee && (value == null || value.length < 6)) {
-                                          return "Password must be at least 6 characters for Employee";
+                                        if (value == null || value.isEmpty) {
+                                          return "Mobile number is required for Customer";
+                                        }
+                                        if (!RegExp(r'^\+?\d{10,15}$').hasMatch(value)) {
+                                          return "Enter a valid mobile number";
                                         }
                                         return null;
                                       },
                                     ),
                                   ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                    child: TextFormField(
+                                      controller: businessNameController,
+                                      textCapitalization: TextCapitalization.words,
+                                      decoration: InputDecoration(
+                                        labelText: "Business Name",
+                                        labelStyle: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                          fontSize: 16.0,
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.grey[100],
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                        ),
+                                      ),
+                                      style: const TextStyle(fontSize: 16.0),
+                                      validator: (value) =>
+                                      value!.isEmpty ? "Business name is required for Customer" : null,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                    child: TextFormField(
+                                      controller: addressController,
+                                      textCapitalization: TextCapitalization.sentences,
+                                      decoration: InputDecoration(
+                                        labelText: "Address",
+                                        labelStyle: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                          fontSize: 16.0,
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.grey[100],
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                        ),
+                                      ),
+                                      style: const TextStyle(fontSize: 16.0),
+                                      validator: (value) =>
+                                      value!.isEmpty ? "Address is required for Customer" : null,
+                                    ),
+                                  ),
+                                ],
+                                if (_selectedUserType == UserType.Employee)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                    child: DropdownButtonFormField<Role>(
+                                      value: _selectedRole,
+                                      decoration: InputDecoration(
+                                        labelText: "Select Role",
+                                        labelStyle: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                          fontSize: 16.0,
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.grey[100],
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                        ),
+                                      ),
+                                      items: Role.values.map((role) {
+                                        return DropdownMenuItem(
+                                          value: role,
+                                          child: Text(
+                                            role.name.toUpperCase(),
+                                            style: const TextStyle(fontSize: 16.0, color: Colors.black),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: isSelfEditing || !isCompanyAdmin
+                                          ? null
+                                          : (value) {
+                                        setState(() {
+                                          _selectedRole = value;
+                                          print('Role Dropdown onChanged: _selectedRole = $_selectedRole');
+                                        });
+                                      },
+                                      validator: (value) {
+                                        if (value == null) {
+                                          return "Role is required for Employee";
+                                        }
+                                        return null;
+                                      },
+                                      style: const TextStyle(fontSize: 16.0, color: Colors.black),
+                                    ),
+                                  ),
+                                if (_selectedUserType == UserType.Employee) ...[
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                    child: TextFormField(
+                                      controller: userNameController,
+                                      decoration: InputDecoration(
+                                        labelText: "Username",
+                                        labelStyle: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                          fontSize: 16.0,
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.grey[100],
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                        ),
+                                      ),
+                                      style: const TextStyle(fontSize: 16.0),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return "Username is required for Employee";
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                    child: TextFormField(
+                                      controller: dailyWageController,
+                                      decoration: InputDecoration(
+                                        labelText: "Daily Wage",
+                                        labelStyle: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                          fontSize: 16.0,
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.grey[100],
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Colors.grey[400]!),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                        ),
+                                      ),
+                                      keyboardType: TextInputType.number,
+                                      style: const TextStyle(fontSize: 16.0),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return "Daily wage is required for Employee";
+                                        }
+                                        final wage = double.tryParse(value);
+                                        if (wage == null || wage <= 0) {
+                                          return "Enter a valid wage";
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                  if (!isEditing)
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                      child: TextFormField(
+                                        controller: passwordController,
+                                        decoration: InputDecoration(
+                                          labelText: "Password",
+                                          labelStyle: TextStyle(
+                                            color: Theme.of(context).primaryColor,
+                                            fontSize: 16.0,
+                                          ),
+                                          filled: true,
+                                          fillColor: Colors.grey[100],
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8.0),
+                                            borderSide: BorderSide(color: Colors.grey[400]!),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8.0),
+                                            borderSide: BorderSide(color: Colors.grey[400]!),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8.0),
+                                            borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                          ),
+                                        ),
+                                        obscureText: true,
+                                        style: const TextStyle(fontSize: 16.0),
+                                        validator: (value) {
+                                          if (value == null || value.length < 6) {
+                                            return "Password must be at least 6 characters for Employee";
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ),
+                                ],
                                 const SizedBox(height: 20),
                                 Align(
                                   alignment: Alignment.centerRight,
@@ -566,23 +777,56 @@ class _AddUserViewState extends State<_AddUserView> {
                                           userId: widget.user?.userId,
                                           companyId: widget.user?.companyId,
                                           name: nameController.text.trim(),
-                                          email: emailController.text.trim().isEmpty ? null : emailController.text.trim(),
-                                          userName: userNameController.text.trim().isEmpty ? null : userNameController.text.trim(),
-                                          role: _selectedRole,
-                                          userType: _selectedUserType ?? UserType.Employee, // Default to Employee
-                                          dailyWage: dailyWageController.text.trim().isEmpty ? null : double.tryParse(dailyWageController.text.trim()),
-                                          storeId: _selectedStoreId ?? defaultStoreId,
+                                          email: _selectedUserType == UserType.Employee
+                                              ? emailController.text.trim().isEmpty
+                                              ? null
+                                              : emailController.text.trim()
+                                              : null,
+                                          userName: _selectedUserType == UserType.Employee
+                                              ? userNameController.text.trim().isEmpty
+                                              ? null
+                                              : userNameController.text.trim()
+                                              : null,
+                                          role: _selectedUserType == UserType.Employee ? _selectedRole : null,
+                                          userType: _selectedUserType ?? UserType.Employee,
+                                          dailyWage: _selectedUserType == UserType.Employee
+                                              ? dailyWageController.text.trim().isEmpty
+                                              ? null
+                                              : double.tryParse(dailyWageController.text.trim())
+                                              : null,
+                                          storeId: (_selectedUserType == UserType.Employee || _selectedUserType == UserType.Accounts)
+                                              ? (_selectedStoreId ?? defaultStoreId)
+                                              : null,
                                           accountLedgerId: widget.user?.accountLedgerId,
+                                          mobileNumber: _selectedUserType == UserType.Customer
+                                              ? mobileNumberController.text.trim().isEmpty
+                                              ? null
+                                              : mobileNumberController.text.trim()
+                                              : null,
+                                          businessName: _selectedUserType == UserType.Customer
+                                              ? businessNameController.text.trim().isEmpty
+                                              ? null
+                                              : businessNameController.text.trim()
+                                              : null,
+                                          address: _selectedUserType == UserType.Customer
+                                              ? addressController.text.trim().isEmpty
+                                              ? null
+                                              : addressController.text.trim()
+                                              : null,
+                                          accountType: _selectedUserType == UserType.Accounts ? _selectedAccountType : null,
                                         );
 
-                                        print('Submitting userInfo with storeId = ${userInfo.storeId}, userType = ${userInfo.userType}');
+                                        print('Submitting userInfo with userType = ${userInfo.userType}, '
+                                            'storeId = ${userInfo.storeId}, mobileNumber = ${userInfo.mobileNumber}, '
+                                            'businessName = ${userInfo.businessName}, address = ${userInfo.address}, '
+                                            'accountType = ${userInfo.accountType}');
 
                                         if (isEditing) {
                                           context.read<AddUserCubit>().updateUser(userInfo);
                                         } else {
                                           context.read<AddUserCubit>().addUser(
                                             userInfo,
-                                            passwordController.text.trim(),
+                                            _selectedUserType == UserType.Employee ? passwordController.text.trim() : '',
                                           );
                                         }
                                       }

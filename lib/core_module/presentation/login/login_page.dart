@@ -21,11 +21,9 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    passwordController.text = 'Faiyaz@123';
     return Scaffold(
       body: Stack(
         children: [
-          // Gradient background
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -38,9 +36,6 @@ class LoginPage extends StatelessWidget {
               ),
             ),
           ),
-          // Scattered icons
-          // _buildScatteredIcons(context),
-          // Main content
           BlocProvider(
             create: (context) => sl.get<LoginCubit>(),
             child: BlocConsumer<LoginCubit, LoginState>(

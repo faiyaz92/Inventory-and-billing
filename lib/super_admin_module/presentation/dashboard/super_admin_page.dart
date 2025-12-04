@@ -25,7 +25,6 @@ class SuperAdminPage extends StatelessWidget {
                     icon: Icons.settings,
                     label: 'Add tenant company',
                     onTap: () {
-                      // Implement navigation to App Settings Page
                       sl<Coordinator>().navigateToAddTenantCompanyPage();
                     },
                   ),

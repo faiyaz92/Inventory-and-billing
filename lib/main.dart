@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:requirment_gathering_app/core_module/app_router/app_router.dart'
     show AppRouter;
 import 'package:requirment_gathering_app/core_module/service_locator/service_locator.dart';
+import 'package:url_strategy/url_strategy.dart'; // Add this import
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  setPathUrlStrategy(); // Remove # from URLs
   print('Main: Initializing Firebase');
   try {
     await Firebase.initializeApp(
@@ -22,7 +24,6 @@ void main() async {
     print('Main: Firebase initialized successfully');
   } catch (e) {
     print('Main: Firebase initialization failed: $e');
-    // Proceed to avoid crash, SplashCubit will handle the error
   }
   print('Main: Setting up service locator');
   try {

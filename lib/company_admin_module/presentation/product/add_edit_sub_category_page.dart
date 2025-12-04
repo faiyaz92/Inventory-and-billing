@@ -94,7 +94,6 @@ class _AddEditSubcategoryPageState extends State<AddEditSubcategoryPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Category Name Display
                             Text(
                               'Category: ${widget.category.name}',
                               style: const TextStyle(
@@ -104,7 +103,6 @@ class _AddEditSubcategoryPageState extends State<AddEditSubcategoryPage> {
                               ),
                             ),
                             const SizedBox(height: 16),
-                            // Subcategory Name
                             Container(
                               decoration: BoxDecoration(
                                 color: Colors.grey[50],
@@ -112,6 +110,7 @@ class _AddEditSubcategoryPageState extends State<AddEditSubcategoryPage> {
                               ),
                               child: TextFormField(
                                 controller: _nameController,
+                                textCapitalization: TextCapitalization.words,
                                 decoration: InputDecoration(
                                   labelText: 'Subcategory Name',
                                   labelStyle: const TextStyle(
@@ -133,7 +132,6 @@ class _AddEditSubcategoryPageState extends State<AddEditSubcategoryPage> {
                               ),
                             ),
                             const SizedBox(height: 24),
-                            // Save Button
                             ElevatedButton(
                               onPressed: _saveSubcategory,
                               style: ElevatedButton.styleFrom(

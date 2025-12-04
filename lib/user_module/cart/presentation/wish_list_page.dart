@@ -38,7 +38,6 @@ class WishlistPage extends StatelessWidget {
                   child: BlocListener<CartCubit, CartState>(
                     listener: (context, state) {
                       if (state is CartUpdated) {
-                        // Refresh wishlist after adding to cart
                         newContext.read<WishlistCubit>().loadWishlist();
                       } else if (state is CartError) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -134,7 +133,7 @@ class WishlistPage extends StatelessWidget {
                                       ),
                                     ),
                                     Text(
-                                      '₹${item.price}',
+                                      'IQD ${item.price}',
                                       style: const TextStyle(
                                         fontSize: 14,
                                         color: AppColors.textSecondary,

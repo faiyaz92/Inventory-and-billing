@@ -1,17 +1,8 @@
-// dart format width=80
-// GENERATED CODE - DO NOT MODIFY BY HAND
 
-// **************************************************************************
-// AutoRouterGenerator
-// **************************************************************************
 
-// ignore_for_file: type=lint
-// coverage:ignore-file
 
 part of 'app_router.dart';
 
-/// generated route for
-/// [AccountLedgerPage]
 class AccountLedgerRoute extends PageRouteInfo<AccountLedgerRouteArgs> {
   AccountLedgerRoute({
     Key? key,
@@ -47,8 +38,20 @@ class AccountLedgerRouteArgs {
   }
 }
 
-/// generated route for
-/// [AddCompanyPage]
+class AccountsDashboardRoute extends PageRouteInfo<void> {
+  const AccountsDashboardRoute({List<PageRouteInfo>? children})
+    : super(AccountsDashboardRoute.name, initialChildren: children);
+
+  static const String name = 'AccountsDashboardRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AccountsDashboardPage();
+    },
+  );
+}
+
 class AddCompanyRoute extends PageRouteInfo<AddCompanyRouteArgs> {
   AddCompanyRoute({Key? key, Partner? company, List<PageRouteInfo>? children})
     : super(
@@ -83,8 +86,6 @@ class AddCompanyRouteArgs {
   }
 }
 
-/// generated route for
-/// [AddEditCategoryPage]
 class AddEditCategoryRoute extends PageRouteInfo<AddEditCategoryRouteArgs> {
   AddEditCategoryRoute({
     Key? key,
@@ -122,8 +123,6 @@ class AddEditCategoryRouteArgs {
   }
 }
 
-/// generated route for
-/// [AddEditProductPage]
 class AddEditProductRoute extends PageRouteInfo<AddEditProductRouteArgs> {
   AddEditProductRoute({
     Key? key,
@@ -161,8 +160,6 @@ class AddEditProductRouteArgs {
   }
 }
 
-/// generated route for
-/// [AddEditSubcategoryPage]
 class AddEditSubcategoryRoute
     extends PageRouteInfo<AddEditSubcategoryRouteArgs> {
   AddEditSubcategoryRoute({
@@ -214,8 +211,6 @@ class AddEditSubcategoryRouteArgs {
   }
 }
 
-/// generated route for
-/// [AddStockPage]
 class AddStockRoute extends PageRouteInfo<void> {
   const AddStockRoute({List<PageRouteInfo>? children})
     : super(AddStockRoute.name, initialChildren: children);
@@ -230,8 +225,6 @@ class AddStockRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [AddStorePage]
 class AddStoreRoute extends PageRouteInfo<void> {
   const AddStoreRoute({List<PageRouteInfo>? children})
     : super(AddStoreRoute.name, initialChildren: children);
@@ -246,8 +239,6 @@ class AddStoreRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [AddSupplierPage]
 class AddSupplierRoute extends PageRouteInfo<AddSupplierRouteArgs> {
   AddSupplierRoute({Key? key, Partner? company, List<PageRouteInfo>? children})
     : super(
@@ -282,8 +273,6 @@ class AddSupplierRouteArgs {
   }
 }
 
-/// generated route for
-/// [AddTaskPage]
 class AddTaskRoute extends PageRouteInfo<AddTaskRouteArgs> {
   AddTaskRoute({Key? key, TaskModel? task, List<PageRouteInfo>? children})
     : super(
@@ -318,8 +307,6 @@ class AddTaskRouteArgs {
   }
 }
 
-/// generated route for
-/// [AddTenantCompanyPage]
 class AddTenantCompanyRoute extends PageRouteInfo<AddTenantCompanyRouteArgs> {
   AddTenantCompanyRoute({
     Key? key,
@@ -357,8 +344,6 @@ class AddTenantCompanyRouteArgs {
   }
 }
 
-/// generated route for
-/// [AddUserPage]
 class AddUserRoute extends PageRouteInfo<AddUserRouteArgs> {
   AddUserRoute({Key? key, UserInfo? user, List<PageRouteInfo>? children})
     : super(
@@ -393,8 +378,20 @@ class AddUserRouteArgs {
   }
 }
 
-/// generated route for
-/// [AdminOrderDetailsPage]
+class AdminInvoicePanelRoute extends PageRouteInfo<void> {
+  const AdminInvoicePanelRoute({List<PageRouteInfo>? children})
+    : super(AdminInvoicePanelRoute.name, initialChildren: children);
+
+  static const String name = 'AdminInvoicePanelRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AdminInvoicePanelPage();
+    },
+  );
+}
+
 class AdminOrderDetailsRoute extends PageRouteInfo<AdminOrderDetailsRouteArgs> {
   AdminOrderDetailsRoute({
     Key? key,
@@ -430,8 +427,6 @@ class AdminOrderDetailsRouteArgs {
   }
 }
 
-/// generated route for
-/// [AdminPanelPage]
 class AdminPanelRoute extends PageRouteInfo<void> {
   const AdminPanelRoute({List<PageRouteInfo>? children})
     : super(AdminPanelRoute.name, initialChildren: children);
@@ -446,8 +441,6 @@ class AdminPanelRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [AiCompanyListPage]
 class AiCompanyListRoute extends PageRouteInfo<void> {
   const AiCompanyListRoute({List<PageRouteInfo>? children})
     : super(AiCompanyListRoute.name, initialChildren: children);
@@ -462,8 +455,20 @@ class AiCompanyListRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [AttendanceRegisterPage]
+class AnalyticsRoute extends PageRouteInfo<void> {
+  const AnalyticsRoute({List<PageRouteInfo>? children})
+    : super(AnalyticsRoute.name, initialChildren: children);
+
+  static const String name = 'AnalyticsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AnalyticsPage();
+    },
+  );
+}
+
 class AttendanceRegisterRoute extends PageRouteInfo<void> {
   const AttendanceRegisterRoute({List<PageRouteInfo>? children})
     : super(AttendanceRegisterRoute.name, initialChildren: children);
@@ -478,8 +483,6 @@ class AttendanceRegisterRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [BillPdfPage]
 class BillPdfRoute extends PageRouteInfo<BillPdfRouteArgs> {
   BillPdfRoute({
     Key? key,
@@ -526,8 +529,6 @@ class BillPdfRouteArgs {
   }
 }
 
-/// generated route for
-/// [BillingPage]
 class BillingRoute extends PageRouteInfo<BillingRouteArgs> {
   BillingRoute({Key? key, String? orderId, List<PageRouteInfo>? children})
     : super(
@@ -562,8 +563,6 @@ class BillingRouteArgs {
   }
 }
 
-/// generated route for
-/// [CartDashboardPage]
 class CartDashboardRoute extends PageRouteInfo<void> {
   const CartDashboardRoute({List<PageRouteInfo>? children})
     : super(CartDashboardRoute.name, initialChildren: children);
@@ -578,8 +577,6 @@ class CartDashboardRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [CartHomePage]
 class CartHomeRoute extends PageRouteInfo<void> {
   const CartHomeRoute({List<PageRouteInfo>? children})
     : super(CartHomeRoute.name, initialChildren: children);
@@ -594,8 +591,6 @@ class CartHomeRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [CartPage]
 class CartRoute extends PageRouteInfo<void> {
   const CartRoute({List<PageRouteInfo>? children})
     : super(CartRoute.name, initialChildren: children);
@@ -610,8 +605,6 @@ class CartRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [CategoriesWithSubcategoriesPage]
 class CategoriesWithSubcategoriesRoute extends PageRouteInfo<void> {
   const CategoriesWithSubcategoriesRoute({List<PageRouteInfo>? children})
     : super(CategoriesWithSubcategoriesRoute.name, initialChildren: children);
@@ -626,8 +619,6 @@ class CategoriesWithSubcategoriesRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [CheckoutPage]
 class CheckoutRoute extends PageRouteInfo<void> {
   const CheckoutRoute({List<PageRouteInfo>? children})
     : super(CheckoutRoute.name, initialChildren: children);
@@ -642,8 +633,6 @@ class CheckoutRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [CompanyAdminPage]
 class CompanyAdminRoute extends PageRouteInfo<void> {
   const CompanyAdminRoute({List<PageRouteInfo>? children})
     : super(CompanyAdminRoute.name, initialChildren: children);
@@ -658,8 +647,6 @@ class CompanyAdminRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [CompanyDetailsPage]
 class CompanyDetailsRoute extends PageRouteInfo<CompanyDetailsRouteArgs> {
   CompanyDetailsRoute({
     Key? key,
@@ -695,8 +682,6 @@ class CompanyDetailsRouteArgs {
   }
 }
 
-/// generated route for
-/// [CompanyListPage]
 class CompanyListRoute extends PageRouteInfo<void> {
   const CompanyListRoute({List<PageRouteInfo>? children})
     : super(CompanyListRoute.name, initialChildren: children);
@@ -711,8 +696,6 @@ class CompanyListRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [CompanyPerformancePage]
 class CompanyPerformanceRoute extends PageRouteInfo<void> {
   const CompanyPerformanceRoute({List<PageRouteInfo>? children})
     : super(CompanyPerformanceRoute.name, initialChildren: children);
@@ -727,8 +710,6 @@ class CompanyPerformanceRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [CompanySettingPage]
 class CompanySettingRoute extends PageRouteInfo<void> {
   const CompanySettingRoute({List<PageRouteInfo>? children})
     : super(CompanySettingRoute.name, initialChildren: children);
@@ -743,8 +724,6 @@ class CompanySettingRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [CreateLedgerPage]
 class CreateLedgerRoute extends PageRouteInfo<CreateLedgerRouteArgs> {
   CreateLedgerRoute({
     Key? key,
@@ -795,8 +774,6 @@ class CreateLedgerRouteArgs {
   }
 }
 
-/// generated route for
-/// [CustomerOrderListPage]
 class CustomerOrderListRoute extends PageRouteInfo<void> {
   const CustomerOrderListRoute({List<PageRouteInfo>? children})
     : super(CustomerOrderListRoute.name, initialChildren: children);
@@ -811,8 +788,6 @@ class CustomerOrderListRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [DashboardPage]
 class DashboardRoute extends PageRouteInfo<void> {
   const DashboardRoute({List<PageRouteInfo>? children})
     : super(DashboardRoute.name, initialChildren: children);
@@ -827,8 +802,20 @@ class DashboardRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [DeliveryManOrderListPage]
+class DashboardStaticsRoute extends PageRouteInfo<void> {
+  const DashboardStaticsRoute({List<PageRouteInfo>? children})
+    : super(DashboardStaticsRoute.name, initialChildren: children);
+
+  static const String name = 'DashboardStaticsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DashboardStaticsPage();
+    },
+  );
+}
+
 class DeliveryManOrderListRoute extends PageRouteInfo<void> {
   const DeliveryManOrderListRoute({List<PageRouteInfo>? children})
     : super(DeliveryManOrderListRoute.name, initialChildren: children);
@@ -843,8 +830,6 @@ class DeliveryManOrderListRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [EmployeeDetailsPage]
 class EmployeeDetailsRoute extends PageRouteInfo<EmployeeDetailsRouteArgs> {
   EmployeeDetailsRoute({
     Key? key,
@@ -880,8 +865,6 @@ class EmployeeDetailsRouteArgs {
   }
 }
 
-/// generated route for
-/// [EmployeesPage]
 class EmployeesRoute extends PageRouteInfo<void> {
   const EmployeesRoute({List<PageRouteInfo>? children})
     : super(EmployeesRoute.name, initialChildren: children);
@@ -896,8 +879,6 @@ class EmployeesRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [ForgotPasswordPage]
 class ForgotPasswordRoute extends PageRouteInfo<ForgotPasswordRouteArgs> {
   ForgotPasswordRoute({Key? key, List<PageRouteInfo>? children})
     : super(
@@ -930,8 +911,6 @@ class ForgotPasswordRouteArgs {
   }
 }
 
-/// generated route for
-/// [HomePage]
 class HomeRoute extends PageRouteInfo<void> {
   const HomeRoute({List<PageRouteInfo>? children})
     : super(HomeRoute.name, initialChildren: children);
@@ -946,8 +925,6 @@ class HomeRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [InventoryDashboardPage]
 class InventoryDashboardRoute extends PageRouteInfo<void> {
   const InventoryDashboardRoute({List<PageRouteInfo>? children})
     : super(InventoryDashboardRoute.name, initialChildren: children);
@@ -962,8 +939,6 @@ class InventoryDashboardRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [LoginPage]
 class LoginRoute extends PageRouteInfo<LoginRouteArgs> {
   LoginRoute({Key? key, List<PageRouteInfo>? children})
     : super(
@@ -996,8 +971,6 @@ class LoginRouteArgs {
   }
 }
 
-/// generated route for
-/// [OrderListPage]
 class OrderListRoute extends PageRouteInfo<void> {
   const OrderListRoute({List<PageRouteInfo>? children})
     : super(OrderListRoute.name, initialChildren: children);
@@ -1012,8 +985,6 @@ class OrderListRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [OverallStockPage]
 class OverallStockRoute extends PageRouteInfo<void> {
   const OverallStockRoute({List<PageRouteInfo>? children})
     : super(OverallStockRoute.name, initialChildren: children);
@@ -1028,8 +999,6 @@ class OverallStockRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [PerformanceDetailsPage]
 class PerformanceDetailsRoute
     extends PageRouteInfo<PerformanceDetailsRouteArgs> {
   PerformanceDetailsRoute({
@@ -1087,8 +1056,6 @@ class PerformanceDetailsRouteArgs {
   }
 }
 
-/// generated route for
-/// [PreviewOrderPage]
 class PreviewOrderRoute extends PageRouteInfo<void> {
   const PreviewOrderRoute({List<PageRouteInfo>? children})
     : super(PreviewOrderRoute.name, initialChildren: children);
@@ -1103,8 +1070,6 @@ class PreviewOrderRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [ProductListPage]
 class ProductListRoute extends PageRouteInfo<ProductListRouteArgs> {
   ProductListRoute({Key? key, List<PageRouteInfo>? children})
     : super(
@@ -1137,8 +1102,6 @@ class ProductListRouteArgs {
   }
 }
 
-/// generated route for
-/// [ProductMgtPage]
 class ProductMgtRoute extends PageRouteInfo<void> {
   const ProductMgtRoute({List<PageRouteInfo>? children})
     : super(ProductMgtRoute.name, initialChildren: children);
@@ -1153,8 +1116,6 @@ class ProductMgtRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [ProductTrendingListPage]
 class ProductTrendingListRoute extends PageRouteInfo<void> {
   const ProductTrendingListRoute({List<PageRouteInfo>? children})
     : super(ProductTrendingListRoute.name, initialChildren: children);
@@ -1169,8 +1130,6 @@ class ProductTrendingListRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [ProfilePage]
 class ProfileRoute extends PageRouteInfo<void> {
   const ProfileRoute({List<PageRouteInfo>? children})
     : super(ProfileRoute.name, initialChildren: children);
@@ -1185,8 +1144,61 @@ class ProfileRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [SalesReportPage]
+class PurchaseInvoicePanelRoute extends PageRouteInfo<void> {
+  const PurchaseInvoicePanelRoute({List<PageRouteInfo>? children})
+    : super(PurchaseInvoicePanelRoute.name, initialChildren: children);
+
+  static const String name = 'PurchaseInvoicePanelRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const PurchaseInvoicePanelPage();
+    },
+  );
+}
+
+class QuickTransactionRoute extends PageRouteInfo<QuickTransactionRouteArgs> {
+  QuickTransactionRoute({
+    Key? key,
+    required String transactionType,
+    List<PageRouteInfo>? children,
+  }) : super(
+         QuickTransactionRoute.name,
+         args: QuickTransactionRouteArgs(
+           key: key,
+           transactionType: transactionType,
+         ),
+         initialChildren: children,
+       );
+
+  static const String name = 'QuickTransactionRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<QuickTransactionRouteArgs>();
+      return QuickTransactionPage(
+        key: args.key,
+        transactionType: args.transactionType,
+      );
+    },
+  );
+}
+
+class QuickTransactionRouteArgs {
+  const QuickTransactionRouteArgs({this.key, required this.transactionType});
+
+  final Key? key;
+
+  final String transactionType;
+
+  @override
+  String toString() {
+    return 'QuickTransactionRouteArgs{key: $key, transactionType: $transactionType}';
+  }
+}
+
 class SalesReportRoute extends PageRouteInfo<void> {
   const SalesReportRoute({List<PageRouteInfo>? children})
     : super(SalesReportRoute.name, initialChildren: children);
@@ -1201,8 +1213,6 @@ class SalesReportRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [SalesmanOrderListPage]
 class SalesmanOrderListRoute extends PageRouteInfo<void> {
   const SalesmanOrderListRoute({List<PageRouteInfo>? children})
     : super(SalesmanOrderListRoute.name, initialChildren: children);
@@ -1217,8 +1227,6 @@ class SalesmanOrderListRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [SalesmanOrderPage]
 class SalesmanOrderRoute extends PageRouteInfo<void> {
   const SalesmanOrderRoute({List<PageRouteInfo>? children})
     : super(SalesmanOrderRoute.name, initialChildren: children);
@@ -1233,24 +1241,50 @@ class SalesmanOrderRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [SimpleEmployeesPage]
-class SimpleEmployeesRoute extends PageRouteInfo<void> {
-  const SimpleEmployeesRoute({List<PageRouteInfo>? children})
-    : super(SimpleEmployeesRoute.name, initialChildren: children);
+class SimpleUsersRoute extends PageRouteInfo<SimpleUsersRouteArgs> {
+  SimpleUsersRoute({
+    Key? key,
+    UserType? userType,
+    Role? role,
+    List<PageRouteInfo>? children,
+  }) : super(
+         SimpleUsersRoute.name,
+         args: SimpleUsersRouteArgs(key: key, userType: userType, role: role),
+         initialChildren: children,
+       );
 
-  static const String name = 'SimpleEmployeesRoute';
+  static const String name = 'SimpleUsersRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const SimpleEmployeesPage();
+      final args = data.argsAs<SimpleUsersRouteArgs>(
+        orElse: () => const SimpleUsersRouteArgs(),
+      );
+      return SimpleUsersPage(
+        key: args.key,
+        userType: args.userType,
+        role: args.role,
+      );
     },
   );
 }
 
-/// generated route for
-/// [SplashScreenPage]
+class SimpleUsersRouteArgs {
+  const SimpleUsersRouteArgs({this.key, this.userType, this.role});
+
+  final Key? key;
+
+  final UserType? userType;
+
+  final Role? role;
+
+  @override
+  String toString() {
+    return 'SimpleUsersRouteArgs{key: $key, userType: $userType, role: $role}';
+  }
+}
+
 class SplashScreenRoute extends PageRouteInfo<SplashScreenRouteArgs> {
   SplashScreenRoute({
     Key? key,
@@ -1294,8 +1328,6 @@ class SplashScreenRouteArgs {
   }
 }
 
-/// generated route for
-/// [StockListPage]
 class StockListRoute extends PageRouteInfo<void> {
   const StockListRoute({List<PageRouteInfo>? children})
     : super(StockListRoute.name, initialChildren: children);
@@ -1310,8 +1342,6 @@ class StockListRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [StoreDetailsPage]
 class StoreDetailsRoute extends PageRouteInfo<StoreDetailsRouteArgs> {
   StoreDetailsRoute({
     Key? key,
@@ -1347,8 +1377,6 @@ class StoreDetailsRouteArgs {
   }
 }
 
-/// generated route for
-/// [StoreOrderListPage]
 class StoreOrderListRoute extends PageRouteInfo<void> {
   const StoreOrderListRoute({List<PageRouteInfo>? children})
     : super(StoreOrderListRoute.name, initialChildren: children);
@@ -1363,24 +1391,49 @@ class StoreOrderListRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [StoresListPage]
-class StoresListRoute extends PageRouteInfo<void> {
-  const StoresListRoute({List<PageRouteInfo>? children})
-    : super(StoresListRoute.name, initialChildren: children);
+class StoresListRoute extends PageRouteInfo<StoresListRouteArgs> {
+  StoresListRoute({
+    Key? key,
+    bool fromAccountsPage = false,
+    List<PageRouteInfo>? children,
+  }) : super(
+         StoresListRoute.name,
+         args: StoresListRouteArgs(
+           key: key,
+           fromAccountsPage: fromAccountsPage,
+         ),
+         initialChildren: children,
+       );
 
   static const String name = 'StoresListRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const StoresListPage();
+      final args = data.argsAs<StoresListRouteArgs>(
+        orElse: () => const StoresListRouteArgs(),
+      );
+      return StoresListPage(
+        key: args.key,
+        fromAccountsPage: args.fromAccountsPage,
+      );
     },
   );
 }
 
-/// generated route for
-/// [SuperAdminPage]
+class StoresListRouteArgs {
+  const StoresListRouteArgs({this.key, this.fromAccountsPage = false});
+
+  final Key? key;
+
+  final bool fromAccountsPage;
+
+  @override
+  String toString() {
+    return 'StoresListRouteArgs{key: $key, fromAccountsPage: $fromAccountsPage}';
+  }
+}
+
 class SuperAdminRoute extends PageRouteInfo<void> {
   const SuperAdminRoute({List<PageRouteInfo>? children})
     : super(SuperAdminRoute.name, initialChildren: children);
@@ -1395,8 +1448,6 @@ class SuperAdminRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [SupplierDetailsPage]
 class SupplierDetailsRoute extends PageRouteInfo<SupplierDetailsRouteArgs> {
   SupplierDetailsRoute({
     Key? key,
@@ -1432,8 +1483,6 @@ class SupplierDetailsRouteArgs {
   }
 }
 
-/// generated route for
-/// [SupplierListPage]
 class SupplierListRoute extends PageRouteInfo<void> {
   const SupplierListRoute({List<PageRouteInfo>? children})
     : super(SupplierListRoute.name, initialChildren: children);
@@ -1448,8 +1497,6 @@ class SupplierListRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [TaskListPage]
 class TaskListRoute extends PageRouteInfo<void> {
   const TaskListRoute({List<PageRouteInfo>? children})
     : super(TaskListRoute.name, initialChildren: children);
@@ -1464,8 +1511,6 @@ class TaskListRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [TransactionsPage]
 class TransactionsRoute extends PageRouteInfo<void> {
   const TransactionsRoute({List<PageRouteInfo>? children})
     : super(TransactionsRoute.name, initialChildren: children);
@@ -1480,16 +1525,21 @@ class TransactionsRoute extends PageRouteInfo<void> {
   );
 }
 
-/// generated route for
-/// [UserLedgerPage]
 class UserLedgerRoute extends PageRouteInfo<UserLedgerRouteArgs> {
   UserLedgerRoute({
     Key? key,
-    required UserInfo user,
+    UserInfo? user,
+    StoreDto? store,
+    TransactionType type = TransactionType.General,
     List<PageRouteInfo>? children,
   }) : super(
          UserLedgerRoute.name,
-         args: UserLedgerRouteArgs(key: key, user: user),
+         args: UserLedgerRouteArgs(
+           key: key,
+           user: user,
+           store: store,
+           type: type,
+         ),
          initialChildren: children,
        );
 
@@ -1498,27 +1548,41 @@ class UserLedgerRoute extends PageRouteInfo<UserLedgerRouteArgs> {
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      final args = data.argsAs<UserLedgerRouteArgs>();
-      return UserLedgerPage(key: args.key, user: args.user);
+      final args = data.argsAs<UserLedgerRouteArgs>(
+        orElse: () => const UserLedgerRouteArgs(),
+      );
+      return UserLedgerPage(
+        key: args.key,
+        user: args.user,
+        store: args.store,
+        type: args.type,
+      );
     },
   );
 }
 
 class UserLedgerRouteArgs {
-  const UserLedgerRouteArgs({this.key, required this.user});
+  const UserLedgerRouteArgs({
+    this.key,
+    this.user,
+    this.store,
+    this.type = TransactionType.General,
+  });
 
   final Key? key;
 
-  final UserInfo user;
+  final UserInfo? user;
+
+  final StoreDto? store;
+
+  final TransactionType type;
 
   @override
   String toString() {
-    return 'UserLedgerRouteArgs{key: $key, user: $user}';
+    return 'UserLedgerRouteArgs{key: $key, user: $user, store: $store, type: $type}';
   }
 }
 
-/// generated route for
-/// [UserOrderDetailsPage]
 class UserOrderDetailsRoute extends PageRouteInfo<UserOrderDetailsRouteArgs> {
   UserOrderDetailsRoute({
     Key? key,
@@ -1554,8 +1618,6 @@ class UserOrderDetailsRouteArgs {
   }
 }
 
-/// generated route for
-/// [WishlistPage]
 class WishlistRoute extends PageRouteInfo<void> {
   const WishlistRoute({List<PageRouteInfo>? children})
     : super(WishlistRoute.name, initialChildren: children);

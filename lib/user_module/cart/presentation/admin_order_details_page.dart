@@ -40,7 +40,7 @@ class AdminOrderDetailsPage extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: BlocListener<AdminOrderCubit, AdminOrderState>(
                 listenWhen: (previous, current) =>
-                current is AdminOrderFetchError ||
+                    current is AdminOrderFetchError ||
                     current is AdminOrderUpdateStatusError ||
                     current is AdminOrderSetDeliveryDateError ||
                     current is AdminOrderSetResponsibleError ||
@@ -99,7 +99,7 @@ class AdminOrderDetailsPage extends StatelessWidget {
                 },
                 child: BlocBuilder<AdminOrderCubit, AdminOrderState>(
                   buildWhen: (previous, current) =>
-                  current is AdminOrderFetchLoading ||
+                      current is AdminOrderFetchLoading ||
                       current is AdminOrderFetchSuccess ||
                       current is AdminOrderFetchError,
                   builder: (context, state) {
@@ -206,7 +206,7 @@ class AdminOrderDetailsPage extends StatelessWidget {
                   isBold: true, valueColor: AppColors.textPrimary),
               _buildTableRow(
                   'Order Taken By', state.orderTakenByName ?? 'Not Assigned'),
-              _buildTableRow('Store ID', state.order.storeId ?? 'Not Provided'), // Added
+              _buildTableRow('Store ID', state.order.storeId ?? 'Not Provided'),
               if (state.lastUpdatedByName != null)
                 _buildTableRow('Last Updated By', state.lastUpdatedByName!),
               _buildTableRow(
@@ -220,22 +220,29 @@ class AdminOrderDetailsPage extends StatelessWidget {
               if (state.expectedDeliveryDateFormatted != null)
                 _buildTableRow(
                     'Expected Delivery', state.expectedDeliveryDateFormatted!),
-              if (state.orderDeliveryDateFormatted != null) // Added
-                _buildTableRow('Delivered On', state.orderDeliveryDateFormatted!),
+              if (state.orderDeliveryDateFormatted != null)
+                _buildTableRow(
+                    'Delivered On', state.orderDeliveryDateFormatted!),
               if (state.responsibleForDeliveryName != null)
                 _buildTableRow('Responsible for Delivery',
                     state.responsibleForDeliveryName!),
               if (state.orderDeliveredByName != null)
                 _buildTableRow('Delivered By', state.orderDeliveredByName!),
               _buildTableRow('Subtotal (All Items)',
-                  '₹${state.subtotal.toStringAsFixed(2)}',
+                  'IQD ${state.subtotal.toStringAsFixed(2)}',
                   valueWeight: FontWeight.w500,
                   valueColor: AppColors.textPrimary),
               _buildTableRow(
-                  'Total Tax', '₹${state.totalTax.toStringAsFixed(2)}'),
+                  'Total Tax', 'IQD ${state.totalTax.toStringAsFixed(2)}'),
+              if (state.order.discount != null && state.order.discount! > 0)
+                _buildTableRow(
+                  'Discount',
+                  '-IQD ${state.order.discount!.toStringAsFixed(2)}',
+                  valueColor: AppColors.textSecondary,
+                ),
               _buildTableRow(
                 'Total',
-                '₹${state.order.totalAmount.toStringAsFixed(2)}',
+                'IQD ${state.order.totalAmount.toStringAsFixed(2)}',
                 isBold: true,
                 valueColor: AppColors.textPrimary,
                 backgroundColor: AppColors.primary.withOpacity(0.2),
@@ -252,20 +259,20 @@ class AdminOrderDetailsPage extends StatelessWidget {
   }
 
   TableRow _buildTableRow(
-      String label,
-      String value, {
-        bool isBold = false,
-        FontWeight valueWeight = FontWeight.normal,
-        Color? valueColor = AppColors.textSecondary,
-        Color? backgroundColor,
-        BorderRadius? borderRadius,
-      }) {
+    String label,
+    String value, {
+    bool isBold = false,
+    FontWeight valueWeight = FontWeight.normal,
+    Color? valueColor = AppColors.textSecondary,
+    Color? backgroundColor,
+    BorderRadius? borderRadius,
+  }) {
     return TableRow(
       decoration: backgroundColor != null || borderRadius != null
           ? BoxDecoration(
-        color: backgroundColor,
-        borderRadius: borderRadius,
-      )
+              color: backgroundColor,
+              borderRadius: borderRadius,
+            )
           : null,
       children: [
         Padding(
@@ -330,7 +337,8 @@ class AdminOrderDetailsPage extends StatelessWidget {
               value: state.normalizedStatus,
               items: const [
                 DropdownMenuItem(value: 'pending', child: Text('Pending')),
-                DropdownMenuItem(value: 'processing', child: Text('Processing')),
+                DropdownMenuItem(
+                    value: 'processing', child: Text('Processing')),
                 DropdownMenuItem(value: 'shipped', child: Text('Shipped')),
                 DropdownMenuItem(value: 'completed', child: Text('Completed')),
               ],
@@ -357,9 +365,9 @@ class AdminOrderDetailsPage extends StatelessWidget {
                 ...state.users
                     .where((user) => user.userType == UserType.Employee)
                     .map((user) => DropdownMenuItem(
-                  value: user.userId,
-                  child: Text(user.name ?? 'Unknown'),
-                )),
+                          value: user.userId,
+                          child: Text(user.name ?? 'Unknown'),
+                        )),
               ],
               onChanged: (value) {
                 context
@@ -487,18 +495,18 @@ class AdminOrderDetailsPage extends StatelessWidget {
                 },
                 children: [
                   _buildTableRow(
-                    'Subtotal (₹${item.price} x ${item.quantity})',
-                    '₹${(item.price * item.quantity).toStringAsFixed(2)}',
+                    'Subtotal (IQD ${item.price} x ${item.quantity})',
+                    'IQD ${(item.price * item.quantity).toStringAsFixed(2)}',
                     valueWeight: FontWeight.w500,
                     valueColor: AppColors.textPrimary,
                   ),
                   _buildTableRow(
                     'Tax (${(item.taxRate * 100).toStringAsFixed(0)}%)',
-                    '₹${item.taxAmount.toStringAsFixed(2)}',
+                    'IQD ${item.taxAmount.toStringAsFixed(2)}',
                   ),
                   _buildTableRow(
                     'Total',
-                    '₹${((item.price * item.quantity) + item.taxAmount).toStringAsFixed(2)}',
+                    'IQD ${((item.price * item.quantity) + item.taxAmount).toStringAsFixed(2)}',
                     isBold: true,
                     valueColor: AppColors.textPrimary,
                     backgroundColor: AppColors.primary.withOpacity(0.2),

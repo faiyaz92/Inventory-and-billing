@@ -3,7 +3,6 @@ import 'package:requirment_gathering_app/core_module/presentation/login/login_st
 import 'package:requirment_gathering_app/core_module/services/auth_service.dart';
 import 'package:requirment_gathering_app/super_admin_module/services/tenant_company_service.dart';
 
-// LoginCubit
 class LoginCubit extends Cubit<LoginState> {
   final AuthService _loginService;
   final TenantCompanyService _iTenantCompanyService;
@@ -25,7 +24,6 @@ class LoginCubit extends Cubit<LoginState> {
     emit(LoginLoading());
     try {
       await _loginService.signIn(email, password);
-      // await _iTenantCompanyService.addSuperAdmin();
       emit(LoginSuccess());
     } catch (e) {
       emit(LoginFailure(e.toString()));

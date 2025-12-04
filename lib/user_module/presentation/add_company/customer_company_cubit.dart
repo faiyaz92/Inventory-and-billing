@@ -24,7 +24,6 @@ class PartnerCubit extends Cubit<CompanyState> {
       this._companyService, this._userServices, this._accountLedgerService)
       : super(CompanyDataState.initial());
 
-  // AddCompanyPage Methods
   Future<void> initializeWithCompany(Partner? company) async {
     if (company != null) {
       currentCompany =
@@ -462,7 +461,6 @@ class PartnerCubit extends Cubit<CompanyState> {
     ));
   }
 
-  // CompanyListPage Methods
   Future<void> loadCompanies() async {
     emit(LoadingState());
     try {
@@ -672,7 +670,6 @@ class PartnerCubit extends Cubit<CompanyState> {
     ));
   }
 
-  // Utility Methods
   Color getInterestLevelColor(String? level) {
     if (level == null) return Colors.grey;
     final percentage = int.tryParse(level.replaceAll('%', '')) ?? 0;
@@ -728,7 +725,6 @@ class PartnerCubit extends Cubit<CompanyState> {
     return countryCityMap[country] ?? [];
   }
 
-  // Report Page Methods
   Map<String, int> getFollowUpDataForYear(String? year) {
     final followUpData = {
       AppKeys.totalKey: originalCompanies
@@ -747,38 +743,6 @@ class PartnerCubit extends Cubit<CompanyState> {
     return followUpData;
   }
 
-  // ProgressChartData getProgressData(String? selectedYearForProgress) {
-  //   final companies = originalCompanies
-  //       .where((c) =>
-  //           getYearFromDate(c.dateCreated.toString()) ==
-  //           selectedYearForProgress)
-  //       .toList();
-  //
-  //   List<int> data = List.generate(12, (index) {
-  //     return companies.where((c) => c.dateCreated.month == index + 1).length;
-  //   });
-  //
-  //   final progressData = ProgressChartData(
-  //     bars: List.generate(data.length, (index) {
-  //       return BarChartGroupData(
-  //         x: index,
-  //         barRods: [
-  //           BarChartRodData(
-  //             colors: [AppColors.blue],
-  //             width: 20,
-  //             borderRadius: BorderRadius.circular(6),
-  //             y: data[index].toDouble(), toY: 1,
-  //           ),
-  //         ],
-  //       );
-  //     }),
-  //     labels: AppKeys.monthLabels,
-  //     maxValue: data.isNotEmpty ? data.reduce((a, b) => a > b ? a : b) : 1,
-  //   );
-  //
-  //   emit(ProgressDataLoadedState(progressData));
-  //   return progressData;
-  // }
 
   Map<String, int> getComparisonData(String? period1, String? period2) {
     final comparisonData = {

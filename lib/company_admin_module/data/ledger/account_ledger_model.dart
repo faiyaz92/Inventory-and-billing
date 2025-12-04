@@ -1,15 +1,17 @@
 import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_ledger_dto.dart';
-import 'package:requirment_gathering_app/company_admin_module/data/ledger/transaction_model.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_transaction_model.dart';
+import 'package:requirment_gathering_app/super_admin_module/utils/user_type.dart';
+
 
 class AccountLedger {
   final String? ledgerId;
-  final String? entityType;
+  final UserType? entityType; // Changed from String? to UserType?
   final double totalOutstanding;
   final double? currentDue;
   final double? currentPayable;
   final double? promiseAmount;
   final DateTime? promiseDate;
-  final List<TransactionModel>? transactions;
+  final List<AccountTransactionModel>? transactions;
   final double? baseConstructionCost;
   final double? totalConstructionCost;
   final double? currentBaseDue;
@@ -41,13 +43,13 @@ class AccountLedger {
   factory AccountLedger.fromDto(AccountLedgerDto dto) {
     return AccountLedger(
       ledgerId: dto.ledgerId,
-      entityType: dto.entityType,
+      entityType: UserTypeExtension.fromString(dto.entityType), // Convert String to UserType
       totalOutstanding: dto.totalOutstanding,
       currentDue: dto.currentDue,
       currentPayable: dto.currentPayable,
       promiseAmount: dto.promiseAmount,
       promiseDate: dto.promiseDate != null ? DateTime.parse(dto.promiseDate!) : null,
-      transactions: dto.transactions?.map((txn) => TransactionModel.fromDto(txn)).toList() ?? [],
+      transactions: dto.transactions?.map((txn) => AccountTransactionModel.fromDto(txn)).toList() ?? [],
       baseConstructionCost: dto.baseConstructionCost ?? 0.0,
       totalConstructionCost: dto.totalConstructionCost ?? 0.0,
       currentBaseDue: dto.currentBaseDue ?? dto.totalOutstanding,
@@ -62,7 +64,7 @@ class AccountLedger {
   AccountLedgerDto toDto() {
     return AccountLedgerDto(
       ledgerId: ledgerId,
-      entityType: entityType,
+      entityType: entityType?.name, // Convert UserType to String
       totalOutstanding: totalOutstanding,
       currentDue: currentDue,
       currentPayable: currentPayable,
@@ -82,13 +84,13 @@ class AccountLedger {
 
   AccountLedger copyWith({
     String? ledgerId,
-    String? entityType,
+    UserType? entityType, // Changed from String? to UserType?
     double? totalOutstanding,
     double? currentDue,
     double? currentPayable,
     double? promiseAmount,
     DateTime? promiseDate,
-    List<TransactionModel>? transactions,
+    List<AccountTransactionModel>? transactions,
     double? baseConstructionCost,
     double? totalConstructionCost,
     double? currentBaseDue,

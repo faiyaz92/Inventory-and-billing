@@ -9,14 +9,11 @@ class CategoryCubit extends Cubit<CategoryState> {
 
   CategoryCubit({required this.categoryService}) : super(CategoryInitial());
 
-  // Fetch Categories
-  // Fetch Categories
   Future<void> fetchCategories() async {
     try {
       emit(CategoryLoading());
       final categories = await categoryService.fetchCategories();
 
-      // Fetch subcategories for each category
       for (var category in categories) {
         final subcategories = await categoryService.fetchSubcategories( category.id ?? '');
         category.subcategories = subcategories;  // Assign fetched subcategories to the category
@@ -28,7 +25,6 @@ class CategoryCubit extends Cubit<CategoryState> {
     }
   }
 
-  // Add Category
   Future<void> addCategory(Category category) async {
     try {
       emit(CategoryLoading());
@@ -39,7 +35,6 @@ class CategoryCubit extends Cubit<CategoryState> {
     }
   }
 
-  // Update Category
   Future<void> updateCategory( String id, Category category) async {
     try {
       emit(CategoryLoading());
@@ -50,7 +45,6 @@ class CategoryCubit extends Cubit<CategoryState> {
     }
   }
 
-  // Add Subcategory
   Future<void> addSubcategory( String categoryId, Subcategory subcategory) async {
     try {
       emit(CategoryLoading());
@@ -61,7 +55,6 @@ class CategoryCubit extends Cubit<CategoryState> {
     }
   }
 
-  // Delete Subcategory
   Future<void> deleteSubcategory( String categoryId, String subcategoryId) async {
     try {
       emit(CategoryLoading());
@@ -72,7 +65,6 @@ class CategoryCubit extends Cubit<CategoryState> {
     }
   }
 
-  // Update Subcategory
   Future<void> updateSubcategory( String categoryId, String subcategoryId, Subcategory subcategory) async {
     try {
       emit(CategoryLoading());

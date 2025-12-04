@@ -135,7 +135,6 @@ class _CategoriesWithSubcategoriesPageState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Category Header
                 ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   title: Semantics(
@@ -169,7 +168,6 @@ class _CategoriesWithSubcategoriesPageState
                     ],
                   ),
                 ),
-                // Subcategories List
                 if (subcategories.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(left: 16.0),
@@ -213,7 +211,6 @@ class _CategoriesWithSubcategoriesPageState
                       }).toList(),
                     ),
                   ),
-                // Add Subcategory Button
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: ElevatedButton(
@@ -256,7 +253,7 @@ class _CategoriesWithSubcategoriesPageState
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                context.read<CategoryCubit>().fetchCategories();
+                _categoryCubit.fetchCategories();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryColor,
@@ -302,9 +299,9 @@ class _CategoriesWithSubcategoriesPageState
           ElevatedButton(
             onPressed: () {
               if (isCategory) {
-                context.read<CategoryCubit>().deleteCategory(item.id ?? '');
+                _categoryCubit.deleteCategory(item.id ?? '');
               } else {
-                context.read<CategoryCubit>().deleteSubcategory(categoryId!, item.id ?? '');
+                _categoryCubit.deleteSubcategory(categoryId!, item.id ?? '');
               }
               Navigator.pop(context);
             },

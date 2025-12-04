@@ -328,7 +328,7 @@ class _CustomerOrderListPageState extends State<CustomerOrderListPage> {
                       _buildTableRow('Last Order', daysSinceLastOrder),
                       _buildTableRow(
                         'Total',
-                        '₹${totalAmount.toStringAsFixed(2)}',
+                        'IQD ${totalAmount.toStringAsFixed(2)}',
                         isBold: true,
                         valueColor: AppColors.textPrimary,
                         backgroundColor: AppColors.primary.withOpacity(0.1),

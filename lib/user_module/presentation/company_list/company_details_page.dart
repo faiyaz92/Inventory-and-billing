@@ -44,14 +44,12 @@ class CompanyDetailsPage extends StatelessWidget {
                 onPressed: () async {
                   if (company.accountLedgerId == null ||
                       company.accountLedgerId!.isEmpty) {
-                    // 🔥 Ledger Create Karna
                     final newLedgerId =
                         await _createAccountLedger(context, company);
                     setState(() {
                       company.copyWith(accountLedgerId: newLedgerId);
                     });
                   } else {
-                    // 🔥 Ledger Page Pe Jaana
                     _goToAccountLedger(context, company);
                   }
                 },
@@ -194,7 +192,6 @@ class CompanyDetailsPage extends StatelessWidget {
             flex: 3,
             child: GestureDetector(
               onTap: () async {
-                // await sl<CompanyCubit>().launchUrl(displayValue);
               },
               child: Text(
                 displayValue,
@@ -248,7 +245,6 @@ class CompanyDetailsPage extends StatelessWidget {
             padding: const EdgeInsets.only(left: 8.0),
             child: GestureDetector(
               onTap: () async {
-                // await sl<CompanyCubit>().launchUrl("mailto:${person.email}");
               },
               child: Text(
                 person.email,
@@ -273,7 +269,6 @@ class CompanyDetailsPage extends StatelessWidget {
             padding: const EdgeInsets.only(left: 8.0),
             child: GestureDetector(
               onTap: () async {
-                // await sl<CompanyCubit>().launchUrl("tel:${person.phoneNumber}");
               },
               child: Text(
                 person.phoneNumber,

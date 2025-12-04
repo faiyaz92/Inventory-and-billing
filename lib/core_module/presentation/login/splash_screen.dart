@@ -29,15 +29,12 @@ class _SplashScreenPageState extends State<SplashScreenPage>
     super.initState();
     print('SplashScreen: initState started');
     splashCubit = sl<SplashCubit>();
-// Initialize permissions only on non-web platforms
     if (!kIsWeb) {
       print('SplashScreen: Initializing permissions and services (non-web)');
-      // _initializePermissionsAndService();
     } else {
       print('SplashScreen: Skipping permissions and services on web');
     }
     _startSplashDelay();
-// Start fade-in animation
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) {
         setState(() {
@@ -151,7 +148,7 @@ class _SplashScreenPageState extends State<SplashScreenPage>
                           opacity: _opacity,
                           duration: const Duration(seconds: 1),
                           child: const Text(
-                            "Easy Tasks",
+                            "Simple as One",
                             style: TextStyle(
                               fontSize: 48,
                               fontWeight: FontWeight.bold,

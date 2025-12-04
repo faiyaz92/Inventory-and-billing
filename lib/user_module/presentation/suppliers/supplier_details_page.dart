@@ -134,7 +134,6 @@ class SupplierDetailsPage extends StatelessWidget {
             flex: 3,
             child: GestureDetector(
               onTap: () async {
-                // Handle URL launch
               },
               child: Text(
                 displayValue,
@@ -188,7 +187,6 @@ class SupplierDetailsPage extends StatelessWidget {
             padding: const EdgeInsets.only(left: 8.0),
             child: GestureDetector(
               onTap: () async {
-                // Handle email
               },
               child: Text(
                 person.email,
@@ -213,7 +211,6 @@ class SupplierDetailsPage extends StatelessWidget {
             padding: const EdgeInsets.only(left: 8.0),
             child: GestureDetector(
               onTap: () async {
-                // Handle phone
               },
               child: Text(
                 person.phoneNumber,

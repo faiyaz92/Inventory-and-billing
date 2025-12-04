@@ -11,7 +11,6 @@ class SubcategoryDTO {
     this.categoryId,
   });
 
-  // Convert Firestore DocumentSnapshot to SubcategoryDTO
   factory SubcategoryDTO.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return SubcategoryDTO(
@@ -21,7 +20,6 @@ class SubcategoryDTO {
     );
   }
 
-  // Convert Subcategory Model to SubcategoryDTO (for Firestore write)
   Map<String, dynamic> toFirestore() {
     return {
       'name': name ?? '',

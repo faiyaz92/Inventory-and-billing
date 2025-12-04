@@ -1,4 +1,4 @@
-class TransactionDto {
+class AccountTransactionDto {
   final String? transactionId;
   final String type; // "Debit" or "Credit"
   final double amount;
@@ -9,7 +9,7 @@ class TransactionDto {
   final String? typeOfPurpose; // New: Cement, Electrician, etc.
   final String? remarks; // New: 500-char remarks
 
-  TransactionDto({
+  AccountTransactionDto({
     this.transactionId,
     required this.type,
     required this.amount,
@@ -21,8 +21,8 @@ class TransactionDto {
     this.remarks,
   });
 
-  factory TransactionDto.fromMap(Map<String, dynamic> map, String id) {
-    return TransactionDto(
+  factory AccountTransactionDto.fromMap(Map<String, dynamic> map, String id) {
+    return AccountTransactionDto(
       transactionId: id,
       type: map['type'],
       amount: map['amount'].toDouble(),

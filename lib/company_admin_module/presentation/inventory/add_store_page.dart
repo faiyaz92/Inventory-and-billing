@@ -72,7 +72,6 @@ class _AddStorePageState extends State<AddStorePage> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Store added successfully')),
                           );
-                          // sl<Coordinator>().navigateBack(isUpdated: true);
                         } else if (state is StockError) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -93,6 +92,7 @@ class _AddStorePageState extends State<AddStorePage> {
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 12.0),
                               child: TextFormField(
+                                textCapitalization: TextCapitalization.words,
                                 decoration: InputDecoration(
                                   labelText: 'Store Name',
                                   labelStyle: TextStyle(

@@ -150,7 +150,6 @@ class _CartHomePageState extends State<CartHomePage> {
                                 ),
                               );
                             }
-                            // Handle states with products
                             List<UserProduct> products = [];
                             List<UserProduct> wishlistItems = [];
                             List<CartItem> cartItems = [];
@@ -274,7 +273,7 @@ class _CartHomePageState extends State<CartHomePage> {
                                               ),
                                             ),
                                             Text(
-                                              '₹${product.price.toStringAsFixed(2)}',
+                                              'IQD ${product.price.toStringAsFixed(2)}',
                                               style: const TextStyle(
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.w500,

@@ -348,7 +348,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
       return;
     }
 
-    // Convert DD-MM-YYYY to YYYY-MM-DD for parsing
     String formattedDate = '';
     try {
       final parts = deadlineController.text.split('-');

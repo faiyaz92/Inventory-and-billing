@@ -1,8 +1,6 @@
-// File: company_admin_module/data/ledger/account_ledger_state.dart
-// Update AccountLedgerState to align with UserLedgerCubit
 import 'package:equatable/equatable.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_ledger_model.dart';
-import 'package:requirment_gathering_app/company_admin_module/data/ledger/transaction_model.dart';
+import 'package:requirment_gathering_app/company_admin_module/data/ledger/account_transaction_model.dart';
 
 abstract class AccountLedgerState extends Equatable {
   const AccountLedgerState();

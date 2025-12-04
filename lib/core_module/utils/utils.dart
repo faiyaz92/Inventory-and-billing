@@ -1,4 +1,3 @@
-// Enum for sorting types
 enum SortType {
   latest, // Sort by latest date
   oldest, // Sort by oldest date
