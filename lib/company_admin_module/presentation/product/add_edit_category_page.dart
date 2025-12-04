@@ -35,7 +35,6 @@ class _AddEditCategoryPageState extends State<AddEditCategoryPage> {
 
   void _saveCategory() {
     if (_formKey.currentState!.validate()) {
-      // Show custom loading dialog
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -57,7 +56,6 @@ class _AddEditCategoryPageState extends State<AddEditCategoryPage> {
       create: (_) => _categoryCubit,
       child: BlocListener<CategoryCubit, CategoryState>(
         listener: (context, state) {
-          // Close loading dialog if open
           if (state is CategoryLoading) return; // Keep dialog open during loading
           Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
 
@@ -74,7 +72,6 @@ class _AddEditCategoryPageState extends State<AddEditCategoryPage> {
               ),
             );
           } else if (state is CategoryLoaded) {
-            // Show success SnackBar and clear controller
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
@@ -126,7 +123,6 @@ class _AddEditCategoryPageState extends State<AddEditCategoryPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Category Name
                             Container(
                               decoration: BoxDecoration(
                                 color: Colors.grey[50],
@@ -156,7 +152,6 @@ class _AddEditCategoryPageState extends State<AddEditCategoryPage> {
                               ),
                             ),
                             const SizedBox(height: 24),
-                            // Save Button
                             ElevatedButton(
                               onPressed: _saveCategory,
                               style: ElevatedButton.styleFrom(

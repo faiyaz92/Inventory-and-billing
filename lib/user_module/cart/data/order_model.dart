@@ -1,4 +1,3 @@
-// Updated CartItem class to include discountAmount and discountPercentage
 import 'package:requirment_gathering_app/user_module/cart/data/order_dto.dart';
 
 class CartItem {
@@ -71,7 +70,6 @@ class CartItem {
   }
 }
 
-// Updated Order class to handle updated CartItem
 class Order {
   final String id;
   final String userId;

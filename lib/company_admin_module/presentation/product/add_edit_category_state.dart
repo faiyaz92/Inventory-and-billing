@@ -2,7 +2,6 @@ import 'package:equatable/equatable.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/category.dart';
 import 'package:requirment_gathering_app/company_admin_module/data/product/sub_category.dart';
 
-// Category State Base Class
 abstract class CategoryState extends Equatable {
   const CategoryState();
 
@@ -10,13 +9,10 @@ abstract class CategoryState extends Equatable {
   List<Object?> get props => [];
 }
 
-// Initial State: This will be used when the Cubit is first initialized
 class CategoryInitial extends CategoryState {}
 
-// Loading State: When an action is being processed
 class CategoryLoading extends CategoryState {}
 
-// Loaded State: When categories have been fetched successfully
 class CategoryLoaded extends CategoryState {
   final List<Category> categories;
 
@@ -26,7 +22,6 @@ class CategoryLoaded extends CategoryState {
   List<Object?> get props => [categories];
 }
 
-// Error State: When an error occurs during an action
 class CategoryError extends CategoryState {
   final String errorMessage;
 
@@ -36,7 +31,6 @@ class CategoryError extends CategoryState {
   List<Object?> get props => [errorMessage];
 }
 
-// Add Category State
 class CategoryAdded extends CategoryState {
   final Category category;
 
@@ -46,7 +40,6 @@ class CategoryAdded extends CategoryState {
   List<Object?> get props => [category];
 }
 
-// Update Category State
 class CategoryUpdated extends CategoryState {
   final Category updatedCategory;
 
@@ -56,7 +49,6 @@ class CategoryUpdated extends CategoryState {
   List<Object?> get props => [updatedCategory];
 }
 
-// Add these states for Subcategory
 class SubcategoryAdded extends CategoryState {
   final Subcategory subcategory;
 

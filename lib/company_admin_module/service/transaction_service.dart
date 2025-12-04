@@ -53,7 +53,6 @@ class TransactionServiceImpl implements TransactionService {
         'customerId: $customerId, startDate: $startDate, endDate: $endDate, '
         'page: $page, pageSize: $pageSize');
 
-// Fetch transactions for the store with pagination
     final transactionDtos = await transactionRepository.getTransactions(
       companyId,
       storeId,
@@ -68,7 +67,6 @@ class TransactionServiceImpl implements TransactionService {
     print('Retrieved ${allTransactions.length} transactions before filtering: '
         '${allTransactions.map((t) => "${t.id} (${t.type})").toList()}');
 
-// Filter transactions
     final filteredTransactions = allTransactions.where((transaction) {
       bool isTypeMatch = type == null ||
           transaction.type.toLowerCase() == type.toLowerCase();
@@ -111,7 +109,6 @@ class TransactionServiceImpl implements TransactionService {
     print('Total transactions after filtering: ${filteredTransactions.length}, '
         'types: ${filteredTransactions.map((t) => t.type).toSet()}');
 
-// Sort by timestamp descending
     filteredTransactions.sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
     return filteredTransactions;
@@ -124,7 +121,6 @@ class TransactionServiceImpl implements TransactionService {
     final userName = userInfo?.userName ?? 'Unknown User';
     final userId = userInfo?.userId ?? 'unknown';
 
-// Reduce stock
     final stock = await stockRepository.getStockByProduct(
       companyId,
       transaction.fromStoreId,
@@ -142,7 +138,6 @@ class TransactionServiceImpl implements TransactionService {
     );
     await stockRepository.updateStock(companyId, updatedStock.toDto());
 
-// Record transaction with userName and userId
     final billingTransaction = TransactionModel(
       id: transaction.id,
       type: transaction.type,

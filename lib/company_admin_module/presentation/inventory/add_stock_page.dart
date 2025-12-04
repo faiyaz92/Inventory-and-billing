@@ -231,7 +231,6 @@ class _AddStockPageState extends State<AddStockPage> {
           print(
               'DEBUG: Building supplier selection dialog, suppliers.length: ${suppliers.length}, _isLoadingDialog: $_isLoadingDialog');
 
-          // Fetch suppliers if not already loaded
           if (suppliers.isEmpty && !_isLoadingDialog) {
             print('DEBUG: Suppliers empty and not loading, initiating fetch');
             setStateDialog(() => _isLoadingDialog = true);
@@ -788,7 +787,6 @@ class _AddStockPageState extends State<AddStockPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Summary Section
                         Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Column(
@@ -805,7 +803,6 @@ class _AddStockPageState extends State<AddStockPage> {
                             ],
                           ),
                         ),
-                        // Stock Entries Table
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0),
                           child: Container(
@@ -831,7 +828,6 @@ class _AddStockPageState extends State<AddStockPage> {
                                         .withOpacity(0.3)),
                               ),
                               children: [
-                                // Table Header
                                 TableRow(
                                   decoration: BoxDecoration(
                                     color: AppColors.primary.withOpacity(0.05),
@@ -847,7 +843,6 @@ class _AddStockPageState extends State<AddStockPage> {
                                         isHeader: true, align: TextAlign.right),
                                   ],
                                 ),
-                                // Table Rows for Stock Entries
                                 ..._stockEntries.map((entry) {
                                   final product = entry['product'] as Product;
                                   final quantity = entry['quantity'] as int;
@@ -868,7 +863,6 @@ class _AddStockPageState extends State<AddStockPage> {
                                     ],
                                   );
                                 }).toList(),
-                                // Total Row
                                 TableRow(
                                   decoration: BoxDecoration(
                                     color: AppColors.primary.withOpacity(0.1),
@@ -894,7 +888,6 @@ class _AddStockPageState extends State<AddStockPage> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        // Form Fields
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0),
                           child: Column(
@@ -1060,7 +1053,6 @@ class _AddStockPageState extends State<AddStockPage> {
         false;
   }
 
-// Helper method to build summary row
   Widget _buildSummaryRow(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1084,7 +1076,6 @@ class _AddStockPageState extends State<AddStockPage> {
     );
   }
 
-// Helper method to build table cell
   Widget _buildTableCell(String text,
       {bool isHeader = false, TextAlign align = TextAlign.left}) {
     return Padding(
@@ -1101,7 +1092,6 @@ class _AddStockPageState extends State<AddStockPage> {
     );
   }
 
-// Helper method to build input decoration
   InputDecoration _buildInputDecoration(String label) {
     return InputDecoration(
       labelText: label,
@@ -1138,7 +1128,6 @@ class _AddStockPageState extends State<AddStockPage> {
       print(
           'DEBUG: _saveStock called, mode: ${_useBatchMode ? "Batch" : "Single"}, purchaseType: $_selectedPurchaseType');
 
-      // Validate and set _stockEntries for single-entry mode
       if (!_useBatchMode) {
         final products = _productCubit.state is ProductLoaded
             ? (_productCubit.state as ProductLoaded).products
@@ -1225,7 +1214,6 @@ class _AddStockPageState extends State<AddStockPage> {
         print(
             'DEBUG: paymentStatus: $paymentStatus, paymentDetails: $paymentDetails');
 
-        // Ensure ledgers
         final supplierLedgerId = _selectedSupplier!.accountLedgerId ??
             await _ledgerCubit.ensureLedger(_selectedSupplier!.userId!,
                 UserType.Supplier, _selectedSupplier!);
@@ -1239,7 +1227,6 @@ class _AddStockPageState extends State<AddStockPage> {
         final storeLedgerId = store.accountLedgerId ??
             await _ledgerCubit.ensureLedgerForStore(_selectedStoreId!, store);
 
-        // Create purchase items
         final purchaseItems = _stockEntries.map((entry) {
           final product = entry['product'] as Product;
           final quantity = entry['quantity'] as int;
@@ -1255,7 +1242,6 @@ class _AddStockPageState extends State<AddStockPage> {
 
         print('DEBUG: Created ${purchaseItems.length} purchase items');
 
-        // Create purchase order
         final purchaseOrder = AdminPurchaseOrder(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           supplierId: _selectedSupplier!.userId!,
@@ -1281,7 +1267,6 @@ class _AddStockPageState extends State<AddStockPage> {
         await _purchaseCubit.createPurchaseOrder(purchaseOrder);
         print('DEBUG: Purchase order saved');
 
-        // Add stock
         for (var entry in _stockEntries) {
           final product = entry['product'] as Product;
           final quantity = entry['quantity'] as int;
@@ -1305,8 +1290,6 @@ class _AddStockPageState extends State<AddStockPage> {
               'DEBUG: Added stock for product: ${product.name}, quantity: $quantity');
         }
 
-        // Ledger entries for supplier
-        // Always add Credit for purchase
         await _ledgerCubit.addTransaction(
           ledgerId: supplierLedgerId,
           amount: finalAmount,
@@ -1321,7 +1304,6 @@ class _AddStockPageState extends State<AddStockPage> {
             'DEBUG: Added Credit transaction to supplier ledger: $finalAmount, purpose: Purchase stock, billNumber: $billNumber');
 
         if (amountReceived > 0) {
-          // For any payment (Cash or Credit with partial payment), add Debit for payment to supplier ledger
           await _ledgerCubit.addTransaction(
             ledgerId: supplierLedgerId,
             amount: amountReceived,
@@ -1336,8 +1318,6 @@ class _AddStockPageState extends State<AddStockPage> {
               'DEBUG: Added Debit transaction to supplier ledger: $amountReceived, purpose: Payment for purchased stock, billNumber: $billNumber');
         }
 
-        // Ledger entries for store (mirror entries)
-        // Always add Debit for purchase
         await _ledgerCubit.addTransaction(
           ledgerId: storeLedgerId,
           amount: finalAmount,
@@ -1352,7 +1332,6 @@ class _AddStockPageState extends State<AddStockPage> {
             'DEBUG: Added Debit transaction to store ledger: $finalAmount, purpose: Purchase stock, billNumber: $billNumber');
 
         if (amountReceived > 0) {
-          // For any payment (Cash or Credit with partial payment), add Credit for payment to store ledger
           await _ledgerCubit.addTransaction(
             ledgerId: storeLedgerId,
             amount: amountReceived,
@@ -1367,7 +1346,6 @@ class _AddStockPageState extends State<AddStockPage> {
               'DEBUG: Added Credit transaction to store ledger: $amountReceived, purpose: Payment for purchased stock, billNumber: $billNumber');
         }
 
-        // Verify ledger balance for debugging
         if (amountReceived >= finalAmount) {
           print('DEBUG: Full payment, expected supplier ledger balance: 0');
           print('DEBUG: Full payment, expected store ledger balance: 0');
@@ -1386,7 +1364,6 @@ class _AddStockPageState extends State<AddStockPage> {
         setState(() => _isStockAdded = true);
         print('DEBUG: Set _isStockAdded to true');
 
-        // Show success dialog
         await showDialog(
           context: context,
           builder: (dialogContext) => AlertDialog(
@@ -1871,7 +1848,6 @@ class _AddStockPageState extends State<AddStockPage> {
                                   crossAxisAlignment:
                                       CrossAxisAlignment.stretch,
                                   children: [
-                                    // Supplier Selection
                                     Card(
                                       elevation: 4,
                                       shape: RoundedRectangleBorder(
@@ -1898,7 +1874,6 @@ class _AddStockPageState extends State<AddStockPage> {
                                       ),
                                     ),
                                     const SizedBox(height: 16),
-                                    // Store Dropdown
                                     Padding(
                                       padding: const EdgeInsets.all(12.0),
                                       child: DropdownButtonFormField<String>(
@@ -1935,7 +1910,6 @@ class _AddStockPageState extends State<AddStockPage> {
                                       ),
                                     ),
                                     const SizedBox(height: 16),
-                                    // Purchase Type Dropdown
                                     Padding(
                                       padding: const EdgeInsets.all(12.0),
                                       child: DropdownButtonFormField<String>(
@@ -1974,7 +1948,6 @@ class _AddStockPageState extends State<AddStockPage> {
                                     ),
                                     const SizedBox(height: 16),
                                     if (_useBatchMode) ...[
-                                      // Add Product Button
                                       Card(
                                         elevation: 4,
                                         shape: RoundedRectangleBorder(
@@ -2006,10 +1979,8 @@ class _AddStockPageState extends State<AddStockPage> {
                                         ),
                                       ),
                                       const SizedBox(height: 16),
-                                      // Stock Entries List
                                       _buildStockEntries(),
                                       const SizedBox(height: 24),
-                                      // Save Button for Batch Mode
                                       ElevatedButton(
                                         onPressed: _stockEntries.isEmpty ||
                                                 _selectedStoreId == null ||
@@ -2032,7 +2003,6 @@ class _AddStockPageState extends State<AddStockPage> {
                                         child: const Text('Save All Stock'),
                                       ),
                                     ] else ...[
-                                      // Single Item Form
                                       BlocBuilder<AdminProductCubit,
                                           ProductState>(
                                         bloc: _productCubit,

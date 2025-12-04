@@ -14,7 +14,6 @@ class CategoryServiceImpl implements CategoryService {
     required this.accountRepository,
   });
 
-  // Helper function to get the companyId
   Future<String> _getCompanyId() async {
     final userInfo = await accountRepository.getUserInfo();
     return userInfo?.companyId ?? ''; // Defaulting to empty string if companyId is null

@@ -102,7 +102,6 @@ class _LedgerListView extends StatelessWidget {
     );
   }
 
-  /// 🔥 **Delete Confirmation Dialog**
   void _showDeleteConfirmation(BuildContext context, String companyId,
       String customerCompanyId, transaction) {
     showDialog(
@@ -118,7 +117,6 @@ class _LedgerListView extends StatelessWidget {
                 child: const Text("Cancel")),
             TextButton(
               onPressed: () {
-                // Call delete function in the cubit
                 context
                     .read<AccountLedgerCubit>()
                     .deleteTransaction(companyId,transaction);

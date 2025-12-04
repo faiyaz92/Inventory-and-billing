@@ -54,7 +54,6 @@ class TransactionCubit extends Cubit<TransactionState> {
         pageSize: pageSize,
       );
 
-      // Sort transactions by timestamp (latest first)
       transactions.sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
       if (page == 1) {

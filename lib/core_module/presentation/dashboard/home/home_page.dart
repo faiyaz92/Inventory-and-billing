@@ -14,7 +14,6 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Define demo expiration date
     final DateTime demoExpirationDate = DateTime(2030, 10, 10);
     final bool isDemoExpired = DateTime.now().isAfter(demoExpirationDate);
 
@@ -22,7 +21,6 @@ class HomePage extends StatelessWidget {
       create: (context) => sl<HomeCubit>()..fetchUserInfo(),
       child: BlocBuilder<HomeCubit, HomeState>(
         builder: (context, state) {
-          // If demo is expired, show purchase message
           if (isDemoExpired) {
             return Scaffold(
               body: Center(
@@ -96,7 +94,6 @@ class HomePage extends StatelessWidget {
             );
           }
 
-          // Existing UI for non-expired demo
           if (state is HomeLoading) {
             return Scaffold(
               body: Center(
@@ -131,28 +128,6 @@ class HomePage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // SizedBox(
-                        //   width: double.infinity,
-                        //   child: Card(
-                        //     elevation: 8,
-                        //     shape: RoundedRectangleBorder(
-                        //       borderRadius: BorderRadius.circular(16),
-                        //     ),
-                        //     color: Colors.white,
-                        //     child: Padding(
-                        //       padding: const EdgeInsets.all(kIsWeb ? 24.0 : 16.0),
-                        //       child: Text(
-                        //         "Welcome, ${state.userName}",
-                        //         style: TextStyle(
-                        //           fontSize: kIsWeb ? 28 : 24,
-                        //           fontWeight: FontWeight.bold,
-                        //           color: Theme.of(context).primaryColor,
-                        //         ),
-                        //       ),
-                        //     ),
-                        //   ),
-                        // ),
-                        // const SizedBox(height: kIsWeb ? 32 : 24),
                         Expanded(
                           child: GridView.count(
                             crossAxisCount: kIsWeb ? 7 : 3,
@@ -193,7 +168,6 @@ class HomePage extends StatelessWidget {
   }) {
     final List<Widget> gridItems = [];
 
-    // Role-based access
     switch (role) {
       case Role.SUPER_ADMIN:
         gridItems.addAll([
@@ -412,14 +386,6 @@ class HomePage extends StatelessWidget {
         break;
       case Role.SALES_MAN:
         gridItems.addAll([
-          // _buildGridItem(
-          //   icon: Icons.note_add,
-          //   label: 'Take Purchase Order',
-          //   color: Colors.blueAccent,
-          //   onTap: () {
-          //     sl<Coordinator>().navigateToSalesManOrderPage();
-          //   },
-          // ),
           _buildGridItem(
             icon: Icons.receipt,
             label: 'Create Invoice',
@@ -473,11 +439,9 @@ class HomePage extends StatelessWidget {
       case Role.STORE_ACCOUNTANT:
       case Role.STORE_MANAGER:
       case Role.USER:
-        // Common items for all roles
         break;
     }
 
-    // Add common grid items for all roles
     gridItems.addAll([
       _buildGridItem(
         icon: Icons.attach_money,

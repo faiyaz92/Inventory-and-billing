@@ -63,7 +63,6 @@ class LocationUpdateService {
           position.longitude,
         );
       } catch (e) {
-        // Log error (consider using a logging service)
       }
     });
   }

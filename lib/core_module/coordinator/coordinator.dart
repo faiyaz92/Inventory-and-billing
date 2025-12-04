@@ -35,10 +35,8 @@ abstract class Coordinator {
 
   void navigateBack({bool isUpdated});
 
-  // 🔹 Super Admin Navigation
   void navigateToSuperAdminPage();
 
-  // 🔹 Add & Edit Tenant Company Navigation
   void navigateToAddTenantCompanyPage({TenantCompany? company});
 
   void navigateToAddUserPage({UserInfo? user});
@@ -55,12 +53,10 @@ abstract class Coordinator {
 
   void navigateToCreateLedgerPage(String companyId, String customerCompanyId);
 
-  // ✅ New Product Navigation Methods
   void navigateToProductListPage();
 
   Future<dynamic> navigateToAddEditProductPage({Product? product});
 
-  // 🔹 Add Edit Category/Subcategory Navigation Methods
   void navigateToAddEditCategoryPage({Category? category});
 
   void navigateToAddEditSubcategoryPage(

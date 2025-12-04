@@ -58,7 +58,6 @@ class EmployeeDetailsBodyState extends State<EmployeeDetailsBody> {
           if (state is EmployeeDetailsLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is EmployeeDetailsLoaded) {
-            // Calculate attendance counts
             final presentCount = state.attendance
                 .where((a) => a.status.toLowerCase() == 'present')
                 .length;
@@ -131,7 +130,6 @@ class EmployeeDetailsBodyState extends State<EmployeeDetailsBody> {
                         ),
                       ),
                       const SizedBox(height: 8.0),
-                      // Attendance Summary Card
                       Card(
                         elevation: 4.0,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),

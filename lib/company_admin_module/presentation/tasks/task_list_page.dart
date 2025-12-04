@@ -45,7 +45,6 @@ class _TaskListPageState extends State<TaskListPage>
       create: (_) => _taskCubit,
       child: BlocConsumer<TaskCubit, TaskState>(
         listener: (context, state) {
-          // Dismiss only the loading dialog when loading is complete
           if (state is TaskLoaded) {
             if (state.isLoading) if (Navigator.canPop(context)) {
               Navigator.pop(context); // Close the loading dialog
@@ -58,7 +57,6 @@ class _TaskListPageState extends State<TaskListPage>
         },
         builder: (context, state) {
           if (state is TaskLoading) {
-            // Show dialog-based loading UI
             WidgetsBinding.instance.addPostFrameCallback((_) {
               showDialog(
                 context: context,
@@ -95,7 +93,6 @@ class _TaskListPageState extends State<TaskListPage>
                 ),
               );
             });
-            // Return an empty Scaffold while dialog is shown
             return const Scaffold(
               backgroundColor: Colors.white,
               body: SizedBox.shrink(),
@@ -200,7 +197,6 @@ class _TaskListPageState extends State<TaskListPage>
     );
   }
 
-  /// User Filter Dropdown
   Widget _buildUserFilterDropdown(List<UserInfo> users) {
     List<String> uniqueUsers =
         users.map((user) => user.userName ?? "Unknown").toSet().toList();
@@ -229,7 +225,6 @@ class _TaskListPageState extends State<TaskListPage>
     );
   }
 
-  /// Due Date Filter UI
   Widget _buildDateFilter() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -271,7 +266,6 @@ class _TaskListPageState extends State<TaskListPage>
     );
   }
 
-  /// Date Picker
   Widget _buildDatePicker(
       String label, DateTime? selectedDate, Function(DateTime?) onDatePicked) {
     return Expanded(
@@ -305,7 +299,6 @@ class _TaskListPageState extends State<TaskListPage>
     );
   }
 
-  /// Format Date to Readable String
   String _formatDate(DateTime date, {bool includeTime = false}) {
     final baseDate =
         "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}";
@@ -315,7 +308,6 @@ class _TaskListPageState extends State<TaskListPage>
     return baseDate;
   }
 
-  /// Task List with Tabular Form (3 Cells per Row, First Row Combines Title and Menu in Second Cell, Highlighted Due Date and Last Updated)
   Widget _buildTaskList(List<TaskModel> allTasks, String statusFilter) {
     List<TaskModel> filteredTasks = allTasks
         .where((task) =>

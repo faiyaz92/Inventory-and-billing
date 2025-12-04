@@ -51,13 +51,9 @@ class _AiCompanyListPageState extends State<AiCompanyListPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _buildDropdownRow(context),
-                    // Method for dropdown row
                     _buildBusinessTypeDropdown(context),
-                    // Method for Business Type Dropdown
                     _buildSearchAndFindRow(context),
-                    // Method for search and find button row
                     Expanded(child: _buildCompanyList(context)),
-                    // Method for displaying company list
                   ],
                 );
               }
@@ -69,7 +65,6 @@ class _AiCompanyListPageState extends State<AiCompanyListPage> {
     );
   }
 
-// Method for the dropdown row
   Widget _buildDropdownRow(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -78,12 +73,10 @@ class _AiCompanyListPageState extends State<AiCompanyListPage> {
         const SizedBox(width: 8),
         Expanded(child: _buildCityDropdown(context)),
         const SizedBox(width: 8),
-        // Business Type Dropdown will be placed here as a separate widget
       ],
     );
   }
 
-// Country Dropdown
   Widget _buildCountryDropdown(BuildContext context) {
     return BlocBuilder<AiCompanyListCubit, AiCompanyListState>(
       buildWhen: (previous, current) =>
@@ -120,7 +113,6 @@ class _AiCompanyListPageState extends State<AiCompanyListPage> {
     );
   }
 
-// City Dropdown
   Widget _buildCityDropdown(BuildContext context) {
     return BlocBuilder<AiCompanyListCubit, AiCompanyListState>(
       buildWhen: (previous, current) =>
@@ -170,7 +162,6 @@ class _AiCompanyListPageState extends State<AiCompanyListPage> {
     );
   }
 
-// Business Type Dropdown
   Widget _buildBusinessTypeDropdown(BuildContext context) {
     return BlocBuilder<AiCompanyListCubit, AiCompanyListState>(
       buildWhen: (previous, current) =>
@@ -204,7 +195,6 @@ class _AiCompanyListPageState extends State<AiCompanyListPage> {
     );
   }
 
-// Search and Find Button Row
   Widget _buildSearchAndFindRow(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -239,7 +229,6 @@ class _AiCompanyListPageState extends State<AiCompanyListPage> {
     );
   }
 
-// Company List Display Section
   Widget _buildCompanyList(BuildContext context) {
     return BlocBuilder<AiCompanyListCubit, AiCompanyListState>(
       buildWhen: (previous, current) => current is CompanyListLoaded,
@@ -262,26 +251,21 @@ class _AiCompanyListPageState extends State<AiCompanyListPage> {
     );
   }
 
-  // Helper method to build a dropdown with decoration and observing state
   Widget _buildDropdown<T>({
     required T? value,
     required List<DropdownMenuItem<T>> items,
     required ValueChanged<T?> onChanged,
     required String hint,
   }) {
-    // Ensure the selected value is in the list, or null if not
     T? validValue;
     if (value != null) {
-      // Check if the value exists in the list, if not, set to null
       bool valueExists = items.any((item) => item.value == value);
-      // validValue = valueExists ? value : null;
     }
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
       child: DropdownButtonFormField<T>(
         value: validValue,
-        // Set valid value (either matched or null)
         items: items,
         onChanged: onChanged,
         decoration: InputDecoration(
@@ -313,7 +297,6 @@ class _AiCompanyListPageState extends State<AiCompanyListPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Row: Labels and Squares
             /*  Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -389,7 +372,6 @@ class _AiCompanyListPageState extends State<AiCompanyListPage> {
             ),
             const SizedBox(height: 16),*/
 
-            // Details and Action Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -538,7 +520,6 @@ class _AiCompanyListPageState extends State<AiCompanyListPage> {
             ),
             TextButton(
               onPressed: () {
-                // cubit.deleteCompany(company.id);
                 Navigator.of(context).pop();
               },
               child: const Text(AppLabels.deleteButtonText),

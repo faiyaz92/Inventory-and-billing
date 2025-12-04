@@ -49,13 +49,10 @@ class ProductServiceImpl implements ProductService {
     final companyId = userInfo.companyId!;
     final dto = ProductDTO.fromDomainModel(product);
 
-    // Update the product in the product collection
     await productRepository.updateProduct(companyId, dto);
 
-    // Fetch all stores
     final stores = await stockRepository.getStores(companyId);
 
-    // Update stock entries for this product across all stores
     for (final store in stores) {
       final stock = await stockRepository.getStockByProduct(companyId, store.storeId, product.id);
       if (stock != null) {

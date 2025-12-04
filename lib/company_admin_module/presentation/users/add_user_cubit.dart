@@ -28,7 +28,6 @@ class AddUserCubit extends Cubit<AddUserState> {
     try {
       emit(AddUserLoading());
 
-      // Validate mandatory fields
       if (userInfo.name == null || userInfo.name!.isEmpty) {
         emit(AddUserFailure('Name is required for all user types'));
         return;
@@ -86,7 +85,6 @@ class AddUserCubit extends Cubit<AddUserState> {
         }
       }
 
-      // Fetch default store ID if not provided
       final storeId = userInfo.storeId ?? await _storeService.getDefaultStoreId();
       final updatedUserInfo = userInfo.copyWith(
         storeId: (userInfo.userType == UserType.Employee || userInfo.userType == UserType.Accounts) ? storeId : null,
@@ -109,14 +107,12 @@ class AddUserCubit extends Cubit<AddUserState> {
     try {
       emit(AddUserLoading());
 
-      // Fetch logged-in user info
       final loggedInUser = await _accountRepository.getUserInfo();
       if (loggedInUser == null) {
         emit(AddUserFailure('Logged-in user information not found'));
         return;
       }
 
-      // Prevent company admin from changing their own role
       if (loggedInUser.role == Role.COMPANY_ADMIN &&
           userInfo.userId == loggedInUser.userId &&
           userInfo.role != Role.COMPANY_ADMIN) {
@@ -124,7 +120,6 @@ class AddUserCubit extends Cubit<AddUserState> {
         return;
       }
 
-      // Validate mandatory fields
       if (userInfo.name == null || userInfo.name!.isEmpty) {
         emit(AddUserFailure('Name is required for all user types'));
         return;
@@ -178,7 +173,6 @@ class AddUserCubit extends Cubit<AddUserState> {
         }
       }
 
-      // Fetch default store ID if not provided
       final storeId = userInfo.storeId ?? await _storeService.getDefaultStoreId();
       final updatedUserInfo = userInfo.copyWith(
         storeId: (userInfo.userType == UserType.Employee || userInfo.userType == UserType.Accounts) ? storeId : null,

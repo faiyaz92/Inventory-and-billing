@@ -43,7 +43,6 @@ class BillPdfPage extends StatelessWidget {
         build: (format) => pdf.save(),
         allowPrinting: true,
         allowSharing: false,
-        // Share handled via app bar action
         canChangePageFormat: false,
         canDebug: false,
         pdfFileName: 'bill_$billNumber.pdf',

@@ -463,10 +463,6 @@ class CartPage extends StatelessWidget {
                                         decoration: BoxDecoration(
                                           color: AppColors.primary
                                               .withOpacity(0.1),
-                                          // borderRadius: const BorderRadius.only(
-                                          //   bottomLeft: Radius.circular(16),
-                                          //   bottomRight: Radius.circular(16),
-                                          // ),
                                         ),
                                         children: [
                                           const Padding(

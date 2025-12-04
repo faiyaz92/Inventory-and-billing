@@ -150,7 +150,6 @@ class _CartHomePageState extends State<CartHomePage> {
                                 ),
                               );
                             }
-                            // Handle states with products
                             List<UserProduct> products = [];
                             List<UserProduct> wishlistItems = [];
                             List<CartItem> cartItems = [];

@@ -86,7 +86,6 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
     UserInfoDto updatedUserInfo;
 
     if (userInfoDto.userType == UserType.Employee) {
-      // For Employees: Create Firebase Auth credentials
       if (password == null || password.isEmpty) {
         throw Exception('Password is required for Employee users.');
       }
@@ -98,18 +97,15 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
       userId = userCredential.user!.uid;
       updatedUserInfo = userInfoDto.copyWith(userId: userId);
     } else {
-      // For non-Employees: Generate custom userId, no Firebase Auth
       userId = const Uuid().v4(); // Generate unique userId
       updatedUserInfo = userInfoDto.copyWith(userId: userId);
     }
 
-    // Add to tenant users collection (all users)
     await _firestoreProvider
         .getTenantUsersRef(userInfoDto.companyId!)
         .doc(userId)
         .set(updatedUserInfo.toMap());
 
-    // Only add Employees to common users collection
     if (userInfoDto.userType == UserType.Employee) {
       await _firestoreProvider
           .getCommonUsersPath()
@@ -220,22 +216,15 @@ class TenantCompanyRepository implements ITenantCompanyRepository {
       QuerySnapshot querySnapshot;
 
       if (storeId != null && storeId.isNotEmpty) {
-        // Filter by provided storeId, regardless of role
         querySnapshot =
             await usersRef.where('storeId', isEqualTo: storeId).get();
       } else {
-        // No storeId provided, use existing role-based logic
         if (loggedInUserRole == Role.COMPANY_ADMIN) {
-          // COMPANY_ADMIN sees all users in the company
           querySnapshot = await usersRef.get();
         } else {
-          // Other roles (USER, STORE_ADMIN, SUPER_ADMIN) see only users with the same storeId
           if (loggedInUserStoreId == null || loggedInUserStoreId.isEmpty) {
             throw Exception('Logged-in user has no store ID assigned.');
           }
-          // querySnapshot = await usersRef
-          //     .where('storeId', isEqualTo: loggedInUserStoreId)
-          //     .get(); // TODO need to uncomment this
 
           querySnapshot = await usersRef.get();  //TODO need to comment this
 

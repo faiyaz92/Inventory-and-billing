@@ -30,7 +30,6 @@ class TaskModel {
     this.lastUpdatedByUserName,
   });
 
-  /// Mapping from DTO to TaskModel
   factory TaskModel.fromDto(TaskDto dto) {
     return TaskModel(
       taskId: dto.taskId,
@@ -48,7 +47,6 @@ class TaskModel {
     );
   }
 
-  /// Convert to DTO for Firestore communication
   TaskDto toDto(String companyId) {
     return TaskDto(
       taskId: taskId,
@@ -67,7 +65,6 @@ class TaskModel {
     );
   }
 
-  /// CopyWith Method for Partial Updates
   TaskModel copyWith({
     String? taskId,
     String? title,

@@ -1,4 +1,3 @@
-// New Model: AdminPurchaseOrderModel.dart
 import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 
 class AdminPurchaseOrder {

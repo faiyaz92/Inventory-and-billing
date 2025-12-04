@@ -135,7 +135,6 @@ class _CategoriesWithSubcategoriesPageState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Category Header
                 ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   title: Semantics(
@@ -169,7 +168,6 @@ class _CategoriesWithSubcategoriesPageState
                     ],
                   ),
                 ),
-                // Subcategories List
                 if (subcategories.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(left: 16.0),
@@ -213,7 +211,6 @@ class _CategoriesWithSubcategoriesPageState
                       }).toList(),
                     ),
                   ),
-                // Add Subcategory Button
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: ElevatedButton(

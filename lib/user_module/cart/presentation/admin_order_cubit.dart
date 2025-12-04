@@ -13,7 +13,6 @@ abstract class AdminOrderState {}
 
 class AdminOrderInitial extends AdminOrderState {}
 
-// States for AdminPanelPage and AdminInvoicePanelPage
 class AdminOrderListFetchLoading extends AdminOrderState {}
 
 class AdminOrderListFetchSuccess extends AdminOrderState {
@@ -75,7 +74,6 @@ class AdminOrderListFetchError extends AdminOrderState {
   AdminOrderListFetchError(this.message);
 }
 
-// States for AdminOrderDetailsPage
 class AdminOrderFetchLoading extends AdminOrderState {}
 
 class AdminOrderFetchSuccess extends AdminOrderState {
@@ -368,7 +366,6 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
       final users = await employeeServices.getUsersFromTenantCompany(storeId: storeId);
       final stores = await storeService.getStores();
 
-      // Apply search query locally if needed
       List<Order> filteredOrders = orders;
       if (_searchQuery.isNotEmpty) {
         filteredOrders = filteredOrders
@@ -620,7 +617,6 @@ class AdminOrderCubit extends Cubit<AdminOrderState> {
     }
   }
 }
-//this need to be indexed
 /*
 *
 * {

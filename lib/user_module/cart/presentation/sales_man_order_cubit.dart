@@ -9,7 +9,6 @@ import 'package:requirment_gathering_app/user_module/cart/presentation/cart_cubi
 import 'package:requirment_gathering_app/user_module/cart/presentation/order_cubit.dart';
 import 'package:requirment_gathering_app/user_module/cart/services/i_user_product_service.dart';
 
-// State for SalesmanOrderCubit
 abstract class SalesmanOrderState {}
 
 class SalesmanOrderInitial extends SalesmanOrderState {}
@@ -48,7 +47,6 @@ SalesmanOrderError(this.message);
 
 class SalesmanOrderPlaced extends SalesmanOrderState {}
 
-// Cubit for handling salesman order logic
 class SalesmanOrderCubit extends Cubit<SalesmanOrderState> {
 final UserServices employeeServices;
 final IUserProductService productService;

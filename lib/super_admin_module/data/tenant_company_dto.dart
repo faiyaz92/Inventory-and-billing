@@ -29,7 +29,6 @@ class TenantCompanyDto {
     this.createdAt,
   });
 
-  /// 🔹 Convert DTO to Firestore Map
   Map<String, dynamic> toFirestore() {
     return {
       'companyId': companyId,
@@ -47,7 +46,6 @@ class TenantCompanyDto {
     };
   }
 
-  /// 🔹 Convert Firestore Document to DTO
   factory TenantCompanyDto.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
 
@@ -67,7 +65,6 @@ class TenantCompanyDto {
     );
   }
 
-  /// 🔹 Convert JSON Map to DTO
   factory TenantCompanyDto.fromMap(Map<String, dynamic>? map) {
     if (map == null) return TenantCompanyDto();
 
@@ -87,7 +84,6 @@ class TenantCompanyDto {
     );
   }
 
-  /// 🔹 Create a copy with modifications
   TenantCompanyDto copyWith({
     String? companyId,
     String? name,
@@ -118,7 +114,6 @@ class TenantCompanyDto {
     );
   }
 
-  /// 🔹 Convert DTO to Firestore Map (Use this for updates)
   Map<String, dynamic> toMap() {
     return {
       'companyId': companyId,

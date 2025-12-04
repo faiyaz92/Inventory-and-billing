@@ -56,7 +56,6 @@ class StockServiceImpl implements StockService {
       storeType: StoreType.salesman,
     );
 
-    // Check if store with this name already exists
     final existingStore = await stockRepository.getStoreByName(companyId, storeDto.name);
     if (existingStore != null) {
       throw Exception('Store with name "${storeDto.name}" already exists');
@@ -183,7 +182,6 @@ class StockServiceImpl implements StockService {
       throw Exception('Company ID not found');
     }
 
-    // Check if store with this name already exists
     final existingStore = await stockRepository.getStoreByName(companyId, store.name);
     if (existingStore != null) {
       throw Exception('Store with name "${store.name}" already exists');
@@ -210,13 +208,11 @@ class StockServiceImpl implements StockService {
       throw Exception('Company ID not found');
     }
 
-    // Check if store exists
     final existingStore = await stockRepository.getStoreByName(companyId, store.name);
     if (existingStore == null) {
       throw Exception('Store with name "${store.name}" does not exist');
     }
 
-    // Update only provided fields while preserving existing ones
     final updatedStore = existingStore.copyWith(
       storeId: store.storeId,
       name: store.name,

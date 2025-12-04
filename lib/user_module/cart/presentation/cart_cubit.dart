@@ -9,35 +9,28 @@ abstract class CartState {
   CartState({this.items = const []});
 }
 
-// Initial state
 class CartInitial extends CartState {}
 
-// Loading state
 class CartLoading extends CartState {}
 
-// Loaded state (after fetching cart items)
 class CartLoaded extends CartState {
   CartLoaded(List<CartItem> items) : super(items: items);
 }
 
-// Updated state (after adding, updating, or removing items)
 class CartUpdated extends CartState {
   CartUpdated(List<CartItem> items) : super(items: items);
 }
 
-// Cleared state (after clearing cart)
 class CartCleared extends CartState {
   CartCleared() : super(items: []);
 }
 
-// Order created state (after creating an order)
 class OrderCreated extends CartState {
   final Order order;
 
   OrderCreated(this.order) : super(items: []);
 }
 
-// Error state
 class CartError extends CartState {
   final String message;
 
@@ -107,42 +100,35 @@ class CartCubit extends Cubit<CartState> {
     }
   }
 
-// Calculate subtotal for a single product (without tax)
   double calculateProductSubtotal(CartItem item) {
     return item.price * item.quantity;
   }
 
-// Calculate tax for a single product
   double calculateProductTax(CartItem item) {
     final subtotal = calculateProductSubtotal(item);
     return subtotal * item.taxRate;
   }
 
-// Calculate total for a single product (with tax, minus discount)
   double calculateProductTotal(CartItem item) {
     final subtotal = calculateProductSubtotal(item);
     final tax = calculateProductTax(item);
     return subtotal + tax - item.discountAmount;
   }
 
-// Calculate subtotal for all products (without tax)
   double calculateOverallSubtotal() {
     return state.items
         .fold(0.0, (sum, item) => sum + calculateProductSubtotal(item));
   }
 
-// Calculate total tax for all products
   double calculateOverallTax() {
     return state.items
         .fold(0.0, (sum, item) => sum + calculateProductTax(item));
   }
 
-// Calculate total item discounts
   double calculateTotalItemDiscounts() {
     return state.items.fold(0.0, (sum, item) => sum + item.discountAmount);
   }
 
-// Calculate final total for all products (with tax, minus discounts)
   double calculateOverallTotal() {
     final subtotal = calculateOverallSubtotal();
     final tax = calculateOverallTax();
@@ -150,7 +136,6 @@ class CartCubit extends Cubit<CartState> {
     return subtotal + tax - discounts;
   }
 
-// Updated totalAmount getter to return the total with tax and discounts
   Future<double> get totalAmount async {
     try {
       final total = calculateOverallTotal();

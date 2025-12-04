@@ -1,4 +1,3 @@
-// States for Login
 import 'package:equatable/equatable.dart';
 
 abstract class LoginState extends Equatable {
